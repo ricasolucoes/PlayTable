@@ -1,13 +1,10 @@
 # STATE
 
-**Current Phase:** Phase 1.1 - Estrutura Core e UI Base
+**Current Phase:** Phase 1.2 - Quatro em Linha
 **Status:** In Not Started
 
 ## Context
-O repositório base agnóstico foi criado com diretórios divididos em `core`, `shared` e `games`, incluindo um `README.md` detalhado com a filosofia e roteiro.
-A primeira branch `develop` e tag `v0.1.0` foram criadas.
+A **Phase 1.1** foi concluída com sucesso. O motor escolhido foi o **Godot 4**. O repositório foi populado com a estrutura inicial: `project.godot`, scripts de auto-load para persistência de configs (`SaveManager`) e transição de cenas (`SceneManager`), além de uma cena base de Menu Principal (`MainMenu.tscn`).
 
 ## Next Steps
-- Escolher a Engine.
-- Executar setup de framework (Godot project ou Flutter create) em `core` e popular.
-- Iniciar a Phase 1.1 com `/gsd-plan-phase 1.1`.
+- Planejar e executar a **Phase 1.2 (Quatro em Linha)**, incluindo o tabuleiro lógico e UI, as regras de captura/vitória e a tela principal do jogo.
