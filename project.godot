@@ -1,0 +1,36 @@
+; Engine configuration file.
+; It's best edited using the editor UI and not directly,
+; since the parameters that go here are not all obvious.
+;
+; Format:
+;   [section] ; section goes between []
+;   param=value ; assign values to parameters
+
+config_version=5
+
+[application]
+
+config/name="Jogos de Mesa Offline"
+config/description="Uma coleção open source de jogos de tabuleiro e cartas offline."
+run/main_scene="res://core/telas/MainMenu.tscn"
+config/features=PackedStringArray("4.3", "Mobile")
+
+[autoload]
+
+SaveManager="*res://core/save/SaveManager.gd"
+SceneManager="*res://core/navegacao/SceneManager.gd"
+
+[display]
+
+window/size/viewport_width=720
+window/size/viewport_height=1280
+window/size/window_width_override=360
+window/size/window_height_override=640
+window/stretch/mode="canvas_items"
+window/stretch/aspect="expand"
+window/handheld/orientation=1
+
+[rendering]
+
+renderer/rendering_method="mobile"
+textures/vram_compression/import_etc2_astc=true
