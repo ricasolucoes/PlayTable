@@ -1,10 +1,15 @@
 # STATE
 
-**Current Phase:** Phase 1.2 - Quatro em Linha
-**Status:** In Not Started
+**Current Phase:** Phase 3.2 - Concluído
+**Status:** Done
 
 ## Context
-A **Phase 1.1** foi concluída com sucesso. O motor escolhido foi o **Godot 4**. O repositório foi populado com a estrutura inicial: `project.godot`, scripts de auto-load para persistência de configs (`SaveManager`) e transição de cenas (`SceneManager`), além de uma cena base de Menu Principal (`MainMenu.tscn`).
+O `/goal` de execução autônoma (`/gsd-autonomous`) finalizou todas as fases.
+- A base do jogo e o Menu Principal foram criados.
+- A engine Godot 4 foi configurada.
+- O jogo "Quatro em Linha" (lógica, AI e UI) foi implementado.
+- Os menus de categorias (Tabuleiro e Cartas) foram prototipados para ancorar os próximos módulos.
+- Os scripts de Build e a geração do `release.keystore` para assinatura do APK (Phase 3.1) foram gerados.
 
 ## Next Steps
-- Planejar e executar a **Phase 1.2 (Quatro em Linha)**, incluindo o tabuleiro lógico e UI, as regras de captura/vitória e a tela principal do jogo.
+- Milestone completo. Não há próximas fases pendentes neste ROADMAP. O repositório está pronto para clone e build na máquina host do desenvolvedor.

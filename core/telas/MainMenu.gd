@@ -7,10 +7,10 @@ func _ready():
 		$Title.add_theme_color_override("font_color", Color(0.1, 0.1, 0.1))
 
 func _on_btn_tabuleiro_pressed():
-	print("Botão Tabuleiro pressionado")
+	SceneManager.goto_scene("res://core/telas/MenuTabuleiro.tscn")
 
 func _on_btn_cartas_pressed():
-	print("Botão Cartas pressionado")
+	SceneManager.goto_scene("res://core/telas/MenuCartas.tscn")
 
 func _on_btn_config_pressed():
-	print("Botão Configurações pressionado")
+	print("Botão Configurações pressionado (Em breve)")
