@@ -3,6 +3,9 @@
 
 echo "=> Iniciando configuração do Android SDK e Build do Godot..."
 
+export JAVA_HOME="/Users/sierra/Dev/Jogos/jdk-17.0.2.jdk/Contents/Home"
+export PATH="$JAVA_HOME/bin:$PATH"
+
 mkdir -p build/android
 
 if [ ! -f "release.keystore" ]; then
@@ -11,7 +14,6 @@ if [ ! -f "release.keystore" ]; then
 fi
 
 echo "=> Exportando APK pelo Godot (Headless)..."
-# Substitua 'godot' pelo caminho do seu executável do Godot 4
-godot --headless --export-release "Android" build/android/JogosDeMesaOffline.apk
+/Applications/Godot_CLI.app/Contents/MacOS/Godot --headless --export-release "Android" build/android/JogosDeMesaOffline.apk
 
 echo "=> Build Concluída! APK Assinado salvo em build/android/JogosDeMesaOffline.apk"

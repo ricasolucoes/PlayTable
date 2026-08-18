@@ -1,0 +1,8 @@
+res://core/telas/MainMenu.tscn::8ab1c79089650b56be2442e87caa5570::1786990089::res://.godot/exported/133200997/export-778fc09d1c59570aba3f3b49f9eccf81-MainMenu.scn
+res://core/telas/MenuCartas.tscn::a9121bf7c25f152d7d00269e71e5b7ad::1787065715::res://.godot/exported/133200997/export-8ca65fe45cdddf37885bc69aedd19456-MenuCartas.scn
+res://core/telas/MenuTabuleiro.tscn::989795feddcae76cbb915c518e1b86d1::1787065714::res://.godot/exported/133200997/export-6345219a7ffb74893c44c8c30f3ecf74-MenuTabuleiro.scn
+res://games/jogo_da_velha/TicTacToeGame.tscn::45a6e9c1fc1b35a6f557622d51980f8b::1787065684::res://.godot/exported/133200997/export-522bf5468b9f7e8d24344b3c1eb2de8a-TicTacToeGame.scn
+res://games/quatro_em_linha/ConnectFourGame.tscn::a477a8e0c1b914bc0bd3f9f3d38588a0::1787001084::res://.godot/exported/133200997/export-c569bb6db5dc598ae1738467f47b32b9-ConnectFourGame.scn
+res://shared/pecas/Piece.tscn::20390880a7ac9a9acb746253f7828fa5::1786990439::res://.godot/exported/133200997/export-fbafff031f960e54d3a2111e5adaab6b-Piece.scn
+res://shared/GenericGame.tscn::9d9728139dfb52f2f46fece90485f870::1787065695::res://.godot/exported/133200997/export-d833473289a83da0e744c56858bb62d1-GenericGame.scn
+res://games/memoria/MemoryGame.tscn::f45b645032e1f0b2ceaaff4ebfc2a27e::1787067478::res://.godot/exported/133200997/export-4e18cea51db02831f61b49d9744fee5a-MemoryGame.scn

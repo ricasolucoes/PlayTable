@@ -1,0 +1,45 @@
+[gd_scene load_steps=2 format=3 uid="uid://genericgame"]
+
+[ext_resource type="Script" path="res://shared/GenericGame.gd" id="1_script"]
+
+[node name="GenericGame" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_script")
+
+[node name="ColorRect" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0.1, 0.1, 0.15, 1)
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+theme_override_constants/separation = 100
+
+[node name="TopBar" type="HBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+
+[node name="BtnBack" type="Button" parent="VBoxContainer/TopBar"]
+custom_minimum_size = Vector2(100, 50)
+layout_mode = 2
+text = "Voltar"
+
+[node name="CenterContainer" type="CenterContainer" parent="VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="Title" type="Label" parent="VBoxContainer/CenterContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 48
+text = "Jogo"
+
+[connection signal="pressed" from="VBoxContainer/TopBar/BtnBack" to="." method="_on_btn_back_pressed"]

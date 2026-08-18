@@ -48,4 +48,7 @@ text = "21 (Blackjack)"
 layout_mode = 2
 text = "Voltar"
 
+[connection signal="pressed" from="VBoxContainer/BtnSolitario" to="." method="_on_btn_solitario_pressed"]
+[connection signal="pressed" from="VBoxContainer/BtnMemoria" to="." method="_on_btn_memoria_pressed"]
+[connection signal="pressed" from="VBoxContainer/Btn21" to="." method="_on_btn_21_pressed"]
 [connection signal="pressed" from="VBoxContainer/BtnVoltar" to="." method="_on_btn_voltar_pressed"]
