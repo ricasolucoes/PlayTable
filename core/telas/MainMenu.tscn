@@ -18,7 +18,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0.117647, 0.117647, 0.117647, 1)
+color = Color(0.08, 0.09, 0.11, 1)
 
 [node name="Title" type="Label" parent="."]
 layout_mode = 1
@@ -27,9 +27,20 @@ anchor_right = 1.0
 offset_top = 100.0
 offset_bottom = 167.0
 grow_horizontal = 2
-theme_override_font_sizes/font_size = 48
-text = "Jogos de Mesa
-Offline"
+theme_override_font_sizes/font_size = 56
+text = "Jogos de Mesa"
+horizontal_alignment = 1
+
+[node name="Subtitle" type="Label" parent="."]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_top = 180.0
+offset_bottom = 220.0
+grow_horizontal = 2
+theme_override_colors/font_color = Color(0.6, 0.65, 0.7, 1)
+theme_override_font_sizes/font_size = 28
+text = "Offline Collection"
 horizontal_alignment = 1
 
 [node name="VBoxContainer" type="VBoxContainer" parent="."]
@@ -39,30 +50,30 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -150.0
+offset_left = -160.0
 offset_top = -100.0
-offset_right = 150.0
-offset_bottom = 100.0
+offset_right = 160.0
+offset_bottom = 160.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_constants/separation = 20
+theme_override_constants/separation = 24
 
 [node name="BtnTabuleiro" type="Button" parent="VBoxContainer"]
-custom_minimum_size = Vector2(0, 80)
+custom_minimum_size = Vector2(0, 100)
 layout_mode = 2
-theme_override_font_sizes/font_size = 32
+theme_override_font_sizes/font_size = 36
 text = "Tabuleiro"
 
 [node name="BtnCartas" type="Button" parent="VBoxContainer"]
-custom_minimum_size = Vector2(0, 80)
+custom_minimum_size = Vector2(0, 100)
 layout_mode = 2
-theme_override_font_sizes/font_size = 32
+theme_override_font_sizes/font_size = 36
 text = "Cartas"
 
 [node name="BtnConfig" type="Button" parent="VBoxContainer"]
-custom_minimum_size = Vector2(0, 80)
+custom_minimum_size = Vector2(0, 100)
 layout_mode = 2
-theme_override_font_sizes/font_size = 32
+theme_override_font_sizes/font_size = 36
 text = "Configurações"
 
 [connection signal="pressed" from="VBoxContainer/BtnTabuleiro" to="." method="_on_btn_tabuleiro_pressed"]

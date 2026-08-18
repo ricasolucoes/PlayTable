@@ -14,6 +14,9 @@ config/name="Jogos de Mesa Offline"
 config/description="Uma coleção open source de jogos de tabuleiro e cartas offline."
 run/main_scene="res://core/telas/MainMenu.tscn"
 config/features=PackedStringArray("4.3", "Mobile")
+[gui]
+
+theme/custom="res://shared/theme/MainTheme.tres"
 
 [autoload]
 
