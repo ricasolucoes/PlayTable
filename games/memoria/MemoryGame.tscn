@@ -16,6 +16,8 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 color = Color(0.08, 0.09, 0.11, 1)
 
 [node name="VBoxContainer" type="VBoxContainer" parent="."]
@@ -27,10 +29,13 @@ offset_left = 20.0
 offset_top = 40.0
 offset_right = -20.0
 offset_bottom = -40.0
-theme_override_constants/separation = 20
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 15
 
 [node name="TopBar" type="HBoxContainer" parent="VBoxContainer"]
 layout_mode = 2
+theme_override_constants/separation = 20
 
 [node name="BtnBack" type="Button" parent="VBoxContainer/TopBar"]
 custom_minimum_size = Vector2(100, 50)
@@ -40,11 +45,18 @@ text = "Voltar"
 [node name="Title" type="Label" parent="VBoxContainer/TopBar"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 32
-text = " Jogo da Memória"
+text = "Jogo da Memória"
+
+[node name="MovesLabel" type="Label" parent="VBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.8, 0.85, 0.9, 1)
+theme_override_font_sizes/font_size = 20
+text = "Jogadas: 0"
+horizontal_alignment = 1
 
 [node name="Status" type="Label" parent="VBoxContainer"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 28
+theme_override_font_sizes/font_size = 26
 text = "Encontre os Pares!"
 horizontal_alignment = 1
 
@@ -58,4 +70,13 @@ theme_override_constants/h_separation = 10
 theme_override_constants/v_separation = 10
 columns = 4
 
+[node name="BtnRestart" type="Button" parent="VBoxContainer"]
+visible = false
+custom_minimum_size = Vector2(240, 55)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_font_sizes/font_size = 22
+text = "Jogar Novamente"
+
 [connection signal="pressed" from="VBoxContainer/TopBar/BtnBack" to="." method="_on_btn_back_pressed"]
+[connection signal="pressed" from="VBoxContainer/BtnRestart" to="." method="_on_btn_restart_pressed"]
