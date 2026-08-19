@@ -22,14 +22,6 @@ color = Color(0.08, 0.09, 0.11, 1)
 
 [node name="PiecesLayer" type="Node2D" parent="."]
 
-[node name="BoardVisual" type="Panel" parent="."]
-layout_mode = 0
-offset_left = 60.0
-offset_top = 60.0
-offset_right = 530.0
-offset_bottom = 470.0
-self_modulate = Color(0.2, 0.5, 0.9, 1)
-
 [node name="VBoxContainer" type="VBoxContainer" parent="."]
 layout_mode = 1
 anchors_preset = 15
@@ -41,6 +33,7 @@ offset_right = -20.0
 offset_bottom = -40.0
 grow_horizontal = 2
 grow_vertical = 2
+theme_override_constants/separation = 15
 
 [node name="TopBar" type="HBoxContainer" parent="VBoxContainer"]
 layout_mode = 2
@@ -56,6 +49,13 @@ layout_mode = 2
 theme_override_font_sizes/font_size = 32
 text = "Quatro em Linha"
 
+[node name="ScoreLabel" type="Label" parent="VBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.8, 0.85, 0.9, 1)
+theme_override_font_sizes/font_size = 22
+text = "Você: 0 vitórias | IA: 0 vitórias"
+horizontal_alignment = 1
+
 [node name="CenterContainer" type="CenterContainer" parent="VBoxContainer"]
 layout_mode = 2
 size_flags_vertical = 3
@@ -66,9 +66,17 @@ theme_override_constants/separation = 5
 
 [node name="StatusLabel" type="Label" parent="VBoxContainer"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 32
+theme_override_font_sizes/font_size = 28
 text = "Status"
 horizontal_alignment = 1
-vertical_alignment = 1
+
+[node name="BtnRestart" type="Button" parent="VBoxContainer"]
+visible = false
+custom_minimum_size = Vector2(240, 55)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_font_sizes/font_size = 22
+text = "Jogar Novamente"
 
 [connection signal="pressed" from="VBoxContainer/TopBar/BtnBack" to="." method="_on_back_pressed"]
+[connection signal="pressed" from="VBoxContainer/BtnRestart" to="." method="_on_btn_restart_pressed"]
