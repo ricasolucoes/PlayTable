@@ -14,6 +14,6 @@ if [ ! -f "release.keystore" ]; then
 fi
 
 echo "=> Exportando APK pelo Godot (Headless)..."
-/Applications/Godot_CLI.app/Contents/MacOS/Godot --headless --export-release "Android" build/android/JogosDeMesaOffline.apk
+/Applications/Godot_CLI.app/Contents/MacOS/Godot --headless --export-release "Android" build/android/JogosDeMesaOffline.apk --quit
 
 echo "=> Build Concluída! APK Assinado salvo em build/android/JogosDeMesaOffline.apk"

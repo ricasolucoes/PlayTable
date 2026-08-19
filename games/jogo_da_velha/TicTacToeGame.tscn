@@ -1,8 +1,9 @@
-[gd_scene load_steps=4 format=3 uid="uid://tictactoe"]
+[gd_scene load_steps=5 format=3 uid="uid://tictactoe"]
 
 [ext_resource type="Script" path="res://games/jogo_da_velha/TicTacToeGame.gd" id="1_script"]
-[ext_resource type="PackedScene" uid="uid://tabletopenv3duid" path="res://shared/3d/TabletopEnvironment3D.tscn" id="2_env"]
-[ext_resource type="PackedScene" uid="uid://board3duid" path="res://shared/3d/Board3D.tscn" id="3_board"]
+[ext_resource type="PackedScene" uid="uid://tabletopbg01" path="res://shared/ui/TabletopBackground.tscn" id="2_bg"]
+[ext_resource type="Script" path="res://games/jogo_da_velha/TicTacToeBoardVisual.gd" id="3_board"]
+[ext_resource type="Theme" uid="uid://cxq6a87e8qf1b" path="res://shared/theme/MainTheme.tres" id="4_theme"]
 
 [node name="TicTacToeGame" type="Control"]
 layout_mode = 3
@@ -11,87 +12,205 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+theme = ExtResource("4_theme")
 script = ExtResource("1_script")
 
-[node name="TabletopEnvironment3D" parent="." instance=ExtResource("2_env")]
+[node name="TabletopBackground" parent="." instance=ExtResource("2_bg")]
+layout_mode = 1
 
-[node name="Board3D" parent="." instance=ExtResource("3_board")]
-
-[node name="PiecesRoot" type="Node3D" parent="."]
-
-[node name="UI" type="Control" parent="."]
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+offset_left = 24.0
+offset_top = 36.0
+offset_right = -24.0
+offset_bottom = -36.0
 grow_horizontal = 2
 grow_vertical = 2
-mouse_filter = 2
+theme_override_constants/separation = 18
 
-[node name="VBoxContainer" type="VBoxContainer" parent="UI"]
-layout_mode = 1
-anchors_preset = 10
-anchor_right = 1.0
-offset_left = 24.0
-offset_top = 40.0
-offset_right = -24.0
-offset_bottom = 160.0
-grow_horizontal = 2
-theme_override_constants/separation = 12
-
-[node name="TopBar" type="HBoxContainer" parent="UI/VBoxContainer"]
+[node name="TopBar" type="HBoxContainer" parent="VBoxContainer"]
 layout_mode = 2
+theme_override_constants/separation = 16
 
-[node name="BtnBack" type="Button" parent="UI/VBoxContainer/TopBar"]
-custom_minimum_size = Vector2(100, 50)
+[node name="BtnBack" type="Button" parent="VBoxContainer/TopBar"]
+custom_minimum_size = Vector2(110, 54)
 layout_mode = 2
-theme_override_font_sizes/font_size = 20
-text = "⬅ Voltar"
+text = "‹ Voltar"
 
-[node name="Title" type="Label" parent="UI/VBoxContainer/TopBar"]
+[node name="Title" type="Label" parent="VBoxContainer/TopBar"]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.8)
-theme_override_constants/shadow_offset_x = 2
-theme_override_constants/shadow_offset_y = 2
-theme_override_font_sizes/font_size = 30
-text = "Jogo da Velha 3D"
+theme_override_font_sizes/font_size = 32
+text = "Jogo da Velha"
 horizontal_alignment = 1
 
-[node name="StatusLabel" type="Label" parent="UI/VBoxContainer"]
+[node name="BtnRestart" type="Button" parent="VBoxContainer/TopBar"]
+custom_minimum_size = Vector2(110, 54)
 layout_mode = 2
-theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.8)
+text = "Reiniciar"
+
+[node name="ScoreBoard" type="HBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 16
+alignment = 1
+
+[node name="P1Panel" type="PanelContainer" parent="VBoxContainer/ScoreBoard"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="HBox" type="HBoxContainer" parent="VBoxContainer/ScoreBoard/P1Panel"]
+layout_mode = 2
+alignment = 1
+
+[node name="Dot" type="ColorRect" parent="VBoxContainer/ScoreBoard/P1Panel/HBox"]
+custom_minimum_size = Vector2(20, 20)
+layout_mode = 2
+size_flags_vertical = 4
+color = Color(0.88, 0.16, 0.18, 1)
+
+[node name="Label" type="Label" parent="VBoxContainer/ScoreBoard/P1Panel/HBox"]
+layout_mode = 2
+text = " Jogador (X): "
+
+[node name="Score" type="Label" parent="VBoxContainer/ScoreBoard/P1Panel/HBox"]
+layout_mode = 2
 theme_override_font_sizes/font_size = 24
-text = "Sua Vez (Rubi X)"
+text = "0"
+
+[node name="P2Panel" type="PanelContainer" parent="VBoxContainer/ScoreBoard"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="HBox" type="HBoxContainer" parent="VBoxContainer/ScoreBoard/P2Panel"]
+layout_mode = 2
+alignment = 1
+
+[node name="Dot" type="ColorRect" parent="VBoxContainer/ScoreBoard/P2Panel/HBox"]
+custom_minimum_size = Vector2(20, 20)
+layout_mode = 2
+size_flags_vertical = 4
+color = Color(0.96, 0.76, 0.16, 1)
+
+[node name="Label" type="Label" parent="VBoxContainer/ScoreBoard/P2Panel/HBox"]
+layout_mode = 2
+text = " IA (O): "
+
+[node name="Score" type="Label" parent="VBoxContainer/ScoreBoard/P2Panel/HBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+text = "0"
+
+[node name="StatusCard" type="PanelContainer" parent="VBoxContainer"]
+layout_mode = 2
+
+[node name="StatusLabel" type="Label" parent="VBoxContainer/StatusCard"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+text = "Sua Vez (Cruz X Carmesim)"
 horizontal_alignment = 1
 
-[node name="BtnRestart" type="Button" parent="UI/VBoxContainer"]
-visible = false
-custom_minimum_size = Vector2(180, 50)
-layout_mode = 2
-size_flags_horizontal = 4
-theme_override_font_sizes/font_size = 20
-text = "🔄 Jogar Novamente"
-
-[node name="CenterContainer" type="CenterContainer" parent="UI"]
+[node name="BoardContainer" type="Control" parent="."]
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -170.0
-offset_top = -170.0
-offset_right = 170.0
-offset_bottom = 170.0
+offset_top = 60.0
+offset_bottom = 60.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="GridTouchContainer" type="GridContainer" parent="UI/CenterContainer"]
-layout_mode = 2
+[node name="TicTacToeBoardVisual" type="Control" parent="BoardContainer"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("3_board")
+
+[node name="Grid" type="GridContainer" parent="BoardContainer"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -252.0
+offset_top = -252.0
+offset_right = 252.0
+offset_bottom = 252.0
+grow_horizontal = 2
+grow_vertical = 2
 theme_override_constants/h_separation = 12
 theme_override_constants/v_separation = 12
 columns = 3
 
-[connection signal="pressed" from="UI/VBoxContainer/TopBar/BtnBack" to="." method="_on_btn_back_pressed"]
-[connection signal="pressed" from="UI/VBoxContainer/BtnRestart" to="." method="_on_btn_restart_pressed"]
+[node name="StrikeLine" type="Line2D" parent="BoardContainer"]
+visible = false
+width = 8.0
+default_color = Color(1, 0.85, 0.25, 0.9)
+
+[node name="WinModal" type="ColorRect" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.75)
+
+[node name="Panel" type="PanelContainer" parent="WinModal"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -220.0
+offset_top = -140.0
+offset_right = 220.0
+offset_bottom = 140.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBox" type="VBoxContainer" parent="WinModal/Panel"]
+layout_mode = 2
+theme_override_constants/separation = 16
+alignment = 1
+
+[node name="WinTitle" type="Label" parent="WinModal/Panel/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.35, 1)
+theme_override_font_sizes/font_size = 36
+text = "🏆 Vitória!"
+horizontal_alignment = 1
+
+[node name="WinSub" type="Label" parent="WinModal/Panel/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "Você alinhou 3 peças!"
+horizontal_alignment = 1
+autowrap_mode = 2
+
+[node name="Spacer" type="Control" parent="WinModal/Panel/VBox"]
+custom_minimum_size = Vector2(0, 10)
+layout_mode = 2
+
+[node name="BtnPlayAgain" type="Button" parent="WinModal/Panel/VBox"]
+custom_minimum_size = Vector2(0, 60)
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+text = "Jogar Novamente"
+
+[connection signal="pressed" from="VBoxContainer/TopBar/BtnBack" to="." method="_on_back_pressed"]
+[connection signal="pressed" from="VBoxContainer/TopBar/BtnRestart" to="." method="_on_restart_pressed"]
+[connection signal="pressed" from="WinModal/Panel/VBox/BtnPlayAgain" to="." method="_on_restart_pressed"]

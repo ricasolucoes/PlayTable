@@ -1,6 +1,8 @@
-[gd_scene load_steps=2 format=3 uid="uid://genericgame"]
+[gd_scene load_steps=4 format=3 uid="uid://genericgame"]
 
 [ext_resource type="Script" path="res://shared/GenericGame.gd" id="1_script"]
+[ext_resource type="PackedScene" uid="uid://tabletopbg01" path="res://shared/ui/TabletopBackground.tscn" id="2_bg"]
+[ext_resource type="Theme" uid="uid://cxq6a87e8qf1b" path="res://shared/theme/MainTheme.tres" id="3_theme"]
 
 [node name="GenericGame" type="Control"]
 layout_mode = 3
@@ -9,37 +11,53 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+theme = ExtResource("3_theme")
 script = ExtResource("1_script")
 
-[node name="ColorRect" type="ColorRect" parent="."]
+[node name="TabletopBackground" parent="." instance=ExtResource("2_bg")]
 layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-color = Color(0.1, 0.1, 0.15, 1)
 
 [node name="VBoxContainer" type="VBoxContainer" parent="."]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-theme_override_constants/separation = 100
+offset_left = 24.0
+offset_top = 36.0
+offset_right = -24.0
+offset_bottom = -36.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 40
 
 [node name="TopBar" type="HBoxContainer" parent="VBoxContainer"]
 layout_mode = 2
 
 [node name="BtnBack" type="Button" parent="VBoxContainer/TopBar"]
-custom_minimum_size = Vector2(100, 50)
+custom_minimum_size = Vector2(110, 54)
 layout_mode = 2
-text = "Voltar"
+text = "‹ Voltar"
 
-[node name="CenterContainer" type="CenterContainer" parent="VBoxContainer"]
+[node name="CenterCard" type="PanelContainer" parent="VBoxContainer"]
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="Title" type="Label" parent="VBoxContainer/CenterContainer"]
+[node name="VBox" type="VBoxContainer" parent="VBoxContainer/CenterCard"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 48
+theme_override_constants/separation = 16
+alignment = 1
+
+[node name="Title" type="Label" parent="VBoxContainer/CenterCard/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.88, 0.42, 1)
+theme_override_font_sizes/font_size = 36
 text = "Jogo"
+horizontal_alignment = 1
+
+[node name="Subtitle" type="Label" parent="VBoxContainer/CenterCard/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "Em breve..."
+horizontal_alignment = 1
 
 [connection signal="pressed" from="VBoxContainer/TopBar/BtnBack" to="." method="_on_btn_back_pressed"]

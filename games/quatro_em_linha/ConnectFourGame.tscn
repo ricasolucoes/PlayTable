@@ -1,7 +1,10 @@
-[gd_scene load_steps=3 format=3 uid="uid://c4gameuid"]
+[gd_scene load_steps=6 format=3 uid="uid://c4gameuid"]
 
 [ext_resource type="Script" path="res://games/quatro_em_linha/ConnectFourGame.gd" id="1_script"]
-[ext_resource type="PackedScene" uid="uid://tabletopenv3duid" path="res://shared/3d/TabletopEnvironment3D.tscn" id="2_env"]
+[ext_resource type="PackedScene" uid="uid://tabletopbg01" path="res://shared/ui/TabletopBackground.tscn" id="2_bg"]
+[ext_resource type="Script" path="res://games/quatro_em_linha/BoardBack.gd" id="3_back"]
+[ext_resource type="Script" path="res://games/quatro_em_linha/BoardFront.gd" id="4_front"]
+[ext_resource type="Theme" uid="uid://cxq6a87e8qf1b" path="res://shared/theme/MainTheme.tres" id="5_theme"]
 
 [node name="ConnectFourGame" type="Control"]
 layout_mode = 3
@@ -10,15 +13,121 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+theme = ExtResource("5_theme")
 script = ExtResource("1_script")
 
-[node name="TabletopEnvironment3D" parent="." instance=ExtResource("2_env")]
+[node name="TabletopBackground" parent="." instance=ExtResource("2_bg")]
+layout_mode = 1
 
-[node name="RackRoot" type="Node3D" parent="."]
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 24.0
+offset_top = 36.0
+offset_right = -24.0
+offset_bottom = -36.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 18
 
-[node name="PiecesRoot" type="Node3D" parent="."]
+[node name="TopBar" type="HBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 16
 
-[node name="UI" type="Control" parent="."]
+[node name="BtnBack" type="Button" parent="VBoxContainer/TopBar"]
+custom_minimum_size = Vector2(110, 54)
+layout_mode = 2
+text = "‹ Voltar"
+
+[node name="Title" type="Label" parent="VBoxContainer/TopBar"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 32
+text = "Quatro em Linha"
+horizontal_alignment = 1
+
+[node name="BtnRestart" type="Button" parent="VBoxContainer/TopBar"]
+custom_minimum_size = Vector2(110, 54)
+layout_mode = 2
+text = "Reiniciar"
+
+[node name="ScoreBoard" type="HBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 16
+alignment = 1
+
+[node name="P1Panel" type="PanelContainer" parent="VBoxContainer/ScoreBoard"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="HBox" type="HBoxContainer" parent="VBoxContainer/ScoreBoard/P1Panel"]
+layout_mode = 2
+alignment = 1
+
+[node name="Dot" type="ColorRect" parent="VBoxContainer/ScoreBoard/P1Panel/HBox"]
+custom_minimum_size = Vector2(20, 20)
+layout_mode = 2
+size_flags_vertical = 4
+color = Color(0.9, 0.15, 0.15, 1)
+
+[node name="Label" type="Label" parent="VBoxContainer/ScoreBoard/P1Panel/HBox"]
+layout_mode = 2
+text = " Você (Vermelho): "
+
+[node name="Score" type="Label" parent="VBoxContainer/ScoreBoard/P1Panel/HBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+text = "0"
+
+[node name="P2Panel" type="PanelContainer" parent="VBoxContainer/ScoreBoard"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="HBox" type="HBoxContainer" parent="VBoxContainer/ScoreBoard/P2Panel"]
+layout_mode = 2
+alignment = 1
+
+[node name="Dot" type="ColorRect" parent="VBoxContainer/ScoreBoard/P2Panel/HBox"]
+custom_minimum_size = Vector2(20, 20)
+layout_mode = 2
+size_flags_vertical = 4
+color = Color(0.95, 0.75, 0.12, 1)
+
+[node name="Label" type="Label" parent="VBoxContainer/ScoreBoard/P2Panel/HBox"]
+layout_mode = 2
+text = " IA (Dourado): "
+
+[node name="Score" type="Label" parent="VBoxContainer/ScoreBoard/P2Panel/HBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+text = "0"
+
+[node name="StatusCard" type="PanelContainer" parent="VBoxContainer"]
+layout_mode = 2
+
+[node name="StatusLabel" type="Label" parent="VBoxContainer/StatusCard"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+text = "Sua Vez (Fichas Vermelhas)"
+horizontal_alignment = 1
+
+[node name="BoardArea" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -301.0
+offset_top = -180.0
+offset_right = 301.0
+offset_bottom = 336.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="BoardBack" type="Control" parent="BoardArea"]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -26,69 +135,82 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
+script = ExtResource("3_back")
 
-[node name="VBoxContainer" type="VBoxContainer" parent="UI"]
+[node name="PiecesLayer" type="Node2D" parent="BoardArea"]
+
+[node name="BoardFront" type="Control" parent="BoardArea"]
 layout_mode = 1
-anchors_preset = 10
+anchors_preset = 15
 anchor_right = 1.0
-offset_left = 24.0
-offset_top = 40.0
-offset_right = -24.0
-offset_bottom = 160.0
+anchor_bottom = 1.0
 grow_horizontal = 2
-theme_override_constants/separation = 12
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("4_front")
 
-[node name="TopBar" type="HBoxContainer" parent="UI/VBoxContainer"]
-layout_mode = 2
+[node name="ColButtons" type="HBoxContainer" parent="BoardArea"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 0
 
-[node name="BtnBack" type="Button" parent="UI/VBoxContainer/TopBar"]
-custom_minimum_size = Vector2(100, 50)
-layout_mode = 2
-theme_override_font_sizes/font_size = 20
-text = "⬅ Voltar"
-
-[node name="Title" type="Label" parent="UI/VBoxContainer/TopBar"]
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.8)
-theme_override_constants/shadow_offset_x = 2
-theme_override_constants/shadow_offset_y = 2
-theme_override_font_sizes/font_size = 30
-text = "Quatro em Linha 3D"
-horizontal_alignment = 1
-
-[node name="StatusLabel" type="Label" parent="UI/VBoxContainer"]
-layout_mode = 2
-theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.8)
-theme_override_font_sizes/font_size = 24
-text = "Sua Vez! (Vermelho)"
-horizontal_alignment = 1
-
-[node name="BtnRestart" type="Button" parent="UI/VBoxContainer"]
+[node name="WinModal" type="ColorRect" parent="."]
 visible = false
-custom_minimum_size = Vector2(180, 50)
-layout_mode = 2
-size_flags_horizontal = 4
-theme_override_font_sizes/font_size = 20
-text = "🔄 Jogar Novamente"
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.75)
 
-[node name="CenterContainer" type="CenterContainer" parent="UI"]
+[node name="Panel" type="PanelContainer" parent="WinModal"]
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -180.0
-offset_top = -200.0
-offset_right = 180.0
-offset_bottom = 200.0
+offset_left = -220.0
+offset_top = -140.0
+offset_right = 220.0
+offset_bottom = 140.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="ColButtonsContainer" type="HBoxContainer" parent="UI/CenterContainer"]
+[node name="VBox" type="VBoxContainer" parent="WinModal/Panel"]
 layout_mode = 2
-theme_override_constants/separation = 4
+theme_override_constants/separation = 16
+alignment = 1
 
-[connection signal="pressed" from="UI/VBoxContainer/TopBar/BtnBack" to="." method="_on_btn_back_pressed"]
-[connection signal="pressed" from="UI/VBoxContainer/BtnRestart" to="." method="_on_btn_restart_pressed"]
+[node name="WinTitle" type="Label" parent="WinModal/Panel/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.35, 1)
+theme_override_font_sizes/font_size = 36
+text = "🏆 Vitória!"
+horizontal_alignment = 1
+
+[node name="WinSub" type="Label" parent="WinModal/Panel/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "Você conectou 4 fichas!"
+horizontal_alignment = 1
+autowrap_mode = 2
+
+[node name="Spacer" type="Control" parent="WinModal/Panel/VBox"]
+custom_minimum_size = Vector2(0, 10)
+layout_mode = 2
+
+[node name="BtnPlayAgain" type="Button" parent="WinModal/Panel/VBox"]
+custom_minimum_size = Vector2(0, 60)
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+text = "Jogar Novamente"
+
+[connection signal="pressed" from="VBoxContainer/TopBar/BtnBack" to="." method="_on_back_pressed"]
+[connection signal="pressed" from="VBoxContainer/TopBar/BtnRestart" to="." method="_on_restart_pressed"]
+[connection signal="pressed" from="WinModal/Panel/VBox/BtnPlayAgain" to="." method="_on_restart_pressed"]

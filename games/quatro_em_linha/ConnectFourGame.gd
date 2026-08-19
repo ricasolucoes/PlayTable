@@ -1,128 +1,180 @@
 extends Control
 
-## ConnectFourGame: Quatro em Linha 3D com Rack Vertical e Queda Física de Fichas
+const BOARD_SCRIPT = preload("res://games/quatro_em_linha/ConnectFourBoard.gd")
+const AI_SCRIPT = preload("res://games/quatro_em_linha/ConnectFourAI.gd")
+const PIECE_SCENE = preload("res://shared/pecas/Piece.tscn")
 
-const Grid2DScript = preload("res://shared/core_engine/board/Grid2D.gd")
-const ConnectFourRulesScript = preload("res://games/quatro_em_linha/ConnectFourRules.gd")
+const COLS = 7
+const ROWS = 6
+const CELL_SIZE = 86.0
+const PIECE_RADIUS = 34.0
 
-var grid_data: Grid2D
-var is_player_turn: bool = true
-var game_over: bool = false
-var pieces_3d: Array = []
+var board = null
+var is_player_turn = true
+var game_over = false
+var vs_ai = true
 
-@onready var env_3d: TabletopEnvironment3D = $TabletopEnvironment3D
-@onready var rack_root: Node3D = $RackRoot
-@onready var pieces_root: Node3D = $PiecesRoot
-@onready var status_label = $UI/VBoxContainer/StatusLabel
-@onready var btn_restart = $UI/VBoxContainer/BtnRestart
-@onready var col_buttons_container = $UI/CenterContainer/ColButtonsContainer
+var score_p1 = 0
+var score_p2 = 0
 
-const COL_SPACING: float = 0.65
-const ROW_SPACING: float = 0.65
+var piece_instances = {} # Vector2i -> Piece node
+
+@onready var pieces_layer = $BoardArea/PiecesLayer
+@onready var board_back = $BoardArea/BoardBack
+@onready var board_front = $BoardArea/BoardFront
+@onready var col_buttons_container = $BoardArea/ColButtons
+@onready var status_label = $VBoxContainer/StatusCard/StatusLabel
+@onready var p1_panel = $VBoxContainer/ScoreBoard/P1Panel
+@onready var p2_panel = $VBoxContainer/ScoreBoard/P2Panel
+@onready var p1_score_lbl = $VBoxContainer/ScoreBoard/P1Panel/HBox/Score
+@onready var p2_score_lbl = $VBoxContainer/ScoreBoard/P2Panel/HBox/Score
+@onready var win_modal = $WinModal
+@onready var win_modal_title = $WinModal/Panel/VBox/WinTitle
+@onready var win_modal_sub = $WinModal/Panel/VBox/WinSub
 
 func _ready():
-	_setup_3d_rack()
-	_setup_col_buttons()
-	_start_new_game()
+	board = BOARD_SCRIPT.new()
+	add_child(board)
+	
+	_setup_board_visuals()
+	_setup_column_buttons()
+	_update_turn_ui()
+	win_modal.visible = false
 
-func _setup_3d_rack():
-	# Moldura vertical do Quatro em Linha em 3D
-	for c in rack_root.get_children(): c.queue_free()
-	
-	var total_w = ConnectFourRules.COLS * COL_SPACING
-	var total_h = ConnectFourRules.ROWS * ROW_SPACING
-	
-	# Placa frontal translúcida / azul metálica
-	var rack_front = MeshInstance3D.new()
-	var box = BoxMesh.new()
-	box.size = Vector3(total_w + 0.4, total_h + 0.3, 0.1)
-	rack_front.mesh = box
-	rack_front.position = Vector3(0, total_h * 0.5 + 0.1, 0.08)
-	rack_front.material_override = MaterialFactory3D.get_plastic(Color(0.1, 0.3, 0.7, 0.85), true)
-	rack_root.add_child(rack_front)
-	
-	# Suportes laterais de madeira
-	var base_stand = MeshInstance3D.new()
-	var base_box = BoxMesh.new()
-	base_box.size = Vector3(total_w + 0.8, 0.15, 1.2)
-	base_stand.mesh = base_box
-	base_stand.position = Vector3(0, 0.075, 0)
-	base_stand.material_override = MaterialFactory3D.get_wood_walnut()
-	rack_root.add_child(base_stand)
+func _setup_board_visuals():
+	board_back.queue_redraw()
+	board_front.queue_redraw()
 
-func _setup_col_buttons():
-	for c in col_buttons_container.get_children(): c.queue_free()
-	for col in range(ConnectFourRules.COLS):
+func _setup_column_buttons():
+	for child in col_buttons_container.get_children():
+		child.queue_free()
+		
+	for c in range(COLS):
 		var btn = Button.new()
-		btn.custom_minimum_size = Vector2(48, 380)
+		btn.custom_minimum_size = Vector2(CELL_SIZE - 4.0, ROWS * CELL_SIZE + 40.0)
 		btn.flat = true
-		btn.pressed.connect(_on_col_pressed.bind(col))
+		btn.focus_mode = Control.FOCUS_NONE
+		btn.pressed.connect(_on_col_pressed.bind(c))
 		col_buttons_container.add_child(btn)
 
-func _start_new_game():
+func _on_col_pressed(col: int):
+	if game_over or not is_player_turn:
+		return
+	if not board.can_drop(col):
+		return
+		
+	_make_move(col, 1)
+
+func _make_move(col: int, player_id: int):
+	var row = board.drop_piece(col, player_id)
+	if row < 0:
+		return
+		
+	var piece = PIECE_SCENE.instantiate()
+	piece.is_red = (player_id == 1)
+	piece.radius = PIECE_RADIUS
+	pieces_layer.add_child(piece)
+	
+	var center_x = col * CELL_SIZE + (CELL_SIZE * 0.5)
+	var spawn_y = -60.0
+	# In logic row 0 is bottom, row 5 is top. Visual row 0 is top, visual row 5 is bottom
+	var visual_row = (ROWS - 1) - row
+	var target_y = visual_row * CELL_SIZE + (CELL_SIZE * 0.5)
+	
+	piece.position = Vector2(center_x, spawn_y)
+	piece_instances[Vector2i(col, row)] = piece
+	
+	var win_cells = board.get_winning_cells(col, row, player_id)
+	var has_won = win_cells.size() >= 4
+	var is_board_full = board.is_full()
+	
+	piece.drop_to(target_y, func():
+		if has_won:
+			_handle_game_won(player_id, win_cells)
+		elif is_board_full:
+			_handle_game_draw()
+		else:
+			if player_id == 1:
+				if vs_ai:
+					is_player_turn = false
+					_update_turn_ui()
+					await get_tree().create_timer(0.4).timeout
+					_do_ai_turn()
+				else:
+					is_player_turn = false
+					_update_turn_ui()
+			else:
+				is_player_turn = true
+				_update_turn_ui()
+	)
+
+func _do_ai_turn():
+	if game_over:
+		return
+	var ai_col = AI_SCRIPT.get_best_move(board)
+	if ai_col != -1:
+		_make_move(ai_col, 2)
+	else:
+		is_player_turn = true
+		_update_turn_ui()
+
+func _handle_game_won(winner_id: int, win_cells: Array[Vector2i]):
+	game_over = true
+	if winner_id == 1:
+		score_p1 += 1
+		p1_score_lbl.text = str(score_p1)
+		win_modal_title.text = "🏆 Vitória!"
+		win_modal_sub.text = "Você conectou 4 fichas vermelhas!"
+		if AudioManager: AudioManager.play_win()
+	else:
+		score_p2 += 1
+		p2_score_lbl.text = str(score_p2)
+		win_modal_title.text = "Computador Venceu!"
+		win_modal_sub.text = "A inteligência artificial completou a linha."
+		if AudioManager: AudioManager.play_draw()
+		
+	# Highlight winning pieces
+	for cell in win_cells:
+		if piece_instances.has(cell):
+			piece_instances[cell].set_winning(true)
+			
+	await get_tree().create_timer(0.8).timeout
+	win_modal.visible = true
+	win_modal.modulate.a = 0.0
+	var tw = get_tree().create_tween()
+	tw.tween_property(win_modal, "modulate:a", 1.0, 0.3)
+
+func _handle_game_draw():
+	game_over = true
+	win_modal_title.text = "Empate!"
+	win_modal_sub.text = "O tabuleiro ficou completamente cheio."
+	if AudioManager: AudioManager.play_draw()
+	await get_tree().create_timer(0.8).timeout
+	win_modal.visible = true
+
+func _update_turn_ui():
+	if game_over:
+		return
+	if is_player_turn:
+		status_label.text = "Sua Vez (Fichas Vermelhas)"
+		p1_panel.modulate = Color(1.0, 1.0, 1.0, 1.0)
+		p2_panel.modulate = Color(0.6, 0.6, 0.6, 0.7)
+	else:
+		status_label.text = "Vez da IA (Fichas Douradas)..."
+		p1_panel.modulate = Color(0.6, 0.6, 0.6, 0.7)
+		p2_panel.modulate = Color(1.0, 1.0, 1.0, 1.0)
+
+func _on_restart_pressed():
+	if AudioManager: AudioManager.play_click()
+	win_modal.visible = false
+	board.reset_board()
+	for child in pieces_layer.get_children():
+		child.queue_free()
+	piece_instances.clear()
 	game_over = false
 	is_player_turn = true
-	grid_data = Grid2D.new(ConnectFourRules.ROWS, ConnectFourRules.COLS, 0)
-	btn_restart.hide()
-	status_label.text = "Sua Vez! (Vermelho)"
-	
-	for p in pieces_root.get_children(): p.queue_free()
-	pieces_3d.clear()
+	_update_turn_ui()
 
-func _on_col_pressed(col: int):
-	if game_over or not is_player_turn: return
-	
-	if ConnectFourRules.can_drop(grid_data, col):
-		_do_move(col, 1) # Jogador = 1 (Vermelho)
-		
-		if not game_over:
-			is_player_turn = false
-			status_label.text = "Vez do Computador (Ouro)..."
-			await get_tree().create_timer(0.5).timeout
-			var ai_col = ConnectFourRules.get_best_move(grid_data, 2)
-			if ai_col != -1:
-				_do_move(ai_col, 2) # Computador = 2 (Ouro)
-			is_player_turn = true
-			if not game_over:
-				status_label.text = "Sua Vez! (Vermelho)"
-
-func _do_move(col: int, player_id: int):
-	var row = ConnectFourRules.drop_piece(grid_data, col, player_id)
-	if row >= 0:
-		_spawn_piece_3d(col, row, player_id)
-		if ConnectFourRules.check_win(grid_data, row, col, player_id):
-			game_over = true
-			if player_id == 1:
-				status_label.text = "Você Venceu!"
-				env_3d.celebrate_win()
-			else:
-				status_label.text = "Computador Venceu!"
-			btn_restart.show()
-		elif ConnectFourRules.is_full(grid_data):
-			game_over = true
-			status_label.text = "Empate!"
-			btn_restart.show()
-
-func _spawn_piece_3d(col: int, row: int, player_id: int):
-	var total_w = ConnectFourRules.COLS * COL_SPACING
-	var start_x = -(total_w * 0.5) + (COL_SPACING * 0.5)
-	
-	var pos_x = start_x + (col * COL_SPACING)
-	var target_y = 0.4 + (row * ROW_SPACING)
-	var spawn_y = target_y + 4.5
-	
-	var piece = preload("res://shared/3d/Token3D.tscn").instantiate()
-	piece.token_type = "cylinder"
-	piece.material_name = "plastic_red" if player_id == 1 else "gold"
-	piece.rotation_degrees = Vector3(90, 0, 0)
-	piece.position = Vector3(pos_x, spawn_y, 0)
-	pieces_root.add_child(piece)
-	pieces_3d.append(piece)
-	
-	piece.drop_to(Vector3(pos_x, target_y, 0), 0.5)
-
-func _on_btn_restart_pressed():
-	_start_new_game()
-
-func _on_btn_back_pressed():
+func _on_back_pressed():
+	if AudioManager: AudioManager.play_click()
 	SceneManager.goto_scene("res://core/telas/MenuTabuleiro.tscn")

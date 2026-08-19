@@ -25,6 +25,7 @@ theme/custom="res://shared/theme/MainTheme.tres"
 
 SaveManager="*res://core/save/SaveManager.gd"
 SceneManager="*res://core/navegacao/SceneManager.gd"
+AudioManager="*res://core/audio/AudioManager.gd"
 
 [display]
 

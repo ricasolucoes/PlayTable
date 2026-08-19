@@ -30,30 +30,39 @@ func drop_piece(col: int, player_id: int) -> int:
 	return -1
 
 func check_win(col: int, row: int, player_id: int) -> bool:
+	return get_winning_cells(col, row, player_id).size() >= 4
+
+func get_winning_cells(col: int, row: int, player_id: int) -> Array[Vector2i]:
 	var directions = [
-		Vector2(1, 0), # Horizontal
-		Vector2(0, 1), # Vertical
-		Vector2(1, 1), # Diagonal \
-		Vector2(1, -1) # Diagonal /
+		Vector2i(1, 0),  # Horizontal
+		Vector2i(0, 1),  # Vertical
+		Vector2i(1, 1),  # Diagonal \
+		Vector2i(1, -1)  # Diagonal /
 	]
 	
 	for dir in directions:
-		var count = 1
-		count += _count_direction(col, row, dir.x, dir.y, player_id)
-		count += _count_direction(col, row, -dir.x, -dir.y, player_id)
-		if count >= 4:
-			return true
-	return false
-
-func _count_direction(col: int, row: int, dx: int, dy: int, player_id: int) -> int:
-	var count = 0
-	var c = col + dx
-	var r = row + dy
-	while c >= 0 and c < COLS and r >= 0 and r < ROWS and grid[c][r] == player_id:
-		count += 1
-		c += dx
-		r += dy
-	return count
+		var cells: Array[Vector2i] = [Vector2i(col, row)]
+		
+		# Forward
+		var c = col + dir.x
+		var r = row + dir.y
+		while c >= 0 and c < COLS and r >= 0 and r < ROWS and grid[c][r] == player_id:
+			cells.append(Vector2i(c, r))
+			c += dir.x
+			r += dir.y
+			
+		# Backward
+		c = col - dir.x
+		r = row - dir.y
+		while c >= 0 and c < COLS and r >= 0 and r < ROWS and grid[c][r] == player_id:
+			cells.append(Vector2i(c, r))
+			c -= dir.x
+			r -= dir.y
+			
+		if cells.size() >= 4:
+			return cells
+			
+	return []
 
 func is_full() -> bool:
 	for c in range(COLS):
