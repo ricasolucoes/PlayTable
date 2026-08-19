@@ -1,0 +1,171 @@
+[gd_scene load_steps=2 format=3 uid="uid://klondikegameuid"]
+
+[ext_resource type="Script" path="res://games/paciencia/KlondikeGame.gd" id="1_script"]
+
+[node name="KlondikeGame" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_script")
+
+[node name="Background" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.1, 0.28, 0.16, 1)
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 15.0
+offset_top = 30.0
+offset_right = -15.0
+offset_bottom = -30.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 15
+
+[node name="TopBar" type="HBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 20
+
+[node name="BtnBack" type="Button" parent="VBoxContainer/TopBar"]
+custom_minimum_size = Vector2(90, 50)
+layout_mode = 2
+text = "Voltar"
+
+[node name="Title" type="Label" parent="VBoxContainer/TopBar"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 30
+text = "Paciência Klondike"
+
+[node name="Header" type="HBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 15
+
+[node name="StatusLabel" type="Label" parent="VBoxContainer/Header"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 20
+text = "Paciência Klondike"
+
+[node name="MovesLabel" type="Label" parent="VBoxContainer/Header"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "Movimentos: 0"
+
+[node name="BtnRestart" type="Button" parent="VBoxContainer/Header"]
+custom_minimum_size = Vector2(110, 45)
+layout_mode = 2
+text = "🔄 Novo"
+
+[node name="TopRow" type="HBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 20
+
+[node name="StockArea" type="HBoxContainer" parent="VBoxContainer/TopRow"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="BtnStock" type="Button" parent="VBoxContainer/TopRow/StockArea"]
+custom_minimum_size = Vector2(85, 110)
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+text = "🎴"
+
+[node name="BtnWaste" type="Button" parent="VBoxContainer/TopRow/StockArea"]
+custom_minimum_size = Vector2(85, 110)
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+
+[node name="Spacer" type="Control" parent="VBoxContainer/TopRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Foundations" type="HBoxContainer" parent="VBoxContainer/TopRow"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="BtnF0" type="Button" parent="VBoxContainer/TopRow/Foundations"]
+custom_minimum_size = Vector2(85, 110)
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+text = "♠"
+
+[node name="BtnF1" type="Button" parent="VBoxContainer/TopRow/Foundations"]
+custom_minimum_size = Vector2(85, 110)
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+text = "♥"
+
+[node name="BtnF2" type="Button" parent="VBoxContainer/TopRow/Foundations"]
+custom_minimum_size = Vector2(85, 110)
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+text = "♦"
+
+[node name="BtnF3" type="Button" parent="VBoxContainer/TopRow/Foundations"]
+custom_minimum_size = Vector2(85, 110)
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+text = "♣"
+
+[node name="HSeparator" type="HSeparator" parent="VBoxContainer"]
+layout_mode = 2
+
+[node name="ScrollContainer" type="ScrollContainer" parent="VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="Tableau" type="HBoxContainer" parent="VBoxContainer/ScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 10
+alignment = 1
+
+[node name="Col0" type="VBoxContainer" parent="VBoxContainer/ScrollContainer/Tableau"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 4
+
+[node name="Col1" type="VBoxContainer" parent="VBoxContainer/ScrollContainer/Tableau"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 4
+
+[node name="Col2" type="VBoxContainer" parent="VBoxContainer/ScrollContainer/Tableau"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 4
+
+[node name="Col3" type="VBoxContainer" parent="VBoxContainer/ScrollContainer/Tableau"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 4
+
+[node name="Col4" type="VBoxContainer" parent="VBoxContainer/ScrollContainer/Tableau"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 4
+
+[node name="Col5" type="VBoxContainer" parent="VBoxContainer/ScrollContainer/Tableau"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 4
+
+[node name="Col6" type="VBoxContainer" parent="VBoxContainer/ScrollContainer/Tableau"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 4
+
+[connection signal="pressed" from="VBoxContainer/TopBar/BtnBack" to="." method="_on_btn_back_pressed"]
+[connection signal="pressed" from="VBoxContainer/Header/BtnRestart" to="." method="_on_btn_restart_pressed"]
