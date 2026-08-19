@@ -1,0 +1,186 @@
+[gd_scene load_steps=2 format=3 uid="uid://mancalagameuid"]
+
+[ext_resource type="Script" path="res://games/mancala/MancalaGame.gd" id="1_script"]
+
+[node name="MancalaGame" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_script")
+
+[node name="Background" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.12, 0.1, 0.08, 1)
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 15.0
+offset_top = 40.0
+offset_right = -15.0
+offset_bottom = -40.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 25
+
+[node name="TopBar" type="HBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 20
+
+[node name="BtnBack" type="Button" parent="VBoxContainer/TopBar"]
+custom_minimum_size = Vector2(100, 50)
+layout_mode = 2
+text = "Voltar"
+
+[node name="Title" type="Label" parent="VBoxContainer/TopBar"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 32
+text = "Mancala (Kalah)"
+
+[node name="StatusLabel" type="Label" parent="VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+text = "Sua Vez! Escolha uma cova."
+horizontal_alignment = 1
+
+[node name="BoardArea" type="HBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 12
+alignment = 1
+
+[node name="AIStore" type="Button" parent="VBoxContainer/BoardArea"]
+custom_minimum_size = Vector2(95, 260)
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+text = "IA\n🤖\n0"
+
+[node name="Center" type="VBoxContainer" parent="VBoxContainer/BoardArea"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 16
+alignment = 1
+
+[node name="AILabel" type="Label" parent="VBoxContainer/BoardArea/Center"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "Lado da IA (Pits 12 - 7):"
+horizontal_alignment = 1
+
+[node name="AIRow" type="HBoxContainer" parent="VBoxContainer/BoardArea/Center"]
+layout_mode = 2
+theme_override_constants/separation = 8
+alignment = 1
+
+[node name="BtnP12" type="Button" parent="VBoxContainer/BoardArea/Center/AIRow"]
+custom_minimum_size = Vector2(70, 90)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 20
+
+[node name="BtnP11" type="Button" parent="VBoxContainer/BoardArea/Center/AIRow"]
+custom_minimum_size = Vector2(70, 90)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 20
+
+[node name="BtnP10" type="Button" parent="VBoxContainer/BoardArea/Center/AIRow"]
+custom_minimum_size = Vector2(70, 90)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 20
+
+[node name="BtnP9" type="Button" parent="VBoxContainer/BoardArea/Center/AIRow"]
+custom_minimum_size = Vector2(70, 90)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 20
+
+[node name="BtnP8" type="Button" parent="VBoxContainer/BoardArea/Center/AIRow"]
+custom_minimum_size = Vector2(70, 90)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 20
+
+[node name="BtnP7" type="Button" parent="VBoxContainer/BoardArea/Center/AIRow"]
+custom_minimum_size = Vector2(70, 90)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 20
+
+[node name="PlayerRow" type="HBoxContainer" parent="VBoxContainer/BoardArea/Center"]
+layout_mode = 2
+theme_override_constants/separation = 8
+alignment = 1
+
+[node name="BtnP0" type="Button" parent="VBoxContainer/BoardArea/Center/PlayerRow"]
+custom_minimum_size = Vector2(70, 90)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 20
+
+[node name="BtnP1" type="Button" parent="VBoxContainer/BoardArea/Center/PlayerRow"]
+custom_minimum_size = Vector2(70, 90)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 20
+
+[node name="BtnP2" type="Button" parent="VBoxContainer/BoardArea/Center/PlayerRow"]
+custom_minimum_size = Vector2(70, 90)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 20
+
+[node name="BtnP3" type="Button" parent="VBoxContainer/BoardArea/Center/PlayerRow"]
+custom_minimum_size = Vector2(70, 90)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 20
+
+[node name="BtnP4" type="Button" parent="VBoxContainer/BoardArea/Center/PlayerRow"]
+custom_minimum_size = Vector2(70, 90)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 20
+
+[node name="BtnP5" type="Button" parent="VBoxContainer/BoardArea/Center/PlayerRow"]
+custom_minimum_size = Vector2(70, 90)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 20
+
+[node name="PlayerLabel" type="Label" parent="VBoxContainer/BoardArea/Center"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "Seu Lado (Pits 0 - 5):"
+horizontal_alignment = 1
+
+[node name="PlayerStore" type="Button" parent="VBoxContainer/BoardArea"]
+custom_minimum_size = Vector2(95, 260)
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+text = "VOCÊ\n🏆\n0"
+
+[node name="Actions" type="HBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+alignment = 1
+
+[node name="BtnRestart" type="Button" parent="VBoxContainer/Actions"]
+visible = false
+custom_minimum_size = Vector2(240, 55)
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+text = "Jogar Novamente"
+
+[connection signal="pressed" from="VBoxContainer/TopBar/BtnBack" to="." method="_on_btn_back_pressed"]
+[connection signal="pressed" from="VBoxContainer/Actions/BtnRestart" to="." method="_on_btn_restart_pressed"]
