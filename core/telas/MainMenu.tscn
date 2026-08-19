@@ -1,6 +1,7 @@
-[gd_scene load_steps=2 format=3 uid="uid://mainmenuuid"]
+[gd_scene load_steps=3 format=3 uid="uid://mainmenuuid"]
 
 [ext_resource type="Script" path="res://core/telas/MainMenu.gd" id="1_script"]
+[ext_resource type="PackedScene" uid="uid://tabletopenv3duid" path="res://shared/3d/TabletopEnvironment3D.tscn" id="2_env"]
 
 [node name="MainMenu" type="Control"]
 layout_mode = 3
@@ -11,73 +12,47 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_script")
 
-[node name="Background" type="ColorRect" parent="."]
+[node name="TabletopEnvironment3D" parent="." instance=ExtResource("2_env")]
+
+[node name="ShowcaseRoot" type="Node3D" parent="TabletopEnvironment3D"]
+
+[node name="UI" type="Control" parent="."]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0.08, 0.09, 0.11, 1)
+mouse_filter = 2
 
-[node name="Title" type="Label" parent="."]
+[node name="Title" type="Label" parent="UI"]
 layout_mode = 1
 anchors_preset = 10
 anchor_right = 1.0
-offset_top = 100.0
-offset_bottom = 167.0
+offset_top = 80.0
+offset_bottom = 147.0
 grow_horizontal = 2
-theme_override_font_sizes/font_size = 56
-text = "Jogos de Mesa"
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.8)
+theme_override_constants/shadow_offset_x = 2
+theme_override_constants/shadow_offset_y = 4
+theme_override_font_sizes/font_size = 52
+text = "Jogos de Mesa 3D"
 horizontal_alignment = 1
 
-[node name="Subtitle" type="Label" parent="."]
+[node name="Subtitle" type="Label" parent="UI"]
 layout_mode = 1
 anchors_preset = 10
 anchor_right = 1.0
-offset_top = 180.0
-offset_bottom = 220.0
+offset_top = 150.0
+offset_bottom = 190.0
 grow_horizontal = 2
-theme_override_colors/font_color = Color(0.6, 0.65, 0.7, 1)
-theme_override_font_sizes/font_size = 28
-text = "Coleção Offline Completa"
+theme_override_colors/font_color = Color(0.85, 0.88, 0.92, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.8)
+theme_override_font_sizes/font_size = 24
+text = "Coleção Offline Imersiva"
 horizontal_alignment = 1
 
-[node name="VBoxContainer" type="VBoxContainer" parent="."]
-layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -180.0
-offset_top = -120.0
-offset_right = 180.0
-offset_bottom = 180.0
-grow_horizontal = 2
-grow_vertical = 2
-theme_override_constants/separation = 24
-
-[node name="BtnTabuleiro" type="Button" parent="VBoxContainer"]
-custom_minimum_size = Vector2(0, 95)
-layout_mode = 2
-theme_override_font_sizes/font_size = 34
-text = "🎲 Tabuleiro (11)"
-
-[node name="BtnCartas" type="Button" parent="VBoxContainer"]
-custom_minimum_size = Vector2(0, 95)
-layout_mode = 2
-theme_override_font_sizes/font_size = 34
-text = "🃏 Cartas (5)"
-
-[node name="BtnConfig" type="Button" parent="VBoxContainer"]
-custom_minimum_size = Vector2(0, 95)
-layout_mode = 2
-theme_override_font_sizes/font_size = 34
-text = "⚙️ Configurações"
-
-[node name="ConfigPanel" type="PanelContainer" parent="."]
-visible = false
+[node name="VBoxContainer" type="VBoxContainer" parent="UI"]
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
@@ -85,37 +60,71 @@ anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
 offset_left = -200.0
-offset_top = -140.0
+offset_top = 80.0
 offset_right = 200.0
+offset_bottom = 440.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 20
+
+[node name="BtnTabuleiro" type="Button" parent="UI/VBoxContainer"]
+custom_minimum_size = Vector2(0, 85)
+layout_mode = 2
+theme_override_font_sizes/font_size = 30
+text = "🎲 Tabuleiro (11)"
+
+[node name="BtnCartas" type="Button" parent="UI/VBoxContainer"]
+custom_minimum_size = Vector2(0, 85)
+layout_mode = 2
+theme_override_font_sizes/font_size = 30
+text = "🃏 Cartas (5)"
+
+[node name="BtnConfig" type="Button" parent="UI/VBoxContainer"]
+custom_minimum_size = Vector2(0, 85)
+layout_mode = 2
+theme_override_font_sizes/font_size = 30
+text = "⚙️ Configurações"
+
+[node name="ConfigPanel" type="PanelContainer" parent="UI"]
+visible = false
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -220.0
+offset_top = -140.0
+offset_right = 220.0
 offset_bottom = 140.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="VBoxContainer" type="VBoxContainer" parent="ConfigPanel"]
+[node name="VBoxContainer" type="VBoxContainer" parent="UI/ConfigPanel"]
 layout_mode = 2
 theme_override_constants/separation = 20
 alignment = 1
 
-[node name="Label" type="Label" parent="ConfigPanel/VBoxContainer"]
+[node name="Label" type="Label" parent="UI/ConfigPanel/VBoxContainer"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 28
-text = "Configurações"
+text = "Opções"
 horizontal_alignment = 1
 
-[node name="BtnToggleTheme" type="Button" parent="ConfigPanel/VBoxContainer"]
-custom_minimum_size = Vector2(0, 70)
+[node name="BtnToggleTheme" type="Button" parent="UI/ConfigPanel/VBoxContainer"]
+custom_minimum_size = Vector2(0, 65)
 layout_mode = 2
-theme_override_font_sizes/font_size = 22
+theme_override_font_sizes/font_size = 24
 text = "Tema: 🌙 Escuro"
 
-[node name="BtnCloseConfig" type="Button" parent="ConfigPanel/VBoxContainer"]
-custom_minimum_size = Vector2(0, 60)
+[node name="BtnCloseConfig" type="Button" parent="UI/ConfigPanel/VBoxContainer"]
+custom_minimum_size = Vector2(0, 65)
 layout_mode = 2
-theme_override_font_sizes/font_size = 22
+theme_override_font_sizes/font_size = 24
 text = "Fechar"
 
-[connection signal="pressed" from="VBoxContainer/BtnTabuleiro" to="." method="_on_btn_tabuleiro_pressed"]
-[connection signal="pressed" from="VBoxContainer/BtnCartas" to="." method="_on_btn_cartas_pressed"]
-[connection signal="pressed" from="VBoxContainer/BtnConfig" to="." method="_on_btn_config_pressed"]
-[connection signal="pressed" from="ConfigPanel/VBoxContainer/BtnToggleTheme" to="." method="_on_btn_toggle_theme_pressed"]
-[connection signal="pressed" from="ConfigPanel/VBoxContainer/BtnCloseConfig" to="." method="_on_btn_close_config_pressed"]
+[connection signal="pressed" from="UI/VBoxContainer/BtnTabuleiro" to="." method="_on_btn_tabuleiro_pressed"]
+[connection signal="pressed" from="UI/VBoxContainer/BtnCartas" to="." method="_on_btn_cartas_pressed"]
+[connection signal="pressed" from="UI/VBoxContainer/BtnConfig" to="." method="_on_btn_config_pressed"]
+[connection signal="pressed" from="UI/ConfigPanel/VBoxContainer/BtnToggleTheme" to="." method="_on_btn_toggle_theme_pressed"]
+[connection signal="pressed" from="UI/ConfigPanel/VBoxContainer/BtnCloseConfig" to="." method="_on_btn_close_config_pressed"]

@@ -1,38 +1,37 @@
 extends Control
 
+## ReversiGame: Reversi 3D com Tabuleiro em Feltro Esmeralda e Animação 3D de Virada de Discos
+
 const Grid2DScript = preload("res://shared/core_engine/board/Grid2D.gd")
 const ReversiRulesScript = preload("res://games/reversi/ReversiRules.gd")
 
 var grid_data: Grid2D
 var is_player_turn: bool = true
 var game_over: bool = false
-var valid_moves: Dictionary = {}
+var pieces_3d: Dictionary = {}
 
-@onready var grid = $VBoxContainer/CenterContainer/BoardContainer/Grid
-@onready var status_label = $VBoxContainer/StatusLabel
-@onready var score_label = $VBoxContainer/ScoreLabel
-@onready var btn_restart = $VBoxContainer/BtnRestart
-
-var cell_buttons = []
+@onready var env_3d: TabletopEnvironment3D = $TabletopEnvironment3D
+@onready var board_3d: Board3D = $Board3D
+@onready var pieces_root: Node3D = $PiecesRoot
+@onready var status_label = $UI/VBoxContainer/StatusLabel
+@onready var score_label = $UI/VBoxContainer/ScoreLabel
+@onready var btn_restart = $UI/VBoxContainer/BtnRestart
+@onready var touch_grid = $UI/CenterContainer/TouchGrid
 
 func _ready():
-	_setup_grid()
+	board_3d.setup_board(8, 8, 0.75, "reversi_green")
+	_setup_touch_grid()
 	_start_new_game()
 
-func _setup_grid():
-	for c in grid.get_children(): c.queue_free()
-	cell_buttons.clear()
-	
-	for r in range(ReversiRules.ROWS):
-		var row_btns = []
-		for c in range(ReversiRules.COLS):
+func _setup_touch_grid():
+	for c in touch_grid.get_children(): c.queue_free()
+	for r in range(8):
+		for c in range(8):
 			var btn = Button.new()
-			btn.custom_minimum_size = Vector2(65, 65)
-			btn.add_theme_font_size_override("font_size", 34)
+			btn.custom_minimum_size = Vector2(40, 40)
+			btn.flat = true
 			btn.pressed.connect(_on_cell_clicked.bind(r, c))
-			grid.add_child(btn)
-			row_btns.append(btn)
-		cell_buttons.append(row_btns)
+			touch_grid.add_child(btn)
 
 func _start_new_game():
 	game_over = false
@@ -40,99 +39,148 @@ func _start_new_game():
 	btn_restart.hide()
 	
 	grid_data = ReversiRules.create_initial_board()
-	valid_moves = ReversiRules.find_all_valid_moves(grid_data, 1)
-	status_label.text = "Sua Vez! (Peças Pretas ⚫)"
-	_update_ui()
+	_sync_pieces_3d()
+	status_label.text = "Sua Vez! (Pretas / Obsidiana)"
 
-func _update_ui():
-	var scores = ReversiRules.count_scores(grid_data)
+func _sync_pieces_3d():
+	for p in pieces_root.get_children(): p.queue_free()
+	pieces_3d.clear()
 	
-	for r in range(ReversiRules.ROWS):
-		for c in range(ReversiRules.COLS):
-			var btn = cell_buttons[r][c]
+	var black_count = 0
+	var white_count = 0
+	
+	for r in range(8):
+		for c in range(8):
+			board_3d.reset_cell_material(r, c)
 			var val = grid_data.get_cell(r, c)
-			var pos = Vector2i(r, c)
+			if val != 0:
+				var piece = preload("res://shared/3d/Token3D.tscn").instantiate()
+				piece.token_type = "cylinder"
+				piece.material_name = "obsidian" if val == 1 else "ivory"
+				piece.position = board_3d.get_cell_position_3d(r, c, 0.08)
+				pieces_root.add_child(piece)
+				pieces_3d[Vector2i(r, c)] = piece
+				
+				if val == 1: black_count += 1
+				else: white_count += 1
+				
+	score_label.text = "Você (Pretas): %d  |  IA (Brancas): %d" % [black_count, white_count]
+	_highlight_valid_moves()
+
+func _highlight_valid_moves():
+	for r in range(8):
+		for c in range(8):
+			board_3d.reset_cell_material(r, c)
 			
-			btn.self_modulate = Color(0.15, 0.45, 0.22)
-			
-			if val == 1:
-				btn.text = "⚫"
-			elif val == 2:
-				btn.text = "⚪"
-			else:
-				if is_player_turn and valid_moves.has(pos) and not game_over:
-					btn.text = "•"
-					btn.add_theme_color_override("font_color", Color(0.9, 0.85, 0.3))
-					btn.self_modulate = Color(0.2, 0.55, 0.28)
-				else:
-					btn.text = ""
-					
-	score_label.text = "Pretas (Você): %d  |  Brancas (IA): %d" % [scores["black"], scores["white"]]
+	if is_player_turn and not game_over:
+		var valids = ReversiRules.get_valid_moves(grid_data, 1)
+		for pos in valids:
+			board_3d.highlight_cell(pos.x, pos.y, Color(0.2, 0.8, 0.4))
 
 func _on_cell_clicked(r: int, c: int):
 	if game_over or not is_player_turn: return
 	
 	var pos = Vector2i(r, c)
-	if not valid_moves.has(pos): return
+	var flipped = ReversiRules.get_flipped_pieces(grid_data, pos, 1)
+	if flipped.size() == 0: return
 	
-	ReversiRules.apply_move(grid_data, pos, 1, valid_moves[pos])
-	_update_ui()
+	# Jogada do jogador
+	grid_data.set_cell(r, c, 1)
+	for f in flipped:
+		grid_data.set_cell(f.x, f.y, 1)
+		var p_3d = pieces_3d.get(f)
+		if p_3d:
+			p_3d.flip_180("obsidian", 0.35)
+			
+	var new_piece = preload("res://shared/3d/Token3D.tscn").instantiate()
+	new_piece.token_type = "cylinder"
+	new_piece.material_name = "obsidian"
+	var target_3d = board_3d.get_cell_position_3d(r, c, 0.08)
+	new_piece.position = target_3d + Vector3(0, 2.5, 0)
+	pieces_root.add_child(new_piece)
+	pieces_3d[pos] = new_piece
+	new_piece.drop_to(target_3d, 0.35)
 	
-	var ai_moves = ReversiRules.find_all_valid_moves(grid_data, 2)
-	if not ai_moves.is_empty():
+	_update_scores()
+	_after_player_move()
+
+func _update_scores():
+	var black_count = 0
+	var white_count = 0
+	for r in range(8):
+		for c in range(8):
+			var v = grid_data.get_cell(r, c)
+			if v == 1: black_count += 1
+			elif v == 2: white_count += 1
+	score_label.text = "Você (Pretas): %d  |  IA (Brancas): %d" % [black_count, white_count]
+
+func _after_player_move():
+	var ai_moves = ReversiRules.get_valid_moves(grid_data, 2)
+	var player_moves = ReversiRules.get_valid_moves(grid_data, 1)
+	
+	if ai_moves.size() == 0 and player_moves.size() == 0:
+		_end_game()
+		return
+		
+	if ai_moves.size() > 0:
 		is_player_turn = false
-		status_label.text = "Vez da IA (Brancas ⚪)..."
+		status_label.text = "Vez da IA (Brancas)..."
+		_highlight_valid_moves()
 		await get_tree().create_timer(0.6).timeout
 		_play_ai_turn()
 	else:
-		var p_more = ReversiRules.find_all_valid_moves(grid_data, 1)
-		if not p_more.is_empty():
-			valid_moves = p_more
-			status_label.text = "IA sem movimentos! Sua vez novamente."
-			_update_ui()
-		else:
-			_check_game_end()
+		status_label.text = "IA sem jogadas! Sua vez novamente."
+		_highlight_valid_moves()
 
 func _play_ai_turn():
-	if game_over: return
+	var ai_move = ReversiRules.get_best_move(grid_data, 2)
+	if ai_move != Vector2i(-1, -1):
+		var flipped = ReversiRules.get_flipped_pieces(grid_data, ai_move, 2)
+		grid_data.set_cell(ai_move.x, ai_move.y, 2)
+		for f in flipped:
+			grid_data.set_cell(f.x, f.y, 2)
+			var p_3d = pieces_3d.get(f)
+			if p_3d:
+				p_3d.flip_180("ivory", 0.35)
+				
+		var new_piece = preload("res://shared/3d/Token3D.tscn").instantiate()
+		new_piece.token_type = "cylinder"
+		new_piece.material_name = "ivory"
+		var target_3d = board_3d.get_cell_position_3d(ai_move.x, ai_move.y, 0.08)
+		new_piece.position = target_3d + Vector3(0, 2.5, 0)
+		pieces_root.add_child(new_piece)
+		pieces_3d[ai_move] = new_piece
+		new_piece.drop_to(target_3d, 0.35)
+		
+	_update_scores()
 	
-	var ai_pos = ReversiRules.get_best_ai_move(grid_data, 2)
-	if ai_pos != Vector2i(-1, -1):
-		var moves = ReversiRules.find_all_valid_moves(grid_data, 2)
-		if moves.has(ai_pos):
-			ReversiRules.apply_move(grid_data, ai_pos, 2, moves[ai_pos])
-			
-	_update_ui()
+	var player_moves = ReversiRules.get_valid_moves(grid_data, 1)
+	var ai_moves = ReversiRules.get_valid_moves(grid_data, 2)
 	
-	var p_moves = ReversiRules.find_all_valid_moves(grid_data, 1)
-	if not p_moves.is_empty():
+	if player_moves.size() == 0 and ai_moves.size() == 0:
+		_end_game()
+		return
+		
+	if player_moves.size() > 0:
 		is_player_turn = true
-		valid_moves = p_moves
-		status_label.text = "Sua Vez! (Pretas ⚫)"
-		_update_ui()
+		status_label.text = "Sua Vez! (Pretas)"
+		_highlight_valid_moves()
 	else:
-		var ai_more = ReversiRules.find_all_valid_moves(grid_data, 2)
-		if not ai_more.is_empty():
-			status_label.text = "Você não tem jogadas! Vez da IA novamente."
-			await get_tree().create_timer(0.8).timeout
-			_play_ai_turn()
-		else:
-			_check_game_end()
+		status_label.text = "Você sem jogadas! Vez da IA..."
+		await get_tree().create_timer(0.6).timeout
+		_play_ai_turn()
 
-func _check_game_end():
-	var scores = ReversiRules.count_scores(grid_data)
-	var black = scores["black"]
-	var white = scores["white"]
-	
+func _end_game():
 	game_over = true
 	btn_restart.show()
-	
-	if black > white:
-		status_label.text = "🏆 Parabéns! Você Venceu por %d a %d!" % [black, white]
-	elif white > black:
-		status_label.text = "IA Venceu por %d a %d!" % [white, black]
+	var winner = ReversiRules.get_winner(grid_data)
+	if winner == 1:
+		status_label.text = "🏆 Você Venceu!"
+		env_3d.celebrate_win()
+	elif winner == 2:
+		status_label.text = "IA Venceu!"
 	else:
-		status_label.text = "Empate Perfeito! %d a %d!" % [black, white]
+		status_label.text = "Empate!"
 
 func _on_btn_restart_pressed():
 	_start_new_game()

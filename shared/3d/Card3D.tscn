@@ -1,0 +1,28 @@
+[gd_scene load_steps=5 format=3 uid="uid://card3duid"]
+
+[ext_resource type="Script" path="res://shared/3d/Card3D.gd" id="1_script"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_body"]
+size = Vector3(0.72, 0.008, 1.05)
+
+[sub_resource type="QuadMesh" id="QuadMesh_front"]
+size = Vector2(0.7, 1.0)
+orientation = 1
+
+[sub_resource type="QuadMesh" id="QuadMesh_back"]
+size = Vector2(0.7, 1.0)
+orientation = 1
+
+[node name="Card3D" type="Node3D"]
+script = ExtResource("1_script")
+
+[node name="CardBody" type="MeshInstance3D" parent="."]
+mesh = SubResource("BoxMesh_body")
+
+[node name="FrontFace" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.005, 0)
+mesh = SubResource("QuadMesh_front")
+
+[node name="BackFace" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, -1, 8.74228e-08, 0, -8.74228e-08, -1, 0, -0.005, 0)
+mesh = SubResource("QuadMesh_back")

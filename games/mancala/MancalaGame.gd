@@ -1,40 +1,82 @@
 extends Control
 
-# Mancala Board Indexing:
-# 0-5: Player Pits (Bottom, left to right)
-# 6: Player Store (Right)
-# 7-12: AI Pits (Top, 12 is top-left, 7 is top-right)
-# 13: AI Store (Left)
+## MancalaGame: Mancala 3D com Tabuleiro Esculpido em Madeira Nobre e Gemas Preciosas
 
 var pits = []
 var is_player_turn: bool = true
 var game_over: bool = false
+var gems_3d: Dictionary = {}
 
-@onready var btn_player_pits = [
-	$VBoxContainer/BoardArea/Center/PlayerRow/BtnP0,
-	$VBoxContainer/BoardArea/Center/PlayerRow/BtnP1,
-	$VBoxContainer/BoardArea/Center/PlayerRow/BtnP2,
-	$VBoxContainer/BoardArea/Center/PlayerRow/BtnP3,
-	$VBoxContainer/BoardArea/Center/PlayerRow/BtnP4,
-	$VBoxContainer/BoardArea/Center/PlayerRow/BtnP5
-]
-@onready var btn_ai_pits = [
-	$VBoxContainer/BoardArea/Center/AIRow/BtnP12,
-	$VBoxContainer/BoardArea/Center/AIRow/BtnP11,
-	$VBoxContainer/BoardArea/Center/AIRow/BtnP10,
-	$VBoxContainer/BoardArea/Center/AIRow/BtnP9,
-	$VBoxContainer/BoardArea/Center/AIRow/BtnP8,
-	$VBoxContainer/BoardArea/Center/AIRow/BtnP7
-]
-@onready var btn_player_store = $VBoxContainer/BoardArea/PlayerStore
-@onready var btn_ai_store = $VBoxContainer/BoardArea/AIStore
-@onready var status_label = $VBoxContainer/StatusLabel
-@onready var btn_restart = $VBoxContainer/Actions/BtnRestart
+@onready var env_3d: TabletopEnvironment3D = $TabletopEnvironment3D
+@onready var board_root: Node3D = $BoardRoot
+@onready var gems_root: Node3D = $GemsRoot
+@onready var status_label = $UI/VBoxContainer/StatusLabel
+@onready var btn_restart = $UI/VBoxContainer/BtnRestart
+@onready var player_pits_container = $UI/CenterContainer/VBox/PlayerRow
+@onready var ai_pits_container = $UI/CenterContainer/VBox/AIRow
+@onready var player_store_label = $UI/CenterContainer/HBoxStores/PlayerStoreLabel
+@onready var ai_store_label = $UI/CenterContainer/HBoxStores/AIStoreLabel
+
+const PIT_POSITIONS_3D = {
+	# Jogador (0 a 5): De -2.0 a +2.0 em X, Z = 0.6
+	0: Vector3(-1.9, 0.08, 0.6),
+	1: Vector3(-1.14, 0.08, 0.6),
+	2: Vector3(-0.38, 0.08, 0.6),
+	3: Vector3(0.38, 0.08, 0.6),
+	4: Vector3(1.14, 0.08, 0.6),
+	5: Vector3(1.9, 0.08, 0.6),
+	# Kalah Jogador (6): Direita, Z = 0.0
+	6: Vector3(2.8, 0.08, 0.0),
+	# IA (7 a 12): Direita para Esquerda, Z = -0.6
+	7: Vector3(1.9, 0.08, -0.6),
+	8: Vector3(1.14, 0.08, -0.6),
+	9: Vector3(0.38, 0.08, -0.6),
+	10: Vector3(-0.38, 0.08, -0.6),
+	11: Vector3(-1.14, 0.08, -0.6),
+	12: Vector3(-1.9, 0.08, -0.6),
+	# Kalah IA (13): Esquerda, Z = 0.0
+	13: Vector3(-2.8, 0.08, 0.0)
+}
+
+const GEM_MATERIALS = ["ruby", "sapphire", "emerald", "amber", "gold"]
 
 func _ready():
-	for i in range(6):
-		btn_player_pits[i].pressed.connect(_on_player_pit_clicked.bind(i))
+	_setup_3d_mancala_board()
+	_setup_ui_buttons()
 	_start_new_game()
+
+func _setup_3d_mancala_board():
+	for c in board_root.get_children(): c.queue_free()
+	
+	# Base de madeira entalhada
+	var base = MeshInstance3D.new()
+	var box = BoxMesh.new()
+	box.size = Vector3(6.6, 0.22, 2.2)
+	base.mesh = box
+	base.position = Vector3(0, -0.11, 0)
+	base.material_override = MaterialFactory3D.get_wood_mahogany()
+	board_root.add_child(base)
+	
+	# Cavidades / Covas escavadas
+	for idx in PIT_POSITIONS_3D.keys():
+		var pit_mesh = MeshInstance3D.new()
+		var cyl = CylinderMesh.new()
+		var is_store = (idx == 6 or idx == 13)
+		cyl.top_radius = 0.45 if is_store else 0.32
+		cyl.bottom_radius = 0.38 if is_store else 0.28
+		cyl.height = 0.06
+		pit_mesh.mesh = cyl
+		pit_mesh.position = PIT_POSITIONS_3D[idx] - Vector3(0, 0.02, 0)
+		pit_mesh.material_override = MaterialFactory3D.get_wood_walnut()
+		board_root.add_child(pit_mesh)
+
+func _setup_ui_buttons():
+	for c in player_pits_container.get_children(): c.queue_free()
+	for i in range(6):
+		var btn = Button.new()
+		btn.custom_minimum_size = Vector2(52, 60)
+		btn.pressed.connect(_on_player_pit_clicked.bind(i))
+		player_pits_container.add_child(btn)
 
 func _start_new_game():
 	game_over = false
@@ -43,172 +85,150 @@ func _start_new_game():
 	
 	pits.clear()
 	for i in range(14):
-		if i == 6 or i == 13:
-			pits.append(0) # Stores
-		else:
-			pits.append(4) # 4 seeds per pit
-			
+		pits.append(0 if (i == 6 or i == 13) else 4)
+		
 	status_label.text = "Sua Vez! Escolha uma cova para semear."
+	_sync_gems_3d()
 	_update_ui()
+
+func _sync_gems_3d():
+	for g in gems_root.get_children(): g.queue_free()
+	gems_3d.clear()
+	
+	for pit_idx in range(14):
+		var count = pits[pit_idx]
+		var pit_pos = PIT_POSITIONS_3D[pit_idx]
+		var gem_list = []
+		
+		for g_i in range(count):
+			var gem = preload("res://shared/3d/Token3D.tscn").instantiate()
+			gem.token_type = "sphere"
+			gem.material_name = GEM_MATERIALS[g_i % GEM_MATERIALS.size()]
+			
+			# Espalha sementes levemente dentro da cova
+			var offset_x = (randf() - 0.5) * (0.4 if (pit_idx == 6 or pit_idx == 13) else 0.22)
+			var offset_z = (randf() - 0.5) * (0.4 if (pit_idx == 6 or pit_idx == 13) else 0.22)
+			var offset_y = 0.05 + (g_i * 0.04)
+			gem.position = pit_pos + Vector3(offset_x, offset_y, offset_z)
+			
+			gems_root.add_child(gem)
+			gem_list.append(gem)
+		gems_3d[pit_idx] = gem_list
 
 func _update_ui():
-	# Player store (right)
-	btn_player_store.text = "VOCÊ\n🏆\n%d" % pits[6]
+	player_store_label.text = "Sua Kalah:\n💎 %d" % pits[6]
+	ai_store_label.text = "Kalah IA:\n💎 %d" % pits[13]
 	
-	# AI store (left)
-	btn_ai_store.text = "IA\n🤖\n%d" % pits[13]
-	
-	# Player pits (0 to 5)
 	for i in range(6):
-		var btn = btn_player_pits[i]
+		var btn = player_pits_container.get_child(i) as Button
 		var count = pits[i]
-		btn.text = "🌰\n%d" % count
-		if is_player_turn and count > 0 and not game_over:
-			btn.self_modulate = Color(0.3, 0.7, 0.4)
-			btn.disabled = false
-		else:
-			btn.self_modulate = Color(0.25, 0.2, 0.15)
-			btn.disabled = not is_player_turn or count == 0
-			
-	# AI pits (12 down to 7)
-	for i in range(6):
-		var pit_idx = 12 - i
-		var btn = btn_ai_pits[i]
-		btn.text = "🌰\n%d" % pits[pit_idx]
-		btn.self_modulate = Color(0.3, 0.25, 0.2)
-		btn.disabled = true
+		btn.text = "%d" % count
+		btn.disabled = not is_player_turn or count == 0 or game_over
 
 func _on_player_pit_clicked(pit_idx: int):
-	if game_over or not is_player_turn or pits[pit_idx] == 0:
-		return
-		
-	var extra_turn = _sow_seeds(pit_idx, true)
-	_update_ui()
+	if game_over or not is_player_turn or pits[pit_idx] == 0: return
 	
-	if _check_game_over():
-		return
-		
-	if extra_turn:
-		status_label.text = "⭐ Última semente no seu depósito! Turno Extra!"
-	else:
-		is_player_turn = false
-		status_label.text = "Vez da IA..."
-		await get_tree().create_timer(0.8).timeout
-		_play_ai_turn()
-
-func _sow_seeds(start_pit: int, is_player: bool) -> bool:
-	var seeds = pits[start_pit]
-	pits[start_pit] = 0
-	
-	var curr = start_pit
-	var opponent_store = 13 if is_player else 6
-	var my_store = 6 if is_player else 13
+	var seeds = pits[pit_idx]
+	pits[pit_idx] = 0
+	var curr = pit_idx
 	
 	while seeds > 0:
 		curr = (curr + 1) % 14
-		if curr == opponent_store:
-			continue # Skip opponent store
-			
+		if curr == 13: continue # Pula o Kalah da IA
 		pits[curr] += 1
 		seeds -= 1
 		
-	# Check Extra Turn rule
-	var extra_turn = (curr == my_store)
+	# Regra de captura do Mancala
+	if curr >= 0 and curr <= 5 and pits[curr] == 1 and pits[12 - curr] > 0:
+		var captured = pits[12 - curr] + 1
+		pits[curr] = 0
+		pits[12 - curr] = 0
+		pits[6] += captured
+		status_label.text = "💎 Captura espetacular! +%d gemas!" % captured
+		
+	_sync_gems_3d()
+	_update_ui()
 	
-	# Check Capture rule: landed in empty pit on own side
-	var is_own_side = (curr >= 0 and curr <= 5) if is_player else (curr >= 7 and curr <= 12)
-	if is_own_side and pits[curr] == 1 and curr != my_store:
-		var opposite = 12 - curr
-		if pits[opposite] > 0:
-			var captured = pits[curr] + pits[opposite]
-			pits[curr] = 0
-			pits[opposite] = 0
-			pits[my_store] += captured
-			if is_player:
-				status_label.text = "🎯 Captura! Você pegou %d sementes!" % captured
-			else:
-				status_label.text = "⚠️ A IA capturou %d sementes suas!" % captured
-				
-	return extra_turn
+	if _check_game_over(): return
+	
+	if curr == 6:
+		status_label.text = "Última gema caiu na sua Kalah! Jogue novamente."
+		return
+		
+	is_player_turn = false
+	status_label.text = "Vez da IA..."
+	_update_ui()
+	await get_tree().create_timer(0.7).timeout
+	_play_ai_turn()
 
 func _play_ai_turn():
-	if game_over: return
-	
-	# AI move selection
 	var valid_pits = []
-	for p in range(7, 13):
-		if pits[p] > 0:
-			valid_pits.append(p)
-			
-	if valid_pits.size() == 0:
+	for i in range(7, 13):
+		if pits[i] > 0: valid_pits.append(i)
+		
+	if valid_pits.is_empty():
 		_check_game_over()
 		return
 		
-	# Priority 1: Moves giving extra turn
-	var chosen_pit = -1
-	for p in valid_pits:
-		if (p + pits[p]) % 13 == 0: # Lands on pit 13
-			chosen_pit = p
-			break
-			
-	# Priority 2: Captures
-	if chosen_pit == -1:
-		for p in valid_pits:
-			var target = (p + pits[p]) % 14
-			if target >= 7 and target <= 12 and pits[target] == 0 and pits[12 - target] > 0:
-				chosen_pit = p
-				break
-				
-	# Default: Pit with most seeds
-	if chosen_pit == -1:
-		valid_pits.sort_custom(func(a, b): return pits[a] > pits[b])
-		chosen_pit = valid_pits[0]
+	var chosen_pit = valid_pits.pick_random()
+	var seeds = pits[chosen_pit]
+	pits[chosen_pit] = 0
+	var curr = chosen_pit
+	
+	while seeds > 0:
+		curr = (curr + 1) % 14
+		if curr == 6: continue # Pula Kalah do Jogador
+		pits[curr] += 1
+		seeds -= 1
 		
-	var extra_turn = _sow_seeds(chosen_pit, false)
+	if curr >= 7 and curr <= 12 and pits[curr] == 1 and pits[12 - curr] > 0:
+		var captured = pits[12 - curr] + 1
+		pits[curr] = 0
+		pits[12 - curr] = 0
+		pits[13] += captured
+		status_label.text = "IA capturou suas gemas!"
+		
+	_sync_gems_3d()
 	_update_ui()
 	
-	if _check_game_over():
+	if _check_game_over(): return
+	
+	if curr == 13:
+		status_label.text = "IA jogou no próprio Kalah e joga novamente!"
+		await get_tree().create_timer(0.7).timeout
+		_play_ai_turn()
 		return
 		
-	if extra_turn:
-		status_label.text = "IA ganhou um Turno Extra!"
-		await get_tree().create_timer(0.9).timeout
-		_play_ai_turn()
-	else:
-		is_player_turn = true
-		status_label.text = "Sua Vez! Escolha uma cova."
-		_update_ui()
+	is_player_turn = true
+	status_label.text = "Sua Vez! Escolha uma cova."
+	_update_ui()
 
 func _check_game_over() -> bool:
 	var player_empty = true
-	for p in range(0, 6):
-		if pits[p] > 0: player_empty = false; break
+	for i in range(6):
+		if pits[i] > 0: player_empty = false; break
 		
 	var ai_empty = true
-	for p in range(7, 13):
-		if pits[p] > 0: ai_empty = false; break
+	for i in range(7, 13):
+		if pits[i] > 0: ai_empty = false; break
 		
 	if player_empty or ai_empty:
-		# Sweep remaining seeds
-		for p in range(0, 6):
-			pits[6] += pits[p]
-			pits[p] = 0
-		for p in range(7, 13):
-			pits[13] += pits[p]
-			pits[p] = 0
-			
+		# Coleta sementes restantes
+		for i in range(6): pits[6] += pits[i]; pits[i] = 0
+		for i in range(7, 13): pits[13] += pits[i]; pits[i] = 0
+		_sync_gems_3d()
 		_update_ui()
+		
 		game_over = true
 		btn_restart.show()
-		
 		if pits[6] > pits[13]:
-			status_label.text = "🏆 Você Venceu! (%d a %d sementes)" % [pits[6], pits[13]]
+			status_label.text = "🏆 Você Venceu! (%d x %d)" % [pits[6], pits[13]]
+			env_3d.celebrate_win()
 		elif pits[13] > pits[6]:
-			status_label.text = "IA Venceu! (%d a %d sementes)" % [pits[13], pits[6]]
+			status_label.text = "IA Venceu! (%d x %d)" % [pits[13], pits[6]]
 		else:
-			status_label.text = "Empate Perfeito! (%d sementes cada)" % pits[6]
+			status_label.text = "Empate! (%d x %d)" % [pits[6], pits[13]]
 		return true
-		
 	return false
 
 func _on_btn_restart_pressed():

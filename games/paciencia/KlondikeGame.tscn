@@ -1,6 +1,7 @@
-[gd_scene load_steps=2 format=3 uid="uid://klondikegameuid"]
+[gd_scene load_steps=3 format=3 uid="uid://klondikegameuid"]
 
 [ext_resource type="Script" path="res://games/paciencia/KlondikeGame.gd" id="1_script"]
+[ext_resource type="PackedScene" uid="uid://tabletopenv3duid" path="res://shared/3d/TabletopEnvironment3D.tscn" id="2_env"]
 
 [node name="KlondikeGame" type="Control"]
 layout_mode = 3
@@ -11,161 +12,186 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_script")
 
-[node name="Background" type="ColorRect" parent="."]
+[node name="TabletopEnvironment3D" parent="." instance=ExtResource("2_env")]
+
+[node name="CardsRoot" type="Node3D" parent="."]
+
+[node name="UI" type="Control" parent="."]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0.1, 0.28, 0.16, 1)
+mouse_filter = 2
 
-[node name="VBoxContainer" type="VBoxContainer" parent="."]
+[node name="VBoxContainer" type="VBoxContainer" parent="UI"]
 layout_mode = 1
-anchors_preset = 15
+anchors_preset = 10
 anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = 15.0
-offset_top = 30.0
-offset_right = -15.0
-offset_bottom = -30.0
+offset_left = 24.0
+offset_top = 40.0
+offset_right = -24.0
+offset_bottom = 180.0
 grow_horizontal = 2
-grow_vertical = 2
-theme_override_constants/separation = 15
+theme_override_constants/separation = 10
 
-[node name="TopBar" type="HBoxContainer" parent="VBoxContainer"]
+[node name="TopBar" type="HBoxContainer" parent="UI/VBoxContainer"]
 layout_mode = 2
-theme_override_constants/separation = 20
 
-[node name="BtnBack" type="Button" parent="VBoxContainer/TopBar"]
-custom_minimum_size = Vector2(90, 50)
+[node name="BtnBack" type="Button" parent="UI/VBoxContainer/TopBar"]
+custom_minimum_size = Vector2(100, 50)
 layout_mode = 2
-text = "Voltar"
+theme_override_font_sizes/font_size = 20
+text = "⬅ Voltar"
 
-[node name="Title" type="Label" parent="VBoxContainer/TopBar"]
-layout_mode = 2
-theme_override_font_sizes/font_size = 30
-text = "Paciência Klondike"
-
-[node name="Header" type="HBoxContainer" parent="VBoxContainer"]
-layout_mode = 2
-theme_override_constants/separation = 15
-
-[node name="StatusLabel" type="Label" parent="VBoxContainer/Header"]
+[node name="Title" type="Label" parent="UI/VBoxContainer/TopBar"]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_font_sizes/font_size = 20
-text = "Paciência Klondike"
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.8)
+theme_override_constants/shadow_offset_x = 2
+theme_override_constants/shadow_offset_y = 2
+theme_override_font_sizes/font_size = 30
+text = "Paciência 3D"
+horizontal_alignment = 1
 
-[node name="MovesLabel" type="Label" parent="VBoxContainer/Header"]
+[node name="Header" type="HBoxContainer" parent="UI/VBoxContainer"]
 layout_mode = 2
+
+[node name="StatusLabel" type="Label" parent="UI/VBoxContainer/Header"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.8)
+theme_override_font_sizes/font_size = 20
+text = "Paciência Klondike 3D"
+
+[node name="MovesLabel" type="Label" parent="UI/VBoxContainer/Header"]
+layout_mode = 2
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.8)
 theme_override_font_sizes/font_size = 20
 text = "Movimentos: 0"
 
-[node name="BtnRestart" type="Button" parent="VBoxContainer/Header"]
-custom_minimum_size = Vector2(110, 45)
+[node name="BtnRestart" type="Button" parent="UI/VBoxContainer/Header"]
+custom_minimum_size = Vector2(100, 44)
 layout_mode = 2
-text = "🔄 Novo"
+theme_override_font_sizes/font_size = 18
+text = "🔄 Reiniciar"
 
-[node name="TopRow" type="HBoxContainer" parent="VBoxContainer"]
+[node name="TopRow" type="HBoxContainer" parent="UI"]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_left = 24.0
+offset_top = 180.0
+offset_right = -24.0
+offset_bottom = 250.0
+grow_horizontal = 2
+theme_override_constants/separation = 16
+
+[node name="StockArea" type="HBoxContainer" parent="UI/TopRow"]
 layout_mode = 2
-theme_override_constants/separation = 20
+theme_override_constants/separation = 8
 
-[node name="StockArea" type="HBoxContainer" parent="VBoxContainer/TopRow"]
+[node name="BtnStock" type="Button" parent="UI/TopRow/StockArea"]
+custom_minimum_size = Vector2(75, 65)
 layout_mode = 2
-theme_override_constants/separation = 10
+theme_override_font_sizes/font_size = 16
+text = "Monte"
 
-[node name="BtnStock" type="Button" parent="VBoxContainer/TopRow/StockArea"]
-custom_minimum_size = Vector2(85, 110)
+[node name="BtnWaste" type="Button" parent="UI/TopRow/StockArea"]
+custom_minimum_size = Vector2(75, 65)
 layout_mode = 2
-theme_override_font_sizes/font_size = 22
-text = "🎴"
+theme_override_font_sizes/font_size = 16
+text = "Descarte"
 
-[node name="BtnWaste" type="Button" parent="VBoxContainer/TopRow/StockArea"]
-custom_minimum_size = Vector2(85, 110)
-layout_mode = 2
-theme_override_font_sizes/font_size = 22
-
-[node name="Spacer" type="Control" parent="VBoxContainer/TopRow"]
+[node name="Spacer" type="Control" parent="UI/TopRow"]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="Foundations" type="HBoxContainer" parent="VBoxContainer/TopRow"]
+[node name="Foundations" type="HBoxContainer" parent="UI/TopRow"]
 layout_mode = 2
-theme_override_constants/separation = 10
+theme_override_constants/separation = 8
 
-[node name="BtnF0" type="Button" parent="VBoxContainer/TopRow/Foundations"]
-custom_minimum_size = Vector2(85, 110)
+[node name="BtnF0" type="Button" parent="UI/TopRow/Foundations"]
+custom_minimum_size = Vector2(60, 65)
 layout_mode = 2
-theme_override_font_sizes/font_size = 24
+theme_override_font_sizes/font_size = 18
 text = "♠"
 
-[node name="BtnF1" type="Button" parent="VBoxContainer/TopRow/Foundations"]
-custom_minimum_size = Vector2(85, 110)
+[node name="BtnF1" type="Button" parent="UI/TopRow/Foundations"]
+custom_minimum_size = Vector2(60, 65)
 layout_mode = 2
-theme_override_font_sizes/font_size = 24
+theme_override_font_sizes/font_size = 18
 text = "♥"
 
-[node name="BtnF2" type="Button" parent="VBoxContainer/TopRow/Foundations"]
-custom_minimum_size = Vector2(85, 110)
+[node name="BtnF2" type="Button" parent="UI/TopRow/Foundations"]
+custom_minimum_size = Vector2(60, 65)
 layout_mode = 2
-theme_override_font_sizes/font_size = 24
+theme_override_font_sizes/font_size = 18
 text = "♦"
 
-[node name="BtnF3" type="Button" parent="VBoxContainer/TopRow/Foundations"]
-custom_minimum_size = Vector2(85, 110)
+[node name="BtnF3" type="Button" parent="UI/TopRow/Foundations"]
+custom_minimum_size = Vector2(60, 65)
 layout_mode = 2
-theme_override_font_sizes/font_size = 24
+theme_override_font_sizes/font_size = 18
 text = "♣"
 
-[node name="HSeparator" type="HSeparator" parent="VBoxContainer"]
-layout_mode = 2
-
-[node name="ScrollContainer" type="ScrollContainer" parent="VBoxContainer"]
-layout_mode = 2
-size_flags_vertical = 3
-horizontal_scroll_mode = 0
-
-[node name="Tableau" type="HBoxContainer" parent="VBoxContainer/ScrollContainer"]
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_constants/separation = 10
+[node name="Tableau" type="HBoxContainer" parent="UI"]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 20.0
+offset_top = -120.0
+offset_right = -20.0
+offset_bottom = -20.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_constants/separation = 6
 alignment = 1
 
-[node name="Col0" type="VBoxContainer" parent="VBoxContainer/ScrollContainer/Tableau"]
+[node name="Col0" type="Button" parent="UI/Tableau"]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_constants/separation = 4
+theme_override_font_sizes/font_size = 14
+text = "Col 1"
 
-[node name="Col1" type="VBoxContainer" parent="VBoxContainer/ScrollContainer/Tableau"]
+[node name="Col1" type="Button" parent="UI/Tableau"]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_constants/separation = 4
+theme_override_font_sizes/font_size = 14
+text = "Col 2"
 
-[node name="Col2" type="VBoxContainer" parent="VBoxContainer/ScrollContainer/Tableau"]
+[node name="Col2" type="Button" parent="UI/Tableau"]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_constants/separation = 4
+theme_override_font_sizes/font_size = 14
+text = "Col 3"
 
-[node name="Col3" type="VBoxContainer" parent="VBoxContainer/ScrollContainer/Tableau"]
+[node name="Col3" type="Button" parent="UI/Tableau"]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_constants/separation = 4
+theme_override_font_sizes/font_size = 14
+text = "Col 4"
 
-[node name="Col4" type="VBoxContainer" parent="VBoxContainer/ScrollContainer/Tableau"]
+[node name="Col4" type="Button" parent="UI/Tableau"]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_constants/separation = 4
+theme_override_font_sizes/font_size = 14
+text = "Col 5"
 
-[node name="Col5" type="VBoxContainer" parent="VBoxContainer/ScrollContainer/Tableau"]
+[node name="Col5" type="Button" parent="UI/Tableau"]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_constants/separation = 4
+theme_override_font_sizes/font_size = 14
+text = "Col 6"
 
-[node name="Col6" type="VBoxContainer" parent="VBoxContainer/ScrollContainer/Tableau"]
+[node name="Col6" type="Button" parent="UI/Tableau"]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_constants/separation = 4
+theme_override_font_sizes/font_size = 14
+text = "Col 7"
 
-[connection signal="pressed" from="VBoxContainer/TopBar/BtnBack" to="." method="_on_btn_back_pressed"]
-[connection signal="pressed" from="VBoxContainer/Header/BtnRestart" to="." method="_on_btn_restart_pressed"]
+[connection signal="pressed" from="UI/VBoxContainer/TopBar/BtnBack" to="." method="_on_btn_back_pressed"]
+[connection signal="pressed" from="UI/VBoxContainer/Header/BtnRestart" to="." method="_on_btn_restart_pressed"]

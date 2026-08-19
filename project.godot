@@ -11,11 +11,12 @@ config_version=5
 [application]
 
 config/name="Jogos de Mesa Offline"
-config/description="Uma coleção open source de jogos de tabuleiro e cartas offline."
+config/description="Uma coleção open source de jogos de tabuleiro e cartas offline em 3D imersivo."
 config/use_custom_user_dir=true
 config/custom_user_dir_name="user_data"
 run/main_scene="res://core/telas/MainMenu.tscn"
 config/features=PackedStringArray("4.3", "Mobile")
+
 [gui]
 
 theme/custom="res://shared/theme/MainTheme.tres"
@@ -39,6 +40,10 @@ window/handheld/orientation=1
 
 renderer/rendering_method="mobile"
 textures/vram_compression/import_etc2_astc=true
+anti_aliasing/quality/msaa_3d=2
+anti_aliasing/quality/screen_space_aa=1
+lights_and_shadows/directional_shadow/size=2048
+lights_and_shadows/positional_shadow/soft_shadow_filter_quality=2
 
 [debug]
 

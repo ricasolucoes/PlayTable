@@ -1,5 +1,7 @@
 extends Control
 
+## DominoGame: Dominó 3D com Pedras em Marfim Nobre, Rebites Dourados e Disposição na Mesa
+
 const DominoRulesScript = preload("res://games/domino/DominoRules.gd")
 
 var boneyard: Array[Dictionary] = []
@@ -15,16 +17,17 @@ var game_over: bool = false
 var consecutive_passes: int = 0
 var selected_tile_idx: int = -1
 
-@onready var chain_container = $VBoxContainer/TableArea/ScrollContainer/ChainContainer
-@onready var player_hand_container = $VBoxContainer/PlayerArea/HandContainer
-@onready var status_label = $VBoxContainer/StatusLabel
-@onready var ends_label = $VBoxContainer/TableArea/EndsLabel
-@onready var ai_info_label = $VBoxContainer/AIArea/AIInfoLabel
-@onready var btn_draw = $VBoxContainer/Actions/BtnDraw
-@onready var btn_pass = $VBoxContainer/Actions/BtnPass
-@onready var btn_play_left = $VBoxContainer/Actions/BtnPlayLeft
-@onready var btn_play_right = $VBoxContainer/Actions/BtnPlayRight
-@onready var btn_restart = $VBoxContainer/Actions/BtnRestart
+@onready var env_3d: TabletopEnvironment3D = $TabletopEnvironment3D
+@onready var table_tiles_root: Node3D = $TableTilesRoot
+@onready var status_label = $UI/VBoxContainer/StatusLabel
+@onready var ends_label = $UI/VBoxContainer/EndsLabel
+@onready var ai_info_label = $UI/VBoxContainer/AIInfoLabel
+@onready var player_hand_container = $UI/PlayerArea/HandContainer
+@onready var btn_draw = $UI/Actions/BtnDraw
+@onready var btn_pass = $UI/Actions/BtnPass
+@onready var btn_play_left = $UI/Actions/BtnPlayLeft
+@onready var btn_play_right = $UI/Actions/BtnPlayRight
+@onready var btn_restart = $UI/Actions/BtnRestart
 
 func _ready():
 	_start_new_game()
@@ -46,7 +49,6 @@ func _start_new_game():
 		player_hand.append(boneyard.pop_back())
 		ai_hand.append(boneyard.pop_back())
 		
-	# Encontra maior bucha para abrir
 	board_chain.clear()
 	var starting_tile = {}
 	var starting_player = 0
@@ -76,6 +78,7 @@ func _start_new_game():
 	left_end = starting_tile["a"]
 	right_end = starting_tile["b"]
 	
+	_render_table_tiles_3d()
 	_update_ui()
 	
 	if starting_player == 1:
@@ -88,39 +91,58 @@ func _start_new_game():
 		is_player_turn = true
 		_update_action_buttons()
 
+func _render_table_tiles_3d():
+	for c in table_tiles_root.get_children(): c.queue_free()
+	
+	var total_tiles = board_chain.size()
+	var spacing_x = 0.95
+	var start_x = -(total_tiles * spacing_x * 0.5) + (spacing_x * 0.5)
+	
+	for i in range(total_tiles):
+		var tile_data = board_chain[i]
+		var tile_mesh = MeshInstance3D.new()
+		tile_mesh.mesh = MeshBuilder3D.create_domino_tile(0.9, 0.45, 0.1)
+		tile_mesh.material_override = MaterialFactory3D.get_ivory()
+		
+		var pos_x = start_x + (i * spacing_x)
+		tile_mesh.position = Vector3(pos_x, 0.05, 0.0)
+		
+		# Se for bucha (duplo), rotaciona em 90 graus
+		if tile_data["a"] == tile_data["b"]:
+			tile_mesh.rotation_degrees = Vector3(0, 90, 0)
+			
+		# Rebite central dourado
+		var rivet = MeshInstance3D.new()
+		var cyl = CylinderMesh.new()
+		cyl.top_radius = 0.04
+		cyl.bottom_radius = 0.04
+		cyl.height = 0.12
+		rivet.mesh = cyl
+		rivet.material_override = MaterialFactory3D.get_gold()
+		tile_mesh.add_child(rivet)
+		
+		table_tiles_root.add_child(tile_mesh)
+
 func _update_ui():
 	ai_info_label.text = "IA: %d pedras  |  Dorme (Monte): %d pedras" % [ai_hand.size(), boneyard.size()]
 	ends_label.text = "Pontas: [ %d ] <---------> [ %d ]" % [left_end, right_end]
 	
-	# Mesa
-	for c in chain_container.get_children(): c.queue_free()
-	for tile in board_chain:
-		var lbl = Button.new()
-		lbl.custom_minimum_size = Vector2(70, 70)
-		lbl.add_theme_font_size_override("font_size", 22)
-		lbl.text = "[%d|%d]" % [tile["a"], tile["b"]]
-		lbl.disabled = true
-		chain_container.add_child(lbl)
-		
 	# Mão do Jogador
 	for c in player_hand_container.get_children(): c.queue_free()
 	for i in range(player_hand.size()):
 		var tile = player_hand[i]
 		var btn = Button.new()
-		btn.custom_minimum_size = Vector2(85, 75)
-		btn.add_theme_font_size_override("font_size", 24)
-		btn.text = "[ %d | %d ]" % [tile["a"], tile["b"]]
+		btn.custom_minimum_size = Vector2(72, 80)
+		btn.add_theme_font_size_override("font_size", 20)
+		btn.text = "%d\n---\n%d" % [tile["a"], tile["b"]]
 		
-		var can_play = DominoRules.can_tile_fit(tile, left_end, right_end)
-		if can_play and is_player_turn and not game_over:
-			btn.self_modulate = Color(0.3, 0.7, 0.4)
-		else:
-			btn.self_modulate = Color(0.2, 0.25, 0.3)
-			
 		if i == selected_tile_idx:
-			btn.self_modulate = Color(0.9, 0.75, 0.2)
+			btn.self_modulate = Color(0.95, 0.8, 0.2)
+		else:
+			var can_play = DominoRules.can_play_tile(tile, left_end, right_end)
+			btn.self_modulate = Color(0.3, 0.75, 0.4) if (is_player_turn and can_play) else Color(0.85, 0.85, 0.85)
 			
-		btn.pressed.connect(_on_player_tile_clicked.bind(i))
+		btn.pressed.connect(_on_player_tile_selected.bind(i))
 		player_hand_container.add_child(btn)
 		
 	_update_action_buttons()
@@ -133,174 +155,158 @@ func _update_action_buttons():
 		btn_play_right.hide()
 		return
 		
-	var can_play_any = DominoRules.has_any_playable(player_hand, left_end, right_end)
-	
-	if can_play_any:
+	if selected_tile_idx >= 0 and selected_tile_idx < player_hand.size():
+		var tile = player_hand[selected_tile_idx]
+		var can_left = (tile["a"] == left_end or tile["b"] == left_end)
+		var can_right = (tile["a"] == right_end or tile["b"] == right_end)
+		
+		btn_play_left.visible = can_left
+		btn_play_right.visible = can_right
 		btn_draw.hide()
 		btn_pass.hide()
 	else:
-		if boneyard.size() > 0:
-			btn_draw.show()
-			btn_draw.text = "📥 Comprar do Dorme (%d)" % boneyard.size()
-			btn_pass.hide()
-		else:
-			btn_draw.hide()
-			btn_pass.show()
-			
-	if selected_tile_idx >= 0 and selected_tile_idx < player_hand.size():
-		var t = player_hand[selected_tile_idx]
-		var can_left = (t["a"] == left_end or t["b"] == left_end)
-		var can_right = (t["a"] == right_end or t["b"] == right_end)
-		
-		if can_left and can_right and left_end != right_end:
-			btn_play_left.show()
-			btn_play_right.show()
-		else:
-			btn_play_left.hide()
-			btn_play_right.hide()
-	else:
 		btn_play_left.hide()
 		btn_play_right.hide()
+		var has_moves = DominoRules.has_any_valid_move(player_hand, left_end, right_end)
+		if has_moves:
+			btn_draw.hide()
+			btn_pass.hide()
+		else:
+			if boneyard.size() > 0:
+				btn_draw.show()
+				btn_pass.hide()
+			else:
+				btn_draw.hide()
+				btn_pass.show()
 
-func _on_player_tile_clicked(idx: int):
-	if game_over or not is_player_turn: return
-	
-	var tile = player_hand[idx]
-	if not DominoRules.can_tile_fit(tile, left_end, right_end):
-		status_label.text = "Essa pedra não encaixa em nenhuma ponta!"
-		return
-		
-	selected_tile_idx = idx
-	var can_left = (tile["a"] == left_end or tile["b"] == left_end)
-	var can_right = (tile["a"] == right_end or tile["b"] == right_end)
-	
-	if can_left and can_right and left_end != right_end:
-		status_label.text = "Pedra encaixa em ambas as pontas. Escolha o lado!"
-		_update_ui()
-	elif can_left:
-		_play_tile_to_side(idx, "left")
-	else:
-		_play_tile_to_side(idx, "right")
+func _on_player_tile_selected(idx: int):
+	if not is_player_turn or game_over: return
+	selected_tile_idx = idx if selected_tile_idx != idx else -1
+	_update_ui()
 
-func _play_tile_to_side(hand_idx: int, side: String):
-	var tile = player_hand.pop_at(hand_idx)
+func _on_btn_play_left_pressed():
+	_play_player_tile("left")
+
+func _on_btn_play_right_pressed():
+	_play_player_tile("right")
+
+func _play_player_tile(side: String):
+	if selected_tile_idx < 0: return
+	var tile = player_hand.pop_at(selected_tile_idx)
 	selected_tile_idx = -1
 	consecutive_passes = 0
 	
-	var res = DominoRules.orient_tile_for_side(tile, side, left_end, right_end)
-	left_end = res["new_left_end"]
-	right_end = res["new_right_end"]
-	
 	if side == "left":
-		board_chain.push_front(res["oriented_tile"])
+		if tile["b"] == left_end:
+			board_chain.push_front(tile)
+			left_end = tile["a"]
+		else:
+			var flipped = {"a": tile["b"], "b": tile["a"]}
+			board_chain.push_front(flipped)
+			left_end = flipped["a"]
 	else:
-		board_chain.push_back(res["oriented_tile"])
-		
+		if tile["a"] == right_end:
+			board_chain.push_back(tile)
+			right_end = tile["b"]
+		else:
+			var flipped = {"a": tile["b"], "b": tile["a"]}
+			board_chain.push_back(flipped)
+			right_end = flipped["b"]
+			
+	_render_table_tiles_3d()
 	_update_ui()
 	
 	if player_hand.size() == 0:
-		_end_game("🏆 Você bateu o dominó e Venceu!")
+		_end_game("🏆 Você bateu e venceu a partida!", true)
 		return
 		
 	is_player_turn = false
 	status_label.text = "Vez da IA..."
+	_update_action_buttons()
 	await get_tree().create_timer(0.8).timeout
 	_play_ai_turn()
 
 func _on_btn_draw_pressed():
-	if game_over or not is_player_turn or boneyard.size() == 0: return
-	
-	var drawn = boneyard.pop_back()
-	player_hand.append(drawn)
-	status_label.text = "Você comprou [%d|%d]." % [drawn["a"], drawn["b"]]
-	_update_ui()
+	if boneyard.size() > 0:
+		var drawn = boneyard.pop_back()
+		player_hand.append(drawn)
+		status_label.text = "Você comprou uma pedra do monte."
+		_update_ui()
 
 func _on_btn_pass_pressed():
-	if game_over or not is_player_turn: return
 	consecutive_passes += 1
-	status_label.text = "Você passou a vez. Vez da IA..."
-	is_player_turn = false
-	_update_ui()
-	
+	status_label.text = "Você passou a vez."
 	if consecutive_passes >= 2:
-		_resolve_blocked_game()
+		_check_board_lock()
 		return
-		
+	is_player_turn = false
+	_update_action_buttons()
 	await get_tree().create_timer(0.8).timeout
 	_play_ai_turn()
 
-func _on_btn_play_left_pressed():
-	if selected_tile_idx >= 0:
-		_play_tile_to_side(selected_tile_idx, "left")
-
-func _on_btn_play_right_pressed():
-	if selected_tile_idx >= 0:
-		_play_tile_to_side(selected_tile_idx, "right")
-
 func _play_ai_turn():
-	if game_over: return
-	
-	while not DominoRules.has_any_playable(ai_hand, left_end, right_end) and boneyard.size() > 0:
-		ai_hand.append(boneyard.pop_back())
+	var ai_play = DominoRules.find_ai_move(ai_hand, left_end, right_end)
+	if ai_play.size() > 0:
+		var t_idx = ai_play["tile_index"]
+		var side = ai_play["side"]
+		var tile = ai_hand.pop_at(t_idx)
+		consecutive_passes = 0
 		
-	if not DominoRules.has_any_playable(ai_hand, left_end, right_end):
-		consecutive_passes += 1
-		status_label.text = "IA não tem jogadas e passou a vez!"
-		if consecutive_passes >= 2:
-			_resolve_blocked_game()
+		if side == "left":
+			if tile["b"] == left_end:
+				board_chain.push_front(tile)
+				left_end = tile["a"]
+			else:
+				var flipped = {"a": tile["b"], "b": tile["a"]}
+				board_chain.push_front(flipped)
+				left_end = flipped["a"]
+		else:
+			if tile["a"] == right_end:
+				board_chain.push_back(tile)
+				right_end = tile["b"]
+			else:
+				var flipped = {"a": tile["b"], "b": tile["a"]}
+				board_chain.push_back(flipped)
+				right_end = flipped["b"]
+				
+		_render_table_tiles_3d()
+		status_label.text = "IA jogou na ponta %s. Sua vez!" % side
+		
+		if ai_hand.size() == 0:
+			_end_game("A IA bateu e venceu a partida!", false)
 			return
-		is_player_turn = true
-		_update_ui()
-		return
-		
-	consecutive_passes = 0
-	var playable_indices = DominoRules.get_playable_indices(ai_hand, left_end, right_end)
-	playable_indices.shuffle()
-	
-	var chosen_idx = playable_indices[0]
-	var tile = ai_hand.pop_at(chosen_idx)
-	
-	var can_left = (tile["a"] == left_end or tile["b"] == left_end)
-	var can_right = (tile["a"] == right_end or tile["b"] == right_end)
-	var side = "left" if (can_left and not can_right) else ("right" if (can_right and not can_left) else ("left" if randf() > 0.5 else "right"))
-	
-	var res = DominoRules.orient_tile_for_side(tile, side, left_end, right_end)
-	left_end = res["new_left_end"]
-	right_end = res["new_right_end"]
-	
-	if side == "left":
-		board_chain.push_front(res["oriented_tile"])
 	else:
-		board_chain.push_back(res["oriented_tile"])
-		
-	_update_ui()
-	
-	if ai_hand.size() == 0:
-		_end_game("IA bateu o dominó e Venceu!")
-		return
-		
+		if boneyard.size() > 0:
+			var drawn = boneyard.pop_back()
+			ai_hand.append(drawn)
+			status_label.text = "IA comprou do monte e passou a vez. Sua vez!"
+		else:
+			consecutive_passes += 1
+			status_label.text = "IA passou a vez. Sua vez!"
+			if consecutive_passes >= 2:
+				_check_board_lock()
+				return
+				
 	is_player_turn = true
-	status_label.text = "IA jogou [%d|%d]. Sua vez!" % [tile["a"], tile["b"]]
+	_update_ui()
 
-func _resolve_blocked_game():
-	var p_sum = DominoRules.calculate_hand_points(player_hand)
-	var ai_sum = DominoRules.calculate_hand_points(ai_hand)
-	
-	if p_sum < ai_sum:
-		_end_game("🔒 Jogo Trancado! Você Venceu por pontos (%d vs %d da IA)!" % [p_sum, ai_sum])
-	elif ai_sum < p_sum:
-		_end_game("🔒 Jogo Trancado! IA Venceu por pontos (%d vs %d seus)!" % [ai_sum, p_sum])
+func _check_board_lock():
+	var p_pts = DominoRules.calculate_hand_points(player_hand)
+	var ai_pts = DominoRules.calculate_hand_points(ai_hand)
+	if p_pts < ai_pts:
+		_end_game("Jogo Fechado! Você venceu por pontos (%d x %d)!" % [p_pts, ai_pts], true)
+	elif ai_pts < p_pts:
+		_end_game("Jogo Fechado! IA venceu por pontos (%d x %d)!" % [ai_pts, p_pts], false)
 	else:
-		_end_game("🔒 Jogo Trancado! Empate com %d pontos cada!" % p_sum)
+		_end_game("Jogo Fechado! Empate exato de pontos (%d)!" % p_pts, false)
 
-func _end_game(msg: String):
+func _end_game(msg: String, is_player_win: bool):
 	game_over = true
 	status_label.text = msg
 	btn_restart.show()
-	btn_play_left.hide()
-	btn_play_right.hide()
-	btn_draw.hide()
-	btn_pass.hide()
+	_update_action_buttons()
+	if is_player_win:
+		env_3d.celebrate_win()
 
 func _on_btn_restart_pressed():
 	_start_new_game()

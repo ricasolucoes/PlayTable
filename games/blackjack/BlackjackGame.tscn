@@ -1,6 +1,7 @@
-[gd_scene load_steps=2 format=3 uid="uid://blackjack"]
+[gd_scene load_steps=3 format=3 uid="uid://blackjackgameuid"]
 
 [ext_resource type="Script" path="res://games/blackjack/BlackjackGame.gd" id="1_script"]
+[ext_resource type="PackedScene" uid="uid://tabletopenv3duid" path="res://shared/3d/TabletopEnvironment3D.tscn" id="2_env"]
 
 [node name="BlackjackGame" type="Control"]
 layout_mode = 3
@@ -11,130 +12,103 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_script")
 
-[node name="Background" type="ColorRect" parent="."]
+[node name="TabletopEnvironment3D" parent="." instance=ExtResource("2_env")]
+
+[node name="CardsRoot" type="Node3D" parent="."]
+
+[node name="UI" type="Control" parent="."]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0.08, 0.25, 0.12, 1)
+mouse_filter = 2
 
-[node name="VBoxContainer" type="VBoxContainer" parent="."]
+[node name="VBoxContainer" type="VBoxContainer" parent="UI"]
 layout_mode = 1
-anchors_preset = 15
+anchors_preset = 10
 anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = 20.0
-offset_top = 30.0
-offset_right = -20.0
-offset_bottom = -30.0
+offset_left = 24.0
+offset_top = 40.0
+offset_right = -24.0
+offset_bottom = 200.0
 grow_horizontal = 2
-grow_vertical = 2
-theme_override_constants/separation = 20
+theme_override_constants/separation = 10
 
-[node name="TopBar" type="HBoxContainer" parent="VBoxContainer"]
+[node name="TopBar" type="HBoxContainer" parent="UI/VBoxContainer"]
 layout_mode = 2
-theme_override_constants/separation = 20
 
-[node name="BtnBack" type="Button" parent="VBoxContainer/TopBar"]
+[node name="BtnBack" type="Button" parent="UI/VBoxContainer/TopBar"]
 custom_minimum_size = Vector2(100, 50)
 layout_mode = 2
-text = "Voltar"
+theme_override_font_sizes/font_size = 20
+text = "⬅ Voltar"
 
-[node name="Title" type="Label" parent="VBoxContainer/TopBar"]
+[node name="Title" type="Label" parent="UI/VBoxContainer/TopBar"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 32
-text = "21 (Blackjack)"
+size_flags_horizontal = 3
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.8)
+theme_override_constants/shadow_offset_x = 2
+theme_override_constants/shadow_offset_y = 2
+theme_override_font_sizes/font_size = 30
+text = "Blackjack 3D (21)"
+horizontal_alignment = 1
 
-[node name="Header" type="HBoxContainer" parent="VBoxContainer"]
+[node name="DealerScoreLabel" type="Label" parent="UI/VBoxContainer"]
 layout_mode = 2
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.8)
+theme_override_font_sizes/font_size = 20
+text = "Mão da Mesa: 0"
+horizontal_alignment = 1
+
+[node name="Status" type="Label" parent="UI/VBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.8)
+theme_override_font_sizes/font_size = 24
+text = "Sua vez!"
+horizontal_alignment = 1
+
+[node name="PlayerScoreLabel" type="Label" parent="UI/VBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.8)
+theme_override_font_sizes/font_size = 20
+text = "Sua Mão: 0 pontos"
+horizontal_alignment = 1
+
+[node name="Buttons" type="HBoxContainer" parent="UI"]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -100.0
+offset_bottom = -30.0
+grow_horizontal = 2
+grow_vertical = 0
 theme_override_constants/separation = 20
 alignment = 1
 
-[node name="ChipsLabel" type="Label" parent="VBoxContainer/Header"]
-layout_mode = 2
-theme_override_colors/font_color = Color(1, 0.85, 0.2, 1)
-theme_override_font_sizes/font_size = 24
-text = "💰 Fichas: 100"
-
-[node name="BetLabel" type="Label" parent="VBoxContainer/Header"]
-layout_mode = 2
-theme_override_font_sizes/font_size = 24
-text = "Aposta: 10"
-
-[node name="DealerArea" type="VBoxContainer" parent="VBoxContainer"]
-layout_mode = 2
-theme_override_constants/separation = 8
-alignment = 1
-
-[node name="Label" type="Label" parent="VBoxContainer/DealerArea"]
+[node name="BtnHit" type="Button" parent="UI/Buttons"]
+custom_minimum_size = Vector2(160, 56)
 layout_mode = 2
 theme_override_font_sizes/font_size = 22
-text = "Dealer:"
-horizontal_alignment = 1
+text = "🃏 Pedir Carta"
 
-[node name="DealerCards" type="HBoxContainer" parent="VBoxContainer/DealerArea"]
-custom_minimum_size = Vector2(0, 130)
-layout_mode = 2
-theme_override_constants/separation = 10
-alignment = 1
-
-[node name="PlayerArea" type="VBoxContainer" parent="VBoxContainer"]
-layout_mode = 2
-theme_override_constants/separation = 8
-alignment = 1
-
-[node name="Label" type="Label" parent="VBoxContainer/PlayerArea"]
+[node name="BtnStand" type="Button" parent="UI/Buttons"]
+custom_minimum_size = Vector2(160, 56)
 layout_mode = 2
 theme_override_font_sizes/font_size = 22
-text = "Você:"
-horizontal_alignment = 1
+text = "✋ Parar"
 
-[node name="PlayerCards" type="HBoxContainer" parent="VBoxContainer/PlayerArea"]
-custom_minimum_size = Vector2(0, 130)
-layout_mode = 2
-theme_override_constants/separation = 10
-alignment = 1
-
-[node name="Status" type="Label" parent="VBoxContainer"]
-layout_mode = 2
-theme_override_font_sizes/font_size = 24
-text = "Sua Vez!"
-horizontal_alignment = 1
-
-[node name="Buttons" type="HBoxContainer" parent="VBoxContainer"]
-layout_mode = 2
-theme_override_constants/separation = 15
-alignment = 1
-
-[node name="BtnHit" type="Button" parent="VBoxContainer/Buttons"]
-custom_minimum_size = Vector2(130, 60)
-layout_mode = 2
-theme_override_font_sizes/font_size = 22
-text = "Comprar"
-
-[node name="BtnStand" type="Button" parent="VBoxContainer/Buttons"]
-custom_minimum_size = Vector2(130, 60)
-layout_mode = 2
-theme_override_font_sizes/font_size = 22
-text = "Parar"
-
-[node name="BtnDouble" type="Button" parent="VBoxContainer/Buttons"]
-custom_minimum_size = Vector2(130, 60)
-layout_mode = 2
-theme_override_font_sizes/font_size = 22
-text = "Dobrar"
-
-[node name="BtnRestart" type="Button" parent="VBoxContainer/Buttons"]
+[node name="BtnRestart" type="Button" parent="UI/Buttons"]
 visible = false
-custom_minimum_size = Vector2(200, 60)
+custom_minimum_size = Vector2(180, 56)
 layout_mode = 2
 theme_override_font_sizes/font_size = 22
-text = "Próxima Mão"
+text = "🔄 Nova Rodada"
 
-[connection signal="pressed" from="VBoxContainer/TopBar/BtnBack" to="." method="_on_btn_back_pressed"]
-[connection signal="pressed" from="VBoxContainer/Buttons/BtnHit" to="." method="_on_btn_hit_pressed"]
-[connection signal="pressed" from="VBoxContainer/Buttons/BtnStand" to="." method="_on_btn_stand_pressed"]
-[connection signal="pressed" from="VBoxContainer/Buttons/BtnDouble" to="." method="_on_btn_double_pressed"]
-[connection signal="pressed" from="VBoxContainer/Buttons/BtnRestart" to="." method="_on_btn_restart_pressed"]
+[connection signal="pressed" from="UI/VBoxContainer/TopBar/BtnBack" to="." method="_on_btn_back_pressed"]
+[connection signal="pressed" from="UI/Buttons/BtnHit" to="." method="_on_btn_hit_pressed"]
+[connection signal="pressed" from="UI/Buttons/BtnStand" to="." method="_on_btn_stand_pressed"]
+[connection signal="pressed" from="UI/Buttons/BtnRestart" to="." method="_on_btn_restart_pressed"]

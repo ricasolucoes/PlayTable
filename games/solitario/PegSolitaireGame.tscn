@@ -1,6 +1,7 @@
-[gd_scene load_steps=2 format=3 uid="uid://pegsolitaireuid"]
+[gd_scene load_steps=3 format=3 uid="uid://pegsolitairegameuid"]
 
 [ext_resource type="Script" path="res://games/solitario/PegSolitaireGame.gd" id="1_script"]
+[ext_resource type="PackedScene" uid="uid://tabletopenv3duid" path="res://shared/3d/TabletopEnvironment3D.tscn" id="2_env"]
 
 [node name="PegSolitaireGame" type="Control"]
 layout_mode = 3
@@ -11,85 +12,103 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_script")
 
-[node name="Background" type="ColorRect" parent="."]
+[node name="TabletopEnvironment3D" parent="." instance=ExtResource("2_env")]
+
+[node name="BoardRoot" type="Node3D" parent="."]
+
+[node name="MarblesRoot" type="Node3D" parent="."]
+
+[node name="UI" type="Control" parent="."]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0.08, 0.09, 0.11, 1)
+mouse_filter = 2
 
-[node name="VBoxContainer" type="VBoxContainer" parent="."]
+[node name="VBoxContainer" type="VBoxContainer" parent="UI"]
 layout_mode = 1
-anchors_preset = 15
+anchors_preset = 10
 anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = 20.0
+offset_left = 24.0
 offset_top = 40.0
-offset_right = -20.0
-offset_bottom = -40.0
+offset_right = -24.0
+offset_bottom = 180.0
 grow_horizontal = 2
-grow_vertical = 2
-theme_override_constants/separation = 20
+theme_override_constants/separation = 10
 
-[node name="TopBar" type="HBoxContainer" parent="VBoxContainer"]
+[node name="TopBar" type="HBoxContainer" parent="UI/VBoxContainer"]
 layout_mode = 2
-theme_override_constants/separation = 20
 
-[node name="BtnBack" type="Button" parent="VBoxContainer/TopBar"]
+[node name="BtnBack" type="Button" parent="UI/VBoxContainer/TopBar"]
 custom_minimum_size = Vector2(100, 50)
 layout_mode = 2
-text = "Voltar"
+theme_override_font_sizes/font_size = 20
+text = "⬅ Voltar"
 
-[node name="Title" type="Label" parent="VBoxContainer/TopBar"]
+[node name="Title" type="Label" parent="UI/VBoxContainer/TopBar"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 32
-text = "Solitário (Resta Um)"
-
-[node name="PegsLabel" type="Label" parent="VBoxContainer"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.8, 0.85, 0.9, 1)
-theme_override_font_sizes/font_size = 24
-text = "Pinos Restantes: 32 / 32"
+size_flags_horizontal = 3
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.8)
+theme_override_constants/shadow_offset_x = 2
+theme_override_constants/shadow_offset_y = 2
+theme_override_font_sizes/font_size = 30
+text = "Resta Um 3D"
 horizontal_alignment = 1
 
-[node name="StatusLabel" type="Label" parent="VBoxContainer"]
+[node name="PegsLabel" type="Label" parent="UI/VBoxContainer"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 24
-text = "Selecione um pino para saltar!"
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.8)
+theme_override_font_sizes/font_size = 20
+text = "Esferas Restantes: 32 / 32"
 horizontal_alignment = 1
 
-[node name="CenterContainer" type="CenterContainer" parent="VBoxContainer"]
+[node name="StatusLabel" type="Label" parent="UI/VBoxContainer"]
 layout_mode = 2
-size_flags_vertical = 3
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.8)
+theme_override_font_sizes/font_size = 20
+text = "Toque em uma esfera para saltar!"
+horizontal_alignment = 1
 
-[node name="BoardContainer" type="PanelContainer" parent="VBoxContainer/CenterContainer"]
-layout_mode = 2
+[node name="CenterContainer" type="CenterContainer" parent="UI"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -170.0
+offset_top = -170.0
+offset_right = 170.0
+offset_bottom = 170.0
+grow_horizontal = 2
+grow_vertical = 2
 
-[node name="Grid" type="GridContainer" parent="VBoxContainer/CenterContainer/BoardContainer"]
+[node name="TouchGrid" type="GridContainer" parent="UI/CenterContainer"]
 layout_mode = 2
 theme_override_constants/h_separation = 6
 theme_override_constants/v_separation = 6
 columns = 7
 
-[node name="Actions" type="HBoxContainer" parent="VBoxContainer"]
-layout_mode = 2
-theme_override_constants/separation = 20
+[node name="Actions" type="HBoxContainer" parent="UI"]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -90.0
+offset_bottom = -30.0
+grow_horizontal = 2
+grow_vertical = 0
 alignment = 1
 
-[node name="BtnUndo" type="Button" parent="VBoxContainer/Actions"]
-custom_minimum_size = Vector2(160, 55)
+[node name="BtnRestart" type="Button" parent="UI/Actions"]
+visible = false
+custom_minimum_size = Vector2(180, 50)
 layout_mode = 2
-theme_override_font_sizes/font_size = 22
-text = "↩️ Desfazer"
+theme_override_font_sizes/font_size = 20
+text = "🔄 Nova Partida"
 
-[node name="BtnRestart" type="Button" parent="VBoxContainer/Actions"]
-custom_minimum_size = Vector2(160, 55)
-layout_mode = 2
-theme_override_font_sizes/font_size = 22
-text = "🔄 Reiniciar"
-
-[connection signal="pressed" from="VBoxContainer/TopBar/BtnBack" to="." method="_on_btn_back_pressed"]
-[connection signal="pressed" from="VBoxContainer/Actions/BtnUndo" to="." method="_on_btn_undo_pressed"]
-[connection signal="pressed" from="VBoxContainer/Actions/BtnRestart" to="." method="_on_btn_restart_pressed"]
+[connection signal="pressed" from="UI/VBoxContainer/TopBar/BtnBack" to="." method="_on_btn_back_pressed"]
+[connection signal="pressed" from="UI/Actions/BtnRestart" to="." method="_on_btn_restart_pressed"]

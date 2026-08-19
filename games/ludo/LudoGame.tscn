@@ -1,6 +1,8 @@
-[gd_scene load_steps=2 format=3 uid="uid://ludogameuid"]
+[gd_scene load_steps=4 format=3 uid="uid://ludogameuid"]
 
 [ext_resource type="Script" path="res://games/ludo/LudoGame.gd" id="1_script"]
+[ext_resource type="PackedScene" uid="uid://tabletopenv3duid" path="res://shared/3d/TabletopEnvironment3D.tscn" id="2_env"]
+[ext_resource type="PackedScene" uid="uid://dice3duid" path="res://shared/3d/Dice3D.tscn" id="3_dice"]
 
 [node name="LudoGame" type="Control"]
 layout_mode = 3
@@ -11,90 +13,128 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_script")
 
-[node name="Background" type="ColorRect" parent="."]
+[node name="TabletopEnvironment3D" parent="." instance=ExtResource("2_env")]
+
+[node name="BoardRoot" type="Node3D" parent="."]
+
+[node name="PawnsRoot" type="Node3D" parent="."]
+
+[node name="Dice3D" parent="." instance=ExtResource("3_dice")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.35, 0)
+
+[node name="UI" type="Control" parent="."]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0.08, 0.1, 0.14, 1)
+mouse_filter = 2
 
-[node name="VBoxContainer" type="VBoxContainer" parent="."]
+[node name="VBoxContainer" type="VBoxContainer" parent="UI"]
 layout_mode = 1
-anchors_preset = 15
+anchors_preset = 10
 anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = 20.0
-offset_top = 30.0
-offset_right = -20.0
-offset_bottom = -30.0
+offset_left = 24.0
+offset_top = 40.0
+offset_right = -24.0
+offset_bottom = 180.0
 grow_horizontal = 2
-grow_vertical = 2
-theme_override_constants/separation = 15
+theme_override_constants/separation = 12
 
-[node name="TopBar" type="HBoxContainer" parent="VBoxContainer"]
+[node name="TopBar" type="HBoxContainer" parent="UI/VBoxContainer"]
 layout_mode = 2
-theme_override_constants/separation = 20
 
-[node name="BtnBack" type="Button" parent="VBoxContainer/TopBar"]
+[node name="BtnBack" type="Button" parent="UI/VBoxContainer/TopBar"]
 custom_minimum_size = Vector2(100, 50)
 layout_mode = 2
-text = "Voltar"
-
-[node name="Title" type="Label" parent="VBoxContainer/TopBar"]
-layout_mode = 2
-theme_override_font_sizes/font_size = 32
-text = "Ludo Simplificado"
-
-[node name="StatusLabel" type="Label" parent="VBoxContainer"]
-layout_mode = 2
 theme_override_font_sizes/font_size = 20
+text = "⬅ Voltar"
+
+[node name="Title" type="Label" parent="UI/VBoxContainer/TopBar"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.8)
+theme_override_constants/shadow_offset_x = 2
+theme_override_constants/shadow_offset_y = 2
+theme_override_font_sizes/font_size = 30
+text = "Ludo 3D"
+horizontal_alignment = 1
+
+[node name="StatusLabel" type="Label" parent="UI/VBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.8)
+theme_override_font_sizes/font_size = 22
 text = "Sua Vez! Toque no dado para rolar."
 horizontal_alignment = 1
 
-[node name="DiceArea" type="HBoxContainer" parent="VBoxContainer"]
-layout_mode = 2
-alignment = 1
+[node name="DiceArea" type="Control" parent="UI"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -100.0
+offset_top = 80.0
+offset_right = 100.0
+offset_bottom = 145.0
+grow_horizontal = 2
+grow_vertical = 2
 
-[node name="BtnDice" type="Button" parent="VBoxContainer/DiceArea"]
-custom_minimum_size = Vector2(220, 70)
-layout_mode = 2
-theme_override_font_sizes/font_size = 28
+[node name="BtnDice" type="Button" parent="UI/DiceArea"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_font_sizes/font_size = 22
 text = "🎲 Rolar Dado"
 
-[node name="PawnSelectionArea" type="VBoxContainer" parent="VBoxContainer"]
-layout_mode = 2
-theme_override_constants/separation = 10
+[node name="PawnSelectionArea" type="Control" parent="UI"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -200.0
+offset_top = 160.0
+offset_right = 200.0
+offset_bottom = 230.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="PawnButtons" type="HBoxContainer" parent="UI/PawnSelectionArea"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 16
 alignment = 1
 
-[node name="PawnButtons" type="HBoxContainer" parent="VBoxContainer/PawnSelectionArea"]
-layout_mode = 2
-theme_override_constants/separation = 15
+[node name="Actions" type="HBoxContainer" parent="UI"]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -100.0
+offset_bottom = -30.0
+grow_horizontal = 2
+grow_vertical = 0
 alignment = 1
 
-[node name="BoardOverview" type="ScrollContainer" parent="VBoxContainer"]
-layout_mode = 2
-size_flags_vertical = 3
-
-[node name="BoardStatusLabel" type="Label" parent="VBoxContainer/BoardOverview"]
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_colors/font_color = Color(0.85, 0.9, 0.95, 1)
-theme_override_font_sizes/font_size = 18
-text = "Status dos jogadores..."
-
-[node name="Actions" type="HBoxContainer" parent="VBoxContainer"]
-layout_mode = 2
-alignment = 1
-
-[node name="BtnRestart" type="Button" parent="VBoxContainer/Actions"]
+[node name="BtnRestart" type="Button" parent="UI/Actions"]
 visible = false
-custom_minimum_size = Vector2(240, 55)
+custom_minimum_size = Vector2(180, 50)
 layout_mode = 2
-theme_override_font_sizes/font_size = 22
-text = "Jogar Novamente"
+theme_override_font_sizes/font_size = 20
+text = "🔄 Nova Partida"
 
-[connection signal="pressed" from="VBoxContainer/TopBar/BtnBack" to="." method="_on_btn_back_pressed"]
-[connection signal="pressed" from="VBoxContainer/DiceArea/BtnDice" to="." method="_on_btn_dice_pressed"]
-[connection signal="pressed" from="VBoxContainer/Actions/BtnRestart" to="." method="_on_btn_restart_pressed"]
+[connection signal="pressed" from="UI/VBoxContainer/TopBar/BtnBack" to="." method="_on_btn_back_pressed"]
+[connection signal="pressed" from="UI/DiceArea/BtnDice" to="." method="_on_btn_dice_pressed"]
+[connection signal="pressed" from="UI/Actions/BtnRestart" to="." method="_on_btn_restart_pressed"]

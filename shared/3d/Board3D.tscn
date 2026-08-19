@@ -1,0 +1,13 @@
+[gd_scene load_steps=2 format=3 uid="uid://board3duid"]
+
+[ext_resource type="Script" path="res://shared/3d/Board3D.gd" id="1_script"]
+
+[node name="Board3D" type="Node3D"]
+script = ExtResource("1_script")
+
+[node name="FrameMesh" type="MeshInstance3D" parent="."]
+
+[node name="CellsRoot" type="Node3D" parent="."]
+
+[node name="HoverMarker" type="MeshInstance3D" parent="."]
+visible = false

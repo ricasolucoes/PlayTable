@@ -1,220 +1,224 @@
 extends Control
 
+## BattleshipGame: Batalha Naval 3D com Radar Oceânico Tático e Marcadores Tridimensionais
+
 const Grid2DScript = preload("res://shared/core_engine/board/Grid2D.gd")
 const BattleshipRulesScript = preload("res://games/batalha_naval/BattleshipRules.gd")
 
 var player_grid: Grid2D
 var ai_grid: Grid2D
-var player_ships: Array[Dictionary] = []
-var ai_ships: Array[Dictionary] = []
+var player_ships = []
+var ai_ships = []
 
-var is_combat_phase: bool = false
 var is_player_turn: bool = true
 var game_over: bool = false
-var current_view: String = "radar"
+var viewing_radar: bool = true # true = Radar de Ataque (AI Grid), false = Frota Aliada (Player Grid)
+var markers_3d: Dictionary = {}
+var ships_3d: Array = []
 
-var ai_hit_stack: Array = []
-var ai_shots_fired: Array = []
-
-@onready var grid_radar = $VBoxContainer/CenterContainer/RadarContainer/GridRadar
-@onready var grid_fleet = $VBoxContainer/CenterContainer/FleetContainer/GridFleet
-@onready var radar_container = $VBoxContainer/CenterContainer/RadarContainer
-@onready var fleet_container = $VBoxContainer/CenterContainer/FleetContainer
-@onready var status_label = $VBoxContainer/StatusLabel
-@onready var fleet_info_label = $VBoxContainer/FleetInfoLabel
-@onready var btn_tab_radar = $VBoxContainer/TabButtons/BtnTabRadar
-@onready var btn_tab_fleet = $VBoxContainer/TabButtons/BtnTabFleet
-@onready var btn_start = $VBoxContainer/ControlButtons/BtnStart
-@onready var btn_randomize = $VBoxContainer/ControlButtons/BtnRandomize
-@onready var btn_restart = $VBoxContainer/ControlButtons/BtnRestart
-
-var radar_buttons = []
-var fleet_buttons = []
+@onready var env_3d: TabletopEnvironment3D = $TabletopEnvironment3D
+@onready var board_3d: Board3D = $Board3D
+@onready var markers_root: Node3D = $MarkersRoot
+@onready var ships_root: Node3D = $ShipsRoot
+@onready var status_label = $UI/VBoxContainer/StatusLabel
+@onready var fleet_info_label = $UI/VBoxContainer/FleetInfoLabel
+@onready var btn_tab_radar = $UI/VBoxContainer/TabBar/BtnRadar
+@onready var btn_tab_fleet = $UI/VBoxContainer/TabBar/BtnFleet
+@onready var btn_restart = $UI/VBoxContainer/BtnRestart
+@onready var touch_grid = $UI/CenterContainer/TouchGrid
 
 func _ready():
-	player_grid = BattleshipRules.create_empty_grid()
-	ai_grid = BattleshipRules.create_empty_grid()
-	_create_grid_ui()
-	_start_setup_phase()
+	board_3d.setup_board(10, 10, 0.65, "ocean_radar")
+	_setup_touch_grid()
+	_start_new_game()
 
-func _create_grid_ui():
-	for c in grid_radar.get_children(): c.queue_free()
-	for c in grid_fleet.get_children(): c.queue_free()
-	radar_buttons.clear()
-	fleet_buttons.clear()
-	
-	for r in range(BattleshipRules.GRID_SIZE):
-		var r_row = []
-		var f_row = []
-		for c in range(BattleshipRules.GRID_SIZE):
-			var r_btn = Button.new()
-			r_btn.custom_minimum_size = Vector2(50, 50)
-			r_btn.add_theme_font_size_override("font_size", 24)
-			r_btn.pressed.connect(_on_radar_cell_clicked.bind(r, c))
-			grid_radar.add_child(r_btn)
-			r_row.append(r_btn)
-			
-			var f_btn = Button.new()
-			f_btn.custom_minimum_size = Vector2(50, 50)
-			f_btn.add_theme_font_size_override("font_size", 24)
-			grid_fleet.add_child(f_btn)
-			f_row.append(f_btn)
-			
-		radar_buttons.append(r_row)
-		fleet_buttons.append(f_row)
+func _setup_touch_grid():
+	for c in touch_grid.get_children(): c.queue_free()
+	for r in range(10):
+		for c in range(10):
+			var btn = Button.new()
+			btn.custom_minimum_size = Vector2(32, 32)
+			btn.flat = true
+			btn.pressed.connect(_on_cell_clicked.bind(r, c))
+			touch_grid.add_child(btn)
 
-func _start_setup_phase():
-	is_combat_phase = false
+func _start_new_game():
 	game_over = false
 	is_player_turn = true
-	ai_hit_stack.clear()
-	ai_shots_fired.clear()
-	
-	btn_start.show()
-	btn_randomize.show()
+	viewing_radar = true
 	btn_restart.hide()
 	
-	player_ships = BattleshipRules.place_all_ships_randomly(player_grid)
-	ai_ships = BattleshipRules.place_all_ships_randomly(ai_grid)
+	player_grid = Grid2D.new(10, 10, 0)
+	ai_grid = Grid2D.new(10, 10, 0)
 	
-	_switch_view("fleet")
-	status_label.text = "Posicione sua frota e clique em Iniciar!"
-	_update_fleet_info()
+	player_ships = BattleshipRules.place_all_ships_random(player_grid)
+	ai_ships = BattleshipRules.place_all_ships_random(ai_grid)
+	
+	_update_view_mode()
+	status_label.text = "Sua Vez! Selecione uma coordenada no Radar."
 
-func _switch_view(view: String):
-	current_view = view
-	if view == "radar":
-		radar_container.show()
-		fleet_container.hide()
-		btn_tab_radar.add_theme_color_override("font_color", Color(0.2, 0.8, 0.9))
-		btn_tab_fleet.add_theme_color_override("font_color", Color(0.7, 0.7, 0.7))
+func _update_view_mode():
+	for m in markers_root.get_children(): m.queue_free()
+	for s in ships_root.get_children(): s.queue_free()
+	markers_3d.clear()
+	ships_3d.clear()
+	
+	for r in range(10):
+		for c in range(10):
+			board_3d.reset_cell_material(r, c)
+			
+	if viewing_radar:
+		btn_tab_radar.self_modulate = Color(0.3, 0.7, 1.0)
+		btn_tab_fleet.self_modulate = Color(0.6, 0.6, 0.6)
+		_render_radar_view()
 	else:
-		radar_container.hide()
-		fleet_container.show()
-		btn_tab_fleet.add_theme_color_override("font_color", Color(0.2, 0.8, 0.9))
-		btn_tab_radar.add_theme_color_override("font_color", Color(0.7, 0.7, 0.7))
-	_update_ui()
-
-func _update_ui():
-	for r in range(BattleshipRules.GRID_SIZE):
-		for c in range(BattleshipRules.GRID_SIZE):
-			var r_btn = radar_buttons[r][c]
-			var ai_val = ai_grid.get_cell(r, c)
-			if ai_val == 2:
-				r_btn.text = "🌊"
-				r_btn.self_modulate = Color(0.2, 0.4, 0.7)
-			elif ai_val == 3:
-				r_btn.text = "💥"
-				r_btn.self_modulate = Color(0.9, 0.2, 0.2)
-			else:
-				r_btn.text = ""
-				r_btn.self_modulate = Color(0.18, 0.24, 0.3)
-				
-			var f_btn = fleet_buttons[r][c]
-			var p_val = player_grid.get_cell(r, c)
-			if p_val == 1:
-				f_btn.text = "🚢"
-				f_btn.self_modulate = Color(0.3, 0.6, 0.4)
-			elif p_val == 2:
-				f_btn.text = "🌊"
-				f_btn.self_modulate = Color(0.2, 0.4, 0.7)
-			elif p_val == 3:
-				f_btn.text = "🔥"
-				f_btn.self_modulate = Color(0.9, 0.3, 0.1)
-			else:
-				f_btn.text = ""
-				f_btn.self_modulate = Color(0.18, 0.24, 0.3)
-
-func _update_fleet_info():
-	var ai_sunk = 0
-	for s in ai_ships:
-		if s["sunk"]: ai_sunk += 1
-	var player_sunk = 0
-	for s in player_ships:
-		if s["sunk"]: player_sunk += 1
-	fleet_info_label.text = "Inimigo Afundado: %d/5  |  Sua Frota Afundada: %d/5" % [ai_sunk, player_sunk]
-
-func _on_btn_start_pressed():
-	is_combat_phase = true
-	btn_start.hide()
-	btn_randomize.hide()
-	_switch_view("radar")
-	status_label.text = "Batalha Iniciada! Dispare no Radar Inimigo."
-
-func _on_btn_randomize_pressed():
-	player_ships = BattleshipRules.place_all_ships_randomly(player_grid)
-	_update_ui()
-
-func _on_radar_cell_clicked(r: int, c: int):
-	if not is_combat_phase or not is_player_turn or game_over: return
-	
-	var shot_res = BattleshipRules.register_shot(ai_grid, Vector2i(r, c), ai_ships)
-	if not shot_res["valid"]: return
-	
-	if shot_res["is_hit"]:
-		if shot_res["sunk_ship"] != null:
-			status_label.text = "🎯 Você afundou o %s inimigo!" % shot_res["sunk_ship"]["name"]
-		else:
-			status_label.text = "💥 Fogo certeiro no navio inimigo!"
-	else:
-		status_label.text = "Água! Vez do Inimigo..."
+		btn_tab_radar.self_modulate = Color(0.6, 0.6, 0.6)
+		btn_tab_fleet.self_modulate = Color(0.3, 0.7, 1.0)
+		_render_fleet_view()
 		
-	_update_ui()
-	_update_fleet_info()
+	_update_fleet_status_labels()
+
+func _render_radar_view():
+	# Exibe tiros no grid da IA (2 = Erro, 3 = Acerto)
+	for r in range(10):
+		for c in range(10):
+			var val = ai_grid.get_cell(r, c)
+			if val == 2: # Erro / Água
+				_spawn_peg_3d(r, c, false)
+			elif val == 3: # Acerto / Fogo
+				_spawn_peg_3d(r, c, true)
+
+func _render_fleet_view():
+	# Exibe navios do jogador e tiros recebidos
+	for s in player_ships:
+		_render_ship_3d(s)
+		
+	for r in range(10):
+		for c in range(10):
+			var val = player_grid.get_cell(r, c)
+			if val == 2:
+				_spawn_peg_3d(r, c, false)
+			elif val == 3:
+				_spawn_peg_3d(r, c, true)
+
+func _spawn_peg_3d(r: int, c: int, is_hit: bool):
+	var peg = MeshInstance3D.new()
+	peg.mesh = MeshBuilder3D.create_peg_pin(0.35, 0.1)
+	peg.position = board_3d.get_cell_position_3d(r, c, 0.18)
 	
-	if shot_res["all_sunk"]:
-		_end_game("🏆 Vitória Total! Você destruiu a frota inimiga!")
+	if is_hit:
+		peg.material_override = MaterialFactory3D.get_glow(Color(1.0, 0.25, 0.1), 2.5)
+	else:
+		peg.material_override = MaterialFactory3D.get_silver()
+		
+	markers_root.add_child(peg)
+	markers_3d[Vector2i(r, c)] = peg
+
+func _render_ship_3d(ship: Dictionary):
+	var length = ship["size"]
+	var is_vert = ship["is_vertical"]
+	var start_r = ship["start_row"]
+	var start_c = ship["start_col"]
+	
+	var ship_mesh = MeshInstance3D.new()
+	var box = BoxMesh.new()
+	var w = 0.4 if is_vert else (length * 0.65 * 0.9)
+	var l = (length * 0.65 * 0.9) if is_vert else 0.4
+	box.size = Vector3(w, 0.15, l)
+	ship_mesh.mesh = box
+	ship_mesh.material_override = MaterialFactory3D.get_plastic(Color(0.2, 0.25, 0.32), true)
+	
+	var center_r = start_r + ((length - 1) * 0.5 if is_vert else 0.0)
+	var center_c = start_c + (0.0 if is_vert else (length - 1) * 0.5)
+	
+	var total_w = 10 * 0.65
+	var start_x = -(total_w * 0.5) + (0.65 * 0.5)
+	var start_z = -(total_w * 0.5) + (0.65 * 0.5)
+	
+	ship_mesh.position = Vector3(start_x + (center_c * 0.65), 0.1, start_z + (center_r * 0.65))
+	ships_root.add_child(ship_mesh)
+
+func _update_fleet_status_labels():
+	var ai_sunk = BattleshipRules.count_sunk_ships(ai_ships)
+	var player_sunk = BattleshipRules.count_sunk_ships(player_ships)
+	fleet_info_label.text = "Navios Inimigos Afundados: %d/5  |  Aliados: %d/5" % [ai_sunk, player_sunk]
+
+func _on_cell_clicked(r: int, c: int):
+	if game_over or not is_player_turn or not viewing_radar: return
+	
+	var cell_val = ai_grid.get_cell(r, c)
+	if cell_val == 2 or cell_val == 3: return # Já atirado
+	
+	var is_hit = (cell_val == 1)
+	ai_grid.set_cell(r, c, 3 if is_hit else 2)
+	_spawn_peg_3d(r, c, is_hit)
+	
+	if is_hit:
+		var sunk_ship = BattleshipRules.check_ship_sunk(ai_ships, ai_grid, r, c)
+		if sunk_ship.size() > 0:
+			status_label.text = "💥 Você afundou o %s inimigo!" % sunk_ship["name"]
+		else:
+			status_label.text = "🎯 Fogo certeiro!"
+	else:
+		status_label.text = "🌊 Água!"
+		
+	_update_fleet_status_labels()
+	
+	if BattleshipRules.check_all_sunk(ai_ships):
+		_end_game(true)
 		return
 		
 	is_player_turn = false
 	await get_tree().create_timer(0.6).timeout
-	_play_ai_attack()
+	_play_ai_turn()
 
-func _play_ai_attack():
-	if game_over: return
+func _play_ai_turn():
+	var ai_target = BattleshipRules.get_ai_shot(player_grid)
+	var r = ai_target.x
+	var c = ai_target.y
 	
-	var shot_pos = BattleshipRules.get_ai_shot(ai_hit_stack, ai_shots_fired)
-	if shot_pos == Vector2i(-1, -1): return
+	var is_hit = (player_grid.get_cell(r, c) == 1)
+	player_grid.set_cell(r, c, 3 if is_hit else 2)
 	
-	ai_shots_fired.append(shot_pos)
-	var shot_res = BattleshipRules.register_shot(player_grid, shot_pos, player_ships)
-	
-	if shot_res["is_hit"]:
-		# Adiciona vizinhos à pilha de caça
-		ai_hit_stack.append(Vector2i(shot_pos.x + 1, shot_pos.y))
-		ai_hit_stack.append(Vector2i(shot_pos.x - 1, shot_pos.y))
-		ai_hit_stack.append(Vector2i(shot_pos.x, shot_pos.y + 1))
-		ai_hit_stack.append(Vector2i(shot_pos.x, shot_pos.y - 1))
+	if not viewing_radar:
+		_spawn_peg_3d(r, c, is_hit)
 		
-		if shot_res["sunk_ship"] != null:
-			status_label.text = "⚠️ O inimigo afundou seu %s!" % shot_res["sunk_ship"]["name"]
+	if is_hit:
+		var sunk = BattleshipRules.check_ship_sunk(player_ships, player_grid, r, c)
+		if sunk.size() > 0:
+			status_label.text = "⚠️ Inimigo afundou seu %s!" % sunk["name"]
 		else:
-			status_label.text = "🔥 O inimigo atingiu seu navio!"
-			
-	_update_ui()
-	_update_fleet_info()
+			status_label.text = "⚠️ Inimigo acertou sua frota!"
+	else:
+		status_label.text = "Inimigo atirou na água. Sua vez!"
+		
+	_update_fleet_status_labels()
 	
-	if shot_res["all_sunk"]:
-		_end_game("💀 Derrota! Toda a sua frota foi destruída.")
+	if BattleshipRules.check_all_sunk(player_ships):
+		_end_game(false)
 		return
 		
 	is_player_turn = true
-	if current_view == "radar":
-		status_label.text = "Sua Vez! Escolha as coordenadas no Radar."
 
-func _end_game(msg: String):
+func _end_game(is_player_win: bool):
 	game_over = true
-	status_label.text = msg
 	btn_restart.show()
+	if is_player_win:
+		status_label.text = "🏆 Vitória! Toda a frota inimiga foi destruída!"
+		env_3d.celebrate_win()
+	else:
+		status_label.text = "Derrota! Sua frota foi aniquilada."
 
-func _on_btn_tab_radar_pressed():
-	_switch_view("radar")
+func _on_btn_radar_pressed():
+	viewing_radar = true
+	_update_view_mode()
 
-func _on_btn_tab_fleet_pressed():
-	_switch_view("fleet")
+func _on_btn_fleet_pressed():
+	viewing_radar = false
+	_update_view_mode()
 
 func _on_btn_restart_pressed():
-	_start_setup_phase()
+	_start_new_game()
 
 func _on_btn_back_pressed():
 	SceneManager.goto_scene("res://core/telas/MenuTabuleiro.tscn")

@@ -1,5 +1,7 @@
 extends Control
 
+## CheckersGame: Damas com Tabuleiro 3D em Nogueira, Peças de Marfim/Obsidiana e Coroas Douradas
+
 const Grid2DScript = preload("res://shared/core_engine/board/Grid2D.gd")
 const CheckersRulesScript = preload("res://games/damas/CheckersRules.gd")
 
@@ -9,32 +11,30 @@ var valid_moves: Array[Dictionary] = []
 var is_player_turn: bool = true
 var game_over: bool = false
 var continuing_capture_pos: Vector2i = Vector2i(-1, -1)
+var pieces_3d: Dictionary = {}
 
-@onready var grid = $VBoxContainer/CenterContainer/BoardContainer/Grid
-@onready var status_label = $VBoxContainer/StatusLabel
-@onready var score_label = $VBoxContainer/ScoreLabel
-@onready var btn_restart = $VBoxContainer/BtnRestart
-
-var cell_buttons = []
+@onready var env_3d: TabletopEnvironment3D = $TabletopEnvironment3D
+@onready var board_3d: Board3D = $Board3D
+@onready var pieces_root: Node3D = $PiecesRoot
+@onready var status_label = $UI/VBoxContainer/StatusLabel
+@onready var score_label = $UI/VBoxContainer/ScoreLabel
+@onready var btn_restart = $UI/VBoxContainer/BtnRestart
+@onready var touch_grid = $UI/CenterContainer/TouchGrid
 
 func _ready():
-	_setup_board_grid()
+	board_3d.setup_board(CheckersRules.ROWS, CheckersRules.COLS, 0.75, "wood_checkered")
+	_setup_touch_grid()
 	_start_new_game()
 
-func _setup_board_grid():
-	for c in grid.get_children(): c.queue_free()
-	cell_buttons.clear()
-	
+func _setup_touch_grid():
+	for c in touch_grid.get_children(): c.queue_free()
 	for r in range(CheckersRules.ROWS):
-		var row_btns = []
 		for c in range(CheckersRules.COLS):
 			var btn = Button.new()
-			btn.custom_minimum_size = Vector2(65, 65)
-			btn.add_theme_font_size_override("font_size", 34)
+			btn.custom_minimum_size = Vector2(40, 40)
+			btn.flat = true
 			btn.pressed.connect(_on_cell_clicked.bind(r, c))
-			grid.add_child(btn)
-			row_btns.append(btn)
-		cell_buttons.append(row_btns)
+			touch_grid.add_child(btn)
 
 func _start_new_game():
 	game_over = false
@@ -45,48 +45,35 @@ func _start_new_game():
 	btn_restart.hide()
 	
 	grid_data = CheckersRules.create_initial_board()
-	_update_ui()
-	status_label.text = "Sua Vez! (Brancas)"
+	_sync_pieces_3d()
+	status_label.text = "Sua Vez! (Marfim)"
 
-func _update_ui():
+func _sync_pieces_3d():
+	for p in pieces_root.get_children(): p.queue_free()
+	pieces_3d.clear()
+	
 	var player_count = 0
 	var ai_count = 0
 	
 	for r in range(CheckersRules.ROWS):
 		for c in range(CheckersRules.COLS):
-			var btn = cell_buttons[r][c]
+			board_3d.reset_cell_material(r, c)
 			var val = grid_data.get_cell(r, c)
-			var is_dark_square = (r + c) % 2 == 1
-			
-			var bg_color = Color(0.32, 0.22, 0.16) if is_dark_square else Color(0.85, 0.76, 0.65)
-			
-			if selected_pos == Vector2i(r, c):
-				bg_color = Color(0.85, 0.7, 0.2)
-			else:
-				for vm in valid_moves:
-					if vm["to"] == Vector2i(r, c):
-						bg_color = Color(0.25, 0.65, 0.35)
-						break
-			
-			btn.self_modulate = bg_color
-			
-			if val == 1:
-				btn.text = "⚪"
-				player_count += 1
-			elif val == 2:
-				btn.text = "👑"
-				player_count += 1
-			elif val == -1:
-				btn.text = "⚫"
-				ai_count += 1
-			elif val == -2:
-				btn.text = "👑"
-				btn.add_theme_color_override("font_color", Color(0.9, 0.3, 0.3))
-				ai_count += 1
-			else:
-				btn.text = ""
+			if val != 0:
+				var piece = preload("res://shared/3d/Token3D.tscn").instantiate()
+				piece.token_type = "cylinder"
+				piece.material_name = "ivory" if val > 0 else "obsidian"
+				piece.position = board_3d.get_cell_position_3d(r, c, 0.08)
+				pieces_root.add_child(piece)
+				pieces_3d[Vector2i(r, c)] = piece
 				
-	score_label.text = "Você: %d peças  |  IA: %d peças" % [player_count, ai_count]
+				if abs(val) == 2:
+					piece.promote_queen()
+					
+				if val > 0: player_count += 1
+				else: ai_count += 1
+				
+	score_label.text = "Você: %d  |  IA: %d" % [player_count, ai_count]
 
 func _on_cell_clicked(r: int, c: int):
 	if game_over or not is_player_turn: return
@@ -101,104 +88,148 @@ func _on_cell_clicked(r: int, c: int):
 	if continuing_capture_pos != Vector2i(-1, -1):
 		return
 		
-	var cell_val = grid_data.get_cell(r, c)
-	if cell_val != null and cell_val > 0:
+	var val = grid_data.get_cell(r, c)
+	if val > 0: # Peça do jogador
 		selected_pos = clicked_pos
-		valid_moves = CheckersRules.get_piece_moves(grid_data, r, c)
-		_update_ui()
+		valid_moves = CheckersRules.get_valid_moves_for_piece(grid_data, selected_pos)
+		
+		# Limpa destaques anteriores e destaca destinos válidos
+		for row in range(CheckersRules.ROWS):
+			for col in range(CheckersRules.COLS):
+				board_3d.reset_cell_material(row, col)
+		board_3d.highlight_cell(r, c, Color(0.9, 0.75, 0.2))
+		for vm in valid_moves:
+			board_3d.highlight_cell(vm["to"].x, vm["to"].y, Color(0.2, 0.8, 0.4))
 	else:
 		selected_pos = Vector2i(-1, -1)
 		valid_moves.clear()
-		_update_ui()
+		for row in range(CheckersRules.ROWS):
+			for col in range(CheckersRules.COLS):
+				board_3d.reset_cell_material(row, col)
 
-func _execute_player_move(from_pos: Vector2i, move_data: Dictionary):
-	var move_result = CheckersRules.execute_move(grid_data, move_data)
-	var further_caps = move_result["further_captures"]
+func _execute_player_move(from_pos: Vector2i, move_dict: Dictionary):
+	var to_pos = move_dict["to"]
+	var captured_pos = move_dict["captured"]
 	
-	if move_result["captured_any"] and not further_caps.is_empty():
-		continuing_capture_pos = move_data["to"]
-		selected_pos = move_data["to"]
-		valid_moves = further_caps
-		_update_ui()
-		status_label.text = "Continue a captura!"
-		return
+	var piece_3d = pieces_3d.get(from_pos)
+	if piece_3d:
+		pieces_3d.erase(from_pos)
+		pieces_3d[to_pos] = piece_3d
+		var target_3d = board_3d.get_cell_position_3d(to_pos.x, to_pos.y, 0.08)
+		piece_3d.jump_to(target_3d, 0.5, 0.3)
 		
+	if captured_pos != Vector2i(-1, -1):
+		var cap_piece = pieces_3d.get(captured_pos)
+		if cap_piece:
+			cap_piece.queue_free()
+			pieces_3d.erase(captured_pos)
+			
+	var became_queen = CheckersRules.apply_move(grid_data, from_pos, to_pos, captured_pos)
+	if became_queen and piece_3d:
+		piece_3d.promote_queen()
+		
+	for row in range(CheckersRules.ROWS):
+		for col in range(CheckersRules.COLS):
+			board_3d.reset_cell_material(row, col)
+			
+	if captured_pos != Vector2i(-1, -1):
+		var further_captures = CheckersRules.get_captures_for_piece(grid_data, to_pos)
+		if further_captures.size() > 0:
+			continuing_capture_pos = to_pos
+			selected_pos = to_pos
+			valid_moves = further_captures
+			board_3d.highlight_cell(to_pos.x, to_pos.y, Color(0.9, 0.75, 0.2))
+			for vm in valid_moves:
+				board_3d.highlight_cell(vm["to"].x, vm["to"].y, Color(0.2, 0.8, 0.4))
+			status_label.text = "Captura múltipla obrigatória!"
+			return
+			
 	continuing_capture_pos = Vector2i(-1, -1)
 	selected_pos = Vector2i(-1, -1)
 	valid_moves.clear()
-	_update_ui()
 	
-	if _check_game_over(): return
-	
-	# IA
+	_check_game_end_or_ai_turn()
+
+func _check_game_end_or_ai_turn():
+	_sync_pieces_3d()
+	var winner = CheckersRules.check_game_over(grid_data)
+	if winner != 0:
+		_end_game(winner)
+		return
+		
 	is_player_turn = false
-	status_label.text = "Vez da IA..."
-	await get_tree().create_timer(0.5).timeout
+	status_label.text = "Vez da IA (Obsidiana)..."
+	await get_tree().create_timer(0.6).timeout
+	
 	_play_ai_turn()
 
 func _play_ai_turn():
-	if game_over: return
-	
-	var all_ai_moves = CheckersRules.get_all_valid_moves(grid_data, -1)
-	if all_ai_moves.is_empty():
-		_end_game("Você Venceu! A IA não tem movimentos.")
+	var ai_move = CheckersRules.get_best_ai_move(grid_data)
+	if ai_move.is_empty():
+		_end_game(1)
 		return
 		
-	var captures = []
-	for m in all_ai_moves:
-		if m["captures"].size() > 0:
-			captures.append(m)
+	var from_pos = ai_move["from"]
+	var to_pos = ai_move["to"]
+	var captured_pos = ai_move["captured"]
+	
+	var piece_3d = pieces_3d.get(from_pos)
+	if piece_3d:
+		pieces_3d.erase(from_pos)
+		pieces_3d[to_pos] = piece_3d
+		var target_3d = board_3d.get_cell_position_3d(to_pos.x, to_pos.y, 0.08)
+		piece_3d.jump_to(target_3d, 0.5, 0.3)
+		
+	if captured_pos != Vector2i(-1, -1):
+		var cap_piece = pieces_3d.get(captured_pos)
+		if cap_piece:
+			cap_piece.queue_free()
+			pieces_3d.erase(captured_pos)
 			
-	var chosen_move: Dictionary
-	if not captures.is_empty():
-		captures.shuffle()
-		chosen_move = captures[0]
-	else:
-		all_ai_moves.shuffle()
-		chosen_move = all_ai_moves[0]
+	var became_queen = CheckersRules.apply_move(grid_data, from_pos, to_pos, captured_pos)
+	if became_queen and piece_3d:
+		piece_3d.promote_queen()
 		
-	var res = CheckersRules.execute_move(grid_data, chosen_move)
-	
-	# Multi-jumps da IA
-	while res["captured_any"] and not res["further_captures"].is_empty():
-		var next_caps = res["further_captures"]
-		next_caps.shuffle()
-		res = CheckersRules.execute_move(grid_data, next_caps[0])
+	# Capturas sucessivas da IA
+	if captured_pos != Vector2i(-1, -1):
+		var further = CheckersRules.get_captures_for_piece(grid_data, to_pos)
+		while further.size() > 0:
+			await get_tree().create_timer(0.4).timeout
+			var next_m = further[0]
+			var next_to = next_m["to"]
+			var next_cap = next_m["captured"]
+			
+			pieces_3d.erase(to_pos)
+			pieces_3d[next_to] = piece_3d
+			var next_target_3d = board_3d.get_cell_position_3d(next_to.x, next_to.y, 0.08)
+			piece_3d.jump_to(next_target_3d, 0.5, 0.3)
+			
+			var next_cap_piece = pieces_3d.get(next_cap)
+			if next_cap_piece:
+				next_cap_piece.queue_free()
+				pieces_3d.erase(next_cap)
+				
+			CheckersRules.apply_move(grid_data, to_pos, next_to, next_cap)
+			to_pos = next_to
+			further = CheckersRules.get_captures_for_piece(grid_data, to_pos)
+			
+	_sync_pieces_3d()
+	var winner = CheckersRules.check_game_over(grid_data)
+	if winner != 0:
+		_end_game(winner)
+		return
 		
-	_update_ui()
-	
-	if _check_game_over(): return
-	
 	is_player_turn = true
-	status_label.text = "Sua Vez! (Brancas)"
+	status_label.text = "Sua Vez! (Marfim)"
 
-func _check_game_over() -> bool:
-	var p_count = 0
-	var ai_count = 0
-	for r in range(CheckersRules.ROWS):
-		for c in range(CheckersRules.COLS):
-			var val = grid_data.get_cell(r, c)
-			if val > 0: p_count += 1
-			elif val < 0: ai_count += 1
-			
-	if p_count == 0:
-		_end_game("A IA Venceu!")
-		return true
-	if ai_count == 0:
-		_end_game("🏆 Você Venceu!")
-		return true
-		
-	var p_moves = CheckersRules.get_all_valid_moves(grid_data, 1)
-	if is_player_turn and p_moves.is_empty():
-		_end_game("Empate! Sem movimentos válidos.")
-		return true
-		
-	return false
-
-func _end_game(msg: String):
+func _end_game(winner: int):
 	game_over = true
-	status_label.text = msg
 	btn_restart.show()
+	if winner == 1:
+		status_label.text = "🏆 Você Venceu!"
+		env_3d.celebrate_win()
+	else:
+		status_label.text = "IA Venceu!"
 
 func _on_btn_restart_pressed():
 	_start_new_game()
