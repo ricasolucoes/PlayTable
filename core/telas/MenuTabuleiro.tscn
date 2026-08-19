@@ -16,6 +16,8 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 color = Color(0.08, 0.09, 0.11, 1)
 
 [node name="VBoxContainer" type="VBoxContainer" parent="."]
@@ -23,27 +25,27 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 30.0
-offset_top = 40.0
-offset_right = -30.0
-offset_bottom = -40.0
+offset_left = 25.0
+offset_top = 35.0
+offset_right = -25.0
+offset_bottom = -35.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_constants/separation = 30
+theme_override_constants/separation = 20
 
 [node name="TopBar" type="HBoxContainer" parent="VBoxContainer"]
 layout_mode = 2
 theme_override_constants/separation = 20
 
 [node name="BtnVoltar" type="Button" parent="VBoxContainer/TopBar"]
-custom_minimum_size = Vector2(100, 60)
+custom_minimum_size = Vector2(100, 50)
 layout_mode = 2
 text = "Voltar"
 
 [node name="Title" type="Label" parent="VBoxContainer/TopBar"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 36
-text = " Jogos de Tabuleiro"
+theme_override_font_sizes/font_size = 34
+text = "Jogos de Tabuleiro"
 vertical_alignment = 1
 
 [node name="ScrollContainer" type="ScrollContainer" parent="VBoxContainer"]
@@ -54,59 +56,96 @@ horizontal_scroll_mode = 0
 [node name="GridContainer" type="GridContainer" parent="VBoxContainer/ScrollContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_constants/h_separation = 20
-theme_override_constants/v_separation = 20
+theme_override_constants/h_separation = 16
+theme_override_constants/v_separation = 16
 columns = 2
 
 [node name="BtnC4" type="Button" parent="VBoxContainer/ScrollContainer/GridContainer"]
-custom_minimum_size = Vector2(0, 160)
+custom_minimum_size = Vector2(0, 130)
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_font_sizes/font_size = 28
-text = "Quatro em
-Linha"
+theme_override_font_sizes/font_size = 24
+text = "🔴🟡\nQuatro em Linha"
 
 [node name="BtnVelha" type="Button" parent="VBoxContainer/ScrollContainer/GridContainer"]
-custom_minimum_size = Vector2(0, 160)
+custom_minimum_size = Vector2(0, 130)
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_font_sizes/font_size = 28
-text = "Jogo da
-Velha"
-
-[node name="BtnReversi" type="Button" parent="VBoxContainer/ScrollContainer/GridContainer"]
-custom_minimum_size = Vector2(0, 160)
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_font_sizes/font_size = 28
-text = "Reversi"
-
-[node name="BtnBatalha" type="Button" parent="VBoxContainer/ScrollContainer/GridContainer"]
-custom_minimum_size = Vector2(0, 160)
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_font_sizes/font_size = 28
-text = "Batalha
-Naval"
+theme_override_font_sizes/font_size = 24
+text = "❌⭕\nJogo da Velha"
 
 [node name="BtnDamas" type="Button" parent="VBoxContainer/ScrollContainer/GridContainer"]
-custom_minimum_size = Vector2(0, 160)
+custom_minimum_size = Vector2(0, 130)
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_font_sizes/font_size = 28
-text = "Damas"
+theme_override_font_sizes/font_size = 24
+text = "👑⚪\nDamas"
+
+[node name="BtnBatalha" type="Button" parent="VBoxContainer/ScrollContainer/GridContainer"]
+custom_minimum_size = Vector2(0, 130)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 24
+text = "🚢💥\nBatalha Naval"
+
+[node name="BtnReversi" type="Button" parent="VBoxContainer/ScrollContainer/GridContainer"]
+custom_minimum_size = Vector2(0, 130)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 24
+text = "⚫⚪\nReversi (Othello)"
 
 [node name="BtnMancala" type="Button" parent="VBoxContainer/ScrollContainer/GridContainer"]
-custom_minimum_size = Vector2(0, 160)
+custom_minimum_size = Vector2(0, 130)
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_font_sizes/font_size = 28
-text = "Mancala"
+theme_override_font_sizes/font_size = 24
+text = "🌰🏺\nMancala (Kalah)"
+
+[node name="BtnLudo" type="Button" parent="VBoxContainer/ScrollContainer/GridContainer"]
+custom_minimum_size = Vector2(0, 130)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 24
+text = "🎲🏃\nLudo Simplificado"
+
+[node name="BtnSenet" type="Button" parent="VBoxContainer/ScrollContainer/GridContainer"]
+custom_minimum_size = Vector2(0, 130)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 24
+text = "☥𓁹\nSenet Egípcio"
+
+[node name="BtnSolitario" type="Button" parent="VBoxContainer/ScrollContainer/GridContainer"]
+custom_minimum_size = Vector2(0, 130)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 24
+text = "🔴⭕\nSolitário (Resta Um)"
+
+[node name="BtnCampo" type="Button" parent="VBoxContainer/ScrollContainer/GridContainer"]
+custom_minimum_size = Vector2(0, 130)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 24
+text = "💣🚩\nCampo Minado"
+
+[node name="BtnDomino" type="Button" parent="VBoxContainer/ScrollContainer/GridContainer"]
+custom_minimum_size = Vector2(0, 130)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 24
+text = "🁢🁣\nDominó"
 
 [connection signal="pressed" from="VBoxContainer/TopBar/BtnVoltar" to="." method="_on_btn_voltar_pressed"]
 [connection signal="pressed" from="VBoxContainer/ScrollContainer/GridContainer/BtnC4" to="." method="_on_btn_c4_pressed"]
 [connection signal="pressed" from="VBoxContainer/ScrollContainer/GridContainer/BtnVelha" to="." method="_on_btn_velha_pressed"]
-[connection signal="pressed" from="VBoxContainer/ScrollContainer/GridContainer/BtnReversi" to="." method="_on_btn_reversi_pressed"]
-[connection signal="pressed" from="VBoxContainer/ScrollContainer/GridContainer/BtnBatalha" to="." method="_on_btn_batalha_pressed"]
 [connection signal="pressed" from="VBoxContainer/ScrollContainer/GridContainer/BtnDamas" to="." method="_on_btn_damas_pressed"]
+[connection signal="pressed" from="VBoxContainer/ScrollContainer/GridContainer/BtnBatalha" to="." method="_on_btn_batalha_pressed"]
+[connection signal="pressed" from="VBoxContainer/ScrollContainer/GridContainer/BtnReversi" to="." method="_on_btn_reversi_pressed"]
 [connection signal="pressed" from="VBoxContainer/ScrollContainer/GridContainer/BtnMancala" to="." method="_on_btn_mancala_pressed"]
+[connection signal="pressed" from="VBoxContainer/ScrollContainer/GridContainer/BtnLudo" to="." method="_on_btn_ludo_pressed"]
+[connection signal="pressed" from="VBoxContainer/ScrollContainer/GridContainer/BtnSenet" to="." method="_on_btn_senet_pressed"]
+[connection signal="pressed" from="VBoxContainer/ScrollContainer/GridContainer/BtnSolitario" to="." method="_on_btn_solitario_pressed"]
+[connection signal="pressed" from="VBoxContainer/ScrollContainer/GridContainer/BtnCampo" to="." method="_on_btn_campo_pressed"]
+[connection signal="pressed" from="VBoxContainer/ScrollContainer/GridContainer/BtnDomino" to="." method="_on_btn_domino_pressed"]

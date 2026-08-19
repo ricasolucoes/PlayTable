@@ -40,7 +40,7 @@ offset_bottom = 220.0
 grow_horizontal = 2
 theme_override_colors/font_color = Color(0.6, 0.65, 0.7, 1)
 theme_override_font_sizes/font_size = 28
-text = "Offline Collection"
+text = "Coleção Offline Completa"
 horizontal_alignment = 1
 
 [node name="VBoxContainer" type="VBoxContainer" parent="."]
@@ -50,32 +50,72 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -160.0
-offset_top = -100.0
-offset_right = 160.0
-offset_bottom = 160.0
+offset_left = -180.0
+offset_top = -120.0
+offset_right = 180.0
+offset_bottom = 180.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_constants/separation = 24
 
 [node name="BtnTabuleiro" type="Button" parent="VBoxContainer"]
-custom_minimum_size = Vector2(0, 100)
+custom_minimum_size = Vector2(0, 95)
 layout_mode = 2
-theme_override_font_sizes/font_size = 36
-text = "Tabuleiro"
+theme_override_font_sizes/font_size = 34
+text = "🎲 Tabuleiro (11)"
 
 [node name="BtnCartas" type="Button" parent="VBoxContainer"]
-custom_minimum_size = Vector2(0, 100)
+custom_minimum_size = Vector2(0, 95)
 layout_mode = 2
-theme_override_font_sizes/font_size = 36
-text = "Cartas"
+theme_override_font_sizes/font_size = 34
+text = "🃏 Cartas (5)"
 
 [node name="BtnConfig" type="Button" parent="VBoxContainer"]
-custom_minimum_size = Vector2(0, 100)
+custom_minimum_size = Vector2(0, 95)
 layout_mode = 2
-theme_override_font_sizes/font_size = 36
+theme_override_font_sizes/font_size = 34
+text = "⚙️ Configurações"
+
+[node name="ConfigPanel" type="PanelContainer" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -200.0
+offset_top = -140.0
+offset_right = 200.0
+offset_bottom = 140.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="ConfigPanel"]
+layout_mode = 2
+theme_override_constants/separation = 20
+alignment = 1
+
+[node name="Label" type="Label" parent="ConfigPanel/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 28
 text = "Configurações"
+horizontal_alignment = 1
+
+[node name="BtnToggleTheme" type="Button" parent="ConfigPanel/VBoxContainer"]
+custom_minimum_size = Vector2(0, 70)
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+text = "Tema: 🌙 Escuro"
+
+[node name="BtnCloseConfig" type="Button" parent="ConfigPanel/VBoxContainer"]
+custom_minimum_size = Vector2(0, 60)
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+text = "Fechar"
 
 [connection signal="pressed" from="VBoxContainer/BtnTabuleiro" to="." method="_on_btn_tabuleiro_pressed"]
 [connection signal="pressed" from="VBoxContainer/BtnCartas" to="." method="_on_btn_cartas_pressed"]
 [connection signal="pressed" from="VBoxContainer/BtnConfig" to="." method="_on_btn_config_pressed"]
+[connection signal="pressed" from="ConfigPanel/VBoxContainer/BtnToggleTheme" to="." method="_on_btn_toggle_theme_pressed"]
+[connection signal="pressed" from="ConfigPanel/VBoxContainer/BtnCloseConfig" to="." method="_on_btn_close_config_pressed"]

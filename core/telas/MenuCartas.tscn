@@ -16,6 +16,8 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 color = Color(0.08, 0.09, 0.11, 1)
 
 [node name="VBoxContainer" type="VBoxContainer" parent="."]
@@ -23,27 +25,27 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 30.0
-offset_top = 40.0
-offset_right = -30.0
-offset_bottom = -40.0
+offset_left = 25.0
+offset_top = 35.0
+offset_right = -25.0
+offset_bottom = -35.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_constants/separation = 30
+theme_override_constants/separation = 20
 
 [node name="TopBar" type="HBoxContainer" parent="VBoxContainer"]
 layout_mode = 2
 theme_override_constants/separation = 20
 
 [node name="BtnVoltar" type="Button" parent="VBoxContainer/TopBar"]
-custom_minimum_size = Vector2(100, 60)
+custom_minimum_size = Vector2(100, 50)
 layout_mode = 2
 text = "Voltar"
 
 [node name="Title" type="Label" parent="VBoxContainer/TopBar"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 36
-text = " Jogos de Cartas"
+theme_override_font_sizes/font_size = 34
+text = "Jogos de Cartas"
 vertical_alignment = 1
 
 [node name="ScrollContainer" type="ScrollContainer" parent="VBoxContainer"]
@@ -54,33 +56,48 @@ horizontal_scroll_mode = 0
 [node name="GridContainer" type="GridContainer" parent="VBoxContainer/ScrollContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_constants/h_separation = 20
-theme_override_constants/v_separation = 20
+theme_override_constants/h_separation = 16
+theme_override_constants/v_separation = 16
 columns = 2
 
-[node name="BtnMemoria" type="Button" parent="VBoxContainer/ScrollContainer/GridContainer"]
-custom_minimum_size = Vector2(0, 160)
+[node name="BtnPaciencia" type="Button" parent="VBoxContainer/ScrollContainer/GridContainer"]
+custom_minimum_size = Vector2(0, 140)
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_font_sizes/font_size = 28
-text = "Memória"
+theme_override_font_sizes/font_size = 24
+text = "♠♥♦♣\nPaciência Klondike"
 
-[node name="BtnSolitario" type="Button" parent="VBoxContainer/ScrollContainer/GridContainer"]
-custom_minimum_size = Vector2(0, 160)
+[node name="BtnMemoria" type="Button" parent="VBoxContainer/ScrollContainer/GridContainer"]
+custom_minimum_size = Vector2(0, 140)
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_font_sizes/font_size = 28
-text = "Solitário"
+theme_override_font_sizes/font_size = 24
+text = "🚀🦄\nJogo da Memória"
 
 [node name="Btn21" type="Button" parent="VBoxContainer/ScrollContainer/GridContainer"]
-custom_minimum_size = Vector2(0, 160)
+custom_minimum_size = Vector2(0, 140)
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_font_sizes/font_size = 28
-text = "21 
-(Blackjack)"
+theme_override_font_sizes/font_size = 24
+text = "🃏💰\n21 (Blackjack)"
+
+[node name="BtnUnoLike" type="Button" parent="VBoxContainer/ScrollContainer/GridContainer"]
+custom_minimum_size = Vector2(0, 140)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 24
+text = "🔴🔵🟢🟡\nCartas das Cores (Uno)"
+
+[node name="BtnPoker" type="Button" parent="VBoxContainer/ScrollContainer/GridContainer"]
+custom_minimum_size = Vector2(0, 140)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 24
+text = "👑🃏\nPoker (Video Poker)"
 
 [connection signal="pressed" from="VBoxContainer/TopBar/BtnVoltar" to="." method="_on_btn_voltar_pressed"]
+[connection signal="pressed" from="VBoxContainer/ScrollContainer/GridContainer/BtnPaciencia" to="." method="_on_btn_paciencia_pressed"]
 [connection signal="pressed" from="VBoxContainer/ScrollContainer/GridContainer/BtnMemoria" to="." method="_on_btn_memoria_pressed"]
-[connection signal="pressed" from="VBoxContainer/ScrollContainer/GridContainer/BtnSolitario" to="." method="_on_btn_solitario_pressed"]
 [connection signal="pressed" from="VBoxContainer/ScrollContainer/GridContainer/Btn21" to="." method="_on_btn_21_pressed"]
+[connection signal="pressed" from="VBoxContainer/ScrollContainer/GridContainer/BtnUnoLike" to="." method="_on_btn_unolike_pressed"]
+[connection signal="pressed" from="VBoxContainer/ScrollContainer/GridContainer/BtnPoker" to="." method="_on_btn_poker_pressed"]
