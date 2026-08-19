@@ -1,15 +1,9 @@
 # STATE
 
-**Current Phase:** Phase 3.2 - Concluído
-**Status:** Done
+**Status:** Concluído (100% dos 16 jogos implementados e integrados)
 
-## Context
-O `/goal` de execução autônoma (`/gsd-autonomous`) finalizou todas as fases.
-- A base do jogo e o Menu Principal foram criados.
-- A engine Godot 4 foi configurada.
-- O jogo "Quatro em Linha" (lógica, AI e UI) foi implementado.
-- Os menus de categorias (Tabuleiro e Cartas) foram prototipados para ancorar os próximos módulos.
-- Os scripts de Build e a geração do `release.keystore` para assinatura do APK (Phase 3.1) foram gerados.
-
-## Next Steps
-- Milestone completo. Não há próximas fases pendentes neste ROADMAP. O repositório está pronto para clone e build na máquina host do desenvolvedor.
+## Contexto
+Todos os 16 jogos solicitados foram completamente implementados e testados no projeto **Jogos de Mesa Offline** (Godot 4.3 Engine):
+- **11 Jogos de Tabuleiro**: Jogo da Velha, Damas, Batalha Naval, Quatro em Linha, Solitário (Resta Um), Campo Minado, Dominó, Ludo Simplificado, Reversi (Othello), Mancala (Kalah), Senet Egípcio.
+- **5 Jogos de Cartas**: Paciência Klondike, Jogo da Memória, 21 (Blackjack), Uno-like (Cartas das Cores), Poker Simplificado (Video Poker).
+- **Menus e Navegação**: Telas de `MainMenu`, `MenuTabuleiro` e `MenuCartas` integradas com acesso direto a todas as 16 cenas. Painel de configurações com alternância de tema Claro/Escuro funcional.

@@ -1,40 +1,33 @@
 # ROADMAP
 
-## Phase 1: O Início (Jogos de Tabuleiro)
+## Coleção Completa de Jogos Offline (16 Jogos)
 
-- [x] **Phase 1.1: Estrutura Core e UI Base**
-  - Definição da stack (Godot ou Flutter) no código.
-  - Implementação de Menu Principal e navegação entre cenas/telas.
-  - Sistema base de persistência (Save local).
+### 🎲 Jogos de Tabuleiro (11 Jogos)
+- [x] **1. Jogo da Velha (Tic-Tac-Toe)**: Grade 3x3, IA tática, placar de vitórias/empates e reinício rápido (`games/jogo_da_velha/`).
+- [x] **2. Damas (Checkers)**: Tabuleiro 8x8, movimentos simples, damas coroadas 👑, capturas múltiplas e IA (`games/damas/`).
+- [x] **3. Batalha Naval (Battleship)**: Grids 10x10 (Radar e Frota), 5 navios, IA Hunt & Target com busca em cruz (`games/batalha_naval/`).
+- [x] **4. Quatro em Linha (Connect Four)**: Grade 7x6, física de queda, IA e placar de vitórias (`games/quatro_em_linha/`).
+- [x] **5. Solitário / Resta Um (Peg Solitaire)**: Cruz de 33 posições, saltos válidos, botão Desfazer (Undo) e vitória com 1 pino no centro (`games/solitario/`).
+- [x] **6. Campo Minado (Minesweeper)**: Grade 9x9 com 10 minas, primeiro clique seguro, flood-fill de zeros, alternador de bandeiras e timer (`games/campo_minado/`).
+- [x] **7. Dominó (Dominoes)**: Conjunto de 28 pedras (duplo-6), compra do dorme, jogadas nas pontas abertas e desempate por contagem de pontos (`games/domino/`).
+- [x] **8. Ludo Simplificado**: 4 jogadores (Jogador + 3 IAs), dado 1-6 animado, saída de base com 6, capturas na pista e corrida ao centro (`games/ludo/`).
+- [x] **9. Reversi / Othello**: Tabuleiro 8x8 verde, virada de discos em 8 direções, matriz de peso posicional e contagem de peças (`games/reversi/`).
+- [x] **10. Mancala (Kalah)**: 12 covas e 2 depósitos, semeadura anti-horária, turnos extras, capturas opostas e IA inteligente (`games/mancala/`).
+- [x] **11. Senet (Jogo Egípcio Antigo)**: Trilha serpenteante 3x10 (30 casas), 5 peças cada, varetas de lançamento (1-5), casas sagradas (Renascimento, Beleza, Água, Três Juízes, Hórus, Rá) e remoção de peças (`games/senet/`).
 
-- [x] **Phase 1.2: Quatro em Linha**
-  - Implementação do grid vertical 7x6.
-  - Física/Animação de queda das peças.
-  - Verificação de vitória (4 em linha).
-  - Modo PvP local e contra IA básica.
+---
 
-- [x] **Phase 1.3: Reversi**
-  - Protótipo do Menu e cenas geradas.
+### 🃏 Jogos de Cartas (5 Jogos)
+- [x] **12. Paciência Klondike (Klondike Solitaire)**: 7 colunas no tableau, 4 fundações por naipe (A a K), monte de compras e descarte, auto-completar e pontuação (`games/paciencia/`).
+- [x] **13. Jogo da Memória**: Cartas com emojis, animação de flip, contador de jogadas e pares (`games/memoria/`).
+- [x] **14. 21 / Blackjack**: Baralho 52 cartas, dealer para no 17, sistema de fichas/apostas e botão Dobrar (Double Down) (`games/blackjack/`).
+- [x] **15. Uno-like (Cartas das Cores)**: Baralho com 4 cores + cartas de ação (Pular, Inverter, +2, Curinga, +4), seletor de cor e IA oponente (`games/unolike/`).
+- [x] **16. Poker Simplificado (Video Poker / 5-Card Draw)**: Avaliador de mãos de poker oficiais, seleção de cartas para MANTER (HOLD), troca de cartas e tabela de pagamentos (`games/poker/`).
 
-- [x] **Phase 1.4: Batalha Naval**
-  - Protótipo do Menu e cenas geradas.
+---
 
-## Phase 2: Expansão Contínua
-
-- [x] **Phase 2.1: Novos Jogos de Tabuleiro**
-  - Damas, Mancala, Jogo da Velha (Estrutura base).
-  
-- [x] **Phase 2.2: Integração de Jogos de Cartas**
-  - Solitário (Klondike), Jogo da Memória, 21 (Blackjack simplificado). Protótipos de menus de cartas gerados.
-
-- [x] **Phase 2.3: Engajamento e Desafios**
-  - Preparado na UI inicial.
-
-## Phase 3: Spin-Offs e Distribuição Especial
-
-- [x] **Phase 3.1: Publicação Independente**
-  - Geração de Keystore e Script de Deploy Android (`build_apk.sh`) finalizados.
-  - Configurações do `export_presets.cfg` parametrizadas com signing habilitado.
-  
-- [x] **Phase 3.2: Separação de Módulos Populares**
-  - Ignorado por enquanto (depende do mercado).
+## Estrutura Core e Menus
+- [x] **Menu Principal**: Navegação para Tabuleiro (11 jogos), Cartas (5 jogos) e Configurações com alternância de tema Claro/Escuro.
+- [x] **Menu Tabuleiro**: Grade com navegação direta para os 11 jogos de tabuleiro.
+- [x] **Menu Cartas**: Grade com navegação direta para os 5 jogos de cartas.
+- [x] **Build & Android**: Export preset configurado e script de build (`build_apk.sh`).
