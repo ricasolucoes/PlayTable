@@ -1,23 +1,26 @@
 extends Control
 
-# Card format: {"color": "red"/"blue"/"green"/"yellow"/"wild", "val": String, "type": "number"/"skip"/"reverse"/"draw2"/"wild"/"wild4"}
+const CardScript = preload("res://shared/core_engine/cards/Card.gd")
+const DeckScript = preload("res://shared/core_engine/cards/Deck.gd")
+const CardHandScript = preload("res://shared/core_engine/cards/CardHand.gd")
+const CardPileScript = preload("res://shared/core_engine/cards/CardPile.gd")
+const UnoRulesScript = preload("res://games/unolike/UnoRules.gd")
 
-const COLORS = ["red", "blue", "green", "yellow"]
-const COLOR_NAMES = {"red": "Vermelho", "blue": "Azul", "green": "Verde", "yellow": "Amarelo", "wild": "Curinga"}
-const COLOR_VALUES = {
-	"red": Color(0.9, 0.25, 0.25),
-	"blue": Color(0.2, 0.55, 0.9),
-	"green": Color(0.2, 0.75, 0.35),
-	"yellow": Color(0.95, 0.8, 0.1),
-	"wild": Color(0.3, 0.3, 0.35)
+const COLOR_MAP = {
+	Card.ColorType.RED: Color(0.9, 0.25, 0.25),
+	Card.ColorType.BLUE: Color(0.2, 0.55, 0.9),
+	Card.ColorType.GREEN: Color(0.2, 0.75, 0.35),
+	Card.ColorType.YELLOW: Color(0.95, 0.8, 0.1),
+	Card.ColorType.WILD: Color(0.3, 0.3, 0.35),
+	Card.ColorType.NONE: Color(0.3, 0.3, 0.35)
 }
 
-var draw_pile = []
-var discard_pile = []
-var player_hand = []
-var ai_hand = []
+var draw_pile: Deck
+var discard_pile: CardPile
+var player_hand: CardHand
+var ai_hand: CardHand
 
-var active_color: String = "red"
+var active_color: Card.ColorType = Card.ColorType.RED
 var is_player_turn: bool = true
 var game_over: bool = false
 var waiting_color_pick: bool = false
@@ -33,6 +36,9 @@ var pending_wild4: bool = false
 @onready var btn_restart = $VBoxContainer/Actions/BtnRestart
 
 func _ready():
+	player_hand = CardHand.new()
+	ai_hand = CardHand.new()
+	discard_pile = CardPile.new()
 	_start_new_game()
 
 func _start_new_game():
@@ -42,120 +48,86 @@ func _start_new_game():
 	btn_restart.hide()
 	color_picker_modal.hide()
 	
-	_build_deck()
+	draw_pile = Deck.create_uno_deck()
+	draw_pile.shuffle()
 	
 	player_hand.clear()
 	ai_hand.clear()
-	for i in range(7):
-		player_hand.append(draw_pile.pop_back())
-		ai_hand.append(draw_pile.pop_back())
-		
-	# Flip initial top card (non-wild)
 	discard_pile.clear()
-	var first_card = draw_pile.pop_back()
-	while first_card["color"] == "wild":
+	
+	for i in range(7):
+		player_hand.add(draw_pile.draw())
+		ai_hand.add(draw_pile.draw())
+		
+	# Carta inicial da mesa não pode ser Curinga
+	var first_card = draw_pile.draw()
+	while first_card != null and first_card.color_type == Card.ColorType.WILD:
 		draw_pile.push_front(first_card)
 		draw_pile.shuffle()
-		first_card = draw_pile.pop_back()
+		first_card = draw_pile.draw()
 		
-	discard_pile.append(first_card)
-	active_color = first_card["color"]
+	discard_pile.push(first_card)
+	active_color = first_card.color_type
 	is_player_turn = true
 	
 	status_label.text = "Sua Vez! Jogue uma carta que combine com a mesa."
 	_update_ui()
 
-func _build_deck():
-	draw_pile.clear()
-	for c in COLORS:
-		# 0 once
-		draw_pile.append({"color": c, "val": "0", "type": "number"})
-		# 1-9 twice
-		for n in range(1, 10):
-			draw_pile.append({"color": c, "val": str(n), "type": "number"})
-			draw_pile.append({"color": c, "val": str(n), "type": "number"})
-		# Action cards (2 each)
-		for i in range(2):
-			draw_pile.append({"color": c, "val": "🚫", "type": "skip"})
-			draw_pile.append({"color": c, "val": "🔁", "type": "reverse"})
-			draw_pile.append({"color": c, "val": "+2", "type": "draw2"})
-			
-	# Wild cards (4 each)
-	for i in range(4):
-		draw_pile.append({"color": "wild", "val": "🌈", "type": "wild"})
-		draw_pile.append({"color": "wild", "val": "🌈+4", "type": "wild4"})
-		
-	draw_pile.shuffle()
-
-func _draw_from_deck() -> Dictionary:
-	if draw_pile.size() == 0:
+func _draw_from_deck() -> Card:
+	if draw_pile.is_empty():
 		if discard_pile.size() > 1:
-			var top = discard_pile.pop_back()
-			draw_pile = discard_pile.duplicate()
-			draw_pile.shuffle()
-			discard_pile = [top]
+			var top = discard_pile.pop()
+			draw_pile.recycle_from(discard_pile.get_all())
+			discard_pile.clear()
+			discard_pile.push(top)
 		else:
-			_build_deck()
-	return draw_pile.pop_back()
+			draw_pile = Deck.create_uno_deck()
+			draw_pile.shuffle()
+	return draw_pile.draw()
 
 func _update_ui():
-	# AI info
 	ai_info_label.text = "IA: %d cartas %s" % [ai_hand.size(), (" (⚠️ UNO!)" if ai_hand.size() == 1 else "")]
 	
 	# Top card
-	var top_c = discard_pile.back()
-	btn_top_card.text = top_c["val"]
-	btn_top_card.self_modulate = COLOR_VALUES[top_c["color"]]
+	var top_c = discard_pile.peek()
+	if top_c != null:
+		btn_top_card.text = top_c.get_display_value()
+		btn_top_card.self_modulate = COLOR_MAP.get(top_c.color_type, Color.WHITE)
 	
-	# Draw pile button
+	# Draw pile
 	btn_draw_pile.text = "🎴\n(%d)" % draw_pile.size()
 	
 	# Active color banner
-	active_color_banner.text = "Cor Atual da Mesa: " + COLOR_NAMES[active_color].to_upper()
-	active_color_banner.add_theme_color_override("font_color", COLOR_VALUES[active_color])
+	var col_name = Card.COLOR_NAMES.get(active_color, "").to_upper()
+	active_color_banner.text = "Cor Atual da Mesa: " + col_name
+	active_color_banner.add_theme_color_override("font_color", COLOR_MAP.get(active_color, Color.WHITE))
 	
-	# Player hand
+	# Player cards
 	for c in player_cards_container.get_children(): c.queue_free()
-	for i in range(player_hand.size()):
-		var card = player_hand[i]
+	var p_cards = player_hand.get_all()
+	for i in range(p_cards.size()):
+		var card = p_cards[i]
 		var btn = Button.new()
 		btn.custom_minimum_size = Vector2(85, 120)
 		btn.add_theme_font_size_override("font_size", 26)
-		btn.text = card["val"]
-		btn.self_modulate = COLOR_VALUES[card["color"]]
-		
-		var can_play = _is_valid_card_play(card)
-		if can_play and is_player_turn and not waiting_color_pick and not game_over:
-			btn.disabled = false
-		else:
-			btn.disabled = false # Keep clickable but show feedback or allow play
-			
+		btn.text = card.get_display_value()
+		btn.self_modulate = COLOR_MAP.get(card.color_type, Color.WHITE)
 		btn.pressed.connect(_on_player_card_clicked.bind(i))
 		player_cards_container.add_child(btn)
-
-func _is_valid_card_play(card: Dictionary) -> bool:
-	var top_c = discard_pile.back()
-	if card["color"] == "wild":
-		return true
-	if card["color"] == active_color:
-		return true
-	if card["val"] == top_c["val"]:
-		return true
-	return false
 
 func _on_player_card_clicked(idx: int):
 	if game_over or not is_player_turn or waiting_color_pick: return
 	
-	var card = player_hand[idx]
-	if not _is_valid_card_play(card):
-		status_label.text = "Carta inválida! Deve ter a cor %s ou o mesmo valor." % COLOR_NAMES[active_color]
+	var card = player_hand.get_card(idx)
+	if not UnoRules.is_valid_play(card, active_color, discard_pile.peek()):
+		status_label.text = "Carta inválida! Deve ter a cor %s ou o mesmo valor/efeito." % Card.COLOR_NAMES.get(active_color, "")
 		return
 		
 	player_hand.remove_at(idx)
-	discard_pile.append(card)
+	discard_pile.push(card)
 	
-	if card["color"] != "wild":
-		active_color = card["color"]
+	if card.color_type != Card.ColorType.WILD:
+		active_color = card.color_type
 		
 	_update_ui()
 	
@@ -165,46 +137,49 @@ func _on_player_card_clicked(idx: int):
 	elif player_hand.size() == 1:
 		status_label.text = "⚠️ UNO! Você tem apenas 1 carta!"
 		
-	# Handle card effects
-	if card["type"] == "wild" or card["type"] == "wild4":
+	# Efeitos de carta
+	if card.card_type == "wild" or card.card_type == "wild4":
 		waiting_color_pick = true
-		pending_wild4 = (card["type"] == "wild4")
+		pending_wild4 = (card.card_type == "wild4")
 		color_picker_modal.show()
 		status_label.text = "Escolha a nova cor da mesa!"
 		return
-	elif card["type"] == "draw2":
+	elif card.card_type == "draw2":
 		status_label.text = "Você jogou +2! IA comprou 2 cartas e perdeu a vez."
-		ai_hand.append(_draw_from_deck())
-		ai_hand.append(_draw_from_deck())
+		ai_hand.add(_draw_from_deck())
+		ai_hand.add(_draw_from_deck())
 		_update_ui()
-		# Player gets another turn
 		return
-	elif card["type"] == "skip" or card["type"] == "reverse":
+	elif card.card_type == "skip" or card.card_type == "reverse":
 		status_label.text = "Você bloqueou a IA! Jogue novamente."
 		_update_ui()
-		# Player gets another turn
 		return
 		
-	# Switch to AI
+	# Passa vez para IA
 	is_player_turn = false
 	status_label.text = "Vez da IA..."
 	await get_tree().create_timer(0.9).timeout
 	_play_ai_turn()
 
-func _on_color_chosen(col: String):
-	active_color = col
+func _on_color_chosen(col_str: String):
+	match col_str:
+		"red": active_color = Card.ColorType.RED
+		"blue": active_color = Card.ColorType.BLUE
+		"green": active_color = Card.ColorType.GREEN
+		"yellow": active_color = Card.ColorType.YELLOW
+		
 	waiting_color_pick = false
 	color_picker_modal.hide()
 	
 	if pending_wild4:
 		pending_wild4 = false
-		status_label.text = "Cor mudou para %s! IA compra 4 cartas e perde a vez." % COLOR_NAMES[active_color]
+		status_label.text = "Cor mudou para %s! IA compra 4 cartas e perde a vez." % Card.COLOR_NAMES.get(active_color, "")
 		for i in range(4):
-			ai_hand.append(_draw_from_deck())
+			ai_hand.add(_draw_from_deck())
 		_update_ui()
 		return
 		
-	status_label.text = "Cor mudou para %s. Vez da IA..." % COLOR_NAMES[active_color]
+	status_label.text = "Cor mudou para %s. Vez da IA..." % Card.COLOR_NAMES.get(active_color, "")
 	_update_ui()
 	
 	is_player_turn = false
@@ -215,12 +190,11 @@ func _on_btn_draw_pile_pressed():
 	if game_over or not is_player_turn or waiting_color_pick: return
 	
 	var drawn = _draw_from_deck()
-	player_hand.append(drawn)
+	player_hand.add(drawn)
 	status_label.text = "Você comprou uma carta."
 	_update_ui()
 	
-	# If drawn card is playable, allow player to play or switch
-	if not _is_valid_card_play(drawn):
+	if not UnoRules.is_valid_play(drawn, active_color, discard_pile.peek()):
 		is_player_turn = false
 		await get_tree().create_timer(0.8).timeout
 		_play_ai_turn()
@@ -228,50 +202,36 @@ func _on_btn_draw_pile_pressed():
 func _play_ai_turn():
 	if game_over: return
 	
-	var playable_indices = []
-	for i in range(ai_hand.size()):
-		if _is_valid_card_play(ai_hand[i]):
-			playable_indices.append(i)
-			
-	if playable_indices.size() == 0:
-		# Draw from deck
+	var playable = UnoRules.get_playable_cards(ai_hand.get_all(), active_color, discard_pile.peek())
+	
+	if playable.is_empty():
 		var drawn = _draw_from_deck()
-		ai_hand.append(drawn)
-		if _is_valid_card_play(drawn):
-			playable_indices.append(ai_hand.size() - 1)
+		ai_hand.add(drawn)
+		if UnoRules.is_valid_play(drawn, active_color, discard_pile.peek()):
+			playable.append(ai_hand.size() - 1)
 		else:
 			status_label.text = "IA comprou uma carta e passou. Sua vez!"
 			is_player_turn = true
 			_update_ui()
 			return
 			
-	# Pick best card (prioritize action cards/+2, then colored, then wild)
-	playable_indices.sort_custom(func(a, b):
-		var card_a = ai_hand[a]
-		var card_b = ai_hand[b]
-		var score_a = 3 if card_a["type"] in ["draw2", "wild4"] else (2 if card_a["type"] in ["skip", "reverse"] else (1 if card_a["color"] != "wild" else 0))
-		var score_b = 3 if card_b["type"] in ["draw2", "wild4"] else (2 if card_b["type"] in ["skip", "reverse"] else (1 if card_b["color"] != "wild" else 0))
+	# Priorização de IA: cartas de ação > número > curinga
+	playable.sort_custom(func(a, b):
+		var card_a = ai_hand.get_card(a)
+		var card_b = ai_hand.get_card(b)
+		var score_a = 3 if card_a.card_type in ["draw2", "wild4"] else (2 if card_a.card_type in ["skip", "reverse"] else (1 if card_a.color_type != Card.ColorType.WILD else 0))
+		var score_b = 3 if card_b.card_type in ["draw2", "wild4"] else (2 if card_b.card_type in ["skip", "reverse"] else (1 if card_b.color_type != Card.ColorType.WILD else 0))
 		return score_a > score_b
 	)
 	
-	var chosen_idx = playable_indices[0]
-	var card = ai_hand.pop_at(chosen_idx)
-	discard_pile.append(card)
+	var chosen_idx = playable[0]
+	var card = ai_hand.remove_at(chosen_idx)
+	discard_pile.push(card)
 	
-	if card["color"] != "wild":
-		active_color = card["color"]
+	if card.color_type != Card.ColorType.WILD:
+		active_color = card.color_type
 	else:
-		# Pick AI's most frequent color in hand
-		var col_counts = {"red": 0, "blue": 0, "green": 0, "yellow": 0}
-		for c in ai_hand:
-			if c["color"] in col_counts: col_counts[c["color"]] += 1
-		var best_col = "red"
-		var max_c = -1
-		for col in col_counts:
-			if col_counts[col] > max_c:
-				max_c = col_counts[col]
-				best_col = col
-		active_color = best_col
+		active_color = UnoRules.pick_best_color_for_hand(ai_hand.get_all())
 		
 	_update_ui()
 	
@@ -281,32 +241,32 @@ func _play_ai_turn():
 	elif ai_hand.size() == 1:
 		status_label.text = "⚠️ IA gritou UNO! (Resta 1 carta)"
 		
-	if card["type"] == "wild4":
-		status_label.text = "IA jogou Curinga +4! Nova cor: %s. Você compra 4 e perde a vez." % COLOR_NAMES[active_color]
+	if card.card_type == "wild4":
+		status_label.text = "IA jogou Curinga +4! Nova cor: %s. Você compra 4 e perde a vez." % Card.COLOR_NAMES.get(active_color, "")
 		for i in range(4):
-			player_hand.append(_draw_from_deck())
+			player_hand.add(_draw_from_deck())
 		_update_ui()
 		await get_tree().create_timer(1.2).timeout
 		_play_ai_turn()
 		return
-	elif card["type"] == "draw2":
+	elif card.card_type == "draw2":
 		status_label.text = "IA jogou +2! Você comprou 2 cartas e perdeu a vez."
-		player_hand.append(_draw_from_deck())
-		player_hand.append(_draw_from_deck())
+		player_hand.add(_draw_from_deck())
+		player_hand.add(_draw_from_deck())
 		_update_ui()
 		await get_tree().create_timer(1.2).timeout
 		_play_ai_turn()
 		return
-	elif card["type"] == "skip" or card["type"] == "reverse":
-		status_label.text = "IA bloqueou sua vez com %s!" % card["val"]
+	elif card.card_type == "skip" or card.card_type == "reverse":
+		status_label.text = "IA bloqueou sua vez com %s!" % card.get_display_value()
 		_update_ui()
 		await get_tree().create_timer(1.2).timeout
 		_play_ai_turn()
 		return
-	elif card["type"] == "wild":
-		status_label.text = "IA jogou Curinga! Nova cor: %s. Sua vez!" % COLOR_NAMES[active_color]
+	elif card.card_type == "wild":
+		status_label.text = "IA jogou Curinga! Nova cor: %s. Sua vez!" % Card.COLOR_NAMES.get(active_color, "")
 	else:
-		status_label.text = "IA jogou %s (%s). Sua vez!" % [card["val"], COLOR_NAMES[card["color"]]]
+		status_label.text = "IA jogou %s (%s). Sua vez!" % [card.get_display_value(), Card.COLOR_NAMES.get(card.color_type, "")]
 		
 	is_player_turn = true
 	_update_ui()
