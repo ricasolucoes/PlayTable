@@ -1,0 +1,184 @@
+[gd_scene load_steps=2 format=3 uid="uid://pokergameuid"]
+
+[ext_resource type="Script" path="res://games/poker/PokerGame.gd" id="1_script"]
+
+[node name="PokerGame" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_script")
+
+[node name="Background" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.08, 0.22, 0.12, 1)
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 20.0
+offset_top = 30.0
+offset_right = -20.0
+offset_bottom = -30.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 15
+
+[node name="TopBar" type="HBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 20
+
+[node name="BtnBack" type="Button" parent="VBoxContainer/TopBar"]
+custom_minimum_size = Vector2(100, 50)
+layout_mode = 2
+text = "Voltar"
+
+[node name="Title" type="Label" parent="VBoxContainer/TopBar"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 32
+text = "Poker Simplificado (Video Poker)"
+
+[node name="Header" type="HBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 20
+alignment = 1
+
+[node name="ChipsLabel" type="Label" parent="VBoxContainer/Header"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.2, 1)
+theme_override_font_sizes/font_size = 24
+text = "💰 Fichas: 100"
+
+[node name="BetLabel" type="Label" parent="VBoxContainer/Header"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+text = "Aposta: 5"
+
+[node name="PayoutTableContainer" type="PanelContainer" parent="VBoxContainer"]
+layout_mode = 2
+
+[node name="PayoutLabel" type="Label" parent="VBoxContainer/PayoutTableContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.8, 0.9, 0.8, 1)
+theme_override_font_sizes/font_size = 14
+text = "Tabela de Pagamentos"
+horizontal_alignment = 1
+
+[node name="StatusLabel" type="Label" parent="VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "Ajuste sua aposta e clique em DAR CARTAS!"
+horizontal_alignment = 1
+
+[node name="HoldsArea" type="HBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 12
+alignment = 1
+
+[node name="Hold0" type="Label" parent="VBoxContainer/HoldsArea"]
+custom_minimum_size = Vector2(110, 25)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.8, 0.2, 1)
+theme_override_font_sizes/font_size = 16
+horizontal_alignment = 1
+
+[node name="Hold1" type="Label" parent="VBoxContainer/HoldsArea"]
+custom_minimum_size = Vector2(110, 25)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.8, 0.2, 1)
+theme_override_font_sizes/font_size = 16
+horizontal_alignment = 1
+
+[node name="Hold2" type="Label" parent="VBoxContainer/HoldsArea"]
+custom_minimum_size = Vector2(110, 25)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.8, 0.2, 1)
+theme_override_font_sizes/font_size = 16
+horizontal_alignment = 1
+
+[node name="Hold3" type="Label" parent="VBoxContainer/HoldsArea"]
+custom_minimum_size = Vector2(110, 25)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.8, 0.2, 1)
+theme_override_font_sizes/font_size = 16
+horizontal_alignment = 1
+
+[node name="Hold4" type="Label" parent="VBoxContainer/HoldsArea"]
+custom_minimum_size = Vector2(110, 25)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.8, 0.2, 1)
+theme_override_font_sizes/font_size = 16
+horizontal_alignment = 1
+
+[node name="CardsArea" type="HBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 12
+alignment = 1
+
+[node name="BtnCard0" type="Button" parent="VBoxContainer/CardsArea"]
+custom_minimum_size = Vector2(110, 160)
+layout_mode = 2
+theme_override_font_sizes/font_size = 32
+text = "🎴"
+
+[node name="BtnCard1" type="Button" parent="VBoxContainer/CardsArea"]
+custom_minimum_size = Vector2(110, 160)
+layout_mode = 2
+theme_override_font_sizes/font_size = 32
+text = "🎴"
+
+[node name="BtnCard2" type="Button" parent="VBoxContainer/CardsArea"]
+custom_minimum_size = Vector2(110, 160)
+layout_mode = 2
+theme_override_font_sizes/font_size = 32
+text = "🎴"
+
+[node name="BtnCard3" type="Button" parent="VBoxContainer/CardsArea"]
+custom_minimum_size = Vector2(110, 160)
+layout_mode = 2
+theme_override_font_sizes/font_size = 32
+text = "🎴"
+
+[node name="BtnCard4" type="Button" parent="VBoxContainer/CardsArea"]
+custom_minimum_size = Vector2(110, 160)
+layout_mode = 2
+theme_override_font_sizes/font_size = 32
+text = "🎴"
+
+[node name="Controls" type="HBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 20
+alignment = 1
+
+[node name="BtnBetMinus" type="Button" parent="VBoxContainer/Controls"]
+custom_minimum_size = Vector2(70, 60)
+layout_mode = 2
+theme_override_font_sizes/font_size = 28
+text = "-"
+
+[node name="BtnAction" type="Button" parent="VBoxContainer/Controls"]
+custom_minimum_size = Vector2(260, 60)
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+text = "🃏 DAR CARTAS"
+
+[node name="BtnBetPlus" type="Button" parent="VBoxContainer/Controls"]
+custom_minimum_size = Vector2(70, 60)
+layout_mode = 2
+theme_override_font_sizes/font_size = 28
+text = "+"
+
+[connection signal="pressed" from="VBoxContainer/TopBar/BtnBack" to="." method="_on_btn_back_pressed"]
+[connection signal="pressed" from="VBoxContainer/Controls/BtnBetMinus" to="." method="_on_btn_bet_minus_pressed"]
+[connection signal="pressed" from="VBoxContainer/Controls/BtnAction" to="." method="_on_btn_action_pressed"]
+[connection signal="pressed" from="VBoxContainer/Controls/BtnBetPlus" to="." method="_on_btn_bet_plus_pressed"]
