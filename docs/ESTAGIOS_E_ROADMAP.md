@@ -36,29 +36,34 @@ graph TD
 
 ## 📦 Fases do Roadmap
 
-### Fase 1: Fundação & Jogos de Tabuleiro Core (Status: 90% Concluído)
+### Fase 1: Fundação & Jogos de Tabuleiro Core (Status: 100% Concluído)
 - [x] **Arquitetura Base:** Gerenciador de cenas ([`SceneManager.gd`](file:///Users/sierra/Dev/Jogos/core/navegacao/SceneManager.gd)), persistência local ([`SaveManager.gd`](file:///Users/sierra/Dev/Jogos/core/save/SaveManager.gd)) e tema central.
 - [x] **Menu Principal & Menus de Categoria:** Navegação entre telas de Tabuleiro, Cartas e Configurações.
 - [x] **Quatro em Linha:** Grade 7×6, física de queda, detecção de 4 em linha, modo IA.
 - [x] **Batalha Naval:** Grade dupla 10×10, 5 navios, IA de busca e destruição, interface de abas.
 - [x] **Damas:** Tabuleiro 8×8, damas promovidas, capturas múltiplas em cadeia, IA responsiva.
 - [x] **Jogo da Velha:** Grade 3×3 clássica para testes rápidos de UI e partidas instantâneas.
-- [ ] **Reversi:** Finalização da lógica minimax e UI 8×8 no módulo dedicado.
+- [x] **Reversi:** Finalização da lógica minimax e UI 8x8 no módulo dedicado.
+- [x] **Ludo Simplificado:** 4 jogadores (Humano + IAs) e capturas.
+- [x] **Senet Egípcio:** Trilha 3x10, varetas de lançamento e casas sagradas.
+- [x] **Solitário (Resta Um):** Cruz de 33 furos e avaliação.
+- [x] **Dominó Brasileiro:** Modo clássico individual, regras de encaixe e contagem de pontos.
 
 ---
 
-### Fase 2: Expansão de Cartas & Lógica Casual (Status: 60% Concluído)
+### Fase 2: Expansão de Cartas & Lógica Casual (Status: 100% Concluído)
 - [x] **Blackjack (21 Simplificado):** Baralho completo de 52 cartas, cálculo de Ás flexível (1/11), lógica de Dealer (para em 17).
 - [x] **Jogo da Memória:** Emojis dinâmicos, animações 3D de virada de carta (*flip effect*), controle de pares encontrados.
-- [ ] **Solitário (Klondike):** Validação de colunas decrescentes, fundações por naipe, pilha de compras e *undo*.
-- [ ] **Mancala:** Semeadura circular e captura de sementes.
-- [ ] **Campo Minado:** Revelação recursiva de células vazias e contagem numérica de minas.
-- [ ] **Sudoku:** Gerador procedural com níveis de dificuldade e anotações a lápis.
+- [x] **Solitário (Klondike):** Validação de colunas decrescentes, fundações por naipe e pilha de compras.
+- [x] **Cartas das Cores (Uno):** Cartas de ação e IA.
+- [x] **Poker (Video Poker):** 5 cartas, seleção de HOLD e pagamentos.
+- [x] **Mancala:** Semeadura circular e captura de sementes.
+- [x] **Campo Minado:** Revelação recursiva de células vazias e contagem numérica de minas.
 
 ---
 
 ### Fase 3: Jogos de Mesa Nacionais & Multiplayer Local (Status: Planejado)
-- [ ] **Dominó Brasileiro:** Modos clássico individual e em duplas (2v2), regras de tranca e contagem de pontos.
+- [ ] **Sudoku:** Gerador procedural com níveis de dificuldade e anotações a lápis.
 - [ ] **Truco contra IA:** Regras Paulista e Mineiro, sistema de pedidos de Truco/6/9/12 e blefes simulados.
 - [ ] **Buraco / Canastra Offline:** Distribuição de cartas, formação de jogos limpos/sujos, pegada de morto e batida.
 - [ ] **Desafios Diários Offline:** Geração determinística de desafios (Solitário e Sudoku) baseada na data local do sistema (`OS.get_date()`), sem necessidade de servidor.

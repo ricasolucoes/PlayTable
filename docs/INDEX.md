@@ -22,9 +22,9 @@ Aqui você encontra a listagem detalhada de todos os jogos previstos, seus está
 
 ```mermaid
 pie title Distribuição de Jogos por Estágio
-    "Implementado / Funcional" : 6
-    "Em Estruturação / Protótipo" : 1
-    "Planejado / Próxima Fase" : 5
+    "Implementado / Funcional" : 16
+    "Em Estruturação / Protótipo" : 0
+    "Planejado / Próxima Fase" : 2
     "Backlog / Ideias Futuras" : 20
 ```
 

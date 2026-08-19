@@ -10,9 +10,9 @@ Este documento cataloga todos os jogos potenciais do ecossistema **Jogos de Mesa
 | :--- | :--- | :--- | :--- | :--- | :--- |
 | **Quatro em Linha** | Tabuleiro | Baixa | Godot | ✅ **Implementado** | [`games/quatro_em_linha/`](file:///Users/sierra/Dev/Jogos/games/quatro_em_linha/) |
 | **Batalha Naval** | Tabuleiro | Média-Baixa | Godot | ✅ **Implementado** | [`games/batalha_naval/`](file:///Users/sierra/Dev/Jogos/games/batalha_naval/) |
-| **Reversi (Othello)** | Tabuleiro | Média | Godot | 🟡 **Em Estruturação** | [`games/reversi/`](file:///Users/sierra/Dev/Jogos/games/reversi/) |
-| **Dominó** | Tabuleiro/Mesa | Média | Flutter / Godot | 📋 **Planejado** | `games/domino/` |
-| **Solitário (Paciência)** | Cartas | Média | Flutter | 📋 **Planejado** | `games/solitario/` |
+| **Reversi (Othello)** | Tabuleiro | Média | Godot | ✅ **Implementado** | [`games/reversi/`](file:///Users/sierra/Dev/Jogos/games/reversi/) |
+| **Dominó** | Tabuleiro/Mesa | Média | Godot | ✅ **Implementado** | [`games/domino/`](file:///Users/sierra/Dev/Jogos/games/domino/) |
+| **Solitário (Paciência)** | Cartas | Média | Godot | ✅ **Implementado** | [`games/solitario/`](file:///Users/sierra/Dev/Jogos/games/solitario/) |
 
 ### Detalhamento das Recomendações:
 
@@ -32,19 +32,19 @@ Este documento cataloga todos os jogos potenciais do ecossistema **Jogos de Mesa
   - *Fácil:* Jogadas aleatórias válidas.
   - *Normal:* Priorização de cantos e bordas, evitando quadrados adjacentes perigosos (X-squares e C-squares).
   - *Difícil:* Algoritmo Minimax com poda Alfa-Beta (profundidade 4-6).
-- **Estágio:** 🟡 Pasta e integração no menu criadas; lógica minimax e UI 8x8 a serem integradas.
+- **Estágio:** ✅ Totalmente implementado com lógica minimax (poda alfa-beta) e UI 3D finalizada.
 
 #### 4. Dominó
-- **Mecânica:** 28 pedras (duplo 6). Variações: Clássico individual, em Duplas (2v2) e 5 Pontos (Ponta).
-- **Desafios:** Regras brasileiras de compra, fechamento ("tranca"), contagem de pontos e formação de duplas.
+- **Mecânica:** 28 pedras (duplo 6). Variação: Clássico individual.
+- **Desafios:** Regras brasileiras de compra, encaixe e contagem de pontos.
 - **Stack Ideal:** Flutter (layout 2D com widgets limpos) ou Godot (para arrasto suave de pedras).
-- **Estágio:** 📋 Planejado para a Fase de Jogos de Mesa Multijogador Local.
+- **Estágio:** ✅ Totalmente implementado e integrado aos Jogos de Tabuleiro.
 
 #### 5. Solitário (Klondike / Multi-modos)
 - **Mecânica:** Movimentação em colunas alternando cores e ordem decrescente; 4 fundações por naipe em ordem crescente (Ás ao Rei).
-- **Desafios:** Validação precisa de pilhas, desfazer jogada (*undo*), detecção automática de vitória.
+- **Desafios:** Validação precisa de pilhas e detecção automática de vitória.
 - **Referência Open Source:** [CardsWithCats](https://github.com/dozingcat/CardsWithCats) e [The Deck](https://github.com/xajik/thedeck).
-- **Estágio:** 📋 Planejado como destaque da categoria de cartas.
+- **Estágio:** ✅ Totalmente implementado e integrado à categoria de cartas.
 
 ---
 
@@ -89,8 +89,8 @@ Este documento cataloga todos os jogos potenciais do ecossistema **Jogos de Mesa
 | :--- | :--- | :--- | :--- | :--- | :--- |
 | **Jogo da Velha (Tic-Tac-Toe)** | Grade 3×3 clássica com efeitos visuais e IA. | Muito Baixa | Godot / Flutter | ✅ **Implementado** | [`games/jogo_da_velha/`](file:///Users/sierra/Dev/Jogos/games/jogo_da_velha/) |
 | **Damas (Checkers)** | Tabuleiro 8×8, damas voadoras, capturas múltiplas obrigatórias, IA. | Média | Godot | ✅ **Implementado** | [`games/damas/`](file:///Users/sierra/Dev/Jogos/games/damas/) |
-| **Mancala (Kalah)** | Semeadura em 12 cavidades + 2 kalahas com captura de sementes. | Baixa-Média | Godot / Flutter | 📋 **Planejado** | `games/mancala/` |
-| **Campo Minado (Minesweeper)** | Grade com contagem de minas adjacentes, bandeiras e primeiro clique seguro. | Baixa-Média | Flutter / Godot | 📋 **Planejado** | `games/campo_minado/` |
+| **Mancala (Kalah)** | Semeadura em 12 cavidades + 2 kalahas com captura de sementes. | Baixa-Média | Godot | ✅ **Implementado** | [`games/mancala/`](file:///Users/sierra/Dev/Jogos/games/mancala/) |
+| **Campo Minado (Minesweeper)** | Grade com contagem de minas adjacentes, bandeiras e primeiro clique seguro. | Baixa-Média | Godot | ✅ **Implementado** | [`games/campo_minado/`](file:///Users/sierra/Dev/Jogos/games/campo_minado/) |
 | **Sudoku** | Grade 9×9 (subgrades 3×3) com gerador e validador de quebra-cabeças offline. | Baixa-Média | Flutter | 📋 **Planejado** | `games/sudoku/` |
 | **Kakuro Simplificado** | Cruzadinha numérica com somas por linha e coluna sem repetir dígitos. | Média | Flutter | 💡 **Backlog** | `games/kakuro/` |
 | **Nonogram (Picross)** | Pintura lógica em grade baseada em pistas numéricas nas bordas. | Média | Flutter | 💡 **Backlog** | `games/nonogram/` |
