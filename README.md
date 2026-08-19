@@ -1,72 +1,69 @@
 # Jogos de Mesa Offline
 
-Bem-vindo ao repositório do **Jogos de Mesa Offline**.
+Bem-vindo ao repositório do **Jogos de Mesa Offline** — um aplicativo unificado, gratuito, open source e 100% livre de anúncios que reúne uma coleção de **16 minijogos clássicos de tabuleiro e cartas** em uma experiência polida para dispositivos móveis e desktop (Godot 4.3 Engine).
 
-## 📖 Sobre o Projeto
-Este é um aplicativo consolidado que reúne diversos minijogos clássicos de tabuleiro e cartas em uma única aplicação. O objetivo principal deste projeto é oferecer uma experiência de entretenimento limpa, com foco em usabilidade e performance.
+---
 
-### 🛡️ Nossos Princípios Fundamentais
-Para mantermos a visão do projeto, as seguintes diretrizes são **obrigatórias**:
+## 🛡️ Nossos Princípios Fundamentais
 
-1. **100% Gratuito & Open Source:** Todo o código está sob licença MIT. Não há restrições de uso comercial, e a distribuição independente (F-Droid, GitHub Releases, etc.) deve ser mantida.
-2. **Offline First:** Os jogos não requerem e não devem depender de servidores online para funcionar. Toda a jogabilidade acontece no próprio dispositivo.
-3. **Sem Anúncios (Zero Ads):** Não utilizamos e nunca implementaremos SDKs de anúncios, propagandas em tela, banners ou intersticiais.
-4. **Sem Sistema de Contas/Login:** Não há obrigatoriedade de login, servidores no Firebase ou contas para jogar. O armazenamento de perfis, estatísticas e saves é **100% local**.
-5. **Sem Compras Obrigatórias:** Todo o conteúdo do jogo está disponível nativamente sem in-app purchases (IAP).
+1. **100% Gratuito & Open Source:** Todo o código sob licença MIT. Livre para estudo, modificação e distribuição independente (F-Droid, GitHub Releases).
+2. **Offline First:** Nenhuma dependência de servidores de internet para jogar. Toda a jogabilidade acontece localmente no dispositivo.
+3. **Sem Anúncios (Zero Ads):** Zero propagandas, sem banners, sem intersticiais e sem SDKs de rastreamento.
+4. **Sem Sistema de Contas/Login:** Sem telemetria predatória e sem cadastro. Configurações e estatísticas salvas 100% localmente.
+5. **Sem Compras no App (Zero IAP):** Todos os 16 jogos liberados nativamente, sem paywalls ou microtransações.
+
+---
+
+## 🎮 Catálogo dos 16 Jogos Implementados
+
+### 🎲 Jogos de Tabuleiro (11 Jogos)
+| Jogo | Complexidade | Destaques | Localização |
+| :--- | :--- | :--- | :--- |
+| **Jogo da Velha** | Muito Baixa | Grade 3x3, IA Minimax, placar e reinício | [`games/jogo_da_velha/`](file:///Users/sierra/Dev/Jogos/games/jogo_da_velha/) |
+| **Damas** | Baixa | Tabuleiro 8x8, capturas múltiplas, coroação de damas 👑 e IA | [`games/damas/`](file:///Users/sierra/Dev/Jogos/games/damas/) |
+| **Batalha Naval** | Baixa | Grids 10x10 (Radar e Frota), 5 navios, IA Hunt & Target | [`games/batalha_naval/`](file:///Users/sierra/Dev/Jogos/games/batalha_naval/) |
+| **Quatro em Linha** | Baixa | Grade 7x6, animação de queda, IA e placar | [`games/quatro_em_linha/`](file:///Users/sierra/Dev/Jogos/games/quatro_em_linha/) |
+| **Solitário (Resta Um)** | Baixa/Média | Cruz de 33 furos, 32 pinos, botão Desfazer (Undo) e avaliação | [`games/solitario/`](file:///Users/sierra/Dev/Jogos/games/solitario/) |
+| **Campo Minado** | Baixa/Média | 9x9 com 10 minas, 1º clique seguro, flood-fill, modo bandeira e timer | [`games/campo_minado/`](file:///Users/sierra/Dev/Jogos/games/campo_minado/) |
+| **Dominó** | Média | 28 pedras (duplo-6), compra do dorme, encaixe de pontas e IA | [`games/domino/`](file:///Users/sierra/Dev/Jogos/games/domino/) |
+| **Ludo Simplificado** | Média | 4 jogadores (Humano + 3 IAs), dado 1-6 animado e capturas | [`games/ludo/`](file:///Users/sierra/Dev/Jogos/games/ludo/) |
+| **Reversi (Othello)** | Média | Tabuleiro 8x8 verde, viradas em 8 direções e matriz posicional | [`games/reversi/`](file:///Users/sierra/Dev/Jogos/games/reversi/) |
+| **Mancala (Kalah)** | Baixa/Média | 12 covas + 2 depósitos, semeadura anti-horária, turnos extras e IA | [`games/mancala/`](file:///Users/sierra/Dev/Jogos/games/mancala/) |
+| **Senet Egípcio** | Baixa/Média | Trilha serpenteante 3x10, varetas de lançamento (1-5) e casas sagradas | [`games/senet/`](file:///Users/sierra/Dev/Jogos/games/senet/) |
+
+### 🃏 Jogos de Cartas (5 Jogos)
+| Jogo | Complexidade | Destaques | Localização |
+| :--- | :--- | :--- | :--- |
+| **Paciência Klondike** | Média | 7 colunas no tableau, 4 fundações, monte/descarte e auto-mover | [`games/paciencia/`](file:///Users/sierra/Dev/Jogos/games/paciencia/) |
+| **Jogo da Memória** | Baixa | Cartas com emojis, animação 3D de flip e contador de jogadas | [`games/memoria/`](file:///Users/sierra/Dev/Jogos/games/memoria/) |
+| **21 (Blackjack)** | Baixa | Dealer com parada no 17, fichas/apostas e botão Dobrar | [`games/blackjack/`](file:///Users/sierra/Dev/Jogos/games/blackjack/) |
+| **Cartas das Cores (Uno)** | Média | 4 cores, cartas de ação (Pular, Inverter, +2, +4, Curinga) e IA | [`games/unolike/`](file:///Users/sierra/Dev/Jogos/games/unolike/) |
+| **Poker (Video Poker)** | Média | 5 cartas, seleção de MANTER (HOLD), troca e tabela de pagamentos | [`games/poker/`](file:///Users/sierra/Dev/Jogos/games/poker/) |
 
 ---
 
 ## 🏗️ Arquitetura do Repositório
 
-Optamos por uma arquitetura em que vários jogos compartilham um único aplicativo para simplificar a manutenção e reduzir o retrabalho. O código não está completamente misturado, e as regras de negócio de cada jogo ficam isoladas.
-
 ```text
 /
 ├── core/                  # Sistemas comuns vitais do aplicativo
-│   ├── telas/             # Menu inicial e seleção de categorias/jogos
-│   ├── navegacao/         # Lógica de transição de telas/cenas
-│   ├── configs/           # Temas, volume de sons, etc.
-│   ├── save/              # Armazenamento e persistência local (JSON/SQLite/etc.)
-│   └── estatisticas/      # Módulo genérico para registrar vitórias e derrotas
+│   ├── telas/             # MainMenu, MenuTabuleiro (11 jogos) e MenuCartas (5 jogos)
+│   ├── navegacao/         # SceneManager: Transições suaves entre telas/cenas
+│   ├── configs/           # Temas (Claro/Escuro), volume de sons, etc.
+│   └── save/              # SaveManager: Armazenamento e persistência local JSON
 ├── shared/                # Componentes visuais e lógica reaproveitável
-│   ├── tabuleiro/         # Componentes base de renderização de grades e grids
-│   ├── pecas/             # Componentes de peões, discos e modelos 2D comuns
-│   └── ui/                # Botões padrão, painéis de status de partida
-└── games/                 # Módulo de cada jogo isolado (Regras, IAs, Lógicas únicas)
-    ├── quatro_em_linha/    # Jogo 1
-    ├── reversi/           # Jogo 2
-    └── batalha_naval/     # Jogo 3
+│   ├── pecas/             # Componentes de peões e peças
+│   └── theme/             # Tema global (MainTheme.tres)
+└── games/                 # Módulos dos 16 jogos isolados (Regras, IAs, Lógicas únicas)
 ```
 
-> **Regra de Ouro da Arquitetura:**
-> Componentes visuais (como o estilo dos menus ou o desenho de um tabuleiro genérico) podem ser compartilhados (`shared`), mas as **regras do jogo** (como as condições de captura do Reversi) **não devem** ser transformadas em uma superclasse genérica compartilhada. As regras de cada jogo são independentes.
+---
+
+## 🛠️ Tecnologias e Compilação
+
+- **Engine Principal:** Godot 4.3 (Mobile/Desktop) com suporte a exportação Android (`build_apk.sh`), iOS, Web e Desktop.
+- **Configuração de Export:** Parametrizada no `export_presets.cfg` com assinatura habilitada.
 
 ---
 
-## 🚀 Roteiro de Lançamento (Roadmap)
-
-### Fase 1: O Início (Jogos de Tabuleiro)
-A primeira versão foca na construção da base de UI/UX comum e lança os seguintes três jogos:
-- **Quatro em Linha:** Serve para testar sistema de turnos simples, grid vertical e física leve.
-- **Reversi:** Estabelece um oponente IA e lógica baseada na captura e contagem de peças.
-- **Batalha Naval:** Apresenta conceitos de "ocultação de tabuleiro", coordenação espacial e grids duplos.
-
-### Fase 2: Expansão Contínua
-Após a validação da base, expandiremos a coleção:
-- Adição de novos tabuleiros: *Damas*, *Mancala*, *Jogo da Velha*.
-- Criação do grupo de jogos de cartas: *Solitário*, *Memória*, *21*.
-- Implementação de desafios diários offline e estatísticas globais (locais) do usuário.
-
-### Fase 3: Possíveis Spin-Offs
-Se houver uma adoção muito massiva de um único jogo da plataforma (ex: o Solitário tornar-se muito popular), separaremos aquele módulo em um aplicativo próprio, partilhando o mesmo código base deste repositório para evitar fragmentação excessiva.
-
----
-
-## 🛠️ Stack de Desenvolvimento
-O projeto está estruturado de modo a ser "agnóstico" nas pastas bases neste momento, podendo ser perfeitamente encaixado em uma arquitetura Flutter ou Godot.
-
-Para rodar este repositório, consulte os documentos em cada pasta principal ao escolher o motor definitivo para a compilação mobile (iOS/Android).
-
----
-
-Feito com 💙 para jogadores e desenvolvedores.
+Feito com 💙 para jogadores e desenvolvedores de software livre.
