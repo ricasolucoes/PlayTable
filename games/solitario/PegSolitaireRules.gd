@@ -13,6 +13,12 @@ static func is_valid_hole(r: int, c: int) -> bool:
 		return false
 	return true
 
+static func is_valid_cell(r: int, c: int) -> bool:
+	return is_valid_hole(r, c)
+
+static func has_any_valid_moves(grid: Grid2D) -> bool:
+	return count_total_moves(grid) > 0
+
 static func create_initial_board() -> Grid2D:
 	var grid = Grid2D.new(SIZE, SIZE, -1)
 	for r in range(SIZE):

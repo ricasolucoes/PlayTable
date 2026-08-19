@@ -12,11 +12,26 @@ static func can_tile_fit(tile: Dictionary, left_end: int, right_end: int) -> boo
 	if left_end == -1 or right_end == -1: return true
 	return tile["a"] == left_end or tile["b"] == left_end or tile["a"] == right_end or tile["b"] == right_end
 
+static func can_play_tile(tile: Dictionary, left_end: int, right_end: int) -> bool:
+	return can_tile_fit(tile, left_end, right_end)
+
 static func has_any_playable(hand: Array, left_end: int, right_end: int) -> bool:
 	for t in hand:
 		if can_tile_fit(t, left_end, right_end):
 			return true
 	return false
+
+static func has_any_valid_move(hand: Array, left_end: int, right_end: int) -> bool:
+	return has_any_playable(hand, left_end, right_end)
+
+static func find_ai_move(hand: Array, left_end: int, right_end: int) -> Dictionary:
+	var playable = get_playable_indices(hand, left_end, right_end)
+	if playable.is_empty():
+		return {}
+	var idx = playable[0]
+	var tile = hand[idx]
+	var side = "left" if (left_end == -1 or tile["a"] == left_end or tile["b"] == left_end) else "right"
+	return {"tile_index": idx, "side": side}
 
 static func get_playable_indices(hand: Array, left_end: int, right_end: int) -> Array[int]:
 	var list: Array[int] = []

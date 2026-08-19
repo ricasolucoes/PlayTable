@@ -31,6 +31,7 @@ GAMES_CATALOG = [
     ("Cartas das Cores (Uno-like)", "Cartas", "Unitário + Integração", "✅"),
     ("Poker (Video Poker)", "Cartas", "Unitário + Integração", "✅"),
     # Sistemas Centrais
+    ("LocaleManager / i18n", "Core", "Unitário + Localização", "✅"),
     ("SaveManager / Configurações", "Core", "Unitário + Persistência", "✅"),
     ("Grid2D / BoardCoord", "Core", "Unitário + Geometria", "✅"),
     ("Deck / Card / Mão", "Core", "Unitário + Baralhos", "✅"),
@@ -40,7 +41,7 @@ GAMES_CATALOG = [
 
 def main():
     print("=" * 80)
-    print("🎲 JOGOS DE MESA OFFLINE — TEST SUITE AUTOMATIZADA E DE INTEGRAÇÃO")
+    print("🎲 PLAYTABLE — TEST SUITE AUTOMATIZADA E DE INTEGRAÇÃO")
     print("=" * 80)
     start_time = time.time()
 

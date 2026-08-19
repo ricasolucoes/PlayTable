@@ -3,6 +3,9 @@ extends RefCounted
 
 const CardScript = preload("res://shared/core_engine/cards/Card.gd")
 
+static func evaluate(cards: Array) -> Dictionary:
+	return evaluate_hand(cards)
+
 static func evaluate_hand(cards: Array) -> Dictionary:
 	if cards.size() < 5:
 		return {"name": "Mão Incompleta", "mult": 0, "rank": 0}

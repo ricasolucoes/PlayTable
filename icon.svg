@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1e1e2f"/>
+      <stop offset="100%" stop-color="#12121a"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffd700"/>
+      <stop offset="100%" stop-color="#ffaa00"/>
+    </linearGradient>
+  </defs>
+  <!-- Background Rounded Rect -->
+  <rect width="128" height="128" rx="28" fill="url(#bg)" stroke="#ffd700" stroke-width="3"/>
+  <!-- Card Graphic -->
+  <rect x="24" y="28" width="44" height="64" rx="8" fill="#ffffff" stroke="#e0e0e0" stroke-width="2" transform="rotate(-10 46 60)"/>
+  <text x="36" y="58" font-family="Arial, sans-serif" font-size="22" fill="#e74c3c" font-weight="bold" transform="rotate(-10 46 60)">♥</text>
+  <!-- Dice Graphic -->
+  <rect x="58" y="44" width="50" height="50" rx="10" fill="url(#gold)" stroke="#d4af37" stroke-width="2"/>
+  <circle cx="73" cy="59" r="4.5" fill="#1e1e2f"/>
+  <circle cx="93" cy="59" r="4.5" fill="#1e1e2f"/>
+  <circle cx="83" cy="69" r="4.5" fill="#1e1e2f"/>
+  <circle cx="73" cy="79" r="4.5" fill="#1e1e2f"/>
+  <circle cx="93" cy="79" r="4.5" fill="#1e1e2f"/>
+</svg>

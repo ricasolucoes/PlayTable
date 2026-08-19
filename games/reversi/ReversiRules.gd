@@ -55,6 +55,31 @@ static func find_all_valid_moves(grid: Grid2D, piece: int) -> Dictionary:
 				
 	return moves
 
+static func get_valid_moves(grid: Grid2D, piece: int) -> Array[Vector2i]:
+	var moves = find_all_valid_moves(grid, piece)
+	var list: Array[Vector2i] = []
+	for p in moves.keys():
+		list.append(p)
+	return list
+
+static func get_flipped_pieces(grid: Grid2D, pos: Vector2i, piece: int) -> Array[Vector2i]:
+	var moves = find_all_valid_moves(grid, piece)
+	if moves.has(pos):
+		return moves[pos]
+	return []
+
+static func get_best_move(grid: Grid2D, ai_piece: int) -> Vector2i:
+	return get_best_ai_move(grid, ai_piece)
+
+static func get_winner(grid: Grid2D) -> Dictionary:
+	var scores = count_scores(grid)
+	if scores["black"] > scores["white"]:
+		return {"winner": 1, "black": scores["black"], "white": scores["white"]}
+	elif scores["white"] > scores["black"]:
+		return {"winner": 2, "black": scores["black"], "white": scores["white"]}
+	else:
+		return {"winner": 0, "black": scores["black"], "white": scores["white"]}
+
 static func apply_move(grid: Grid2D, pos: Vector2i, piece: int, flips: Array) -> void:
 	grid.set_cell_pos(pos, piece)
 	for f in flips:

@@ -19,6 +19,15 @@ enum ColorType {
 	WILD = 6
 }
 
+enum SpecialType {
+	NONE = 0,
+	SKIP = 1,
+	REVERSE = 2,
+	DRAW_TWO = 3,
+	WILD = 4,
+	WILD_DRAW_FOUR = 5
+}
+
 const SUIT_SYMBOLS = {
 	Suit.NONE: "",
 	Suit.HEARTS: "♥",
@@ -59,6 +68,7 @@ var value: int = 0
 var suit: Suit = Suit.NONE
 var color_type: ColorType = ColorType.NONE
 var card_type: String = "standard" # "standard", "number", "skip", "reverse", "draw2", "wild", "wild4", "custom"
+var special_type: SpecialType = SpecialType.NONE
 var is_face_up: bool = true
 var custom_data: Dictionary = {}
 
@@ -68,6 +78,14 @@ func _init(p_val: int = 0, p_suit: Suit = Suit.NONE, p_color: ColorType = ColorT
 	color_type = p_color
 	card_type = p_type
 	custom_data = p_custom
+	
+	match card_type:
+		"skip": special_type = SpecialType.SKIP
+		"reverse": special_type = SpecialType.REVERSE
+		"draw2": special_type = SpecialType.DRAW_TWO
+		"wild": special_type = SpecialType.WILD
+		"wild4": special_type = SpecialType.WILD_DRAW_FOUR
+		_: special_type = SpecialType.NONE
 	
 	# Auto-determina cor padrão para baralho francês caso não seja passada
 	if color_type == ColorType.NONE and suit != Suit.NONE:

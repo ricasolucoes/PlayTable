@@ -1,7 +1,26 @@
 class_name BlackjackRules
 extends RefCounted
 
-const CardScript = preload("res://shared/core_engine/cards/Card.gd")
+enum Winner {
+	PLAYER,
+	DEALER,
+	PUSH
+}
+
+static func calculate_hand_value(cards: Array) -> int:
+	return calculate_score(cards)
+
+static func is_busted(cards: Array) -> bool:
+	return is_bust(cards)
+
+static func should_dealer_hit(cards: Array) -> bool:
+	return dealer_should_hit(cards)
+
+static func determine_winner(player_cards: Array, dealer_cards: Array) -> Winner:
+	var res = evaluate_match(player_cards, dealer_cards)
+	if res["winner"] == "player": return Winner.PLAYER
+	elif res["winner"] == "dealer": return Winner.DEALER
+	else: return Winner.PUSH
 
 static func calculate_score(cards: Array) -> int:
 	var score = 0

@@ -24,3 +24,6 @@ logcat.txt
 build/
 *.jdk/
 jdk-*/
+.godot/
+*.apk
+*.idsig

@@ -10,8 +10,9 @@ config_version=5
 
 [application]
 
-config/name="Jogos de Mesa Offline"
-config/description="Uma coleção open source de jogos de tabuleiro e cartas offline em 3D imersivo."
+config/name="PlayTable"
+config/description="Coleção de jogos de tabuleiro e cartas offline em 3D imersivo."
+config/icon="res://icon.svg"
 config/use_custom_user_dir=true
 config/custom_user_dir_name="user_data"
 run/main_scene="res://core/telas/MainMenu.tscn"
@@ -24,8 +25,14 @@ theme/custom="res://shared/theme/MainTheme.tres"
 [autoload]
 
 SaveManager="*res://core/save/SaveManager.gd"
+LocaleManager="*res://core/i18n/LocaleManager.gd"
 SceneManager="*res://core/navegacao/SceneManager.gd"
 AudioManager="*res://core/audio/AudioManager.gd"
+
+[internationalization]
+
+locale/translations=PackedStringArray("res://core/i18n/translations.en.translation", "res://core/i18n/translations.es.translation", "res://core/i18n/translations.pt_BR.translation")
+
 
 [display]
 

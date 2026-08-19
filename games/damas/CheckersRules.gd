@@ -49,6 +49,63 @@ static func get_piece_captures(grid: Grid2D, r: int, c: int) -> Array[Dictionary
 					})
 	return captures
 
+static func get_captures_for_piece(grid: Grid2D, pos: Vector2i) -> Array[Dictionary]:
+	var caps = get_piece_captures(grid, pos.x, pos.y)
+	var formatted: Array[Dictionary] = []
+	for c in caps:
+		var cap_pos = c["captures"][0] if (c.has("captures") and c["captures"].size() > 0) else Vector2i(-1, -1)
+		formatted.append({
+			"from": c["from"],
+			"to": c["to"],
+			"captured": cap_pos
+		})
+	return formatted
+
+static func get_valid_moves_for_piece(grid: Grid2D, pos: Vector2i) -> Array[Dictionary]:
+	var moves = get_piece_moves(grid, pos.x, pos.y)
+	var formatted: Array[Dictionary] = []
+	for m in moves:
+		var cap_pos = m["captures"][0] if (m.has("captures") and m["captures"].size() > 0) else Vector2i(-1, -1)
+		formatted.append({
+			"from": m["from"],
+			"to": m["to"],
+			"captured": cap_pos
+		})
+	return formatted
+
+static func get_best_ai_move(grid: Grid2D) -> Dictionary:
+	var moves = get_all_valid_moves(grid, -1)
+	if moves.is_empty(): return {}
+	var chosen = moves[0]
+	var cap_pos = chosen["captures"][0] if (chosen.has("captures") and chosen["captures"].size() > 0) else Vector2i(-1, -1)
+	return {
+		"from": chosen["from"],
+		"to": chosen["to"],
+		"captured": cap_pos
+	}
+
+static func apply_move(grid: Grid2D, from_pos: Vector2i, to_pos: Vector2i, captured_pos: Vector2i = Vector2i(-1, -1)) -> Dictionary:
+	var move = {
+		"from": from_pos,
+		"to": to_pos,
+		"captures": [captured_pos] if captured_pos != Vector2i(-1, -1) else []
+	}
+	return execute_move(grid, move)
+
+static func check_game_over(grid: Grid2D) -> int:
+	var p1_moves = get_all_valid_moves(grid, 1)
+	var p2_moves = get_all_valid_moves(grid, -1)
+	var p1_pieces = 0
+	var p2_pieces = 0
+	for cell in grid.cells:
+		if cell > 0: p1_pieces += 1
+		elif cell < 0: p2_pieces += 1
+	if p1_pieces == 0 or p1_moves.is_empty():
+		return -1
+	if p2_pieces == 0 or p2_moves.is_empty():
+		return 1
+	return 0
+
 static func get_piece_moves(grid: Grid2D, r: int, c: int) -> Array[Dictionary]:
 	var moves = get_piece_captures(grid, r, c)
 	if not moves.is_empty():

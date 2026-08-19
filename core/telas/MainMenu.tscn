@@ -41,14 +41,14 @@ theme_override_constants/separation = 8
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 0.88, 0.42, 1)
 theme_override_font_sizes/font_size = 46
-text = "🎲 Jogos de Mesa"
+text = "APP_TITLE"
 horizontal_alignment = 1
 
 [node name="Subtitle" type="Label" parent="VBoxContainer/HeaderCard/VBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.85, 0.80, 0.70, 1)
 theme_override_font_sizes/font_size = 20
-text = "Coleção Clássica Offline"
+text = "APP_SUBTITLE"
 horizontal_alignment = 1
 
 [node name="Spacer" type="Control" parent="VBoxContainer"]
@@ -58,34 +58,42 @@ layout_mode = 2
 [node name="VBoxButtons" type="VBoxContainer" parent="VBoxContainer"]
 layout_mode = 2
 size_flags_vertical = 3
-theme_override_constants/separation = 24
+theme_override_constants/separation = 20
 alignment = 1
 
 [node name="BtnTabuleiro" type="Button" parent="VBoxContainer/VBoxButtons"]
-custom_minimum_size = Vector2(0, 110)
+custom_minimum_size = Vector2(0, 100)
 layout_mode = 2
-theme_override_font_sizes/font_size = 32
-text = "♟️  Jogos de Tabuleiro"
+theme_override_font_sizes/font_size = 30
+text = "MENU_BOARD_GAMES"
 
 [node name="BtnCartas" type="Button" parent="VBoxContainer/VBoxButtons"]
-custom_minimum_size = Vector2(0, 110)
+custom_minimum_size = Vector2(0, 100)
 layout_mode = 2
-theme_override_font_sizes/font_size = 32
-text = "🃏  Jogos de Cartas"
+theme_override_font_sizes/font_size = 30
+text = "MENU_CARD_GAMES"
 
 [node name="BtnSound" type="Button" parent="VBoxContainer/VBoxButtons"]
-custom_minimum_size = Vector2(0, 80)
+custom_minimum_size = Vector2(0, 70)
 layout_mode = 2
-theme_override_font_sizes/font_size = 22
-text = "🔊 Efeitos Sonoros: Ligados"
+theme_override_font_sizes/font_size = 20
+text = "SOUND_ON"
+
+[node name="BtnLanguage" type="Button" parent="VBoxContainer/VBoxButtons"]
+custom_minimum_size = Vector2(0, 70)
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "BTN_LANGUAGE"
 
 [node name="Footer" type="Label" parent="VBoxContainer"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.65, 0.60, 0.52, 1)
 theme_override_font_sizes/font_size = 16
-text = "100% Offline • Sem Anúncios • Gratuito"
+text = "FOOTER_OFFLINE_PROMISE"
 horizontal_alignment = 1
 
 [connection signal="pressed" from="VBoxContainer/VBoxButtons/BtnTabuleiro" to="." method="_on_btn_tabuleiro_pressed"]
 [connection signal="pressed" from="VBoxContainer/VBoxButtons/BtnCartas" to="." method="_on_btn_cartas_pressed"]
 [connection signal="pressed" from="VBoxContainer/VBoxButtons/BtnSound" to="." method="_on_btn_sound_toggle_pressed"]
+[connection signal="pressed" from="VBoxContainer/VBoxButtons/BtnLanguage" to="." method="_on_btn_language_pressed"]
+

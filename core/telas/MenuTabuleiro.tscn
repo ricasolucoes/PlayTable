@@ -37,12 +37,12 @@ theme_override_constants/separation = 16
 [node name="BtnVoltar" type="Button" parent="VBoxContainer/TopBar"]
 custom_minimum_size = Vector2(110, 54)
 layout_mode = 2
-text = "‹ Voltar"
+text = "BTN_BACK"
 
 [node name="Title" type="Label" parent="VBoxContainer/TopBar"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 32
-text = " Jogos de Tabuleiro"
+text = "MENU_BOARD_GAMES"
 vertical_alignment = 1
 
 [node name="ScrollContainer" type="ScrollContainer" parent="VBoxContainer"]
@@ -62,70 +62,70 @@ custom_minimum_size = Vector2(0, 140)
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 24
-text = "🔴 Quatro em\nLinha"
+text = "GAME_CONNECT4"
 
 [node name="BtnVelha" type="Button" parent="VBoxContainer/ScrollContainer/GridContainer"]
 custom_minimum_size = Vector2(0, 140)
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 24
-text = "❌ Jogo da\nVelha"
+text = "GAME_TICTACTOE"
 
 [node name="BtnReversi" type="Button" parent="VBoxContainer/ScrollContainer/GridContainer"]
 custom_minimum_size = Vector2(0, 140)
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 24
-text = "⚪ Reversi\n(Othello)"
+text = "GAME_REVERSI"
 
 [node name="BtnBatalha" type="Button" parent="VBoxContainer/ScrollContainer/GridContainer"]
 custom_minimum_size = Vector2(0, 140)
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 24
-text = "🚢 Batalha\nNaval"
+text = "GAME_BATTLESHIP"
 
 [node name="BtnDamas" type="Button" parent="VBoxContainer/ScrollContainer/GridContainer"]
 custom_minimum_size = Vector2(0, 140)
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 24
-text = "🏁 Damas"
+text = "GAME_CHECKERS"
 
 [node name="BtnMancala" type="Button" parent="VBoxContainer/ScrollContainer/GridContainer"]
 custom_minimum_size = Vector2(0, 140)
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 24
-text = "🪨 Mancala"
+text = "GAME_MANCALA"
 
 [node name="BtnSolitario" type="Button" parent="VBoxContainer/ScrollContainer/GridContainer"]
 custom_minimum_size = Vector2(0, 140)
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 24
-text = "🎯 Resta Um\n(Solitaire)"
+text = "GAME_SOLITAIRE"
 
 [node name="BtnCampo" type="Button" parent="VBoxContainer/ScrollContainer/GridContainer"]
 custom_minimum_size = Vector2(0, 140)
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 24
-text = "💣 Campo\nMinado"
+text = "GAME_MINESWEEPER"
 
 [node name="BtnDomino" type="Button" parent="VBoxContainer/ScrollContainer/GridContainer"]
 custom_minimum_size = Vector2(0, 140)
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 24
-text = "🁡 Dominó"
+text = "GAME_DOMINO"
 
 [node name="BtnLudo" type="Button" parent="VBoxContainer/ScrollContainer/GridContainer"]
 custom_minimum_size = Vector2(0, 140)
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 24
-text = "🎲 Ludo"
+text = "GAME_LUDO"
 
 [connection signal="pressed" from="VBoxContainer/TopBar/BtnVoltar" to="." method="_on_btn_voltar_pressed"]
 [connection signal="pressed" from="VBoxContainer/ScrollContainer/GridContainer/BtnC4" to="." method="_on_btn_c4_pressed"]

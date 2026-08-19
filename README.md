@@ -1,6 +1,6 @@
-# Jogos de Mesa Offline
+# PlayTable
 
-Bem-vindo ao repositório do **Jogos de Mesa Offline** — um aplicativo unificado, gratuito, open source e 100% livre de anúncios que reúne uma coleção de **16 minijogos clássicos de tabuleiro e cartas** em uma experiência polida para dispositivos móveis e desktop (Godot 4.3 Engine).
+Bem-vindo ao repositório do **PlayTable** — um aplicativo unificado, gratuito, open source, internacionalizado (i18n) e 100% livre de anúncios que reúne uma coleção de **16 minijogos clássicos de tabuleiro e cartas** em uma experiência polida para dispositivos móveis e desktop (Godot 4.3 Engine).
 
 ---
 
@@ -8,9 +8,10 @@ Bem-vindo ao repositório do **Jogos de Mesa Offline** — um aplicativo unifica
 
 1. **100% Gratuito & Open Source:** Todo o código sob licença MIT. Livre para estudo, modificação e distribuição independente (F-Droid, GitHub Releases).
 2. **Offline First:** Nenhuma dependência de servidores de internet para jogar. Toda a jogabilidade acontece localmente no dispositivo.
-3. **Sem Anúncios (Zero Ads):** Zero propagandas, sem banners, sem intersticiais e sem SDKs de rastreamento.
-4. **Sem Sistema de Contas/Login:** Sem telemetria predatória e sem cadastro. Configurações e estatísticas salvas 100% localmente.
-5. **Sem Compras no App (Zero IAP):** Todos os 16 jogos liberados nativamente, sem paywalls ou microtransações.
+3. **Internacionalização Nativa (i18n):** Suporte nativo a múltiplos idiomas (Português, Inglês, Espanhol) com troca dinâmica em tempo de execução.
+4. **Sem Anúncios (Zero Ads):** Zero propagandas, sem banners, sem intersticiais e sem SDKs de rastreamento.
+5. **Sem Sistema de Contas/Login:** Sem telemetria predatória e sem cadastro. Configurações e estatísticas salvas 100% localmente.
+6. **Sem Compras no App (Zero IAP):** Todos os 16 jogos liberados nativamente, sem paywalls ou microtransações.
 
 ---
 
@@ -47,6 +48,7 @@ Bem-vindo ao repositório do **Jogos de Mesa Offline** — um aplicativo unifica
 ```text
 /
 ├── core/                  # Sistemas comuns vitais do aplicativo
+│   ├── i18n/              # LocaleManager e catálogo de traduções (translations.csv)
 │   ├── telas/             # MainMenu, MenuTabuleiro (11 jogos) e MenuCartas (5 jogos)
 │   ├── navegacao/         # SceneManager: Transições suaves entre telas/cenas
 │   ├── configs/           # Temas (Claro/Escuro), volume de sons, etc.

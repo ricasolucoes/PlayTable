@@ -36,7 +36,7 @@ layout_mode = 2
 [node name="BtnBack" type="Button" parent="VBoxContainer/TopBar"]
 custom_minimum_size = Vector2(110, 54)
 layout_mode = 2
-text = "‹ Voltar"
+text = "BTN_BACK"
 
 [node name="CenterCard" type="PanelContainer" parent="VBoxContainer"]
 layout_mode = 2

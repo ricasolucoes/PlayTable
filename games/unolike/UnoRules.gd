@@ -3,6 +3,18 @@ extends RefCounted
 
 const CardScript = preload("res://shared/core_engine/cards/Card.gd")
 
+static func get_color_symbol(color_type: Card.ColorType) -> String:
+	match color_type:
+		Card.ColorType.RED: return "🔴"
+		Card.ColorType.BLUE: return "🔵"
+		Card.ColorType.GREEN: return "🟢"
+		Card.ColorType.YELLOW: return "🟡"
+		Card.ColorType.WILD: return "🌈"
+		_: return "⚪"
+
+static func can_play_card(card: Card, top_card: Card, active_color: Card.ColorType) -> bool:
+	return is_valid_play(card, active_color, top_card)
+
 static func is_valid_play(card: Card, active_color: Card.ColorType, top_card: Card) -> bool:
 	if card == null: return false
 	if card.color_type == Card.ColorType.WILD:

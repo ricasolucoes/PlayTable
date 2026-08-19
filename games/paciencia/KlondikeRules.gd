@@ -3,6 +3,22 @@ extends RefCounted
 
 const CardScript = preload("res://shared/core_engine/cards/Card.gd")
 
+static func can_place_on_foundation(card: Card, foundation_pile) -> bool:
+	if card == null: return false
+	var top = foundation_pile.peek() if (foundation_pile != null and foundation_pile.has_method("peek") and not foundation_pile.is_empty()) else null
+	if top == null:
+		return card.value == 1
+	return card.suit == top.suit and card.value == top.value + 1
+
+static func can_place_on_tableau(card: Card, tableau_pile) -> bool:
+	if card == null: return false
+	var top = tableau_pile.peek() if (tableau_pile != null and tableau_pile.has_method("peek") and not tableau_pile.is_empty()) else null
+	if top == null:
+		return card.value == 13
+	if not top.is_face_up:
+		return false
+	return (card.value == top.value - 1) and (card.color_type != top.color_type)
+
 static func can_add_to_foundation(card: Card, target_suit: Card.Suit, top_foundation_card: Card) -> bool:
 	if card == null: return false
 	if card.suit != target_suit:

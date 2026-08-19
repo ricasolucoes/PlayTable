@@ -38,9 +38,12 @@ class TestAllGamesCatalog(unittest.TestCase):
         with open(project_godot_path, "r", encoding="utf-8") as f:
             content = f.read()
         self.assertIn("res://core/telas/MainMenu.tscn", content)
+        self.assertIn('config/name="PlayTable"', content)
         self.assertIn("SaveManager", content)
+        self.assertIn("LocaleManager", content)
         self.assertIn("SceneManager", content)
         self.assertIn("AudioManager", content)
+        self.assertTrue("translations." in content or "translations.csv" in content)
 
     def test_all_11_board_games_exist_with_scenes_and_scripts(self):
         games_dir = os.path.join(PROJECT_ROOT, "games")
@@ -72,6 +75,8 @@ class TestAllGamesCatalog(unittest.TestCase):
     def test_core_singletons_and_menus_exist(self):
         core_dir = os.path.join(PROJECT_ROOT, "core")
         self.assertTrue(os.path.isfile(os.path.join(core_dir, "save", "SaveManager.gd")))
+        self.assertTrue(os.path.isfile(os.path.join(core_dir, "i18n", "LocaleManager.gd")))
+        self.assertTrue(os.path.isfile(os.path.join(core_dir, "i18n", "translations.csv")))
         self.assertTrue(os.path.isfile(os.path.join(core_dir, "navegacao", "SceneManager.gd")))
         self.assertTrue(os.path.isfile(os.path.join(core_dir, "audio", "AudioManager.gd")))
 

@@ -6,6 +6,16 @@ const Grid2DScript = preload("res://shared/core_engine/board/Grid2D.gd")
 const ROWS = 9
 const COLS = 9
 const MINES_COUNT = 10
+const TOTAL_MINES = 10
+
+static func count_flagged(grid: Grid2D) -> int:
+	var count = 0
+	for r in range(ROWS):
+		for c in range(COLS):
+			var cell = grid.get_cell(r, c)
+			if cell != null and cell.get("is_flagged", false):
+				count += 1
+	return count
 
 static func create_empty_grid() -> Grid2D:
 	var grid = Grid2D.new(ROWS, COLS)

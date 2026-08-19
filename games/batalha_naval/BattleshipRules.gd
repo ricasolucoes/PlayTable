@@ -22,6 +22,35 @@ const SHIP_DEFS = [
 static func create_empty_grid() -> Grid2D:
 	return Grid2D.new(GRID_SIZE, GRID_SIZE, 0)
 
+static func place_all_ships_random(grid: Grid2D) -> Array[Dictionary]:
+	return place_all_ships_randomly(grid)
+
+static func count_sunk_ships(fleet: Array) -> int:
+	var count = 0
+	for s in fleet:
+		if s.get("sunk", false): count += 1
+	return count
+
+static func check_ship_sunk(fleet: Array, grid: Grid2D, r: int, c: int) -> Dictionary:
+	var pos = Vector2i(r, c)
+	for s in fleet:
+		if pos in s["cells"]:
+			var all_hit = true
+			for cell in s["cells"]:
+				if grid.get_cell(cell.x, cell.y) != 3:
+					all_hit = false
+					break
+			if all_hit:
+				s["sunk"] = true
+				return s
+			break
+	return {}
+
+static func check_all_sunk(fleet: Array) -> bool:
+	for s in fleet:
+		if not s.get("sunk", false): return false
+	return true
+
 static func place_all_ships_randomly(grid: Grid2D) -> Array[Dictionary]:
 	grid.fill(0)
 	var placed_ships: Array[Dictionary] = []
@@ -93,7 +122,22 @@ static func register_shot(grid: Grid2D, pos: Vector2i, fleet: Array) -> Dictiona
 		"all_sunk": all_sunk
 	}
 
-static func get_ai_shot(ai_hit_stack: Array, shots_fired: Array) -> Vector2i:
+static func get_ai_shot(arg1, arg2 = null) -> Vector2i:
+	if arg1 is Grid2D:
+		var grid: Grid2D = arg1
+		var candidates: Array[Vector2i] = []
+		for r in range(GRID_SIZE):
+			for c in range(GRID_SIZE):
+				var v = grid.get_cell(r, c)
+				if v != 2 and v != 3:
+					candidates.append(Vector2i(r, c))
+		if candidates.is_empty():
+			return Vector2i(0, 0)
+		candidates.shuffle()
+		return candidates[0]
+
+	var ai_hit_stack: Array = arg1 if arg1 is Array else []
+	var shots_fired: Array = arg2 if arg2 is Array else []
 	var shot_pos = Vector2i(-1, -1)
 	
 	# 1. Alvos prioritários na pilha de caça (Hunt & Target)

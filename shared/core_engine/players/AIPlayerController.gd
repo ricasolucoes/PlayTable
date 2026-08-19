@@ -4,7 +4,8 @@ extends IPlayerController
 var ai_strategy: Callable # Assinatura: func(game_state: Dictionary, player_id: int) -> Dictionary
 var difficulty: String = "medium"
 
-func _init(p_player: Player = null, p_strategy: Callable = Callable(), p_difficulty: String = "medium").(p_player):
+func _init(p_player: Player = null, p_strategy: Callable = Callable(), p_difficulty: String = "medium"):
+	super(p_player)
 	ai_strategy = p_strategy
 	difficulty = p_difficulty
 
