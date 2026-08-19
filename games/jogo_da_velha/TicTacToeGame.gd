@@ -11,15 +11,25 @@ func _ready():
 		var btn = Button.new()
 		btn.custom_minimum_size = Vector2(100, 100)
 		btn.add_theme_font_size_override("font_size", 64)
+		btn.pivot_offset = Vector2(50, 50)
 		btn.pressed.connect(_on_cell_pressed.bind(i, btn))
 		grid.add_child(btn)
+
+func _animate_move(btn: Button, text: String, color: Color):
+	btn.text = text
+	btn.add_theme_color_override("font_color", color)
+	var tween = get_tree().create_tween()
+	btn.scale = Vector2(0.5, 0.5)
+	tween.tween_property(btn, "scale", Vector2(1.2, 1.2), 0.1).set_trans(Tween.TRANS_SINE)
+	tween.tween_property(btn, "scale", Vector2(1.0, 1.0), 0.1).set_trans(Tween.TRANS_SINE)
 
 func _on_cell_pressed(idx: int, btn: Button):
 	if game_over or board[idx] != 0: return
 	
 	# Player move
 	board[idx] = 1
-	btn.text = "X"
+	_animate_move(btn, "X", Color(0.9, 0.2, 0.3))
+	
 	if _check_win(1):
 		_end_game("Você Venceu!")
 		return
@@ -28,6 +38,10 @@ func _on_cell_pressed(idx: int, btn: Button):
 		return
 		
 	status.text = "Vez da IA (O)..."
+	game_over = true # Lock while AI thinks
+	await get_tree().create_timer(0.4).timeout
+	game_over = false
+	
 	# AI move
 	var empty = []
 	for i in range(9):
@@ -37,7 +51,8 @@ func _on_cell_pressed(idx: int, btn: Button):
 		empty.shuffle()
 		var ai_move = empty[0]
 		board[ai_move] = 2
-		grid.get_child(ai_move).text = "O"
+		_animate_move(grid.get_child(ai_move), "O", Color(0.2, 0.6, 0.9))
+		
 		if _check_win(2):
 			_end_game("IA Venceu!")
 			return
