@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 1280" width="720" height="1280">
+  <defs>
+    <style>
+      .bg { fill: #262626; }
+      .top-btn { fill: #2e333d; rx: 12px; }
+      .top-btn-text { fill: #ffffff; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 24px; text-anchor: middle; font-weight: 500; }
+      .top-title { fill: #ffffff; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 32px; font-weight: bold; }
+      .status { fill: #4da6ff; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 28px; text-anchor: middle; font-weight: 600; }
+      .cell-btn { fill: #2e333d; rx: 12px; }
+      .cell-x { fill: #4da6ff; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 64px; font-weight: bold; text-anchor: middle; dominant-baseline: middle; }
+      .cell-o { fill: #ff9933; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 64px; font-weight: bold; text-anchor: middle; dominant-baseline: middle; }
+    </style>
+  </defs>
+  <rect width="720" height="1280" class="bg"/>
+  
+  <!-- Top Bar -->
+  <g transform="translate(20, 40)">
+    <rect width="100" height="50" class="top-btn"/>
+    <text x="50" y="32" class="top-btn-text">Voltar</text>
+    <text x="130" y="36" class="top-title">Jogo da Velha</text>
+  </g>
+  
+  <!-- Status -->
+  <text x="360" y="180" class="status">Sua Vez (X)</text>
+  
+  <!-- 3x3 Grid centered -->
+  <g transform="translate(190, 470)">
+    <!-- Row 0 -->
+    <rect x="0" y="0" width="100" height="100" class="cell-btn"/>
+    <text x="50" y="55" class="cell-x">X</text>
+    
+    <rect x="115" y="0" width="100" height="100" class="cell-btn"/>
+    <text x="165" y="55" class="cell-o">O</text>
+    
+    <rect x="230" y="0" width="100" height="100" class="cell-btn"/>
+    
+    <!-- Row 1 -->
+    <rect x="0" y="115" width="100" height="100" class="cell-btn"/>
+    
+    <rect x="115" y="115" width="100" height="100" class="cell-btn"/>
+    <text x="165" y="170" class="cell-x">X</text>
+    
+    <rect x="230" y="115" width="100" height="100" class="cell-btn"/>
+    
+    <!-- Row 2 -->
+    <rect x="0" y="230" width="100" height="100" class="cell-btn"/>
+    <text x="50" y="285" class="cell-o">O</text>
+    
+    <rect x="115" y="230" width="100" height="100" class="cell-btn"/>
+    
+    <rect x="230" y="230" width="100" height="100" class="cell-btn"/>
+    <text x="280" y="285" class="cell-x">X</text>
+  </g>
+</svg>

@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Galeria de Telas & Mockups - Jogos de Mesa Offline (Claude Design)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-main: #0c0e12;
+      --bg-surface: #14171f;
+      --bg-surface-elevated: #1c212d;
+      --border-subtle: #272d3d;
+      --text-primary: #f0f3f8;
+      --text-secondary: #9aa5b8;
+      --text-muted: #626d82;
+      --accent: #3b82f6;
+      --accent-hover: #2563eb;
+      --accent-glow: rgba(59, 130, 246, 0.2);
+      --success: #10b981;
+      --radius-lg: 16px;
+      --radius-md: 12px;
+      --radius-sm: 8px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: var(--bg-main);
+      color: var(--text-primary);
+      min-height: 100vh;
+      line-height: 1.5;
+    }
+
+    header {
+      background: linear-gradient(180deg, #161b26 0%, #0f1218 100%);
+      border-bottom: 1px solid var(--border-subtle);
+      padding: 2.5rem 2rem;
+      text-align: center;
+      position: relative;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 4px 12px;
+      background: rgba(59, 130, 246, 0.15);
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      border-radius: 9999px;
+      color: #60a5fa;
+      font-size: 0.825rem;
+      font-weight: 600;
+      margin-bottom: 0.75rem;
+      letter-spacing: 0.5px;
+    }
+
+    h1 {
+      font-size: 2.25rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      margin-bottom: 0.5rem;
+      background: linear-gradient(135deg, #ffffff 40%, #a5b4fc 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    p.header-desc {
+      color: var(--text-secondary);
+      font-size: 1.05rem;
+      max-width: 680px;
+      margin: 0 auto 1.5rem;
+    }
+
+    .quick-stats {
+      display: flex;
+      justify-content: center;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+    }
+
+    .stat-chip {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      padding: 0.5rem 1rem;
+      border-radius: var(--radius-md);
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .stat-chip strong {
+      color: var(--text-primary);
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 2.5rem 2rem;
+    }
+
+    .toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2rem;
+      flex-wrap: wrap;
+      gap: 1rem;
+      background: var(--bg-surface);
+      padding: 1rem 1.5rem;
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border-subtle);
+    }
+
+    .filter-tabs {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .tab-btn {
+      background: transparent;
+      border: 1px solid transparent;
+      color: var(--text-secondary);
+      padding: 0.5rem 1rem;
+      border-radius: var(--radius-sm);
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .tab-btn:hover {
+      background: var(--bg-surface-elevated);
+      color: var(--text-primary);
+    }
+
+    .tab-btn.active {
+      background: var(--accent);
+      color: #ffffff;
+      box-shadow: 0 0 16px var(--accent-glow);
+    }
+
+    .action-group {
+      display: flex;
+      gap: 0.75rem;
+    }
+
+    .btn-action {
+      background: var(--bg-surface-elevated);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-primary);
+      padding: 0.55rem 1.1rem;
+      border-radius: var(--radius-sm);
+      font-size: 0.875rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+
+    .btn-action:hover {
+      background: #262c3d;
+      border-color: var(--accent);
+    }
+
+    .gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 2rem;
+    }
+
+    .screen-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .screen-card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(59, 130, 246, 0.4);
+      box-shadow: 0 12px 24px rgba(0, 0, 0, 0.4);
+    }
+
+    .preview-wrapper {
+      position: relative;
+      background: #000000;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 1rem;
+      min-height: 480px;
+      cursor: pointer;
+      overflow: hidden;
+    }
+
+    .preview-wrapper img {
+      max-width: 100%;
+      height: 460px;
+      object-fit: contain;
+      border-radius: 12px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.6);
+      transition: transform 0.3s ease;
+    }
+
+    .preview-wrapper:hover img {
+      transform: scale(1.02);
+    }
+
+    .screen-badge {
+      position: absolute;
+      top: 1rem;
+      left: 1rem;
+      background: rgba(12, 14, 18, 0.85);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: #93c5fd;
+    }
+
+    .card-content {
+      padding: 1.25rem 1.5rem;
+      display: flex;
+      flex-direction: column;
+      flex-grow: 1;
+      border-top: 1px solid var(--border-subtle);
+    }
+
+    .card-title {
+      font-size: 1.2rem;
+      font-weight: 700;
+      margin-bottom: 0.35rem;
+      color: var(--text-primary);
+    }
+
+    .card-scene {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.775rem;
+      color: var(--text-muted);
+      margin-bottom: 0.85rem;
+      word-break: break-all;
+    }
+
+    .card-desc {
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+      margin-bottom: 1.25rem;
+      flex-grow: 1;
+    }
+
+    .card-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.65rem;
+    }
+
+    .btn-download, .btn-prompt {
+      padding: 0.55rem;
+      border-radius: var(--radius-sm);
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      text-align: center;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+
+    .btn-download {
+      background: var(--bg-surface-elevated);
+      color: var(--text-primary);
+      border: 1px solid var(--border-subtle);
+    }
+
+    .btn-download:hover {
+      background: #252b3b;
+      border-color: #4b5563;
+    }
+
+    .btn-prompt {
+      background: rgba(59, 130, 246, 0.12);
+      color: #93c5fd;
+      border: 1px solid rgba(59, 130, 246, 0.25);
+    }
+
+    .btn-prompt:hover {
+      background: var(--accent);
+      color: #ffffff;
+    }
+
+    /* Modal for prompt or fullscreen preview */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.85);
+      backdrop-filter: blur(10px);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      padding: 2rem;
+    }
+
+    .modal-backdrop.active {
+      display: flex;
+    }
+
+    .modal-box {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      max-width: 800px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      padding: 2rem;
+      position: relative;
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 1.25rem;
+      right: 1.25rem;
+      background: var(--bg-surface-elevated);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-secondary);
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .modal-title {
+      font-size: 1.4rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+
+    .prompt-box {
+      background: #090b0e;
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 1rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.85rem;
+      color: #e2e8f0;
+      white-space: pre-wrap;
+      margin: 1rem 0;
+      line-height: 1.6;
+      max-height: 380px;
+      overflow-y: auto;
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      background: var(--success);
+      color: #ffffff;
+      padding: 0.75rem 1.5rem;
+      border-radius: var(--radius-md);
+      font-weight: 600;
+      box-shadow: 0 10px 25px rgba(16, 185, 129, 0.4);
+      display: none;
+      z-index: 10000;
+      animation: fadeIn 0.3s;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="badge">CLAUDE DESIGN ASSETS • JOGOS DE MESA OFFLINE</div>
+    <h1>Galeria de Prints & Telas</h1>
+    <p class="header-desc">
+      Todos os prints em alta definição das telas e jogos do aplicativo Godot, formatados e prontos para uso em redesigns com <strong>Claude Design</strong>.
+    </p>
+    <div class="quick-stats">
+      <div class="stat-chip">📱 Formato: <strong>9:16 Portrait (720x1280 / 1080x1920)</strong></div>
+      <div class="stat-chip">🎨 Engine: <strong>Godot 4.3 Mobile</strong></div>
+      <div class="stat-chip">🖼️ Telas: <strong>8 Telas Completas</strong></div>
+      <div class="stat-chip">📁 Formatos: <strong>PNG + JPG + SVG</strong></div>
+    </div>
+  </header>
+
+  <div class="container">
+    <div class="toolbar">
+      <div class="filter-tabs">
+        <button class="tab-btn active" onclick="filterCategory('all', this)">Todas as Telas (8)</button>
+        <button class="tab-btn" onclick="filterCategory('menu', this)">Menus (3)</button>
+        <button class="tab-btn" onclick="filterCategory('game', this)">Jogos (3)</button>
+        <button class="tab-btn" onclick="filterCategory('extra', this)">Extras & Configs (2)</button>
+      </div>
+      <div class="action-group">
+        <button class="btn-action" onclick="copyAllContextPrompt()">
+          <span>📋</span> Copiar Prompt Geral para Claude
+        </button>
+      </div>
+    </div>
+
+    <div class="gallery-grid" id="galleryGrid">
+      <!-- 1. Menu Principal -->
+      <div class="screen-card" data-category="menu">
+        <div class="preview-wrapper" onclick="openFullscreen('01_menu_principal.png', 'Menu Principal')">
+          <span class="screen-badge">01 • Menu Principal</span>
+          <img src="01_menu_principal.png" alt="Menu Principal">
+        </div>
+        <div class="card-content">
+          <div class="card-title">Menu Principal</div>
+          <div class="card-scene">res://core/telas/MainMenu.tscn</div>
+          <div class="card-desc">Hub central do app com título 'Jogos de Mesa', subtítulo 'Offline Collection' e botões principais de navegação: Tabuleiro, Cartas e Configurações.</div>
+          <div class="card-actions">
+            <a href="01_menu_principal.png" download="01_menu_principal.png" class="btn-download">💾 Baixar PNG</a>
+            <button class="btn-prompt" onclick="openPromptModal(1)">✨ Prompt Claude</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. Menu Jogos de Tabuleiro -->
+      <div class="screen-card" data-category="menu">
+        <div class="preview-wrapper" onclick="openFullscreen('02_menu_tabuleiro.png', 'Menu Jogos de Tabuleiro')">
+          <span class="screen-badge">02 • Menu Tabuleiro</span>
+          <img src="02_menu_tabuleiro.png" alt="Menu Jogos de Tabuleiro">
+        </div>
+        <div class="card-content">
+          <div class="card-title">Menu Jogos de Tabuleiro</div>
+          <div class="card-scene">res://core/telas/MenuTabuleiro.tscn</div>
+          <div class="card-desc">Grade de 2 colunas com cards clicáveis: Quatro em Linha, Jogo da Velha, Reversi, Batalha Naval, Damas e Mancala, com botão 'Voltar' no topo.</div>
+          <div class="card-actions">
+            <a href="02_menu_tabuleiro.png" download="02_menu_tabuleiro.png" class="btn-download">💾 Baixar PNG</a>
+            <button class="btn-prompt" onclick="openPromptModal(2)">✨ Prompt Claude</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. Menu Jogos de Cartas -->
+      <div class="screen-card" data-category="menu">
+        <div class="preview-wrapper" onclick="openFullscreen('03_menu_cartas.png', 'Menu Jogos de Cartas')">
+          <span class="screen-badge">03 • Menu Cartas</span>
+          <img src="03_menu_cartas.png" alt="Menu Jogos de Cartas">
+        </div>
+        <div class="card-content">
+          <div class="card-title">Menu Jogos de Cartas</div>
+          <div class="card-scene">res://core/telas/MenuCartas.tscn</div>
+          <div class="card-desc">Seleção de jogos clássicos de baralho: Jogo da Memória, Solitário (Paciência) e 21 (Blackjack), com visual elegante e navegação rápida.</div>
+          <div class="card-actions">
+            <a href="03_menu_cartas.png" download="03_menu_cartas.png" class="btn-download">💾 Baixar PNG</a>
+            <button class="btn-prompt" onclick="openPromptModal(3)">✨ Prompt Claude</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4. Jogo da Velha -->
+      <div class="screen-card" data-category="game">
+        <div class="preview-wrapper" onclick="openFullscreen('04_jogo_da_velha.png', 'Jogo da Velha')">
+          <span class="screen-badge">04 • Jogo da Velha</span>
+          <img src="04_jogo_da_velha.png" alt="Jogo da Velha">
+        </div>
+        <div class="card-content">
+          <div class="card-title">Jogo da Velha (Tic-Tac-Toe)</div>
+          <div class="card-scene">res://games/jogo_da_velha/TicTacToeGame.tscn</div>
+          <div class="card-desc">Grade 3x3 contra IA offline. Feedback de turnos ('Sua Vez (X)', 'Vez da IA (O)'), contagem de movimentos e detecção instantânea de vitória ou empate.</div>
+          <div class="card-actions">
+            <a href="04_jogo_da_velha.png" download="04_jogo_da_velha.png" class="btn-download">💾 Baixar PNG</a>
+            <button class="btn-prompt" onclick="openPromptModal(4)">✨ Prompt Claude</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 5. Quatro em Linha -->
+      <div class="screen-card" data-category="game">
+        <div class="preview-wrapper" onclick="openFullscreen('05_quatro_em_linha.png', 'Quatro em Linha')">
+          <span class="screen-badge">05 • Quatro em Linha</span>
+          <img src="05_quatro_em_linha.png" alt="Quatro em Linha">
+        </div>
+        <div class="card-content">
+          <div class="card-title">Quatro em Linha (Connect 4)</div>
+          <div class="card-scene">res://games/quatro_em_linha/ConnectFourGame.tscn</div>
+          <div class="card-desc">Tabuleiro azul com grade 7x6, física de queda das fichas (Vermelho x Amarelo), IA com Minimax/heurística e status dinâmico de partida.</div>
+          <div class="card-actions">
+            <a href="05_quatro_em_linha.png" download="05_quatro_em_linha.png" class="btn-download">💾 Baixar PNG</a>
+            <button class="btn-prompt" onclick="openPromptModal(5)">✨ Prompt Claude</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 6. Jogo da Memória -->
+      <div class="screen-card" data-category="game">
+        <div class="preview-wrapper" onclick="openFullscreen('06_jogo_da_memoria.png', 'Jogo da Memória')">
+          <span class="screen-badge">06 • Jogo da Memória</span>
+          <img src="06_jogo_da_memoria.png" alt="Jogo da Memória">
+        </div>
+        <div class="card-content">
+          <div class="card-title">Jogo da Memória</div>
+          <div class="card-scene">res://games/memoria/MemoryGame.tscn</div>
+          <div class="card-desc">Tabuleiro de feltro verde com 16 cartas (4x4) embaralhadas aleatoriamente. Contador de pares encontrados (X/8) e animação de revelação.</div>
+          <div class="card-actions">
+            <a href="06_jogo_da_memoria.png" download="06_jogo_da_memoria.png" class="btn-download">💾 Baixar PNG</a>
+            <button class="btn-prompt" onclick="openPromptModal(6)">✨ Prompt Claude</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 7. Tela Genérica / Em Desenvolvimento -->
+      <div class="screen-card" data-category="extra">
+        <div class="preview-wrapper" onclick="openFullscreen('07_tela_generica_jogo.png', 'Tela Genérica de Jogo')">
+          <span class="screen-badge">07 • Placeholder de Jogo</span>
+          <img src="07_tela_generica_jogo.png" alt="Tela Genérica de Jogo">
+        </div>
+        <div class="card-content">
+          <div class="card-title">Tela Genérica / Simulação</div>
+          <div class="card-scene">res://shared/GenericGame.tscn</div>
+          <div class="card-desc">Tela padrão compartilhada para títulos em desenvolvimento (Damas, Reversi, Batalha Naval, Mancala, Solitário, 21) com título dinâmico e botão voltar.</div>
+          <div class="card-actions">
+            <a href="07_tela_generica_jogo.png" download="07_tela_generica_jogo.png" class="btn-download">💾 Baixar PNG</a>
+            <button class="btn-prompt" onclick="openPromptModal(7)">✨ Prompt Claude</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 8. Configurações -->
+      <div class="screen-card" data-category="extra">
+        <div class="preview-wrapper" onclick="openFullscreen('08_configuracoes_app.png', 'Configurações')">
+          <span class="screen-badge">08 • Configurações</span>
+          <img src="08_configuracoes_app.png" alt="Configurações">
+        </div>
+        <div class="card-content">
+          <div class="card-title">Configurações & Ajustes</div>
+          <div class="card-scene">res://core/telas/Settings.tscn (Proposta)</div>
+          <div class="card-desc">Preferências do usuário: alternador de tema Escuro/Claro, controle de efeitos sonoros, vibração háptica, seletor de idioma e créditos de versão.</div>
+          <div class="card-actions">
+            <a href="08_configuracoes_app.png" download="08_configuracoes_app.png" class="btn-download">💾 Baixar PNG</a>
+            <button class="btn-prompt" onclick="openPromptModal(8)">✨ Prompt Claude</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Modal -->
+  <div class="modal-backdrop" id="modalBackdrop" onclick="closeModal(event)">
+    <div class="modal-box" onclick="event.stopPropagation()">
+      <button class="modal-close" onclick="closeModal()">✕</button>
+      <h2 class="modal-title" id="modalTitle">Prompt para Claude Design</h2>
+      <p style="color: var(--text-secondary); font-size: 0.9rem;">Copie e cole este prompt junto com o print no Claude para gerar novos componentes, UI e código:</p>
+      <div class="prompt-box" id="promptText"></div>
+      <button class="btn-action" style="width: 100%; justify-content: center; background: var(--accent); color: white;" onclick="copyCurrentPrompt()">
+        📋 Copiar Prompt
+      </button>
+    </div>
+  </div>
+
+  <div class="toast" id="toastMsg">✓ Copiado para a área de transferência!</div>
+
+  <script>
+    const promptsData = {
+      1: `[CONTEXTO DO PROJETO: Jogos de Mesa Offline - Godot 4.3 Engine]
+TELA ATUAL: Menu Principal (res://core/telas/MainMenu.tscn)
+OBJETIVO: Redesenhar a interface do menu principal mantendo a experiência mobile rápida, minimalista e offline.
+
+ELEMENTOS EXISTENTES:
+- Fundo escuro (#14171c)
+- Título: "Jogos de Mesa" (56px)
+- Subtítulo: "Offline Collection" (#99a6b3, 28px)
+- Botões Centrais (VBoxContainer, tamanho mínimo 320x100px, estilo StyleBoxFlat com cantos arredondados 16px):
+  1. "Tabuleiro" -> Abre o MenuTabuleiro.tscn
+  2. "Cartas" -> Abre o MenuCartas.tscn
+  3. "Configurações" -> Abre as Configurações
+
+PEDIDO PARA O CLAUDE DESIGN:
+1. Sugira um layout visual premium para mobile (9:16 portrait).
+2. Adicione ícones modernos para cada categoria (peça de xadrez/meeple para Tabuleiro, cartas para Cartas, engrenagem para Configurações).
+3. Melhore a hierarquia visual, espaçamentos e micro-interações de toque.`,
+
+      2: `[CONTEXTO DO PROJETO: Jogos de Mesa Offline - Godot 4.3 Engine]
+TELA ATUAL: Menu Jogos de Tabuleiro (res://core/telas/MenuTabuleiro.tscn)
+OBJETIVO: Redesenhar o catálogo de jogos de tabuleiro em grade responsiva mobile.
+
+ELEMENTOS EXISTENTES:
+- TopBar: Botão "Voltar" + Título "Jogos de Tabuleiro"
+- ScrollContainer com GridContainer de 2 colunas:
+  - "Quatro em Linha" (Ativo / Jogável)
+  - "Jogo da Velha" (Ativo / Jogável)
+  - "Reversi" (Simulação / Em breve)
+  - "Batalha Naval" (Simulação / Em breve)
+  - "Damas" (Simulação / Em breve)
+  - "Mancala" (Simulação / Em breve)
+
+PEDIDO PARA O CLAUDE DESIGN:
+1. Crie cards com ilustrações / mini-tabuleiros vetoriais para cada jogo.
+2. Adicione badges de status ("Jogar Agora", "1 vs 1", "IA").
+3. Otimize a grade para rolagem fluida em telas de 720x1280 / 1080x2340.`,
+
+      3: `[CONTEXTO DO PROJETO: Jogos de Mesa Offline - Godot 4.3 Engine]
+TELA ATUAL: Menu Jogos de Cartas (res://core/telas/MenuCartas.tscn)
+OBJETIVO: Redesenhar o catálogo de jogos de cartas para mobile.
+
+ELEMENTOS EXISTENTES:
+- TopBar: Botão "Voltar" + Título "Jogos de Cartas"
+- GridContainer de 2 colunas:
+  - "Jogo da Memória" (Ativo / Jogável)
+  - "Solitário" (Paciência - Em breve)
+  - "21 (Blackjack)" (Em breve)
+
+PEDIDO PARA O CLAUDE DESIGN:
+1. Crie cards de baralho estilizados com naipes sutis em relevo.
+2. Destaque o jogo da Memória como jogável e apresente os próximos lançamentos.
+3. Melhore a identidade visual mantendo o tema escuro.`,
+
+      4: `[CONTEXTO DO PROJETO: Jogos de Mesa Offline - Godot 4.3 Engine]
+TELA ATUAL: Jogo da Velha (res://games/jogo_da_velha/TicTacToeGame.tscn)
+OBJETIVO: Criar uma interface moderna, dinâmica e satisfatória para Jogo da Velha (Tic-Tac-Toe).
+
+ELEMENTOS EXISTENTES:
+- TopBar com botão "Voltar" e título "Jogo da Velha"
+- Label de Status no topo ("Sua Vez (X)", "Vez da IA (O)...", "Você Venceu!", "Empate!")
+- Grade 3x3 centralizada (botoes de 100x100px com caracteres 'X' e 'O' em 64px)
+- Script de lógica com IA aleatória / Minimax em GDScript
+
+PEDIDO PARA O CLAUDE DESIGN:
+1. Redesenhe o grid com células arredondadas e efeito neon sutil (Azul para X, Laranja/Dourado para O).
+2. Adicione indicador visual de linha vencedora (strike-through line).
+3. Adicione placar de vitórias (Jogador X vs IA O vs Empates).`,
+
+      5: `[CONTEXTO DO PROJETO: Jogos de Mesa Offline - Godot 4.3 Engine]
+TELA ATUAL: Quatro em Linha / Lig 4 (res://games/quatro_em_linha/ConnectFourGame.tscn)
+OBJETIVO: Redesenhar o clássico tabuleiro vertical 7x6 do Quatro em Linha.
+
+ELEMENTOS EXISTENTES:
+- TopBar com botão "Voltar" e título "Quatro em Linha"
+- Grade azul de 7 colunas por 6 linhas (ColorRect / peças circulares)
+- Peças com animação de queda (drop_to) em 2 cores: Vermelho (Jogador) e Amarelo (IA)
+- Status inferior informando vez da jogada e resultado final
+
+PEDIDO PARA O CLAUDE DESIGN:
+1. Tabuleiro vertical realista com furos circulares e efeito de profundidade.
+2. Fichas brilhantes com acabamento plástico/metálico tátil.
+3. Seletor de colunas no topo com indicador de prévia da peça antes da queda.`,
+
+      6: `[CONTEXTO DO PROJETO: Jogos de Mesa Offline - Godot 4.3 Engine]
+TELA ATUAL: Jogo da Memória (res://games/memoria/MemoryGame.tscn)
+OBJETIVO: Redesenhar o tabuleiro de cartas viradas para o Jogo da Memória.
+
+ELEMENTOS EXISTENTES:
+- Fundo verde feltro (#1a6633)
+- TopBar com botão "Voltar" e título "Jogo da Memória"
+- Status com contagem de pares ("Encontre os Pares! | Pares: X/8")
+- Grade 4x4 com 16 cartas (botões 80x120px)
+
+PEDIDO PARA O CLAUDE DESIGN:
+1. Design de verso de carta luxuoso com padrão ornamental ou geométrico.
+2. Frente das cartas com ícones ricos e coloridos (Naipes, Formas ou Ilustrações).
+3. Efeito de flip card e contador de tempo / tentativas.`,
+
+      7: `[CONTEXTO DO PROJETO: Jogos de Mesa Offline - Godot 4.3 Engine]
+TELA ATUAL: Tela Genérica de Jogo (res://shared/GenericGame.tscn)
+OBJETIVO: Criar uma tela padrão elegante para simulações e jogos em produção (Damas, Reversi, Batalha Naval, etc.).
+
+ELEMENTOS EXISTENTES:
+- TopBar com botão "Voltar"
+- Container central exibindo o nome do jogo selecionado via SaveManager
+- Mensagem de status da simulação
+
+PEDIDO PARA O CLAUDE DESIGN:
+1. Card central com mini-tabuleiro ilustrativo do jogo selecionado.
+2. Controles de configuração de partida (Número de Jogadores: 1 vs IA ou 2 no mesmo aparelho, Nível da IA).
+3. Botão destacado de "Iniciar Partida".`,
+
+      8: `[CONTEXTO DO PROJETO: Jogos de Mesa Offline - Godot 4.3 Engine]
+TELA ATUAL: Configurações do Aplicativo (res://core/telas/Settings.tscn)
+OBJETIVO: Criar a tela de configurações para o aplicativo offline.
+
+ELEMENTOS NECESSÁRIOS:
+- Alternador de Tema Escuro / Claro
+- Toggle de Efeitos Sonoros (SFX)
+- Toggle de Vibração / Feedback Háptico
+- Seletor de Idioma (Português, Inglês, Espanhol)
+- Seção "Sobre" com versão 0.1.0, licença MIT e créditos Open Source
+
+PEDIDO PARA O CLAUDE DESIGN:
+1. Layout em lista de grupos com switches e chevrons modernos.
+2. Design limpo, acessível e responsivo.`
+    };
+
+    function filterCategory(cat, el) {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      el.classList.add('active');
+      
+      const cards = document.querySelectorAll('.screen-card');
+      cards.forEach(card => {
+        if (cat === 'all' || card.getAttribute('data-category') === cat) {
+          card.style.display = 'flex';
+        } else {
+          card.style.display = 'none';
+        }
+      });
+    }
+
+    function openPromptModal(id) {
+      document.getElementById('modalTitle').innerText = `Prompt para Claude Design (Tela ${id})`;
+      document.getElementById('promptText').innerText = promptsData[id];
+      document.getElementById('modalBackdrop').classList.add('active');
+    }
+
+    function closeModal(e) {
+      document.getElementById('modalBackdrop').classList.remove('active');
+    }
+
+    function copyCurrentPrompt() {
+      const text = document.getElementById('promptText').innerText;
+      navigator.clipboard.writeText(text).then(() => {
+        showToast('✓ Prompt copiado para a área de transferência!');
+      });
+    }
+
+    function copyAllContextPrompt() {
+      const allText = Object.values(promptsData).join('\\n\\n' + '='.repeat(50) + '\\n\\n');
+      navigator.clipboard.writeText(allText).then(() => {
+        showToast('✓ Prompts de todas as 8 telas copiados!');
+      });
+    }
+
+    function showToast(msg) {
+      const toast = document.getElementById('toastMsg');
+      toast.innerText = msg;
+      toast.style.display = 'block';
+      setTimeout(() => { toast.style.display = 'none'; }, 3000);
+    }
+  </script>
+</body>
+</html>
