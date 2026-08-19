@@ -1,0 +1,100 @@
+[gd_scene load_steps=2 format=3 uid="uid://ludogameuid"]
+
+[ext_resource type="Script" path="res://games/ludo/LudoGame.gd" id="1_script"]
+
+[node name="LudoGame" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_script")
+
+[node name="Background" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.08, 0.1, 0.14, 1)
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 20.0
+offset_top = 30.0
+offset_right = -20.0
+offset_bottom = -30.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 15
+
+[node name="TopBar" type="HBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 20
+
+[node name="BtnBack" type="Button" parent="VBoxContainer/TopBar"]
+custom_minimum_size = Vector2(100, 50)
+layout_mode = 2
+text = "Voltar"
+
+[node name="Title" type="Label" parent="VBoxContainer/TopBar"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 32
+text = "Ludo Simplificado"
+
+[node name="StatusLabel" type="Label" parent="VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "Sua Vez! Toque no dado para rolar."
+horizontal_alignment = 1
+
+[node name="DiceArea" type="HBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+alignment = 1
+
+[node name="BtnDice" type="Button" parent="VBoxContainer/DiceArea"]
+custom_minimum_size = Vector2(220, 70)
+layout_mode = 2
+theme_override_font_sizes/font_size = 28
+text = "🎲 Rolar Dado"
+
+[node name="PawnSelectionArea" type="VBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 10
+alignment = 1
+
+[node name="PawnButtons" type="HBoxContainer" parent="VBoxContainer/PawnSelectionArea"]
+layout_mode = 2
+theme_override_constants/separation = 15
+alignment = 1
+
+[node name="BoardOverview" type="ScrollContainer" parent="VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="BoardStatusLabel" type="Label" parent="VBoxContainer/BoardOverview"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.85, 0.9, 0.95, 1)
+theme_override_font_sizes/font_size = 18
+text = "Status dos jogadores..."
+
+[node name="Actions" type="HBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+alignment = 1
+
+[node name="BtnRestart" type="Button" parent="VBoxContainer/Actions"]
+visible = false
+custom_minimum_size = Vector2(240, 55)
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+text = "Jogar Novamente"
+
+[connection signal="pressed" from="VBoxContainer/TopBar/BtnBack" to="." method="_on_btn_back_pressed"]
+[connection signal="pressed" from="VBoxContainer/DiceArea/BtnDice" to="." method="_on_btn_dice_pressed"]
+[connection signal="pressed" from="VBoxContainer/Actions/BtnRestart" to="." method="_on_btn_restart_pressed"]
