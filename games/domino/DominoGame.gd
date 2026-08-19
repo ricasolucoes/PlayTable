@@ -1,11 +1,11 @@
 extends Control
 
-# Domino tile: Dictionary {"a": int, "b": int}
+const DominoRulesScript = preload("res://games/domino/DominoRules.gd")
 
-var boneyard = []
-var player_hand = []
-var ai_hand = []
-var board_chain = [] # Array of {"a": int, "b": int} representing oriented tiles in order from left to right
+var boneyard: Array[Dictionary] = []
+var player_hand: Array[Dictionary] = []
+var ai_hand: Array[Dictionary] = []
+var board_chain: Array[Dictionary] = []
 
 var left_end: int = -1
 var right_end: int = -1
@@ -37,24 +37,19 @@ func _start_new_game():
 	btn_play_left.hide()
 	btn_play_right.hide()
 	
-	# Generate 28 tiles
-	boneyard.clear()
-	for a in range(7):
-		for b in range(a, 7):
-			boneyard.append({"a": a, "b": b})
+	boneyard = DominoRules.generate_boneyard_28()
 	boneyard.shuffle()
 	
-	# Deal 7 to player, 7 to AI
 	player_hand.clear()
 	ai_hand.clear()
 	for i in range(7):
 		player_hand.append(boneyard.pop_back())
 		ai_hand.append(boneyard.pop_back())
 		
-	# Find highest double to start
+	# Encontra maior bucha para abrir
 	board_chain.clear()
 	var starting_tile = {}
-	var starting_player = 0 # 1 = player, 2 = AI
+	var starting_player = 0
 	
 	for double_val in range(6, -1, -1):
 		for p_idx in range(player_hand.size()):
@@ -74,7 +69,6 @@ func _start_new_game():
 		if starting_tile.size() > 0: break
 		
 	if starting_tile.size() == 0:
-		# If no doubles found, player plays first tile
 		starting_tile = player_hand.pop_back()
 		starting_player = 1
 		
@@ -95,13 +89,10 @@ func _start_new_game():
 		_update_action_buttons()
 
 func _update_ui():
-	# AI info
 	ai_info_label.text = "IA: %d pedras  |  Dorme (Monte): %d pedras" % [ai_hand.size(), boneyard.size()]
-	
-	# Table ends
 	ends_label.text = "Pontas: [ %d ] <---------> [ %d ]" % [left_end, right_end]
 	
-	# Domino chain on table
+	# Mesa
 	for c in chain_container.get_children(): c.queue_free()
 	for tile in board_chain:
 		var lbl = Button.new()
@@ -111,7 +102,7 @@ func _update_ui():
 		lbl.disabled = true
 		chain_container.add_child(lbl)
 		
-	# Player hand
+	# Mão do Jogador
 	for c in player_hand_container.get_children(): c.queue_free()
 	for i in range(player_hand.size()):
 		var tile = player_hand[i]
@@ -120,7 +111,7 @@ func _update_ui():
 		btn.add_theme_font_size_override("font_size", 24)
 		btn.text = "[ %d | %d ]" % [tile["a"], tile["b"]]
 		
-		var can_play = _can_tile_play(tile)
+		var can_play = DominoRules.can_tile_fit(tile, left_end, right_end)
 		if can_play and is_player_turn and not game_over:
 			btn.self_modulate = Color(0.3, 0.7, 0.4)
 		else:
@@ -134,14 +125,6 @@ func _update_ui():
 		
 	_update_action_buttons()
 
-func _can_tile_play(tile: Dictionary) -> bool:
-	return tile["a"] == left_end or tile["b"] == left_end or tile["a"] == right_end or tile["b"] == right_end
-
-func _has_any_playable_tile(hand: Array) -> bool:
-	for t in hand:
-		if _can_tile_play(t): return true
-	return false
-
 func _update_action_buttons():
 	if game_over or not is_player_turn:
 		btn_draw.hide()
@@ -150,7 +133,7 @@ func _update_action_buttons():
 		btn_play_right.hide()
 		return
 		
-	var can_play_any = _has_any_playable_tile(player_hand)
+	var can_play_any = DominoRules.has_any_playable(player_hand, left_end, right_end)
 	
 	if can_play_any:
 		btn_draw.hide()
@@ -183,7 +166,7 @@ func _on_player_tile_clicked(idx: int):
 	if game_over or not is_player_turn: return
 	
 	var tile = player_hand[idx]
-	if not _can_tile_play(tile):
+	if not DominoRules.can_tile_fit(tile, left_end, right_end):
 		status_label.text = "Essa pedra não encaixa em nenhuma ponta!"
 		return
 		
@@ -204,22 +187,14 @@ func _play_tile_to_side(hand_idx: int, side: String):
 	selected_tile_idx = -1
 	consecutive_passes = 0
 	
+	var res = DominoRules.orient_tile_for_side(tile, side, left_end, right_end)
+	left_end = res["new_left_end"]
+	right_end = res["new_right_end"]
+	
 	if side == "left":
-		var oriented = tile.duplicate()
-		if oriented["b"] == left_end:
-			left_end = oriented["a"]
-		else:
-			oriented = {"a": tile["b"], "b": tile["a"]}
-			left_end = oriented["a"]
-		board_chain.push_front(oriented)
+		board_chain.push_front(res["oriented_tile"])
 	else:
-		var oriented = tile.duplicate()
-		if oriented["a"] == right_end:
-			right_end = oriented["b"]
-		else:
-			oriented = {"a": tile["b"], "b": tile["a"]}
-			right_end = oriented["b"]
-		board_chain.push_back(oriented)
+		board_chain.push_back(res["oriented_tile"])
 		
 	_update_ui()
 	
@@ -265,11 +240,10 @@ func _on_btn_play_right_pressed():
 func _play_ai_turn():
 	if game_over: return
 	
-	# Draw from boneyard if cannot play
-	while not _has_any_playable_tile(ai_hand) and boneyard.size() > 0:
+	while not DominoRules.has_any_playable(ai_hand, left_end, right_end) and boneyard.size() > 0:
 		ai_hand.append(boneyard.pop_back())
 		
-	if not _has_any_playable_tile(ai_hand):
+	if not DominoRules.has_any_playable(ai_hand, left_end, right_end):
 		consecutive_passes += 1
 		status_label.text = "IA não tem jogadas e passou a vez!"
 		if consecutive_passes >= 2:
@@ -279,38 +253,25 @@ func _play_ai_turn():
 		_update_ui()
 		return
 		
-	# Find best playable tile
 	consecutive_passes = 0
-	var playable_indices = []
-	for i in range(ai_hand.size()):
-		if _can_tile_play(ai_hand[i]):
-			playable_indices.append(i)
-			
+	var playable_indices = DominoRules.get_playable_indices(ai_hand, left_end, right_end)
 	playable_indices.shuffle()
+	
 	var chosen_idx = playable_indices[0]
 	var tile = ai_hand.pop_at(chosen_idx)
 	
 	var can_left = (tile["a"] == left_end or tile["b"] == left_end)
 	var can_right = (tile["a"] == right_end or tile["b"] == right_end)
-	
 	var side = "left" if (can_left and not can_right) else ("right" if (can_right and not can_left) else ("left" if randf() > 0.5 else "right"))
 	
+	var res = DominoRules.orient_tile_for_side(tile, side, left_end, right_end)
+	left_end = res["new_left_end"]
+	right_end = res["new_right_end"]
+	
 	if side == "left":
-		var oriented = tile.duplicate()
-		if oriented["b"] == left_end:
-			left_end = oriented["a"]
-		else:
-			oriented = {"a": tile["b"], "b": tile["a"]}
-			left_end = oriented["a"]
-		board_chain.push_front(oriented)
+		board_chain.push_front(res["oriented_tile"])
 	else:
-		var oriented = tile.duplicate()
-		if oriented["a"] == right_end:
-			right_end = oriented["b"]
-		else:
-			oriented = {"a": tile["b"], "b": tile["a"]}
-			right_end = oriented["b"]
-		board_chain.push_back(oriented)
+		board_chain.push_back(res["oriented_tile"])
 		
 	_update_ui()
 	
@@ -322,10 +283,8 @@ func _play_ai_turn():
 	status_label.text = "IA jogou [%d|%d]. Sua vez!" % [tile["a"], tile["b"]]
 
 func _resolve_blocked_game():
-	var p_sum = 0
-	for t in player_hand: p_sum += t["a"] + t["b"]
-	var ai_sum = 0
-	for t in ai_hand: ai_sum += t["a"] + t["b"]
+	var p_sum = DominoRules.calculate_hand_points(player_hand)
+	var ai_sum = DominoRules.calculate_hand_points(ai_hand)
 	
 	if p_sum < ai_sum:
 		_end_game("🔒 Jogo Trancado! Você Venceu por pontos (%d vs %d da IA)!" % [p_sum, ai_sum])

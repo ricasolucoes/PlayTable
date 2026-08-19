@@ -1,13 +1,13 @@
 extends Control
 
-const SIZE = 7
+const Grid2DScript = preload("res://shared/core_engine/board/Grid2D.gd")
+const PegSolitaireRulesScript = preload("res://games/solitario/PegSolitaireRules.gd")
 
-# Board layout: -1 = Invalid cell, 0 = Empty hole, 1 = Peg present
-var board = []
-var selected_pos = Vector2i(-1, -1)
-var valid_targets = [] # Array of Dictionary: {"land": Vector2i, "over": Vector2i}
-var move_history = [] # Array of board states for Undo
-var game_over = false
+var grid_data: Grid2D
+var selected_pos: Vector2i = Vector2i(-1, -1)
+var valid_targets: Array[Dictionary] = []
+var move_history: Array[Grid2D] = []
+var game_over: bool = false
 
 @onready var grid = $VBoxContainer/CenterContainer/BoardContainer/Grid
 @onready var status_label = $VBoxContainer/StatusLabel
@@ -21,21 +21,13 @@ func _ready():
 	_setup_grid()
 	_start_new_game()
 
-func _is_valid_hole(r: int, c: int) -> bool:
-	if r < 0 or r >= SIZE or c < 0 or c >= SIZE:
-		return false
-	# Cross pattern (corners (0,0), (0,1), (1,0), (1,1), etc are invalid)
-	if (r < 2 or r > 4) and (c < 2 or c > 4):
-		return false
-	return true
-
 func _setup_grid():
 	for c in grid.get_children(): c.queue_free()
 	cell_buttons.clear()
 	
-	for r in range(SIZE):
+	for r in range(PegSolitaireRules.SIZE):
 		var row_btns = []
-		for c in range(SIZE):
+		for c in range(PegSolitaireRules.SIZE):
 			var btn = Button.new()
 			btn.custom_minimum_size = Vector2(65, 65)
 			btn.add_theme_font_size_override("font_size", 28)
@@ -51,39 +43,19 @@ func _start_new_game():
 	valid_targets.clear()
 	move_history.clear()
 	
-	board.clear()
-	for r in range(SIZE):
-		var row = []
-		for c in range(SIZE):
-			if _is_valid_hole(r, c):
-				if r == 3 and c == 3:
-					row.append(0) # Center empty
-				else:
-					row.append(1) # Peg
-			else:
-				row.append(-1) # Invalid
-		board.append(row)
-		
+	grid_data = PegSolitaireRules.create_initial_board()
 	_update_ui()
 	status_label.text = "Selecione um pino para saltar!"
 
-func _count_remaining_pegs() -> int:
-	var count = 0
-	for r in range(SIZE):
-		for c in range(SIZE):
-			if board[r][c] == 1:
-				count += 1
-	return count
-
 func _update_ui():
-	var pegs_count = _count_remaining_pegs()
+	var pegs_count = PegSolitaireRules.count_pegs(grid_data)
 	pegs_label.text = "Pinos Restantes: %d / 32" % pegs_count
 	btn_undo.disabled = (move_history.size() == 0)
 	
-	for r in range(SIZE):
-		for c in range(SIZE):
+	for r in range(PegSolitaireRules.SIZE):
+		for c in range(PegSolitaireRules.SIZE):
 			var btn = cell_buttons[r][c]
-			var val = board[r][c]
+			var val = grid_data.get_cell(r, c)
 			
 			if val == -1:
 				btn.text = ""
@@ -101,9 +73,9 @@ func _update_ui():
 						break
 						
 				if is_selected:
-					btn.self_modulate = Color(0.9, 0.75, 0.2) # Gold
+					btn.self_modulate = Color(0.9, 0.75, 0.2)
 				elif is_target:
-					btn.self_modulate = Color(0.3, 0.8, 0.4) # Green highlight
+					btn.self_modulate = Color(0.3, 0.8, 0.4)
 				else:
 					btn.self_modulate = Color(0.2, 0.25, 0.3)
 					
@@ -113,23 +85,20 @@ func _update_ui():
 					btn.text = "⚫" if not is_target else "⭕"
 
 func _on_cell_clicked(r: int, c: int):
-	if game_over or not _is_valid_hole(r, c):
-		return
-		
+	if game_over or not PegSolitaireRules.is_valid_hole(r, c): return
+	
 	var clicked = Vector2i(r, c)
 	
-	# Check if clicked a valid landing target
 	for vt in valid_targets:
 		if vt["land"] == clicked:
 			_execute_move(selected_pos, vt["over"], vt["land"])
 			return
 			
-	# Check if selecting a peg with valid moves
-	if board[r][c] == 1:
+	if grid_data.get_cell(r, c) == 1:
 		selected_pos = clicked
-		valid_targets = _get_valid_moves_for_peg(clicked)
+		valid_targets = PegSolitaireRules.get_valid_moves_for_peg(grid_data, clicked)
 		_update_ui()
-		if valid_targets.size() == 0:
+		if valid_targets.is_empty():
 			status_label.text = "Este pino não pode saltar."
 		else:
 			status_label.text = "Escolha a casa de destino."
@@ -138,54 +107,23 @@ func _on_cell_clicked(r: int, c: int):
 		valid_targets.clear()
 		_update_ui()
 
-func _get_valid_moves_for_peg(pos: Vector2i) -> Array:
-	var moves = []
-	var directions = [Vector2i(-1, 0), Vector2i(1, 0), Vector2i(0, -1), Vector2i(0, 1)]
-	
-	for d in directions:
-		var over = pos + d
-		var land = pos + (d * 2)
-		if _is_valid_hole(over.x, over.y) and _is_valid_hole(land.x, land.y):
-			if board[over.x][over.y] == 1 and board[land.x][land.y] == 0:
-				moves.append({"over": over, "land": land})
-				
-	return moves
-
 func _execute_move(from_pos: Vector2i, over_pos: Vector2i, land_pos: Vector2i):
-	# Save state for undo
-	move_history.append(_clone_board(board))
-	
-	# Execute
-	board[from_pos.x][from_pos.y] = 0
-	board[over_pos.x][over_pos.y] = 0
-	board[land_pos.x][land_pos.y] = 1
+	move_history.append(grid_data.clone())
+	PegSolitaireRules.execute_jump(grid_data, from_pos, over_pos, land_pos)
 	
 	selected_pos = Vector2i(-1, -1)
 	valid_targets.clear()
 	_update_ui()
-	
 	_check_game_status()
 
-func _clone_board(src: Array) -> Array:
-	var copy = []
-	for r in src:
-		copy.append(r.duplicate())
-	return copy
-
 func _check_game_status():
-	var pegs_count = _count_remaining_pegs()
+	var pegs_count = PegSolitaireRules.count_pegs(grid_data)
+	var total_moves = PegSolitaireRules.count_total_moves(grid_data)
 	
-	# Check if any peg has any move left
-	var total_moves = 0
-	for r in range(SIZE):
-		for c in range(SIZE):
-			if board[r][c] == 1:
-				total_moves += _get_valid_moves_for_peg(Vector2i(r, c)).size()
-				
 	if total_moves == 0:
 		game_over = true
 		if pegs_count == 1:
-			if board[3][3] == 1:
+			if grid_data.get_cell(3, 3) == 1:
 				status_label.text = "🏆 Incrível! Vitória Perfeita (1 pino no centro)!"
 			else:
 				status_label.text = "🏆 Parabéns! Você venceu (1 pino restante)!"
@@ -197,8 +135,8 @@ func _check_game_status():
 			status_label.text = "Fim de jogo! Restaram %d pinos." % pegs_count
 
 func _on_btn_undo_pressed():
-	if move_history.size() > 0:
-		board = move_history.pop_back()
+	if not move_history.is_empty():
+		grid_data = move_history.pop_back()
 		selected_pos = Vector2i(-1, -1)
 		valid_targets.clear()
 		game_over = false

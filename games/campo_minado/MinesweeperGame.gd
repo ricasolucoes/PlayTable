@@ -1,16 +1,9 @@
 extends Control
 
-const ROWS = 9
-const COLS = 9
-const MINES_COUNT = 10
+const Grid2DScript = preload("res://shared/core_engine/board/Grid2D.gd")
+const MinesweeperRulesScript = preload("res://games/campo_minado/MinesweeperRules.gd")
 
-# Cell states:
-# is_mine: bool
-# is_revealed: bool
-# is_flagged: bool
-# adjacent_mines: int
-
-var grid_data = []
+var grid_data: Grid2D
 var first_click: bool = true
 var is_flag_mode: bool = false
 var game_over: bool = false
@@ -40,9 +33,9 @@ func _setup_grid_ui():
 	for c in grid_container.get_children(): c.queue_free()
 	cell_buttons.clear()
 	
-	for r in range(ROWS):
+	for r in range(MinesweeperRules.ROWS):
 		var row_btns = []
-		for c in range(COLS):
+		for c in range(MinesweeperRules.COLS):
 			var btn = Button.new()
 			btn.custom_minimum_size = Vector2(60, 60)
 			btn.add_theme_font_size_override("font_size", 24)
@@ -61,51 +54,13 @@ func _start_new_game():
 	btn_smiley.text = "🙂"
 	status_label.text = "Toque em uma casa para começar!"
 	
-	grid_data.clear()
-	for r in range(ROWS):
-		var row = []
-		for c in range(COLS):
-			row.append({
-				"is_mine": false,
-				"is_revealed": false,
-				"is_flagged": false,
-				"adjacent_mines": 0
-			})
-		grid_data.append(row)
-		
+	grid_data = MinesweeperRules.create_empty_grid()
 	_update_ui()
-
-func _generate_mines(safe_r: int, safe_c: int):
-	var placed = 0
-	while placed < MINES_COUNT:
-		var r = randi() % ROWS
-		var c = randi() % COLS
-		# Don't place on first clicked cell or its immediate neighbors
-		if abs(r - safe_r) <= 1 and abs(c - safe_c) <= 1:
-			continue
-		if not grid_data[r][c]["is_mine"]:
-			grid_data[r][c]["is_mine"] = true
-			placed += 1
-			
-	# Calculate adjacent mines
-	for r in range(ROWS):
-		for c in range(COLS):
-			if grid_data[r][c]["is_mine"]:
-				continue
-			var count = 0
-			for dr in [-1, 0, 1]:
-				for dc in [-1, 0, 1]:
-					var nr = r + dr
-					var nc = c + dc
-					if nr >= 0 and nr < ROWS and nc >= 0 and nc < COLS:
-						if grid_data[nr][nc]["is_mine"]:
-							count += 1
-			grid_data[r][c]["adjacent_mines"] = count
 
 func _on_cell_clicked(r: int, c: int):
 	if game_over or game_won: return
 	
-	var cell = grid_data[r][c]
+	var cell = grid_data.get_cell(r, c)
 	
 	if is_flag_mode:
 		if not cell["is_revealed"]:
@@ -114,13 +69,11 @@ func _on_cell_clicked(r: int, c: int):
 			_check_win_condition()
 		return
 		
-	# Reveal mode
-	if cell["is_flagged"]:
-		return
-		
+	if cell["is_flagged"]: return
+	
 	if first_click:
 		first_click = false
-		_generate_mines(r, c)
+		MinesweeperRules.generate_mines(grid_data, r, c)
 		timer_active = true
 		status_label.text = "Campo ativo!"
 		
@@ -128,30 +81,17 @@ func _on_cell_clicked(r: int, c: int):
 		_trigger_game_over(r, c)
 		return
 		
-	_reveal_cell(r, c)
+	MinesweeperRules.reveal_cell(grid_data, r, c)
 	_update_ui()
 	_check_win_condition()
-
-func _reveal_cell(r: int, c: int):
-	if r < 0 or r >= ROWS or c < 0 or c >= COLS: return
-	var cell = grid_data[r][c]
-	if cell["is_revealed"] or cell["is_flagged"] or cell["is_mine"]: return
-	
-	cell["is_revealed"] = true
-	
-	if cell["adjacent_mines"] == 0:
-		for dr in [-1, 0, 1]:
-			for dc in [-1, 0, 1]:
-				if dr != 0 or dc != 0:
-					_reveal_cell(r + dr, c + dc)
 
 func _update_ui():
 	var flag_count = 0
 	
-	for r in range(ROWS):
-		for c in range(COLS):
+	for r in range(MinesweeperRules.ROWS):
+		for c in range(MinesweeperRules.COLS):
 			var btn = cell_buttons[r][c]
-			var cell = grid_data[r][c]
+			var cell = grid_data.get_cell(r, c)
 			
 			if cell["is_flagged"]:
 				flag_count += 1
@@ -170,18 +110,18 @@ func _update_ui():
 				btn.text = ""
 				btn.self_modulate = Color(0.35, 0.4, 0.48)
 				
-	mines_label.text = "💣 Minas: %d" % (MINES_COUNT - flag_count)
+	mines_label.text = "💣 Minas: %d" % (MinesweeperRules.MINES_COUNT - flag_count)
 
 func _get_number_color(num: int) -> Color:
 	match num:
-		1: return Color(0.2, 0.6, 1.0) # Blue
-		2: return Color(0.3, 0.8, 0.3) # Green
-		3: return Color(0.9, 0.2, 0.2) # Red
-		4: return Color(0.6, 0.2, 0.8) # Purple
-		5: return Color(0.9, 0.5, 0.1) # Orange
-		6: return Color(0.1, 0.8, 0.8) # Cyan
-		7: return Color(0.1, 0.1, 0.1) # Black
-		8: return Color(0.6, 0.6, 0.6) # Gray
+		1: return Color(0.2, 0.6, 1.0)
+		2: return Color(0.3, 0.8, 0.3)
+		3: return Color(0.9, 0.2, 0.2)
+		4: return Color(0.6, 0.2, 0.8)
+		5: return Color(0.9, 0.5, 0.1)
+		6: return Color(0.1, 0.8, 0.8)
+		7: return Color(0.1, 0.1, 0.1)
+		8: return Color(0.6, 0.6, 0.6)
 		_: return Color.WHITE
 
 func _trigger_game_over(hit_r: int, hit_c: int):
@@ -190,35 +130,27 @@ func _trigger_game_over(hit_r: int, hit_c: int):
 	btn_smiley.text = "😵"
 	status_label.text = "💥 Você acertou uma mina! Fim de Jogo."
 	
-	# Reveal all mines
-	for r in range(ROWS):
-		for c in range(COLS):
-			if grid_data[r][c]["is_mine"]:
-				grid_data[r][c]["is_revealed"] = true
+	for r in range(MinesweeperRules.ROWS):
+		for c in range(MinesweeperRules.COLS):
+			if grid_data.get_cell(r, c)["is_mine"]:
+				grid_data.get_cell(r, c)["is_revealed"] = true
 				
 	_update_ui()
 	cell_buttons[hit_r][hit_c].text = "💥"
 	cell_buttons[hit_r][hit_c].self_modulate = Color(0.9, 0.2, 0.2)
 
 func _check_win_condition():
-	if game_over or game_won: return
+	if game_over or game_won or first_click: return
 	
-	var unrevealed_safe = 0
-	for r in range(ROWS):
-		for c in range(COLS):
-			var cell = grid_data[r][c]
-			if not cell["is_mine"] and not cell["is_revealed"]:
-				unrevealed_safe += 1
-				
-	if unrevealed_safe == 0 and not first_click:
+	if MinesweeperRules.check_win(grid_data):
 		game_won = true
 		timer_active = false
 		btn_smiley.text = "😎"
 		status_label.text = "🏆 Parabéns! Você limpou todas as minas!"
-		for r in range(ROWS):
-			for c in range(COLS):
-				if grid_data[r][c]["is_mine"]:
-					grid_data[r][c]["is_flagged"] = true
+		for r in range(MinesweeperRules.ROWS):
+			for c in range(MinesweeperRules.COLS):
+				if grid_data.get_cell(r, c)["is_mine"]:
+					grid_data.get_cell(r, c)["is_flagged"] = true
 		_update_ui()
 
 func _on_btn_mode_pressed():

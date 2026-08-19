@@ -1,35 +1,20 @@
 extends Control
 
-const GRID_SIZE = 10
+const Grid2DScript = preload("res://shared/core_engine/board/Grid2D.gd")
+const BattleshipRulesScript = preload("res://games/batalha_naval/BattleshipRules.gd")
 
-# Ship specifications: name, size
-const SHIP_DEFS = [
-	{"name": "Porta-Aviões", "size": 5},
-	{"name": "Encouraçado", "size": 4},
-	{"name": "Cruzador", "size": 3},
-	{"name": "Submarino", "size": 3},
-	{"name": "Destroyer", "size": 2}
-]
-
-# Cell states:
-# 0 = Empty
-# 1 = Ship present (hidden from enemy)
-# 2 = Miss (water)
-# 3 = Hit (ship damaged)
-
-var player_grid = []
-var ai_grid = []
-var player_ships = [] # Array of dicts: {name, size, cells: [Vector2i], hits: 0, sunk: false}
-var ai_ships = []
+var player_grid: Grid2D
+var ai_grid: Grid2D
+var player_ships: Array[Dictionary] = []
+var ai_ships: Array[Dictionary] = []
 
 var is_combat_phase: bool = false
 var is_player_turn: bool = true
 var game_over: bool = false
-var current_view: String = "radar" # "radar" or "fleet"
+var current_view: String = "radar"
 
-# AI Hunt & Target state
 var ai_hit_stack: Array = []
-var ai_shots_fired: Array = [] # Array of Vector2i
+var ai_shots_fired: Array = []
 
 @onready var grid_radar = $VBoxContainer/CenterContainer/RadarContainer/GridRadar
 @onready var grid_fleet = $VBoxContainer/CenterContainer/FleetContainer/GridFleet
@@ -47,6 +32,8 @@ var radar_buttons = []
 var fleet_buttons = []
 
 func _ready():
+	player_grid = BattleshipRules.create_empty_grid()
+	ai_grid = BattleshipRules.create_empty_grid()
 	_create_grid_ui()
 	_start_setup_phase()
 
@@ -56,11 +43,10 @@ func _create_grid_ui():
 	radar_buttons.clear()
 	fleet_buttons.clear()
 	
-	for r in range(GRID_SIZE):
+	for r in range(BattleshipRules.GRID_SIZE):
 		var r_row = []
 		var f_row = []
-		for c in range(GRID_SIZE):
-			# Radar button (Player attacks AI)
+		for c in range(BattleshipRules.GRID_SIZE):
 			var r_btn = Button.new()
 			r_btn.custom_minimum_size = Vector2(50, 50)
 			r_btn.add_theme_font_size_override("font_size", 24)
@@ -68,7 +54,6 @@ func _create_grid_ui():
 			grid_radar.add_child(r_btn)
 			r_row.append(r_btn)
 			
-			# Fleet button (Display player's ships & enemy attacks)
 			var f_btn = Button.new()
 			f_btn.custom_minimum_size = Vector2(50, 50)
 			f_btn.add_theme_font_size_override("font_size", 24)
@@ -89,8 +74,8 @@ func _start_setup_phase():
 	btn_randomize.show()
 	btn_restart.hide()
 	
-	_randomize_player_fleet()
-	_randomize_ai_fleet()
+	player_ships = BattleshipRules.place_all_ships_randomly(player_grid)
+	ai_ships = BattleshipRules.place_all_ships_randomly(ai_grid)
 	
 	_switch_view("fleet")
 	status_label.text = "Posicione sua frota e clique em Iniciar!"
@@ -110,93 +95,35 @@ func _switch_view(view: String):
 		btn_tab_radar.add_theme_color_override("font_color", Color(0.7, 0.7, 0.7))
 	_update_ui()
 
-func _randomize_player_fleet():
-	player_grid.clear()
-	for r in range(GRID_SIZE):
-		var row = []
-		for c in range(GRID_SIZE): row.append(0)
-		player_grid.append(row)
-	player_ships = _place_all_ships(player_grid)
-	_update_ui()
-
-func _randomize_ai_fleet():
-	ai_grid.clear()
-	for r in range(GRID_SIZE):
-		var row = []
-		for c in range(GRID_SIZE): row.append(0)
-		ai_grid.append(row)
-	ai_ships = _place_all_ships(ai_grid)
-
-func _place_all_ships(grid_data: Array) -> Array:
-	var placed_ships = []
-	for s_def in SHIP_DEFS:
-		var placed = false
-		var attempts = 0
-		while not placed and attempts < 200:
-			attempts += 1
-			var horizontal = randi() % 2 == 0
-			var size = s_def["size"]
-			var max_r = GRID_SIZE - 1 if horizontal else GRID_SIZE - size
-			var max_c = GRID_SIZE - size if horizontal else GRID_SIZE - 1
-			var r = randi() % (max_r + 1)
-			var c = randi() % (max_c + 1)
-			
-			var can_place = true
-			var cells = []
-			for i in range(size):
-				var cr = r if horizontal else r + i
-				var cc = c + i if horizontal else c
-				if grid_data[cr][cc] != 0:
-					can_place = false
-					break
-				cells.append(Vector2i(cr, cc))
-				
-			if can_place:
-				for cell in cells:
-					grid_data[cell.x][cell.y] = 1
-				placed_ships.append({
-					"name": s_def["name"],
-					"size": size,
-					"cells": cells,
-					"hits": 0,
-					"sunk": false
-				})
-				placed = true
-	return placed_ships
-
 func _update_ui():
-	# Update Radar UI
-	for r in range(GRID_SIZE):
-		for c in range(GRID_SIZE):
-			var btn = radar_buttons[r][c]
-			var val = ai_grid[r][c]
-			if val == 2:
-				btn.text = "🌊"
-				btn.self_modulate = Color(0.2, 0.4, 0.7)
-			elif val == 3:
-				btn.text = "💥"
-				btn.self_modulate = Color(0.9, 0.2, 0.2)
+	for r in range(BattleshipRules.GRID_SIZE):
+		for c in range(BattleshipRules.GRID_SIZE):
+			var r_btn = radar_buttons[r][c]
+			var ai_val = ai_grid.get_cell(r, c)
+			if ai_val == 2:
+				r_btn.text = "🌊"
+				r_btn.self_modulate = Color(0.2, 0.4, 0.7)
+			elif ai_val == 3:
+				r_btn.text = "💥"
+				r_btn.self_modulate = Color(0.9, 0.2, 0.2)
 			else:
-				btn.text = ""
-				btn.self_modulate = Color(0.18, 0.24, 0.3)
+				r_btn.text = ""
+				r_btn.self_modulate = Color(0.18, 0.24, 0.3)
 				
-	# Update Fleet UI
-	for r in range(GRID_SIZE):
-		for c in range(GRID_SIZE):
-			var btn = fleet_buttons[r][c]
-			var val = player_grid[r][c]
-			if val == 1:
-				btn.text = "🚢"
-				btn.self_modulate = Color(0.3, 0.6, 0.4)
-			elif val == 2:
-				btn.text = "🌊"
-				btn.self_modulate = Color(0.2, 0.4, 0.7)
-			elif val == 3:
-				btn.text = "🔥"
-				btn.self_modulate = Color(0.9, 0.3, 0.1)
+			var f_btn = fleet_buttons[r][c]
+			var p_val = player_grid.get_cell(r, c)
+			if p_val == 1:
+				f_btn.text = "🚢"
+				f_btn.self_modulate = Color(0.3, 0.6, 0.4)
+			elif p_val == 2:
+				f_btn.text = "🌊"
+				f_btn.self_modulate = Color(0.2, 0.4, 0.7)
+			elif p_val == 3:
+				f_btn.text = "🔥"
+				f_btn.self_modulate = Color(0.9, 0.3, 0.1)
 			else:
-				btn.text = ""
-				btn.self_modulate = Color(0.18, 0.24, 0.3)
+				f_btn.text = ""
+				f_btn.self_modulate = Color(0.18, 0.24, 0.3)
 
 func _update_fleet_info():
 	var ai_sunk = 0
@@ -215,131 +142,65 @@ func _on_btn_start_pressed():
 	status_label.text = "Batalha Iniciada! Dispare no Radar Inimigo."
 
 func _on_btn_randomize_pressed():
-	_randomize_player_fleet()
+	player_ships = BattleshipRules.place_all_ships_randomly(player_grid)
+	_update_ui()
 
 func _on_radar_cell_clicked(r: int, c: int):
-	if not is_combat_phase or not is_player_turn or game_over:
-		return
-		
-	var cell_val = ai_grid[r][c]
-	if cell_val == 2 or cell_val == 3:
-		# Already attacked
-		return
-		
-	if cell_val == 1:
-		ai_grid[r][c] = 3 # Hit!
-		_register_hit(Vector2i(r, c), ai_ships, true)
+	if not is_combat_phase or not is_player_turn or game_over: return
+	
+	var shot_res = BattleshipRules.register_shot(ai_grid, Vector2i(r, c), ai_ships)
+	if not shot_res["valid"]: return
+	
+	if shot_res["is_hit"]:
+		if shot_res["sunk_ship"] != null:
+			status_label.text = "🎯 Você afundou o %s inimigo!" % shot_res["sunk_ship"]["name"]
+		else:
+			status_label.text = "💥 Fogo certeiro no navio inimigo!"
 	else:
-		ai_grid[r][c] = 2 # Miss!
 		status_label.text = "Água! Vez do Inimigo..."
 		
 	_update_ui()
 	_update_fleet_info()
 	
-	if _check_battle_over():
+	if shot_res["all_sunk"]:
+		_end_game("🏆 Vitória Total! Você destruiu a frota inimiga!")
 		return
 		
 	is_player_turn = false
 	await get_tree().create_timer(0.6).timeout
 	_play_ai_attack()
 
-func _register_hit(pos: Vector2i, fleet: Array, is_player_attacking: bool):
-	for s in fleet:
-		if pos in s["cells"]:
-			s["hits"] += 1
-			if s["hits"] >= s["size"]:
-				s["sunk"] = true
-				if is_player_attacking:
-					status_label.text = "🎯 Você afundou o %s inimigo!" % s["name"]
-				else:
-					status_label.text = "⚠️ O inimigo afundou seu %s!" % s["name"]
-			else:
-				if is_player_attacking:
-					status_label.text = "💥 Fogo certeiro no navio inimigo!"
-				else:
-					status_label.text = "🔥 O inimigo atingiu seu navio!"
-			break
-
 func _play_ai_attack():
 	if game_over: return
 	
-	var shot_pos = Vector2i(-1, -1)
+	var shot_pos = BattleshipRules.get_ai_shot(ai_hit_stack, ai_shots_fired)
+	if shot_pos == Vector2i(-1, -1): return
 	
-	# If AI has target in stack
-	while ai_hit_stack.size() > 0:
-		var candidate = ai_hit_stack.pop_back()
-		if candidate.x >= 0 and candidate.x < GRID_SIZE and candidate.y >= 0 and candidate.y < GRID_SIZE:
-			if not (candidate in ai_shots_fired):
-				shot_pos = candidate
-				break
-				
-	# If no stack target, pick checkerboard parity cell
-	if shot_pos == Vector2i(-1, -1):
-		var candidates = []
-		for r in range(GRID_SIZE):
-			for c in range(GRID_SIZE):
-				var p = Vector2i(r, c)
-				if not (p in ai_shots_fired):
-					if (r + c) % 2 == 0:
-						candidates.append(p)
-		if candidates.size() == 0:
-			for r in range(GRID_SIZE):
-				for c in range(GRID_SIZE):
-					var p = Vector2i(r, c)
-					if not (p in ai_shots_fired):
-						candidates.append(p)
-		candidates.shuffle()
-		if candidates.size() > 0:
-			shot_pos = candidates[0]
-			
-	if shot_pos == Vector2i(-1, -1):
-		return
-		
 	ai_shots_fired.append(shot_pos)
-	var cell_val = player_grid[shot_pos.x][shot_pos.y]
+	var shot_res = BattleshipRules.register_shot(player_grid, shot_pos, player_ships)
 	
-	if cell_val == 1:
-		player_grid[shot_pos.x][shot_pos.y] = 3 # Hit
-		_register_hit(shot_pos, player_ships, false)
-		# Add 4 neighbors to hit stack
+	if shot_res["is_hit"]:
+		# Adiciona vizinhos à pilha de caça
 		ai_hit_stack.append(Vector2i(shot_pos.x + 1, shot_pos.y))
 		ai_hit_stack.append(Vector2i(shot_pos.x - 1, shot_pos.y))
 		ai_hit_stack.append(Vector2i(shot_pos.x, shot_pos.y + 1))
 		ai_hit_stack.append(Vector2i(shot_pos.x, shot_pos.y - 1))
-	else:
-		player_grid[shot_pos.x][shot_pos.y] = 2 # Miss
 		
+		if shot_res["sunk_ship"] != null:
+			status_label.text = "⚠️ O inimigo afundou seu %s!" % shot_res["sunk_ship"]["name"]
+		else:
+			status_label.text = "🔥 O inimigo atingiu seu navio!"
+			
 	_update_ui()
 	_update_fleet_info()
 	
-	if _check_battle_over():
+	if shot_res["all_sunk"]:
+		_end_game("💀 Derrota! Toda a sua frota foi destruída.")
 		return
 		
 	is_player_turn = true
 	if current_view == "radar":
 		status_label.text = "Sua Vez! Escolha as coordenadas no Radar."
-
-func _check_battle_over() -> bool:
-	var ai_all_sunk = true
-	for s in ai_ships:
-		if not s["sunk"]:
-			ai_all_sunk = false
-			break
-			
-	var player_all_sunk = true
-	for s in player_ships:
-		if not s["sunk"]:
-			player_all_sunk = false
-			break
-			
-	if ai_all_sunk:
-		_end_game("🏆 Vitória Total! Você destruiu a frota inimiga!")
-		return true
-	if player_all_sunk:
-		_end_game("💀 Derrota! Toda a sua frota foi destruída.")
-		return true
-		
-	return false
 
 func _end_game(msg: String):
 	game_over = true
