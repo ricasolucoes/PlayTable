@@ -13,7 +13,14 @@ Thumbs.db
 *.swp
 *.swo
 
-# Temporary Files
+# Temporary & Binaries
 tmp/
 temp/
 *~
+Godot.app/
+*.tpz
+*.zip
+logcat.txt
+build/
+*.jdk/
+jdk-*/
