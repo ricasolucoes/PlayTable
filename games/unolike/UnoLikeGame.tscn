@@ -1,0 +1,176 @@
+[gd_scene load_steps=2 format=3 uid="uid://unolikegameuid"]
+
+[ext_resource type="Script" path="res://games/unolike/UnoLikeGame.gd" id="1_script"]
+
+[node name="UnoLikeGame" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_script")
+
+[node name="Background" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.1, 0.12, 0.16, 1)
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 20.0
+offset_top = 30.0
+offset_right = -20.0
+offset_bottom = -30.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 15
+
+[node name="TopBar" type="HBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 20
+
+[node name="BtnBack" type="Button" parent="VBoxContainer/TopBar"]
+custom_minimum_size = Vector2(100, 50)
+layout_mode = 2
+text = "Voltar"
+
+[node name="Title" type="Label" parent="VBoxContainer/TopBar"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 32
+text = "Cartas das Cores (Uno)"
+
+[node name="AIArea" type="VBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+
+[node name="AIInfoLabel" type="Label" parent="VBoxContainer/AIArea"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.8, 0.85, 0.9, 1)
+theme_override_font_sizes/font_size = 22
+text = "IA: 7 cartas"
+horizontal_alignment = 1
+
+[node name="StatusLabel" type="Label" parent="VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "Sua Vez!"
+horizontal_alignment = 1
+
+[node name="TableArea" type="VBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 15
+alignment = 1
+
+[node name="ActiveColorBanner" type="Label" parent="VBoxContainer/TableArea"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+text = "Cor Atual: VERMELHO"
+horizontal_alignment = 1
+
+[node name="CenterContainer" type="CenterContainer" parent="VBoxContainer/TableArea"]
+layout_mode = 2
+
+[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer/TableArea/CenterContainer"]
+layout_mode = 2
+theme_override_constants/separation = 30
+
+[node name="BtnDrawPile" type="Button" parent="VBoxContainer/TableArea/CenterContainer/HBoxContainer"]
+custom_minimum_size = Vector2(100, 140)
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+text = "🎴\n(Monte)"
+
+[node name="BtnTopCard" type="Button" parent="VBoxContainer/TableArea/CenterContainer/HBoxContainer"]
+custom_minimum_size = Vector2(100, 140)
+layout_mode = 2
+theme_override_font_sizes/font_size = 32
+text = "7"
+
+[node name="ColorPickerModal" type="VBoxContainer" parent="VBoxContainer"]
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 10
+alignment = 1
+
+[node name="Label" type="Label" parent="VBoxContainer/ColorPickerModal"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "Escolha a nova cor:"
+horizontal_alignment = 1
+
+[node name="ColorsGrid" type="HBoxContainer" parent="VBoxContainer/ColorPickerModal"]
+layout_mode = 2
+theme_override_constants/separation = 10
+alignment = 1
+
+[node name="BtnRed" type="Button" parent="VBoxContainer/ColorPickerModal/ColorsGrid"]
+custom_minimum_size = Vector2(120, 50)
+layout_mode = 2
+self_modulate = Color(0.9, 0.25, 0.25, 1)
+text = "🔴 Vermelho"
+
+[node name="BtnBlue" type="Button" parent="VBoxContainer/ColorPickerModal/ColorsGrid"]
+custom_minimum_size = Vector2(120, 50)
+layout_mode = 2
+self_modulate = Color(0.2, 0.55, 0.9, 1)
+text = "🔵 Azul"
+
+[node name="BtnGreen" type="Button" parent="VBoxContainer/ColorPickerModal/ColorsGrid"]
+custom_minimum_size = Vector2(120, 50)
+layout_mode = 2
+self_modulate = Color(0.2, 0.75, 0.35, 1)
+text = "🟢 Verde"
+
+[node name="BtnYellow" type="Button" parent="VBoxContainer/ColorPickerModal/ColorsGrid"]
+custom_minimum_size = Vector2(120, 50)
+layout_mode = 2
+self_modulate = Color(0.95, 0.8, 0.1, 1)
+text = "🟡 Amarelo"
+
+[node name="PlayerArea" type="VBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Label" type="Label" parent="VBoxContainer/PlayerArea"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "Suas Cartas (Toque para jogar ou toque no Monte para comprar):"
+horizontal_alignment = 1
+
+[node name="ScrollContainer" type="ScrollContainer" parent="VBoxContainer/PlayerArea"]
+custom_minimum_size = Vector2(0, 140)
+layout_mode = 2
+vertical_scroll_mode = 0
+
+[node name="CardsContainer" type="HBoxContainer" parent="VBoxContainer/PlayerArea/ScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 10
+alignment = 1
+
+[node name="Actions" type="HBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+alignment = 1
+
+[node name="BtnRestart" type="Button" parent="VBoxContainer/Actions"]
+visible = false
+custom_minimum_size = Vector2(240, 55)
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+text = "Jogar Novamente"
+
+[connection signal="pressed" from="VBoxContainer/TopBar/BtnBack" to="." method="_on_btn_back_pressed"]
+[connection signal="pressed" from="VBoxContainer/TableArea/CenterContainer/HBoxContainer/BtnDrawPile" to="." method="_on_btn_draw_pile_pressed"]
+[connection signal="pressed" from="VBoxContainer/ColorPickerModal/ColorsGrid/BtnRed" to="." method="_on_color_chosen" binds= ["red"]]
+[connection signal="pressed" from="VBoxContainer/ColorPickerModal/ColorsGrid/BtnBlue" to="." method="_on_color_chosen" binds= ["blue"]]
+[connection signal="pressed" from="VBoxContainer/ColorPickerModal/ColorsGrid/BtnGreen" to="." method="_on_color_chosen" binds= ["green"]]
+[connection signal="pressed" from="VBoxContainer/ColorPickerModal/ColorsGrid/BtnYellow" to="." method="_on_color_chosen" binds= ["yellow"]]
+[connection signal="pressed" from="VBoxContainer/Actions/BtnRestart" to="." method="_on_btn_restart_pressed"]
