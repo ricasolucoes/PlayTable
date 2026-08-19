@@ -1,6 +1,8 @@
 class_name KlondikeRules
 extends RefCounted
 
+## Rules and logic for Paciencia.
+
 const CardScript = preload("res://shared/core_engine/cards/Card.gd")
 
 static func can_place_on_foundation(card: Card, foundation_pile) -> bool:
@@ -45,7 +47,7 @@ static func find_auto_foundation_index(card: Card, foundation_piles: Array, suit
 	return -1
 
 static func is_game_won(foundation_piles: Array) -> bool:
-	var count = 0
+	var count: int = 0
 	for pile in foundation_piles:
 		count += pile.size()
 	return count == 52

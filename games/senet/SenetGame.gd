@@ -12,15 +12,14 @@ const SPECIAL_SQUARES = {
 }
 
 var board = {} # Map int (1..30) -> int (0, 1, 2)
-var player_borne_off = 0
-var ai_borne_off = 0
-
-var current_throw = 0
-var has_extra_throw = false
-var can_throw = true
-var is_player_turn = true
-var game_over = false
-var valid_moves = []
+var player_borne_off: int = 0
+var ai_borne_off: int = 0
+var current_throw: int = 0
+var has_extra_throw: bool = false
+var can_throw: bool = true
+var is_player_turn: bool = true
+var game_over: bool = false
+var valid_moves: Array = []
 var pieces_3d: Dictionary = {}
 
 @onready var env_3d: TabletopEnvironment3D = $TabletopEnvironment3D
@@ -33,17 +32,17 @@ var pieces_3d: Dictionary = {}
 @onready var btn_restart = $UI/Actions/BtnRestart
 @onready var touch_grid = $UI/CenterContainer/TouchGrid
 
-func _ready():
+func _ready() -> void:
 	board_3d.setup_board(3, 10, 0.65, "wood_checkered")
 	_setup_touch_grid()
 	_start_new_game()
 
-func _setup_touch_grid():
+func _setup_touch_grid() -> void:
 	for c in touch_grid.get_children(): c.queue_free()
 	# Senet 3x10 grid serpentine
 	for r in range(3):
 		for c in range(10):
-			var sq_num = 0
+			var sq_num: int = 0
 			if r == 0: sq_num = c + 1
 			elif r == 1: sq_num = 20 - c
 			else: sq_num = 21 + c
@@ -62,7 +61,7 @@ func _get_square_row_col(sq_num: int) -> Vector2i:
 	else:
 		return Vector2i(2, sq_num - 21)
 
-func _start_new_game():
+func _start_new_game() -> void:
 	game_over = false
 	is_player_turn = true
 	can_throw = true
@@ -86,7 +85,7 @@ func _start_new_game():
 	btn_cast_sticks.disabled = false
 	_sync_pieces_3d()
 
-func _sync_pieces_3d():
+func _sync_pieces_3d() -> void:
 	for p in pieces_root.get_children(): p.queue_free()
 	pieces_3d.clear()
 	
@@ -105,7 +104,7 @@ func _sync_pieces_3d():
 			
 	score_label.text = "Você (Ouro): %d/5  |  IA (Obsidiana): %d/5 retiradas" % [player_borne_off, ai_borne_off]
 
-func _on_btn_cast_sticks_pressed():
+func _on_btn_cast_sticks_pressed() -> void:
 	if not can_throw or game_over: return
 	can_throw = false
 	btn_cast_sticks.disabled = true
@@ -131,8 +130,8 @@ func _on_btn_cast_sticks_pressed():
 		_play_ai_move()
 
 func _cast_sticks() -> Dictionary:
-	var white_count = 0
-	var disp = ""
+	var white_count: int = 0
+	var disp: String = ""
 	for i in range(4):
 		if randf() > 0.5:
 			white_count += 1
@@ -145,8 +144,7 @@ func _cast_sticks() -> Dictionary:
 
 func _get_valid_moves(player_id: int, steps: int) -> Array:
 	var opponent = 2 if player_id == 1 else 1
-	var moves = []
-	
+	var moves: Array = []
 	for sq in range(1, 31):
 		if board[sq] == player_id:
 			var target = sq + steps
@@ -157,14 +155,14 @@ func _get_valid_moves(player_id: int, steps: int) -> Array:
 					moves.append({"from": sq, "to": target})
 				elif board[target] == opponent:
 					# Não pode capturar se protegido por peça adjacente
-					var protected = false
+					var protected: bool = false
 					if target > 1 and board[target - 1] == opponent: protected = true
 					if target < 30 and board[target + 1] == opponent: protected = true
 					if not protected:
 						moves.append({"from": sq, "to": target})
 	return moves
 
-func _on_square_clicked(sq_num: int):
+func _on_square_clicked(sq_num: int) -> void:
 	if game_over or not is_player_turn or can_throw: return
 	
 	for m in valid_moves:
@@ -206,7 +204,7 @@ func _execute_move(player_id: int, from_sq: int, to_sq: int):
 		
 	_handle_end_of_turn()
 
-func _handle_end_of_turn():
+func _handle_end_of_turn() -> void:
 	if has_extra_throw:
 		status_label.text += " Jogada extra concedida!"
 		can_throw = true
@@ -238,7 +236,7 @@ func _play_ai_move():
 	var chosen = ai_moves.pick_random()
 	_execute_move(2, chosen["from"], chosen["to"])
 
-func _end_game(winner: int):
+func _end_game(winner: int) -> void:
 	game_over = true
 	btn_restart.show()
 	if winner == 1:
@@ -247,8 +245,8 @@ func _end_game(winner: int):
 	else:
 		status_label.text = "A IA alcançou a imortalidade primeiro!"
 
-func _on_btn_restart_pressed():
+func _on_btn_restart_pressed() -> void:
 	_start_new_game()
 
-func _on_btn_back_pressed():
+func _on_btn_back_pressed() -> void:
 	SceneManager.goto_scene("res://core/telas/MenuTabuleiro.tscn")

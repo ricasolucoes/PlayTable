@@ -1,6 +1,8 @@
 class_name ConnectFourRules
 extends RefCounted
 
+## Rules and logic for Quatro Em Linha.
+
 const Grid2DScript = preload("res://shared/core_engine/board/Grid2D.gd")
 const BoardCoordScript = preload("res://shared/core_engine/board/BoardCoord.gd")
 

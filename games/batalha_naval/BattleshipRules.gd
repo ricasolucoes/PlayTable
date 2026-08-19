@@ -1,6 +1,8 @@
 class_name BattleshipRules
 extends RefCounted
 
+## Rules and logic for Batalha Naval.
+
 const Grid2DScript = preload("res://shared/core_engine/board/Grid2D.gd")
 
 const GRID_SIZE = 10
@@ -26,7 +28,7 @@ static func place_all_ships_random(grid: Grid2D) -> Array[Dictionary]:
 	return place_all_ships_randomly(grid)
 
 static func count_sunk_ships(fleet: Array) -> int:
-	var count = 0
+	var count: int = 0
 	for s in fleet:
 		if s.get("sunk", false): count += 1
 	return count
@@ -35,7 +37,7 @@ static func check_ship_sunk(fleet: Array, grid: Grid2D, r: int, c: int) -> Dicti
 	var pos = Vector2i(r, c)
 	for s in fleet:
 		if pos in s["cells"]:
-			var all_hit = true
+			var all_hit: bool = true
 			for cell in s["cells"]:
 				if grid.get_cell(cell.x, cell.y) != 3:
 					all_hit = false
@@ -56,8 +58,8 @@ static func place_all_ships_randomly(grid: Grid2D) -> Array[Dictionary]:
 	var placed_ships: Array[Dictionary] = []
 	
 	for s_def in SHIP_DEFS:
-		var placed = false
-		var attempts = 0
+		var placed: bool = false
+		var attempts: int = 0
 		var size = s_def["size"]
 		
 		while not placed and attempts < 300:
@@ -68,7 +70,7 @@ static func place_all_ships_randomly(grid: Grid2D) -> Array[Dictionary]:
 			var r = randi() % (max_r + 1)
 			var c = randi() % (max_c + 1)
 			
-			var can_place = true
+			var can_place: bool = true
 			var cells: Array[Vector2i] = []
 			for i in range(size):
 				var cr = r if horizontal else r + i
@@ -109,7 +111,7 @@ static func register_shot(grid: Grid2D, pos: Vector2i, fleet: Array) -> Dictiona
 					sunk_ship = s
 				break
 				
-	var all_sunk = true
+	var all_sunk: bool = true
 	for s in fleet:
 		if not s["sunk"]:
 			all_sunk = false

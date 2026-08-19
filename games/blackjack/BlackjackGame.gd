@@ -24,13 +24,13 @@ var dealer_cards_3d: Array = []
 @onready var btn_stand = $UI/Buttons/BtnStand
 @onready var btn_restart = $UI/Buttons/BtnRestart
 
-func _ready():
+func _ready() -> void:
 	env_3d.set_felt_color(Color(0.06, 0.32, 0.18)) # Verde cassino clássico
 	player_hand = CardHand.new()
 	dealer_hand = CardHand.new()
 	_start_game()
 
-func _start_game():
+func _start_game() -> void:
 	game_over = false
 	player_hand.clear()
 	dealer_hand.clear()
@@ -92,7 +92,7 @@ func _spawn_card_3d(card: Card, is_player: bool, index: int, face_up: bool) -> C
 		
 	return c_3d
 
-func _update_labels(show_dealer: bool):
+func _update_labels(show_dealer: bool) -> void:
 	var p_score = BlackjackRules.calculate_hand_value(player_hand.get_all())
 	player_score_label.text = "Sua Mão: %d pontos" % p_score
 	
@@ -104,7 +104,7 @@ func _update_labels(show_dealer: bool):
 		var partial_score = BlackjackRules.calculate_hand_value(visible_cards)
 		dealer_score_label.text = "Mão da Mesa: %d + [Oculta]" % partial_score
 
-func _on_btn_hit_pressed():
+func _on_btn_hit_pressed() -> void:
 	if game_over: return
 	
 	var card = deck.draw()
@@ -115,7 +115,7 @@ func _on_btn_hit_pressed():
 	if BlackjackRules.is_busted(player_hand.get_all()):
 		_reveal_dealer_and_end("Estourou! Você ultrapassou 21.", false)
 
-func _on_btn_stand_pressed():
+func _on_btn_stand_pressed() -> void:
 	if game_over: return
 	
 	btn_hit.disabled = true
@@ -150,13 +150,13 @@ func _on_btn_stand_pressed():
 	else:
 		_end_game("Empate (Push)! As apostas retornam.", false)
 
-func _reveal_dealer_and_end(msg: String, is_player_win: bool):
+func _reveal_dealer_and_end(msg: String, is_player_win: bool) -> void:
 	if dealer_cards_3d.size() > 0:
 		dealer_cards_3d[0].flip(true, 0.4)
 	_update_labels(true)
 	_end_game(msg, is_player_win)
 
-func _end_game(msg: String, is_player_win: bool):
+func _end_game(msg: String, is_player_win: bool) -> void:
 	game_over = true
 	status.text = msg
 	btn_hit.disabled = true
@@ -165,8 +165,8 @@ func _end_game(msg: String, is_player_win: bool):
 	if is_player_win:
 		env_3d.celebrate_win()
 
-func _on_btn_restart_pressed():
+func _on_btn_restart_pressed() -> void:
 	_start_game()
 
-func _on_btn_back_pressed():
+func _on_btn_back_pressed() -> void:
 	SceneManager.goto_scene("res://core/telas/MenuCartas.tscn")

@@ -1,6 +1,8 @@
 class_name UnoRules
 extends RefCounted
 
+## Rules and logic for Unolike.
+
 const CardScript = preload("res://shared/core_engine/cards/Card.gd")
 
 static func get_color_symbol(color_type: Card.ColorType) -> String:

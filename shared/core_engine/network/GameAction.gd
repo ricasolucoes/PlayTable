@@ -1,3 +1,4 @@
+## Represents a game action or move.
 class_name GameAction
 extends RefCounted
 
@@ -6,7 +7,7 @@ var action_type: String = "" # Ex: "drop_piece", "play_card", "fire_shot", "jump
 var payload: Dictionary = {}
 var timestamp: float = 0.0
 
-func _init(p_player_id: int = 0, p_type: String = "", p_payload: Dictionary = {}, p_timestamp: float = 0.0):
+func _init(p_player_id: int = 0, p_type: String = "", p_payload: Dictionary = {}, p_timestamp: float = 0.0) -> void:
 	player_id = p_player_id
 	action_type = p_type
 	payload = p_payload.duplicate(true)

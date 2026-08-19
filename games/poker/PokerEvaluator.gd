@@ -1,6 +1,8 @@
 class_name PokerEvaluator
 extends RefCounted
 
+## Helper class for Poker.
+
 const CardScript = preload("res://shared/core_engine/cards/Card.gd")
 
 static func evaluate(cards: Array) -> Dictionary:
@@ -27,7 +29,7 @@ static func evaluate_hand(cards: Array) -> Dictionary:
 	var is_flush = (suits[0] == suits[1] and suits[1] == suits[2] and suits[2] == suits[3] and suits[3] == suits[4])
 	
 	# Checagem de Straight (sequência)
-	var is_straight = false
+	var is_straight: bool = false
 	if (vals[4] - vals[0] == 4) and (vals[1] - vals[0] == 1) and (vals[2] - vals[1] == 1) and (vals[3] - vals[2] == 1):
 		is_straight = true
 	elif vals == [2, 3, 4, 5, 14]: # Straight com Ás baixo (A-2-3-4-5)

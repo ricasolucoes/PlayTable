@@ -1,3 +1,4 @@
+## Base class for a board game piece.
 class_name Piece
 extends RefCounted
 
@@ -5,7 +6,7 @@ var player_id: int = 0
 var piece_type: String = "standard" # "standard", "king", "ship", "peg", etc.
 var state: Dictionary = {}
 
-func _init(p_player: int = 0, p_type: String = "standard", p_state: Dictionary = {}):
+func _init(p_player: int = 0, p_type: String = "standard", p_state: Dictionary = {}) -> void:
 	player_id = p_player
 	piece_type = p_type
 	state = p_state.duplicate()

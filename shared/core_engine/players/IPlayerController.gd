@@ -1,3 +1,4 @@
+## Base interface for player controllers (human, AI, remote).
 class_name IPlayerController
 extends RefCounted
 
@@ -8,7 +9,7 @@ signal move_decided(action: GameAction)
 
 var player: Player
 
-func _init(p_player: Player = null):
+func _init(p_player: Player = null) -> void:
 	player = p_player
 
 func request_move(game_state: Dictionary) -> void:

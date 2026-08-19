@@ -1,12 +1,14 @@
 @tool
 extends Control
 
+## Helper class for Quatro Em Linha.
+
 @export var cols: int = 7
 @export var rows: int = 6
 @export var cell_size: float = 80.0
 @export var hole_radius: float = 32.0
 
-func _draw():
+func _draw() -> void:
 	var total_w = cols * cell_size
 	var total_h = rows * cell_size
 	var frame_margin = 16.0

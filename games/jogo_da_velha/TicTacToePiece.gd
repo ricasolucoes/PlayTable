@@ -1,6 +1,8 @@
 @tool
 extends Node2D
 
+## Helper class for Jogo Da Velha.
+
 enum PieceType { EMPTY, X_PIECE, O_PIECE }
 
 @export var piece_type: PieceType = PieceType.EMPTY:
@@ -16,12 +18,12 @@ enum PieceType { EMPTY, X_PIECE, O_PIECE }
 var is_winning: bool = false
 var glow_t: float = 0.0
 
-func _process(delta):
+func _process(delta) -> void:
 	if is_winning:
 		glow_t += delta * 5.0
 		queue_redraw()
 
-func set_winning(win: bool):
+func set_winning(win: bool) -> void:
 	is_winning = win
 	set_process(win)
 	queue_redraw()
@@ -37,7 +39,7 @@ func _draw():
 	elif piece_type == PieceType.O_PIECE:
 		_draw_realistic_o(hs)
 
-func _draw_realistic_x(hs: float):
+func _draw_realistic_x(hs: float) -> void:
 	var arm_len = hs * 0.72
 	var thickness = hs * 0.32
 	
@@ -73,7 +75,7 @@ func _draw_realistic_x(hs: float):
 	draw_circle(Vector2(-4, -4), thickness * 0.45, Color(1.0, 0.8, 0.8, 0.6))
 	draw_circle(Vector2(-4, -4), thickness * 0.22, Color(1.0, 1.0, 1.0, 0.8))
 
-func _draw_realistic_o(hs: float):
+func _draw_realistic_o(hs: float) -> void:
 	var outer_r = hs * 0.72
 	var inner_r = hs * 0.38
 	var thickness = outer_r - inner_r
@@ -105,7 +107,7 @@ func _draw_realistic_o(hs: float):
 	draw_arc(Vector2(-1, -1), outer_r - 2.0, PI * 0.9, PI * 1.5, 16, gold_spec, 2.5, true)
 	draw_arc(Vector2(1, 1), inner_r + 2.0, PI * 0.9, PI * 1.5, 16, gold_spec, 2.0, true)
 
-func play_spawn_animation():
+func play_spawn_animation() -> void:
 	scale = Vector2(1.45, 1.45)
 	modulate.a = 0.0
 	var tw = get_tree().create_tween()

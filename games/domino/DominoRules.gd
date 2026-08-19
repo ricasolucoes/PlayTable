@@ -1,6 +1,8 @@
 class_name DominoRules
 extends RefCounted
 
+## Rules and logic for Domino.
+
 static func generate_boneyard_28() -> Array[Dictionary]:
 	var tiles: Array[Dictionary] = []
 	for a in range(7):
@@ -65,7 +67,7 @@ static func orient_tile_for_side(tile: Dictionary, side: String, left_end: int, 
 	}
 
 static func calculate_hand_points(hand: Array) -> int:
-	var total = 0
+	var total: int = 0
 	for t in hand:
 		total += int(t.get("a", 0)) + int(t.get("b", 0))
 	return total

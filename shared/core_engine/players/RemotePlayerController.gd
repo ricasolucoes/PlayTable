@@ -1,3 +1,4 @@
+## Controller for remote players.
 class_name RemotePlayerController
 extends IPlayerController
 

@@ -15,16 +15,16 @@ signal card_clicked(card: Card3D)
 
 var custom_data: Dictionary = {}
 
-func _ready():
+func _ready() -> void:
 	_update_visuals()
 
-func setup(p_rank: String, p_suit: String, p_face_up: bool = false):
+func setup(p_rank: String, p_suit: String, p_face_up: bool = false) -> void:
 	rank = p_rank
 	suit = p_suit
 	is_face_up = p_face_up
 	_update_visuals()
 
-func _update_visuals():
+func _update_visuals() -> void:
 	var is_red = (suit == "♥" or suit == "♦" or suit == "red")
 	var suit_col = Color(0.85, 0.15, 0.15) if is_red else Color(0.12, 0.14, 0.18)
 	
@@ -46,7 +46,7 @@ func _update_visuals():
 
 	rotation_degrees.z = 0.0 if is_face_up else 180.0
 
-func flip(face_up: bool, duration: float = 0.35):
+func flip(face_up: bool, duration: float = 0.35) -> void:
 	is_face_up = face_up
 	var target_z = 0.0 if is_face_up else 180.0
 	
@@ -59,7 +59,7 @@ func flip(face_up: bool, duration: float = 0.35):
 	tween_y.tween_property(self, "position:y", orig_y + 0.4, duration * 0.5).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 	tween_y.tween_property(self, "position:y", orig_y, duration * 0.5).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
 
-func deal_to(target_pos: Vector3, target_rot_y: float = 0.0, duration: float = 0.45):
+func deal_to(target_pos: Vector3, target_rot_y: float = 0.0, duration: float = 0.45) -> void:
 	var tween = create_tween().set_parallel(true)
 	tween.tween_property(self, "position:x", target_pos.x, duration).set_trans(Tween.TRANS_SINE)
 	tween.tween_property(self, "position:z", target_pos.z, duration).set_trans(Tween.TRANS_SINE)
@@ -70,7 +70,7 @@ func deal_to(target_pos: Vector3, target_rot_y: float = 0.0, duration: float = 0
 	tween_y.tween_property(self, "position:y", peak_y, duration * 0.4).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 	tween_y.tween_property(self, "position:y", target_pos.y, duration * 0.6).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
 
-func hover(enable: bool):
+func hover(enable: bool) -> void:
 	var tween = create_tween()
 	var target_y = 0.25 if enable else 0.0
 	tween.tween_property(self, "position:y", target_y, 0.15).set_trans(Tween.TRANS_SINE)

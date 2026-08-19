@@ -38,17 +38,17 @@ const NUMBER_COLORS = [
 	Color(0.6, 0.6, 0.6)    # 8 Cinza
 ]
 
-func _ready():
+func _ready() -> void:
 	board_3d.setup_board(MinesweeperRules.ROWS, MinesweeperRules.COLS, 0.75, "slate_grid")
 	_setup_touch_grid()
 	_start_new_game()
 
-func _process(delta: float):
+func _process(delta: float) -> void:
 	if timer_active and not game_over and not game_won:
 		elapsed_time += delta
 		timer_label.text = "⏱️ %03d" % int(elapsed_time)
 
-func _setup_touch_grid():
+func _setup_touch_grid() -> void:
 	for c in touch_grid.get_children(): c.queue_free()
 	for r in range(MinesweeperRules.ROWS):
 		for c in range(MinesweeperRules.COLS):
@@ -58,7 +58,7 @@ func _setup_touch_grid():
 			btn.pressed.connect(_on_cell_clicked.bind(r, c))
 			touch_grid.add_child(btn)
 
-func _start_new_game():
+func _start_new_game() -> void:
 	first_click = true
 	game_over = false
 	game_won = false
@@ -81,7 +81,7 @@ func _start_new_game():
 	grid_data = MinesweeperRules.create_empty_grid()
 	_update_header_mines()
 
-func _update_header_mines():
+func _update_header_mines() -> void:
 	var flagged = MinesweeperRules.count_flagged(grid_data)
 	mines_label.text = "💣 %02d" % max(0, MinesweeperRules.TOTAL_MINES - flagged)
 
@@ -113,7 +113,7 @@ func _on_cell_clicked(r: int, c: int):
 	_sync_revealed_3d()
 	_check_win_condition()
 
-func _update_flag_3d(r: int, c: int, is_flagged: bool):
+func _update_flag_3d(r: int, c: int, is_flagged: bool) -> void:
 	var pos = Vector2i(r, c)
 	if is_flagged:
 		var flag = preload("res://shared/3d/Token3D.tscn").instantiate()
@@ -127,7 +127,7 @@ func _update_flag_3d(r: int, c: int, is_flagged: bool):
 			flags_3d[pos].queue_free()
 			flags_3d.erase(pos)
 
-func _sync_revealed_3d():
+func _sync_revealed_3d() -> void:
 	for r in range(MinesweeperRules.ROWS):
 		for c in range(MinesweeperRules.COLS):
 			var cell = grid_data.get_cell(r, c)
@@ -148,7 +148,7 @@ func _sync_revealed_3d():
 				else:
 					tile.material_override = MaterialFactory3D.get_plastic(Color(0.14, 0.16, 0.2), false)
 
-func _trigger_game_over(hit_r: int, hit_c: int):
+func _trigger_game_over(hit_r: int, hit_c: int) -> void:
 	game_over = true
 	timer_active = false
 	btn_smiley.text = "😵"
@@ -161,7 +161,7 @@ func _trigger_game_over(hit_r: int, hit_c: int):
 				var tile = board_3d.cell_meshes[r][c] as MeshInstance3D
 				tile.material_override = MaterialFactory3D.get_glow(Color(1.0, 0.2, 0.1), 3.0)
 
-func _check_win_condition():
+func _check_win_condition() -> void:
 	if MinesweeperRules.check_win(grid_data):
 		game_won = true
 		timer_active = false
@@ -169,7 +169,7 @@ func _check_win_condition():
 		status_label.text = "🏆 Campo 100% Desarmado! Vitória em %d segundos!" % int(elapsed_time)
 		env_3d.celebrate_win()
 
-func _on_btn_mode_pressed():
+func _on_btn_mode_pressed() -> void:
 	is_flag_mode = not is_flag_mode
 	if is_flag_mode:
 		btn_mode.text = "Modo: 🚩 Bandeira"
@@ -178,8 +178,8 @@ func _on_btn_mode_pressed():
 		btn_mode.text = "Modo: ⛏️ Revelar"
 		btn_mode.self_modulate = Color(0.4, 0.7, 0.95)
 
-func _on_btn_smiley_pressed():
+func _on_btn_smiley_pressed() -> void:
 	_start_new_game()
 
-func _on_btn_back_pressed():
+func _on_btn_back_pressed() -> void:
 	SceneManager.goto_scene("res://core/telas/MenuTabuleiro.tscn")

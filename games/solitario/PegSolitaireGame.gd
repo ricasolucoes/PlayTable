@@ -21,12 +21,12 @@ var marbles_3d: Dictionary = {}
 
 const CELL_SIZE: float = 0.75
 
-func _ready():
+func _ready() -> void:
 	_setup_3d_circular_board()
 	_setup_touch_grid()
 	_start_new_game()
 
-func _setup_3d_circular_board():
+func _setup_3d_circular_board() -> void:
 	for c in board_root.get_children(): c.queue_free()
 	
 	# Base circular de madeira nobre
@@ -70,7 +70,7 @@ func _setup_3d_circular_board():
 				hole.material_override = MaterialFactory3D.get_obsidian()
 				board_root.add_child(hole)
 
-func _setup_touch_grid():
+func _setup_touch_grid() -> void:
 	for c in touch_grid.get_children(): c.queue_free()
 	for r in range(7):
 		for c in range(7):
@@ -88,7 +88,7 @@ func _get_cell_pos_3d(r: int, c: int) -> Vector3:
 	var start_z = -(7 * CELL_SIZE * 0.5) + (CELL_SIZE * 0.5)
 	return Vector3(start_x + (c * CELL_SIZE), 0.14, start_z + (r * CELL_SIZE))
 
-func _start_new_game():
+func _start_new_game() -> void:
 	game_over = false
 	selected_pos = Vector2i(-1, -1)
 	valid_targets.clear()
@@ -99,7 +99,7 @@ func _start_new_game():
 	_update_ui()
 	status_label.text = "Toque em uma esfera para selecionar e saltar!"
 
-func _sync_marbles_3d():
+func _sync_marbles_3d() -> void:
 	for m in marbles_root.get_children(): m.queue_free()
 	marbles_3d.clear()
 	
@@ -113,7 +113,7 @@ func _sync_marbles_3d():
 				marbles_root.add_child(marble)
 				marbles_3d[Vector2i(r, c)] = marble
 
-func _update_ui():
+func _update_ui() -> void:
 	var pegs_count = PegSolitaireRules.count_pegs(grid_data)
 	pegs_label.text = "Esferas Restantes: %d / 32" % pegs_count
 
@@ -146,7 +146,7 @@ func _on_cell_clicked(r: int, c: int):
 		for pos in marbles_3d.keys():
 			marbles_3d[pos].highlight(false)
 
-func _execute_jump(from_pos: Vector2i, target_dict: Dictionary):
+func _execute_jump(from_pos: Vector2i, target_dict: Dictionary) -> void:
 	var to_pos = target_dict["land"]
 	var jumped_pos = target_dict["jumped"]
 	
@@ -175,7 +175,7 @@ func _execute_jump(from_pos: Vector2i, target_dict: Dictionary):
 	if not PegSolitaireRules.has_any_valid_moves(grid_data):
 		_end_game()
 
-func _end_game():
+func _end_game() -> void:
 	game_over = true
 	btn_restart.show()
 	var remaining = PegSolitaireRules.count_pegs(grid_data)
@@ -187,8 +187,8 @@ func _end_game():
 	else:
 		status_label.text = "Fim de Jogo! Restaram %d esferas." % remaining
 
-func _on_btn_restart_pressed():
+func _on_btn_restart_pressed() -> void:
 	_start_new_game()
 
-func _on_btn_back_pressed():
+func _on_btn_back_pressed() -> void:
 	SceneManager.goto_scene("res://core/telas/MenuTabuleiro.tscn")

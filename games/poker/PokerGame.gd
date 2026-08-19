@@ -35,7 +35,7 @@ var game_phase: String = "bet" # "bet", "hold", "result"
 
 const CARD_SPACING_X: float = 0.95
 
-func _ready():
+func _ready() -> void:
 	env_3d.set_felt_color(Color(0.2, 0.08, 0.28)) # Feltro Púrpura Imperial
 	player_hand = CardHand.new()
 	for i in range(5):
@@ -43,10 +43,10 @@ func _ready():
 	_update_payout_table()
 	_reset_to_bet_phase()
 
-func _update_payout_table():
+func _update_payout_table() -> void:
 	payout_table_label.text = "Royal Flush (800x) | Straight Flush (50x) | Quadra (25x) | Full House (9x)\nFlush (6x) | Sequência (4x) | Trinca (3x) | Dois Pares (2x) | Par J+ (1x)"
 
-func _reset_to_bet_phase():
+func _reset_to_bet_phase() -> void:
 	game_phase = "bet"
 	if chips <= 0:
 		chips = 50
@@ -67,7 +67,7 @@ func _reset_to_bet_phase():
 	btn_action.text = "🃏 DAR CARTAS"
 	_update_chips_ui()
 
-func _update_chips_ui():
+func _update_chips_ui() -> void:
 	chips_label.text = "💰 Fichas: %d" % chips
 	bet_label.text = "Aposta: %d" % current_bet
 
@@ -134,7 +134,7 @@ func _on_btn_action_pressed():
 		game_phase = "result"
 		_evaluate_poker_hand()
 
-func _on_card_clicked(idx: int):
+func _on_card_clicked(idx: int) -> void:
 	if game_phase != "hold": return
 	held_cards[idx] = not held_cards[idx]
 	
@@ -142,7 +142,7 @@ func _on_card_clicked(idx: int):
 	c_3d.hover(held_cards[idx])
 	touch_buttons[idx].text = "RETER" if held_cards[idx] else ""
 
-func _evaluate_poker_hand():
+func _evaluate_poker_hand() -> void:
 	var result = PokerEvaluator.evaluate(player_hand.get_all())
 	var hand_name = result["name"]
 	var mult = result["multiplier"]
@@ -161,15 +161,15 @@ func _evaluate_poker_hand():
 	btn_bet_plus.disabled = false
 	game_phase = "bet"
 
-func _on_btn_bet_minus_pressed():
+func _on_btn_bet_minus_pressed() -> void:
 	if game_phase != "bet": return
 	current_bet = max(5, current_bet - 5)
 	_update_chips_ui()
 
-func _on_btn_bet_plus_pressed():
+func _on_btn_bet_plus_pressed() -> void:
 	if game_phase != "bet": return
 	current_bet = min(chips, current_bet + 5)
 	_update_chips_ui()
 
-func _on_btn_back_pressed():
+func _on_btn_back_pressed() -> void:
 	SceneManager.goto_scene("res://core/telas/MenuCartas.tscn")

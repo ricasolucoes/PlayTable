@@ -1,6 +1,8 @@
 class_name CheckersRules
 extends RefCounted
 
+## Rules and logic for Damas.
+
 const Grid2DScript = preload("res://shared/core_engine/board/Grid2D.gd")
 
 const ROWS = 8
@@ -95,8 +97,8 @@ static func apply_move(grid: Grid2D, from_pos: Vector2i, to_pos: Vector2i, captu
 static func check_game_over(grid: Grid2D) -> int:
 	var p1_moves = get_all_valid_moves(grid, 1)
 	var p2_moves = get_all_valid_moves(grid, -1)
-	var p1_pieces = 0
-	var p2_pieces = 0
+	var p1_pieces: int = 0
+	var p2_pieces: int = 0
 	for cell in grid.cells:
 		if cell > 0: p1_pieces += 1
 		elif cell < 0: p2_pieces += 1
@@ -140,8 +142,7 @@ static func get_piece_moves(grid: Grid2D, r: int, c: int) -> Array[Dictionary]:
 static func get_all_valid_moves(grid: Grid2D, side: int) -> Array[Dictionary]:
 	var is_player = side > 0
 	var all_moves: Array[Dictionary] = []
-	var has_captures = false
-	
+	var has_captures: bool = false
 	for r in range(ROWS):
 		for c in range(COLS):
 			var p = grid.get_cell(r, c)
@@ -172,7 +173,7 @@ static func execute_move(grid: Grid2D, move: Dictionary) -> Dictionary:
 	
 	grid.set_cell(from_p.x, from_p.y, 0)
 	
-	var captured_any = false
+	var captured_any: bool = false
 	if move.has("captures") and move["captures"].size() > 0:
 		captured_any = true
 		for cap in move["captures"]:

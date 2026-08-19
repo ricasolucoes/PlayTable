@@ -1,6 +1,8 @@
 @tool
 extends Control
 
+## Helper class for Memoria.
+
 signal card_clicked(card)
 
 enum CardSymbol {
@@ -32,17 +34,17 @@ enum CardSymbol {
 var is_animating: bool = false
 var glow_pulse: float = 0.0
 
-func _process(delta):
+func _process(delta) -> void:
 	if is_matched:
 		glow_pulse += delta * 4.0
 		queue_redraw()
 
-func _ready():
+func _ready() -> void:
 	custom_minimum_size = Vector2(130, 175)
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	gui_input.connect(_on_gui_input)
 
-func _on_gui_input(event: InputEvent):
+func _on_gui_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
 		if not is_animating and not is_face_up and not is_matched:
 			card_clicked.emit(self)
@@ -68,14 +70,14 @@ func flip(face_up: bool, on_complete: Callable = Callable()):
 		if on_complete.is_valid(): on_complete.call()
 	)
 
-func play_match_animation():
+func play_match_animation() -> void:
 	is_matched = true
 	set_process(true)
 	var tw = get_tree().create_tween()
 	tw.tween_property(self, "scale", Vector2(1.1, 1.1), 0.15).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	tw.tween_property(self, "scale", Vector2(1.0, 1.0), 0.15)
 
-func play_mismatch_shake():
+func play_mismatch_shake() -> void:
 	var orig_x = position.x
 	var tw = get_tree().create_tween()
 	tw.tween_property(self, "position:x", orig_x - 8.0, 0.05)
@@ -83,7 +85,7 @@ func play_mismatch_shake():
 	tw.tween_property(self, "position:x", orig_x - 6.0, 0.05)
 	tw.tween_property(self, "position:x", orig_x, 0.05)
 
-func _draw():
+func _draw() -> void:
 	var w = size.x
 	var h = size.y
 	var card_rect = Rect2(Vector2.ZERO, size)
@@ -102,7 +104,7 @@ func _draw():
 	else:
 		_draw_card_front(w, h)
 
-func _draw_card_back(w: float, h: float):
+func _draw_card_back(w: float, h: float) -> void:
 	# Ivory border
 	draw_rect(Rect2(0, 0, w, h), Color(0.96, 0.94, 0.90), true)
 	
@@ -140,7 +142,7 @@ func _draw_card_back(w: float, h: float):
 	for cp in c_offsets:
 		draw_circle(cp, 3.0, gold)
 
-func _draw_card_front(w: float, h: float):
+func _draw_card_front(w: float, h: float) -> void:
 	# Ivory / Pearl Card Face
 	draw_rect(Rect2(0, 0, w, h), Color(0.98, 0.97, 0.94), true)
 	
@@ -175,7 +177,7 @@ func _draw_card_front(w: float, h: float):
 		CardSymbol.KEY:
 			_draw_key(center)
 
-func _draw_crown(c: Vector2):
+func _draw_crown(c: Vector2) -> void:
 	var pts = [
 		c + Vector2(-24, 14),
 		c + Vector2(-24, -8),
@@ -193,7 +195,7 @@ func _draw_crown(c: Vector2):
 	draw_circle(c + Vector2(0, -14), 4.5, Color(0.9, 0.15, 0.15))
 	draw_circle(c + Vector2(24, -8), 3.5, Color(0.9, 0.15, 0.15))
 
-func _draw_ruby(c: Vector2):
+func _draw_ruby(c: Vector2) -> void:
 	var top = [
 		c + Vector2(-16, -14),
 		c + Vector2(16, -14),
@@ -210,7 +212,7 @@ func _draw_ruby(c: Vector2):
 	draw_line(c + Vector2(-8, -14), c + Vector2(0, 22), Color(1.0, 0.6, 0.6, 0.8), 1.5)
 	draw_line(c + Vector2(8, -14), c + Vector2(0, 22), Color(0.6, 0.05, 0.1, 0.8), 1.5)
 
-func _draw_emerald(c: Vector2):
+func _draw_emerald(c: Vector2) -> void:
 	var pts = [
 		c + Vector2(-12, -20),
 		c + Vector2(12, -20),
@@ -231,7 +233,7 @@ func _draw_emerald(c: Vector2):
 	]
 	draw_colored_polygon(inner, Color(0.35, 0.95, 0.65))
 
-func _draw_shield(c: Vector2):
+func _draw_shield(c: Vector2) -> void:
 	var pts = [
 		c + Vector2(-20, -18),
 		c + Vector2(20, -18),
@@ -244,7 +246,7 @@ func _draw_shield(c: Vector2):
 	draw_rect(Rect2(c.x - 4, c.y - 18, 8, 38), Color(0.95, 0.80, 0.20), true)
 	draw_rect(Rect2(c.x - 18, c.y - 6, 36, 8), Color(0.95, 0.80, 0.20), true)
 
-func _draw_star(c: Vector2):
+func _draw_star(c: Vector2) -> void:
 	var r_out = 22.0
 	var r_in = 9.0
 	var pts: PackedVector2Array = []
@@ -256,7 +258,7 @@ func _draw_star(c: Vector2):
 	# Core highlight
 	draw_circle(c, 5.0, Color(1.0, 1.0, 0.8))
 
-func _draw_chest(c: Vector2):
+func _draw_chest(c: Vector2) -> void:
 	# Base chest
 	draw_rect(Rect2(c.x - 22, c.y - 6, 44, 24), Color(0.52, 0.28, 0.12), true)
 	# Dome lid
@@ -267,7 +269,7 @@ func _draw_chest(c: Vector2):
 	# Keyhole
 	draw_circle(c + Vector2(0, 2), 4.0, Color(0.2, 0.15, 0.05))
 
-func _draw_clover(c: Vector2):
+func _draw_clover(c: Vector2) -> void:
 	var leaf_c = Color(0.18, 0.78, 0.28)
 	var leaf_r = 10.0
 	var offsets = [Vector2(0, -10), Vector2(10, 0), Vector2(0, 10), Vector2(-10, 0)]
@@ -276,7 +278,7 @@ func _draw_clover(c: Vector2):
 	# Stem
 	draw_line(c, c + Vector2(8, 20), Color(0.12, 0.55, 0.18), 3.0)
 
-func _draw_key(c: Vector2):
+func _draw_key(c: Vector2) -> void:
 	var key_c = Color(0.92, 0.74, 0.22)
 	# Ring top
 	draw_circle(c + Vector2(0, -12), 10.0, key_c)

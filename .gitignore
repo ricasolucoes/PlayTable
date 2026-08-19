@@ -17,13 +17,35 @@ Thumbs.db
 tmp/
 temp/
 *~
-Godot.app/
 *.tpz
-*.zip
 logcat.txt
-build/
-*.jdk/
-jdk-*/
+
+# Godot
 .godot/
+
+# Build Output
+build/
 *.apk
 *.idsig
+*.aab
+
+# Godot Engine (never commit the engine itself)
+Godot.app/
+*.zip
+
+# Java / Android SDK
+*.jdk/
+jdk-*/
+
+# Security - NEVER commit these
+release.keystore
+*.keystore
+export_presets.cfg
+
+# Python
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Planning/Local
+.planning/

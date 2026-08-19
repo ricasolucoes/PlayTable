@@ -1,6 +1,16 @@
 @tool
 extends Node2D
 
+## A 2D game piece with procedural 3D-look rendering and winning glow animation.
+
+const SHADOW_OFFSET := Vector2(0, 4)
+const SHADOW_EXTRA_RADIUS := 2.0
+const GLOW_BASE_SIZE := 6.0
+const GLOW_PULSE_SIZE := 6.0
+const RIDGE_OUTER_RATIO := 0.68
+const RIDGE_INNER_RATIO := 0.38
+const SPECULAR_OFFSET_RATIO := Vector2(-0.25, -0.28)
+
 @export var is_red: bool = true:
 	set(value):
 		is_red = value
@@ -14,17 +24,17 @@ extends Node2D
 var is_winning: bool = false
 var win_glow_t: float = 0.0
 
-func _process(delta):
+func _process(delta: float) -> void:
 	if is_winning:
 		win_glow_t += delta * 4.0
 		queue_redraw()
 
-func set_winning(win: bool):
+func set_winning(win: bool) -> void:
 	is_winning = win
 	set_process(win)
 	queue_redraw()
 
-func _draw():
+func _draw() -> void:
 	var r = radius
 	var base_c = Color(0.88, 0.15, 0.15) if is_red else Color(0.96, 0.75, 0.12)
 	var dark_c = Color(0.50, 0.06, 0.06) if is_red else Color(0.62, 0.42, 0.04)
@@ -33,12 +43,12 @@ func _draw():
 	var rim_bottom = dark_c
 	
 	# 1. Soft Drop Shadow below piece
-	draw_circle(Vector2(0, 4), r + 2, Color(0.0, 0.0, 0.0, 0.35))
+	draw_circle(SHADOW_OFFSET, r + SHADOW_EXTRA_RADIUS, Color(0.0, 0.0, 0.0, 0.35))
 	
 	# 2. Winning Glow Aura
 	if is_winning:
 		var glow_pulse = 0.5 + 0.5 * sin(win_glow_t)
-		var glow_r = r + 6.0 + (glow_pulse * 6.0)
+		var glow_r = r + GLOW_BASE_SIZE + (glow_pulse * GLOW_PULSE_SIZE)
 		var glow_color = Color(1.0, 0.9, 0.2, 0.6 * glow_pulse)
 		draw_circle(Vector2.ZERO, glow_r, glow_color)
 	
@@ -56,18 +66,18 @@ func _draw():
 		draw_circle(Vector2(0, offset_y), step_r, c)
 	
 	# 5. Concentric Tactile Ridge Rings
-	draw_arc(Vector2(0, -0.5), r * 0.68, 0, TAU, 32, dark_c, 2.0, true)
-	draw_arc(Vector2(0, -1.5), r * 0.68, PI * 0.8, PI * 1.8, 20, rim_top, 1.5, true)
+	draw_arc(Vector2(0, -0.5), r * RIDGE_OUTER_RATIO, 0, TAU, 32, dark_c, 2.0, true)
+	draw_arc(Vector2(0, -1.5), r * RIDGE_OUTER_RATIO, PI * 0.8, PI * 1.8, 20, rim_top, 1.5, true)
 	
-	draw_arc(Vector2(0, -0.5), r * 0.38, 0, TAU, 24, dark_c, 1.8, true)
-	draw_arc(Vector2(0, -1.5), r * 0.38, PI * 0.8, PI * 1.8, 16, rim_top, 1.2, true)
+	draw_arc(Vector2(0, -0.5), r * RIDGE_INNER_RATIO, 0, TAU, 24, dark_c, 1.8, true)
+	draw_arc(Vector2(0, -1.5), r * RIDGE_INNER_RATIO, PI * 0.8, PI * 1.8, 16, rim_top, 1.2, true)
 	
 	# 6. Central Glossy Specular Highlight Dome
-	var spec_pos = Vector2(-r * 0.25, -r * 0.28)
+	var spec_pos = Vector2(r * SPECULAR_OFFSET_RATIO.x, r * SPECULAR_OFFSET_RATIO.y)
 	draw_circle(spec_pos, r * 0.25, Color(1.0, 1.0, 1.0, 0.45))
 	draw_circle(spec_pos + Vector2(-1, -1), r * 0.12, Color(1.0, 1.0, 1.0, 0.75))
 
-func drop_to(target_y: float, on_finished: Callable = Callable()):
+func drop_to(target_y: float, on_finished: Callable = Callable()) -> void:
 	var start_y = position.y
 	var dist = abs(target_y - start_y)
 	var duration = clampf(sqrt(dist / 900.0) * 0.45, 0.25, 0.55)

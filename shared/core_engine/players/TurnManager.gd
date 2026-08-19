@@ -1,3 +1,4 @@
+## Manages player turns.
 class_name TurnManager
 extends RefCounted
 
@@ -13,7 +14,7 @@ var current_player_idx: int = 0
 var turn_count: int = 0
 var is_active: bool = false
 
-func _init(initial_players: Array[Player] = []):
+func _init(initial_players: Array[Player] = []) -> void:
 	players = initial_players.duplicate()
 
 func add_player(p: Player) -> void:

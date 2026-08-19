@@ -1,11 +1,13 @@
 @tool
 extends Control
 
+## Helper class for Jogo Da Velha.
+
 const BOARD_SIZE = 520.0
 const CELL_SIZE = 160.0
 const GAP = 12.0
 
-func _draw():
+func _draw() -> void:
 	var total_w = 3 * CELL_SIZE + 2 * GAP
 	var total_h = total_w
 	var offset = Vector2(-total_w * 0.5, -total_h * 0.5)

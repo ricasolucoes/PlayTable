@@ -1,12 +1,14 @@
 @tool
 extends Control
 
+## Helper class for Quatro Em Linha.
+
 const COLS = 7
 const ROWS = 6
 const CELL_SIZE = 86.0
 const HOLE_RADIUS = 34.0
 
-func _draw():
+func _draw() -> void:
 	var total_w = COLS * CELL_SIZE
 	var total_h = ROWS * CELL_SIZE
 	var margin = 14.0

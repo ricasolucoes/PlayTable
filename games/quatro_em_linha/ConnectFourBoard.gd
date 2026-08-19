@@ -1,17 +1,18 @@
 extends Node
 
+## Helper class for Quatro Em Linha.
+
 const COLS = 7
 const ROWS = 6
 
-var grid = []
-
-func _init():
+var grid: Array = []
+func _init() -> void:
 	reset_board()
 
-func reset_board():
+func reset_board() -> void:
 	grid.clear()
 	for x in range(COLS):
-		var column = []
+		var column: Array = []
 		for y in range(ROWS):
 			column.append(0) # 0 = empty, 1 = player 1 (red), 2 = player 2 (yellow)
 		grid.append(column)

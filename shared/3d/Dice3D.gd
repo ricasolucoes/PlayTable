@@ -21,20 +21,20 @@ const FACE_ROTATIONS = {
 	4: Vector3(PI * 0.5, 0, 0)
 }
 
-func _ready():
+func _ready() -> void:
 	_setup_materials()
 	set_value_immediate(1)
 
-func _setup_materials():
+func _setup_materials() -> void:
 	if mesh_instance:
 		mesh_instance.material_override = MaterialFactory3D.get_ivory()
 
-func set_value_immediate(val: int):
+func set_value_immediate(val: int) -> void:
 	current_value = clamp(val, 1, 6)
 	if FACE_ROTATIONS.has(current_value):
 		rotation = FACE_ROTATIONS[current_value]
 
-func roll(target_val: int, duration: float = 0.8):
+func roll(target_val: int, duration: float = 0.8) -> void:
 	if is_rolling: return
 	is_rolling = true
 	target_val = clamp(target_val, 1, 6)

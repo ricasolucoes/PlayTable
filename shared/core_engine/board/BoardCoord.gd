@@ -1,3 +1,4 @@
+## Board coordinate constants and helpers.
 class_name BoardCoord
 extends RefCounted
 

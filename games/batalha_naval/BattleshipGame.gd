@@ -7,9 +7,8 @@ const BattleshipRulesScript = preload("res://games/batalha_naval/BattleshipRules
 
 var player_grid: Grid2D
 var ai_grid: Grid2D
-var player_ships = []
-var ai_ships = []
-
+var player_ships: Array = []
+var ai_ships: Array = []
 var is_player_turn: bool = true
 var game_over: bool = false
 var viewing_radar: bool = true # true = Radar de Ataque (AI Grid), false = Frota Aliada (Player Grid)
@@ -27,12 +26,12 @@ var ships_3d: Array = []
 @onready var btn_restart = $UI/VBoxContainer/BtnRestart
 @onready var touch_grid = $UI/CenterContainer/TouchGrid
 
-func _ready():
+func _ready() -> void:
 	board_3d.setup_board(10, 10, 0.65, "ocean_radar")
 	_setup_touch_grid()
 	_start_new_game()
 
-func _setup_touch_grid():
+func _setup_touch_grid() -> void:
 	for c in touch_grid.get_children(): c.queue_free()
 	for r in range(10):
 		for c in range(10):
@@ -42,7 +41,7 @@ func _setup_touch_grid():
 			btn.pressed.connect(_on_cell_clicked.bind(r, c))
 			touch_grid.add_child(btn)
 
-func _start_new_game():
+func _start_new_game() -> void:
 	game_over = false
 	is_player_turn = true
 	viewing_radar = true
@@ -57,7 +56,7 @@ func _start_new_game():
 	_update_view_mode()
 	status_label.text = "Sua Vez! Selecione uma coordenada no Radar."
 
-func _update_view_mode():
+func _update_view_mode() -> void:
 	for m in markers_root.get_children(): m.queue_free()
 	for s in ships_root.get_children(): s.queue_free()
 	markers_3d.clear()
@@ -78,7 +77,7 @@ func _update_view_mode():
 		
 	_update_fleet_status_labels()
 
-func _render_radar_view():
+func _render_radar_view() -> void:
 	# Exibe tiros no grid da IA (2 = Erro, 3 = Acerto)
 	for r in range(10):
 		for c in range(10):
@@ -88,7 +87,7 @@ func _render_radar_view():
 			elif val == 3: # Acerto / Fogo
 				_spawn_peg_3d(r, c, true)
 
-func _render_fleet_view():
+func _render_fleet_view() -> void:
 	# Exibe navios do jogador e tiros recebidos
 	for s in player_ships:
 		_render_ship_3d(s)
@@ -101,7 +100,7 @@ func _render_fleet_view():
 			elif val == 3:
 				_spawn_peg_3d(r, c, true)
 
-func _spawn_peg_3d(r: int, c: int, is_hit: bool):
+func _spawn_peg_3d(r: int, c: int, is_hit: bool) -> void:
 	var peg = MeshInstance3D.new()
 	peg.mesh = MeshBuilder3D.create_peg_pin(0.35, 0.1)
 	peg.position = board_3d.get_cell_position_3d(r, c, 0.18)
@@ -114,7 +113,7 @@ func _spawn_peg_3d(r: int, c: int, is_hit: bool):
 	markers_root.add_child(peg)
 	markers_3d[Vector2i(r, c)] = peg
 
-func _render_ship_3d(ship: Dictionary):
+func _render_ship_3d(ship: Dictionary) -> void:
 	var length = ship["size"]
 	var is_vert = ship["is_vertical"]
 	var start_r = ship["start_row"]
@@ -138,7 +137,7 @@ func _render_ship_3d(ship: Dictionary):
 	ship_mesh.position = Vector3(start_x + (center_c * 0.65), 0.1, start_z + (center_r * 0.65))
 	ships_root.add_child(ship_mesh)
 
-func _update_fleet_status_labels():
+func _update_fleet_status_labels() -> void:
 	var ai_sunk = BattleshipRules.count_sunk_ships(ai_ships)
 	var player_sunk = BattleshipRules.count_sunk_ships(player_ships)
 	fleet_info_label.text = "Navios Inimigos Afundados: %d/5  |  Aliados: %d/5" % [ai_sunk, player_sunk]
@@ -200,7 +199,7 @@ func _play_ai_turn():
 		
 	is_player_turn = true
 
-func _end_game(is_player_win: bool):
+func _end_game(is_player_win: bool) -> void:
 	game_over = true
 	btn_restart.show()
 	if is_player_win:
@@ -209,16 +208,16 @@ func _end_game(is_player_win: bool):
 	else:
 		status_label.text = "Derrota! Sua frota foi aniquilada."
 
-func _on_btn_radar_pressed():
+func _on_btn_radar_pressed() -> void:
 	viewing_radar = true
 	_update_view_mode()
 
-func _on_btn_fleet_pressed():
+func _on_btn_fleet_pressed() -> void:
 	viewing_radar = false
 	_update_view_mode()
 
-func _on_btn_restart_pressed():
+func _on_btn_restart_pressed() -> void:
 	_start_new_game()
 
-func _on_btn_back_pressed():
+func _on_btn_back_pressed() -> void:
 	SceneManager.goto_scene("res://core/telas/MenuTabuleiro.tscn")

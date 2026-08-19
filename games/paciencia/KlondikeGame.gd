@@ -53,7 +53,7 @@ const TABLEAU_SPACING_X = 0.8
 const TABLEAU_START_Z = -0.7
 const TABLEAU_CASCADE_Z = 0.22
 
-func _ready():
+func _ready() -> void:
 	env_3d.set_felt_color(Color(0.06, 0.3, 0.18))
 	stock = CardPile.new()
 	waste = CardPile.new()
@@ -71,7 +71,7 @@ func _ready():
 		
 	_start_new_game()
 
-func _start_new_game():
+func _start_new_game() -> void:
 	moves_count = 0
 	game_won = false
 	selected_source = ""
@@ -100,7 +100,7 @@ func _start_new_game():
 	_update_ui()
 	status_label.text = "Paciência Klondike 3D iniciada!"
 
-func _sync_3d_table():
+func _sync_3d_table() -> void:
 	for c in cards_root.get_children(): c.queue_free()
 	
 	# Renderiza Stock (Monte)
@@ -142,7 +142,7 @@ func _sync_3d_table():
 			c_3d.position = Vector3(pos_x, 0.05 + (r_idx * 0.006), pos_z)
 			cards_root.add_child(c_3d)
 
-func _update_ui():
+func _update_ui() -> void:
 	moves_label.text = "Movimentos: %d" % moves_count
 	btn_stock.text = "Monte\n(%d)" % stock.size()
 	
@@ -168,7 +168,7 @@ func _update_ui():
 			var top = tableau[i].peek()
 			tableau_buttons[i].text = "Col %d\n%s %s" % [i + 1, top.get_display_value(), top.get_suit_symbol()]
 
-func _on_stock_pressed():
+func _on_stock_pressed() -> void:
 	if game_won: return
 	selected_source = ""
 	selected_card_idx = -1
@@ -190,7 +190,7 @@ func _on_stock_pressed():
 	_sync_3d_table()
 	_update_ui()
 
-func _on_waste_pressed():
+func _on_waste_pressed() -> void:
 	if game_won or waste.is_empty(): return
 	selected_source = "waste"
 	selected_card_idx = waste.size() - 1
@@ -270,22 +270,22 @@ func _on_tableau_col_pressed(col_idx: int):
 				
 	status_label.text = "Jogada inválida."
 
-func _clear_selection_and_update():
+func _clear_selection_and_update() -> void:
 	selected_source = ""
 	selected_card_idx = -1
 	_sync_3d_table()
 	_update_ui()
 
-func _check_win():
-	var total_found = 0
+func _check_win() -> void:
+	var total_found: int = 0
 	for f in foundations: total_found += f.size()
 	if total_found == 52:
 		game_won = true
 		status_label.text = "🏆 Parabéns! Você completou a Paciência 3D!"
 		env_3d.celebrate_win()
 
-func _on_btn_restart_pressed():
+func _on_btn_restart_pressed() -> void:
 	_start_new_game()
 
-func _on_btn_back_pressed():
+func _on_btn_back_pressed() -> void:
 	SceneManager.goto_scene("res://core/telas/MenuCartas.tscn")

@@ -1,3 +1,4 @@
+## Represents a playing card.
 class_name Card
 extends RefCounted
 
@@ -72,7 +73,7 @@ var special_type: SpecialType = SpecialType.NONE
 var is_face_up: bool = true
 var custom_data: Dictionary = {}
 
-func _init(p_val: int = 0, p_suit: Suit = Suit.NONE, p_color: ColorType = ColorType.NONE, p_type: String = "standard", p_custom: Dictionary = {}):
+func _init(p_val: int = 0, p_suit: Suit = Suit.NONE, p_color: ColorType = ColorType.NONE, p_type: String = "standard", p_custom: Dictionary = {}) -> void:
 	value = p_val
 	suit = p_suit
 	color_type = p_color

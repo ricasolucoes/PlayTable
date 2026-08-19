@@ -1,6 +1,8 @@
 class_name TicTacToeRules
 extends RefCounted
 
+## Rules and logic for Jogo Da Velha.
+
 const Grid2DScript = preload("res://shared/core_engine/board/Grid2D.gd")
 
 const WIN_COMBOS = [
@@ -53,7 +55,7 @@ static func get_best_move(grid: Grid2D, ai_player_id: int) -> int:
 		return 4
 		
 	# 4. Cantos (0, 2, 6, 8)
-	var corners = []
+	var corners: Array = []
 	for c in [0, 2, 6, 8]:
 		if c in empty: corners.append(c)
 	if not corners.is_empty():

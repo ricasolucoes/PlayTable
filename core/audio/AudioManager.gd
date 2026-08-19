@@ -1,4 +1,7 @@
+class_name AudioManager
 extends Node
+
+## Manages sound effects via an audio player pool with procedurally generated sounds.
 
 var sfx_players: Array[AudioStreamPlayer] = []
 const POOL_SIZE = 8
@@ -6,7 +9,7 @@ var sound_enabled: bool = true
 
 var _cached_sounds: Dictionary = {}
 
-func _ready():
+func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	for i in range(POOL_SIZE):
 		var p = AudioStreamPlayer.new()
@@ -21,7 +24,7 @@ func _get_free_player() -> AudioStreamPlayer:
 			return p
 	return sfx_players[0]
 
-func play_sound(name: String, volume_db: float = 0.0, pitch_scale: float = 1.0):
+func play_sound(name: String, volume_db: float = 0.0, pitch_scale: float = 1.0) -> void:
 	if not sound_enabled or not _cached_sounds.has(name):
 		return
 	var player = _get_free_player()
@@ -30,28 +33,32 @@ func play_sound(name: String, volume_db: float = 0.0, pitch_scale: float = 1.0):
 	player.pitch_scale = pitch_scale
 	player.play()
 
-func play_click():
+func play_click() -> void:
 	play_sound("click", -6.0, randf_range(0.95, 1.05))
 
-func play_chip_drop():
+func play_chip_drop() -> void:
 	play_sound("chip_drop", -2.0, randf_range(0.9, 1.1))
 
-func play_piece_place():
+func play_piece_place() -> void:
 	play_sound("piece_place", -3.0, randf_range(0.95, 1.05))
 
-func play_card_flip():
+func play_card_flip() -> void:
 	play_sound("card_flip", -4.0, randf_range(0.9, 1.1))
 
-func play_card_match():
+func play_card_match() -> void:
 	play_sound("card_match", 0.0, 1.0)
 
-func play_win():
+func play_win() -> void:
 	play_sound("win", 2.0, 1.0)
 
-func play_draw():
+func play_draw() -> void:
 	play_sound("draw", -2.0, 1.0)
 
-func _generate_all_sounds():
+# ==============================================================================
+## Procedural Audio Generation
+# ==============================================================================
+
+func _generate_all_sounds() -> void:
 	_cached_sounds["click"] = _gen_click_sound()
 	_cached_sounds["chip_drop"] = _gen_chip_drop_sound()
 	_cached_sounds["piece_place"] = _gen_piece_place_sound()

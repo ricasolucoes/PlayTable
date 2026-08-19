@@ -1,5 +1,7 @@
 extends Control
 
+## Connect Four board game implementation.
+
 const BOARD_SCRIPT = preload("res://games/quatro_em_linha/ConnectFourBoard.gd")
 const AI_SCRIPT = preload("res://games/quatro_em_linha/ConnectFourAI.gd")
 const PIECE_SCENE = preload("res://shared/pecas/Piece.tscn")
@@ -10,13 +12,11 @@ const CELL_SIZE = 86.0
 const PIECE_RADIUS = 34.0
 
 var board = null
-var is_player_turn = true
-var game_over = false
-var vs_ai = true
-
-var score_p1 = 0
-var score_p2 = 0
-
+var is_player_turn: bool = true
+var game_over: bool = false
+var vs_ai: bool = true
+var score_p1: int = 0
+var score_p2: int = 0
 var piece_instances = {} # Vector2i -> Piece node
 
 @onready var pieces_layer = $BoardArea/PiecesLayer
@@ -32,7 +32,7 @@ var piece_instances = {} # Vector2i -> Piece node
 @onready var win_modal_title = $WinModal/Panel/VBox/WinTitle
 @onready var win_modal_sub = $WinModal/Panel/VBox/WinSub
 
-func _ready():
+func _ready() -> void:
 	board = BOARD_SCRIPT.new()
 	add_child(board)
 	
@@ -41,11 +41,11 @@ func _ready():
 	_update_turn_ui()
 	win_modal.visible = false
 
-func _setup_board_visuals():
+func _setup_board_visuals() -> void:
 	board_back.queue_redraw()
 	board_front.queue_redraw()
 
-func _setup_column_buttons():
+func _setup_column_buttons() -> void:
 	for child in col_buttons_container.get_children():
 		child.queue_free()
 		
@@ -118,7 +118,7 @@ func _do_ai_turn():
 		is_player_turn = true
 		_update_turn_ui()
 
-func _handle_game_won(winner_id: int, win_cells: Array[Vector2i]):
+func _handle_game_won(winner_id: int, win_cells: Array[Vector2i]) -> void:
 	game_over = true
 	if winner_id == 1:
 		score_p1 += 1
@@ -144,7 +144,7 @@ func _handle_game_won(winner_id: int, win_cells: Array[Vector2i]):
 	var tw = get_tree().create_tween()
 	tw.tween_property(win_modal, "modulate:a", 1.0, 0.3)
 
-func _handle_game_draw():
+func _handle_game_draw() -> void:
 	game_over = true
 	win_modal_title.text = "Empate!"
 	win_modal_sub.text = "O tabuleiro ficou completamente cheio."
@@ -164,7 +164,7 @@ func _update_turn_ui():
 		p1_panel.modulate = Color(0.6, 0.6, 0.6, 0.7)
 		p2_panel.modulate = Color(1.0, 1.0, 1.0, 1.0)
 
-func _on_restart_pressed():
+func _on_restart_pressed() -> void:
 	if AudioManager: AudioManager.play_click()
 	win_modal.visible = false
 	board.reset_board()
@@ -175,6 +175,6 @@ func _on_restart_pressed():
 	is_player_turn = true
 	_update_turn_ui()
 
-func _on_back_pressed():
+func _on_back_pressed() -> void:
 	if AudioManager: AudioManager.play_click()
 	SceneManager.goto_scene("res://core/telas/MenuTabuleiro.tscn")

@@ -17,10 +17,10 @@ signal cell_clicked(row: int, col: int)
 var cell_meshes: Array = []
 var selected_coord: Vector2i = Vector2i(-1, -1)
 
-func _ready():
+func _ready() -> void:
 	setup_board(rows, cols, cell_size, board_style)
 
-func setup_board(p_rows: int, p_cols: int, p_cell_size: float = 0.8, p_style: String = "wood_checkered"):
+func setup_board(p_rows: int, p_cols: int, p_cell_size: float = 0.8, p_style: String = "wood_checkered") -> void:
 	rows = p_rows
 	cols = p_cols
 	cell_size = p_cell_size
@@ -61,7 +61,7 @@ func setup_board(p_rows: int, p_cols: int, p_cell_size: float = 0.8, p_style: St
 			row_arr.append(tile)
 		cell_meshes.append(row_arr)
 
-func _apply_tile_material(tile: MeshInstance3D, r: int, c: int):
+func _apply_tile_material(tile: MeshInstance3D, r: int, c: int) -> void:
 	match board_style:
 		"wood_checkered":
 			var is_dark = (r + c) % 2 == 1
@@ -84,7 +84,7 @@ func get_cell_position_3d(r: int, c: int, height_offset: float = 0.08) -> Vector
 	var start_z = -(total_h * 0.5) + (cell_size * 0.5)
 	return Vector3(start_x + (c * cell_size), height_offset, start_z + (r * cell_size))
 
-func highlight_cell(r: int, c: int, color: Color = Color(0.2, 0.85, 0.4)):
+func highlight_cell(r: int, c: int, color: Color = Color(0.2, 0.85, 0.4)) -> void:
 	if r >= 0 and r < rows and c >= 0 and c < cols:
 		var tile = cell_meshes[r][c]
 		var mat = StandardMaterial3D.new()
@@ -95,7 +95,7 @@ func highlight_cell(r: int, c: int, color: Color = Color(0.2, 0.85, 0.4)):
 		mat.roughness = 0.3
 		tile.material_override = mat
 
-func reset_cell_material(r: int, c: int):
+func reset_cell_material(r: int, c: int) -> void:
 	if r >= 0 and r < rows and c >= 0 and c < cols:
 		var tile = cell_meshes[r][c]
 		_apply_tile_material(tile, r, c)

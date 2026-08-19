@@ -1,6 +1,8 @@
 class_name PegSolitaireRules
 extends RefCounted
 
+## Rules and logic for Solitario.
+
 const Grid2DScript = preload("res://shared/core_engine/board/Grid2D.gd")
 
 const SIZE = 7
@@ -50,7 +52,7 @@ static func count_pegs(grid: Grid2D) -> int:
 	return grid.count_matching(1)
 
 static func count_total_moves(grid: Grid2D) -> int:
-	var total = 0
+	var total: int = 0
 	for r in range(SIZE):
 		for c in range(SIZE):
 			if grid.get_cell(r, c) == 1:

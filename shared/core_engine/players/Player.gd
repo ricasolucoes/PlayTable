@@ -1,3 +1,4 @@
+## Represents a player in a game.
 class_name Player
 extends RefCounted
 
@@ -13,7 +14,7 @@ var type: PlayerType = PlayerType.HUMAN_LOCAL
 var score: int = 0
 var custom_data: Dictionary = {}
 
-func _init(p_id: int = 0, p_name: String = "", p_type: PlayerType = PlayerType.HUMAN_LOCAL, p_custom: Dictionary = {}):
+func _init(p_id: int = 0, p_name: String = "", p_type: PlayerType = PlayerType.HUMAN_LOCAL, p_custom: Dictionary = {}) -> void:
 	id = p_id
 	name = p_name
 	type = p_type

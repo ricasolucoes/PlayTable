@@ -1,8 +1,11 @@
+class_name LocaleManager
 extends Node
+
+## Manages application locale with auto-detection and persistence.
 
 signal locale_changed(new_locale: String)
 
-const SUPPORTED_LOCALES = [
+const SUPPORTED_LOCALES: Array[Dictionary] = [
 	{"code": "pt_BR", "name": "Português (BR)"},
 	{"code": "en", "name": "English"},
 	{"code": "es", "name": "Español"}
@@ -10,13 +13,13 @@ const SUPPORTED_LOCALES = [
 
 var current_locale: String = "pt_BR"
 
-func _ready():
-	var saved_locale = SaveManager.get_setting("locale", "")
+func _ready() -> void:
+	var saved_locale: String = SaveManager.get_setting("locale", "") as String
 	if saved_locale != "" and _is_supported(saved_locale):
 		set_locale(saved_locale)
 	else:
-		var sys_locale = OS.get_locale()
-		var matched = _match_supported(sys_locale)
+		var sys_locale: String = OS.get_locale()
+		var matched: String = _match_supported(sys_locale)
 		set_locale(matched)
 
 func _is_supported(code: String) -> bool:
@@ -26,7 +29,7 @@ func _is_supported(code: String) -> bool:
 	return false
 
 func _match_supported(sys_locale: String) -> String:
-	var lower = sys_locale.to_lower()
+	var lower: String = sys_locale.to_lower()
 	if lower.begins_with("pt"):
 		return "pt_BR"
 	elif lower.begins_with("es"):
@@ -35,7 +38,7 @@ func _match_supported(sys_locale: String) -> String:
 		return "en"
 	return "pt_BR"
 
-func set_locale(code: String):
+func set_locale(code: String) -> void:
 	current_locale = code
 	TranslationServer.set_locale(code)
 	SaveManager.set_setting("locale", code)
@@ -51,11 +54,11 @@ func get_current_locale_name() -> String:
 	return current_locale
 
 func cycle_locale() -> String:
-	var next_idx = 0
+	var next_idx: int = 0
 	for i in range(SUPPORTED_LOCALES.size()):
 		if SUPPORTED_LOCALES[i]["code"] == current_locale:
 			next_idx = (i + 1) % SUPPORTED_LOCALES.size()
 			break
-	var next_code = SUPPORTED_LOCALES[next_idx]["code"]
+	var next_code: String = SUPPORTED_LOCALES[next_idx]["code"]
 	set_locale(next_code)
 	return next_code

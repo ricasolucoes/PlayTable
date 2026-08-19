@@ -1,3 +1,4 @@
+## Manages a hand of cards for a player.
 class_name CardHand
 extends RefCounted
 
@@ -5,7 +6,7 @@ const CardScript = preload("res://shared/core_engine/cards/Card.gd")
 
 var cards: Array[Card] = []
 
-func _init(initial_cards: Array = []):
+func _init(initial_cards: Array[Variant] = []) -> void:
 	for c in initial_cards:
 		if c is Card:
 			cards.append(c)
@@ -14,7 +15,7 @@ func add(card: Card) -> void:
 	if card != null:
 		cards.append(card)
 
-func add_many(new_cards: Array) -> void:
+func add_many(new_cards: Array[Variant]) -> void:
 	for c in new_cards:
 		if c is Card:
 			cards.append(c)

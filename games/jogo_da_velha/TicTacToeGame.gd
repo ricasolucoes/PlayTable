@@ -1,15 +1,15 @@
 extends Control
 
+## Tic-Tac-Toe game implementation.
+
 const PIECE_SCRIPT = preload("res://games/jogo_da_velha/TicTacToePiece.gd")
 
 var board = [0,0,0, 0,0,0, 0,0,0] # 0=empty, 1=X, 2=O
-var game_over = false
-var vs_ai = true
-var is_player_turn = true
-
-var score_x = 0
-var score_o = 0
-
+var game_over: bool = false
+var vs_ai: bool = true
+var is_player_turn: bool = true
+var score_x: int = 0
+var score_o: int = 0
 var piece_nodes: Array[Node2D] = []
 
 @onready var grid_container = $BoardContainer/Grid
@@ -23,13 +23,13 @@ var piece_nodes: Array[Node2D] = []
 @onready var win_modal_sub = $WinModal/Panel/VBox/WinSub
 @onready var strike_line = $BoardContainer/StrikeLine
 
-func _ready():
+func _ready() -> void:
 	_setup_grid_cells()
 	_update_turn_ui()
 	win_modal.visible = false
 	strike_line.visible = false
 
-func _setup_grid_cells():
+func _setup_grid_cells() -> void:
 	for child in grid_container.get_children():
 		child.queue_free()
 	piece_nodes.clear()
@@ -156,7 +156,7 @@ func _is_draw() -> bool:
 		if c == 0: return false
 	return true
 
-func _handle_game_won(winner_id: int, combo: Array[int]):
+func _handle_game_won(winner_id: int, combo: Array[int]) -> void:
 	game_over = true
 	
 	# Highlight winning pieces
@@ -182,7 +182,7 @@ func _handle_game_won(winner_id: int, combo: Array[int]):
 	var tw = get_tree().create_tween()
 	tw.tween_property(win_modal, "modulate:a", 1.0, 0.3)
 
-func _handle_game_draw():
+func _handle_game_draw() -> void:
 	game_over = true
 	win_modal_title.text = "Empate!"
 	win_modal_sub.text = "Nenhum jogador conseguiu alinhar 3 peças."
@@ -190,7 +190,7 @@ func _handle_game_draw():
 	await get_tree().create_timer(0.6).timeout
 	win_modal.visible = true
 
-func _update_turn_ui():
+func _update_turn_ui() -> void:
 	if game_over: return
 	if is_player_turn:
 		status_label.text = "Sua Vez (Cruz X Carmesim)"
@@ -201,7 +201,7 @@ func _update_turn_ui():
 		x_panel.modulate = Color(0.6, 0.6, 0.6, 0.7)
 		o_panel.modulate = Color(1.0, 1.0, 1.0, 1.0)
 
-func _on_restart_pressed():
+func _on_restart_pressed() -> void:
 	if AudioManager: AudioManager.play_click()
 	win_modal.visible = false
 	board = [0,0,0, 0,0,0, 0,0,0]
@@ -213,6 +213,6 @@ func _on_restart_pressed():
 		piece.set_winning(false)
 	_update_turn_ui()
 
-func _on_back_pressed():
+func _on_back_pressed() -> void:
 	if AudioManager: AudioManager.play_click()
 	SceneManager.goto_scene("res://core/telas/MenuTabuleiro.tscn")

@@ -1,6 +1,8 @@
 class_name MemoryRules
 extends RefCounted
 
+## Rules and logic for Memoria.
+
 const CardScript = preload("res://shared/core_engine/cards/Card.gd")
 
 static func is_match(card1: Card, card2: Card) -> bool:

@@ -1,7 +1,11 @@
 extends Node
+class_name ConnectFourAI
+
+## AI opponent for Connect Four using minimax with alpha-beta pruning.
+## WARNING: Simulates moves by directly mutating board.grid. Ensure proper undo.
 
 static func get_best_move(board: Node) -> int:
-	var valid_moves = []
+	var valid_moves: Array = []
 	for c in range(board.COLS):
 		if board.can_drop(c):
 			valid_moves.append(c)
@@ -38,6 +42,6 @@ static func _simulate_drop(board: Node, col: int) -> int:
 			return y
 	return -1
 
-static func _undo_drop(board: Node, col: int, row: int):
+static func _undo_drop(board: Node, col: int, row: int) -> void:
 	if row >= 0:
 		board.grid[col][row] = 0

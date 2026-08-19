@@ -51,51 +51,9 @@ layout_mode = 2
 size_flags_vertical = 3
 horizontal_scroll_mode = 0
 
-[node name="GridContainer" type="GridContainer" parent="VBoxContainer/ScrollContainer"]
+[node name="VBoxContainer" type="VBoxContainer" parent="VBoxContainer/ScrollContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_constants/h_separation = 16
-theme_override_constants/v_separation = 16
-columns = 2
-
-[node name="BtnMemoria" type="Button" parent="VBoxContainer/ScrollContainer/GridContainer"]
-custom_minimum_size = Vector2(0, 140)
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_font_sizes/font_size = 24
-text = "GAME_MEMORY"
-
-[node name="BtnPaciencia" type="Button" parent="VBoxContainer/ScrollContainer/GridContainer"]
-custom_minimum_size = Vector2(0, 140)
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_font_sizes/font_size = 24
-text = "GAME_KLONDIKE"
-
-[node name="Btn21" type="Button" parent="VBoxContainer/ScrollContainer/GridContainer"]
-custom_minimum_size = Vector2(0, 140)
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_font_sizes/font_size = 24
-text = "GAME_BLACKJACK"
-
-[node name="BtnUnoLike" type="Button" parent="VBoxContainer/ScrollContainer/GridContainer"]
-custom_minimum_size = Vector2(0, 140)
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_font_sizes/font_size = 24
-text = "GAME_UNOLIKE"
-
-[node name="BtnPoker" type="Button" parent="VBoxContainer/ScrollContainer/GridContainer"]
-custom_minimum_size = Vector2(0, 140)
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_font_sizes/font_size = 24
-text = "GAME_POKER"
+theme_override_constants/separation = 16
 
 [connection signal="pressed" from="VBoxContainer/TopBar/BtnVoltar" to="." method="_on_btn_voltar_pressed"]
-[connection signal="pressed" from="VBoxContainer/ScrollContainer/GridContainer/BtnMemoria" to="." method="_on_btn_memoria_pressed"]
-[connection signal="pressed" from="VBoxContainer/ScrollContainer/GridContainer/BtnPaciencia" to="." method="_on_btn_paciencia_pressed"]
-[connection signal="pressed" from="VBoxContainer/ScrollContainer/GridContainer/Btn21" to="." method="_on_btn_21_pressed"]
-[connection signal="pressed" from="VBoxContainer/ScrollContainer/GridContainer/BtnUnoLike" to="." method="_on_btn_unolike_pressed"]
-[connection signal="pressed" from="VBoxContainer/ScrollContainer/GridContainer/BtnPoker" to="." method="_on_btn_poker_pressed"]

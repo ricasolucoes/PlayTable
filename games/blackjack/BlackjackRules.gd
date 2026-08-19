@@ -1,6 +1,8 @@
 class_name BlackjackRules
 extends RefCounted
 
+## Rules and logic for Blackjack.
+
 enum Winner {
 	PLAYER,
 	DEALER,
@@ -23,8 +25,8 @@ static func determine_winner(player_cards: Array, dealer_cards: Array) -> Winner
 	else: return Winner.PUSH
 
 static func calculate_score(cards: Array) -> int:
-	var score = 0
-	var aces = 0
+	var score: int = 0
+	var aces: int = 0
 	for item in cards:
 		var val = item.value if (item is Card) else int(item.get("value", item.get("val", 0)))
 		if val == 1 or val == 14: # Ás

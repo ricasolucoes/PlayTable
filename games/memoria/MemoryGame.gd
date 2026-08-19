@@ -1,5 +1,7 @@
 extends Control
 
+## Memory matching card game implementation.
+
 const CARD_SCRIPT = preload("res://games/memoria/MemoryCard.gd")
 
 var cards: Array[Control] = []
@@ -19,10 +21,10 @@ var game_over: bool = false
 @onready var win_modal_title = $WinModal/Panel/VBox/WinTitle
 @onready var win_modal_sub = $WinModal/Panel/VBox/WinSub
 
-func _ready():
+func _ready() -> void:
 	_start_new_game()
 
-func _start_new_game():
+func _start_new_game() -> void:
 	pairs_found = 0
 	moves_count = 0
 	game_over = false
@@ -34,7 +36,7 @@ func _start_new_game():
 	_update_ui()
 	_generate_deck()
 
-func _generate_deck():
+func _generate_deck() -> void:
 	for child in grid_container.get_children():
 		child.queue_free()
 	cards.clear()
@@ -79,7 +81,7 @@ func _on_card_clicked(card: Control):
 		_update_ui()
 		_check_match()
 
-func _check_match():
+func _check_match() -> void:
 	is_checking = true
 	
 	if first_card.symbol_type == second_card.symbol_type:
@@ -115,7 +117,7 @@ func _check_match():
 		is_checking = false
 		status_label.text = "Encontre os pares correspondentes"
 
-func _handle_game_won():
+func _handle_game_won() -> void:
 	game_over = true
 	if AudioManager: AudioManager.play_win()
 	
@@ -132,16 +134,16 @@ func _handle_game_won():
 	var tw = get_tree().create_tween()
 	tw.tween_property(win_modal, "modulate:a", 1.0, 0.3)
 
-func _update_ui():
+func _update_ui() -> void:
 	pairs_label.text = str(pairs_found) + " / " + str(TOTAL_PAIRS)
 	moves_label.text = str(moves_count)
 	if pairs_found == 0 and moves_count == 0:
 		status_label.text = "Toque em uma carta para começar"
 
-func _on_restart_pressed():
+func _on_restart_pressed() -> void:
 	if AudioManager: AudioManager.play_click()
 	_start_new_game()
 
-func _on_back_pressed():
+func _on_back_pressed() -> void:
 	if AudioManager: AudioManager.play_click()
 	SceneManager.goto_scene("res://core/telas/MenuCartas.tscn")

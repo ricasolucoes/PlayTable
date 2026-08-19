@@ -30,13 +30,13 @@ var pawns_3d = [[], [], [], []]
 @onready var pawn_buttons_container = $UI/PawnSelectionArea/PawnButtons
 @onready var btn_restart = $UI/Actions/BtnRestart
 
-func _ready():
+func _ready() -> void:
 	_setup_3d_ludo_board()
 	_setup_3d_pawns()
 	dice_3d.roll_finished.connect(_on_dice_roll_finished)
 	_start_new_game()
 
-func _setup_3d_ludo_board():
+func _setup_3d_ludo_board() -> void:
 	for c in board_root.get_children(): c.queue_free()
 	
 	# Base de madeira nobre
@@ -64,7 +64,7 @@ func _setup_3d_ludo_board():
 		q_mesh.material_override = MaterialFactory3D.get_plastic(Color(0.2, 0.2, 0.2), false)
 		board_root.add_child(q_mesh)
 
-func _setup_3d_pawns():
+func _setup_3d_pawns() -> void:
 	for c in pawns_root.get_children(): c.queue_free()
 	pawns_3d = [[], [], [], []]
 	
@@ -109,7 +109,7 @@ func _get_track_position_3d(p: int, step_val: int, pawn_idx: int) -> Vector3:
 		return Vector3(cos(angle) * radius, 0.2, sin(angle) * radius)
 	return Vector3.ZERO
 
-func _start_new_game():
+func _start_new_game() -> void:
 	game_over = false
 	current_turn = 0
 	last_roll = 0
@@ -130,7 +130,7 @@ func _start_new_game():
 	status_label.text = "Sua Vez! Toque no dado para rolar."
 	_sync_pawns_positions(true)
 
-func _sync_pawns_positions(immediate: bool = false):
+func _sync_pawns_positions(immediate: bool = false) -> void:
 	for p in range(4):
 		for idx in range(PAWNS_PER_PLAYER):
 			var step_val = players_pawns[p][idx]
@@ -141,7 +141,7 @@ func _sync_pawns_positions(immediate: bool = false):
 			else:
 				pawn.jump_to(target_pos, 0.4, 0.3)
 
-func _on_btn_dice_pressed():
+func _on_btn_dice_pressed() -> void:
 	if not can_roll or game_over or current_turn != 0: return
 	can_roll = false
 	btn_dice.disabled = true
@@ -150,7 +150,7 @@ func _on_btn_dice_pressed():
 	status_label.text = "Rolando dado..."
 	dice_3d.roll(rolled, 0.75)
 
-func _on_dice_roll_finished(val: int):
+func _on_dice_roll_finished(val: int) -> void:
 	last_roll = val
 	btn_dice.text = "🎲 Dado: %d" % last_roll
 	
@@ -159,8 +159,8 @@ func _on_dice_roll_finished(val: int):
 	else:
 		_handle_ai_roll(last_roll)
 
-func _handle_player_roll(roll: int):
-	var movable = []
+func _handle_player_roll(roll: int) -> void:
+	var movable: Array = []
 	for idx in range(PAWNS_PER_PLAYER):
 		var pos = players_pawns[0][idx]
 		if pos == -1 and roll == 6: movable.append(idx)
@@ -182,11 +182,11 @@ func _handle_player_roll(roll: int):
 			btn.pressed.connect(_on_pawn_choice_selected.bind(idx, roll))
 			pawn_buttons_container.add_child(btn)
 
-func _on_pawn_choice_selected(pawn_idx: int, roll: int):
+func _on_pawn_choice_selected(pawn_idx: int, roll: int) -> void:
 	for c in pawn_buttons_container.get_children(): c.queue_free()
 	_move_player_pawn(pawn_idx, roll)
 
-func _move_player_pawn(idx: int, roll: int):
+func _move_player_pawn(idx: int, roll: int) -> void:
 	var pos = players_pawns[0][idx]
 	if pos == -1: players_pawns[0][idx] = 0
 	else: players_pawns[0][idx] += roll
@@ -203,7 +203,7 @@ func _move_player_pawn(idx: int, roll: int):
 	else:
 		_next_turn()
 
-func _next_turn():
+func _next_turn() -> void:
 	current_turn = (current_turn + 1) % 4
 	if current_turn == 0:
 		status_label.text = "Sua Vez! Toque no dado para rolar."
@@ -217,9 +217,9 @@ func _next_turn():
 		var ai_roll = randi_range(1, 6)
 		dice_3d.roll(ai_roll, 0.6)
 
-func _handle_ai_roll(roll: int):
+func _handle_ai_roll(roll: int) -> void:
 	var p = current_turn
-	var movable = []
+	var movable: Array = []
 	for idx in range(PAWNS_PER_PLAYER):
 		var pos = players_pawns[p][idx]
 		if pos == -1 and roll == 6: movable.append(idx)
@@ -242,7 +242,7 @@ func _handle_ai_roll(roll: int):
 	else:
 		_next_turn()
 
-func _check_captures(active_p: int, active_idx: int):
+func _check_captures(active_p: int, active_idx: int) -> void:
 	var active_pos = players_pawns[active_p][active_idx]
 	if active_pos < 0 or active_pos >= 28: return
 	
@@ -261,7 +261,7 @@ func _check_captures(active_p: int, active_idx: int):
 					_sync_pawns_positions()
 
 func _check_win(p: int) -> bool:
-	var all_finished = true
+	var all_finished: bool = true
 	for idx in range(PAWNS_PER_PLAYER):
 		if players_pawns[p][idx] < 32:
 			all_finished = false
@@ -277,8 +277,8 @@ func _check_win(p: int) -> bool:
 		return true
 	return false
 
-func _on_btn_restart_pressed():
+func _on_btn_restart_pressed() -> void:
 	_start_new_game()
 
-func _on_btn_back_pressed():
+func _on_btn_back_pressed() -> void:
 	SceneManager.goto_scene("res://core/telas/MenuTabuleiro.tscn")

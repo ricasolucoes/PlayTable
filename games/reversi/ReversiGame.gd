@@ -18,12 +18,12 @@ var pieces_3d: Dictionary = {}
 @onready var btn_restart = $UI/VBoxContainer/BtnRestart
 @onready var touch_grid = $UI/CenterContainer/TouchGrid
 
-func _ready():
+func _ready() -> void:
 	board_3d.setup_board(8, 8, 0.75, "reversi_green")
 	_setup_touch_grid()
 	_start_new_game()
 
-func _setup_touch_grid():
+func _setup_touch_grid() -> void:
 	for c in touch_grid.get_children(): c.queue_free()
 	for r in range(8):
 		for c in range(8):
@@ -33,7 +33,7 @@ func _setup_touch_grid():
 			btn.pressed.connect(_on_cell_clicked.bind(r, c))
 			touch_grid.add_child(btn)
 
-func _start_new_game():
+func _start_new_game() -> void:
 	game_over = false
 	is_player_turn = true
 	btn_restart.hide()
@@ -42,13 +42,12 @@ func _start_new_game():
 	_sync_pieces_3d()
 	status_label.text = "Sua Vez! (Pretas / Obsidiana)"
 
-func _sync_pieces_3d():
+func _sync_pieces_3d() -> void:
 	for p in pieces_root.get_children(): p.queue_free()
 	pieces_3d.clear()
 	
-	var black_count = 0
-	var white_count = 0
-	
+	var black_count: int = 0
+	var white_count: int = 0
 	for r in range(8):
 		for c in range(8):
 			board_3d.reset_cell_material(r, c)
@@ -67,7 +66,7 @@ func _sync_pieces_3d():
 	score_label.text = "Você (Pretas): %d  |  IA (Brancas): %d" % [black_count, white_count]
 	_highlight_valid_moves()
 
-func _highlight_valid_moves():
+func _highlight_valid_moves() -> void:
 	for r in range(8):
 		for c in range(8):
 			board_3d.reset_cell_material(r, c)
@@ -77,7 +76,7 @@ func _highlight_valid_moves():
 		for pos in valids:
 			board_3d.highlight_cell(pos.x, pos.y, Color(0.2, 0.8, 0.4))
 
-func _on_cell_clicked(r: int, c: int):
+func _on_cell_clicked(r: int, c: int) -> void:
 	if game_over or not is_player_turn: return
 	
 	var pos = Vector2i(r, c)
@@ -104,9 +103,9 @@ func _on_cell_clicked(r: int, c: int):
 	_update_scores()
 	_after_player_move()
 
-func _update_scores():
-	var black_count = 0
-	var white_count = 0
+func _update_scores() -> void:
+	var black_count: int = 0
+	var white_count: int = 0
 	for r in range(8):
 		for c in range(8):
 			var v = grid_data.get_cell(r, c)
@@ -170,7 +169,7 @@ func _play_ai_turn():
 		await get_tree().create_timer(0.6).timeout
 		_play_ai_turn()
 
-func _end_game():
+func _end_game() -> void:
 	game_over = true
 	btn_restart.show()
 	var winner = ReversiRules.get_winner(grid_data)
@@ -182,8 +181,8 @@ func _end_game():
 	else:
 		status_label.text = "Empate!"
 
-func _on_btn_restart_pressed():
+func _on_btn_restart_pressed() -> void:
 	_start_new_game()
 
-func _on_btn_back_pressed():
+func _on_btn_back_pressed() -> void:
 	SceneManager.goto_scene("res://core/telas/MenuTabuleiro.tscn")

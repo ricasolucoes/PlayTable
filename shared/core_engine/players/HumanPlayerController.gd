@@ -1,3 +1,4 @@
+## Controller for human players.
 class_name HumanPlayerController
 extends IPlayerController
 

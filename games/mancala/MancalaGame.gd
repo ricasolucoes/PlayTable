@@ -2,7 +2,7 @@ extends Control
 
 ## MancalaGame: Mancala 3D com Tabuleiro Esculpido em Madeira Nobre e Gemas Preciosas
 
-var pits = []
+var pits: Array = []
 var is_player_turn: bool = true
 var game_over: bool = false
 var gems_3d: Dictionary = {}
@@ -40,12 +40,12 @@ const PIT_POSITIONS_3D = {
 
 const GEM_MATERIALS = ["ruby", "sapphire", "emerald", "amber", "gold"]
 
-func _ready():
+func _ready() -> void:
 	_setup_3d_mancala_board()
 	_setup_ui_buttons()
 	_start_new_game()
 
-func _setup_3d_mancala_board():
+func _setup_3d_mancala_board() -> void:
 	for c in board_root.get_children(): c.queue_free()
 	
 	# Base de madeira entalhada
@@ -70,7 +70,7 @@ func _setup_3d_mancala_board():
 		pit_mesh.material_override = MaterialFactory3D.get_wood_walnut()
 		board_root.add_child(pit_mesh)
 
-func _setup_ui_buttons():
+func _setup_ui_buttons() -> void:
 	for c in player_pits_container.get_children(): c.queue_free()
 	for i in range(6):
 		var btn = Button.new()
@@ -78,7 +78,7 @@ func _setup_ui_buttons():
 		btn.pressed.connect(_on_player_pit_clicked.bind(i))
 		player_pits_container.add_child(btn)
 
-func _start_new_game():
+func _start_new_game() -> void:
 	game_over = false
 	is_player_turn = true
 	btn_restart.hide()
@@ -91,15 +91,14 @@ func _start_new_game():
 	_sync_gems_3d()
 	_update_ui()
 
-func _sync_gems_3d():
+func _sync_gems_3d() -> void:
 	for g in gems_root.get_children(): g.queue_free()
 	gems_3d.clear()
 	
 	for pit_idx in range(14):
 		var count = pits[pit_idx]
 		var pit_pos = PIT_POSITIONS_3D[pit_idx]
-		var gem_list = []
-		
+		var gem_list: Array = []
 		for g_i in range(count):
 			var gem = preload("res://shared/3d/Token3D.tscn").instantiate()
 			gem.token_type = "sphere"
@@ -115,7 +114,7 @@ func _sync_gems_3d():
 			gem_list.append(gem)
 		gems_3d[pit_idx] = gem_list
 
-func _update_ui():
+func _update_ui() -> void:
 	player_store_label.text = "Sua Kalah:\n💎 %d" % pits[6]
 	ai_store_label.text = "Kalah IA:\n💎 %d" % pits[13]
 	
@@ -162,7 +161,7 @@ func _on_player_pit_clicked(pit_idx: int):
 	_play_ai_turn()
 
 func _play_ai_turn():
-	var valid_pits = []
+	var valid_pits: Array = []
 	for i in range(7, 13):
 		if pits[i] > 0: valid_pits.append(i)
 		
@@ -204,11 +203,11 @@ func _play_ai_turn():
 	_update_ui()
 
 func _check_game_over() -> bool:
-	var player_empty = true
+	var player_empty: bool = true
 	for i in range(6):
 		if pits[i] > 0: player_empty = false; break
 		
-	var ai_empty = true
+	var ai_empty: bool = true
 	for i in range(7, 13):
 		if pits[i] > 0: ai_empty = false; break
 		
@@ -231,8 +230,8 @@ func _check_game_over() -> bool:
 		return true
 	return false
 
-func _on_btn_restart_pressed():
+func _on_btn_restart_pressed() -> void:
 	_start_new_game()
 
-func _on_btn_back_pressed():
+func _on_btn_back_pressed() -> void:
 	SceneManager.goto_scene("res://core/telas/MenuTabuleiro.tscn")

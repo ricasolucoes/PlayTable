@@ -1,6 +1,8 @@
 class_name MinesweeperRules
 extends RefCounted
 
+## Rules and logic for Campo Minado.
+
 const Grid2DScript = preload("res://shared/core_engine/board/Grid2D.gd")
 
 const ROWS = 9
@@ -9,7 +11,7 @@ const MINES_COUNT = 10
 const TOTAL_MINES = 10
 
 static func count_flagged(grid: Grid2D) -> int:
-	var count = 0
+	var count: int = 0
 	for r in range(ROWS):
 		for c in range(COLS):
 			var cell = grid.get_cell(r, c)
@@ -30,7 +32,7 @@ static func create_empty_grid() -> Grid2D:
 	return grid
 
 static func generate_mines(grid: Grid2D, safe_r: int, safe_c: int, count: int = MINES_COUNT) -> void:
-	var placed = 0
+	var placed: int = 0
 	while placed < count:
 		var r = randi() % ROWS
 		var c = randi() % COLS
@@ -49,7 +51,7 @@ static func generate_mines(grid: Grid2D, safe_r: int, safe_c: int, count: int = 
 			var cell = grid.get_cell(r, c)
 			if cell["is_mine"]: continue
 			
-			var mine_count = 0
+			var mine_count: int = 0
 			var neighbors = grid.get_all_neighbors(r, c)
 			for n in neighbors:
 				if grid.get_cell(n.x, n.y)["is_mine"]:

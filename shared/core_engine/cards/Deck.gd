@@ -1,3 +1,4 @@
+## Represents a deck of cards.
 class_name Deck
 extends RefCounted
 
@@ -5,7 +6,7 @@ const CardScript = preload("res://shared/core_engine/cards/Card.gd")
 
 var cards: Array[Card] = []
 
-func _init(initial_cards: Array[Card] = []):
+func _init(initial_cards: Array[Card] = []) -> void:
 	cards = initial_cards.duplicate()
 
 func shuffle() -> void:
@@ -28,7 +29,7 @@ func add_card(card: Card) -> void:
 	if card != null:
 		cards.append(card)
 
-func add_cards(new_cards: Array) -> void:
+func add_cards(new_cards: Array[Variant]) -> void:
 	for c in new_cards:
 		if c is Card:
 			cards.append(c)
@@ -37,7 +38,7 @@ func push_front(card: Card) -> void:
 	if card != null:
 		cards.push_front(card)
 
-func recycle_from(source_cards: Array) -> void:
+func recycle_from(source_cards: Array[Variant]) -> void:
 	for c in source_cards:
 		if c is Card:
 			var copy = c.clone()
@@ -100,7 +101,7 @@ static func create_uno_deck() -> Deck:
 		
 	return deck
 
-static func create_memory_deck(custom_emojis: Array = []) -> Deck:
+static func create_memory_deck(custom_emojis: Array[String] = []) -> Deck:
 	var deck = Deck.new()
 	var emojis = custom_emojis
 	if emojis.is_empty():

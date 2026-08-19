@@ -18,18 +18,18 @@ graph TD
 
     style A fill:#2e7d32,stroke:#1b5e20,color:#fff
     style B fill:#2e7d32,stroke:#1b5e20,color:#fff
-    style C fill:#f9a825,stroke:#f57f17,color:#000
-    style D fill:#1565c0,stroke:#0d47a1,color:#fff
-    style E fill:#1565c0,stroke:#0d47a1,color:#fff
+    style C fill:#2e7d32,stroke:#1b5e20,color:#fff
+    style D fill:#2e7d32,stroke:#1b5e20,color:#fff
+    style E fill:#2e7d32,stroke:#1b5e20,color:#fff
     style F fill:#6a1b9a,stroke:#4a148c,color:#fff
 ```
 
 ### Racional de cada etapa:
 1. **Quatro em Linha:** Aprender a estrutura básica do motor, gerenciador de cenas, verificação de vitória vetorial e animação suave com *tweens*. *(✅ Concluído)*
 2. **Batalha Naval:** Praticar grids múltiplos (ataque vs defesa), posicionamento procedural de frotas e IA heurística de caça (*Hunt & Target*). *(✅ Concluído)*
-3. **Reversi:** Aprofundar lógica matemática e implementar algoritmos de tomada de decisão com Minimax e poda Alfa-Beta para oponentes inteligentes. *(🟡 Em andamento)*
-4. **Dominó:** Lidar com regras brasileiras, compra de pedras, fechamento de mesa e suporte a 2 a 4 jogadores (IA ou local compartilhado). *(📋 Próximo)*
-5. **Solitário:** Criar uma experiência de cartas rica, com validação de regras complexas, pilhas visuais, movimentação fluida e histórico para botão *Desfazer*. *(📋 Próximo)*
+3. **Reversi:** Aprofundar lógica matemática e implementar algoritmos de tomada de decisão com Minimax e poda Alfa-Beta para oponentes inteligentes. *(✅ Concluído)*
+4. **Dominó:** Lidar com regras brasileiras, compra de pedras, fechamento de mesa e suporte a 2 a 4 jogadores (IA ou local compartilhado). *(✅ Concluído)*
+5. **Solitário:** Criar uma experiência de cartas rica, com validação de regras complexas, pilhas visuais, movimentação fluida e histórico para botão *Desfazer*. *(✅ Concluído)*
 6. **Truco / Jogos Brasileiros:** Projeto principal com IA de blefe, contagem de tentos e identidade visual brasileira original. *(💡 Backlog Principal)*
 
 ---

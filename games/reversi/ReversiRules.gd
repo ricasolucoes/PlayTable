@@ -1,6 +1,8 @@
 class_name ReversiRules
 extends RefCounted
 
+## Rules and logic for Reversi.
+
 const Grid2DScript = preload("res://shared/core_engine/board/Grid2D.gd")
 const BoardCoordScript = preload("res://shared/core_engine/board/BoardCoord.gd")
 
@@ -159,7 +161,7 @@ static func minimax(grid: Grid2D, depth: int, alpha: int, beta: int, maximizing:
 		return min_eval
 
 static func evaluate_board(grid: Grid2D, ai_piece: int) -> int:
-	var score = 0
+	var score: int = 0
 	var opponent = 2 if ai_piece == 1 else 1
 	for r in range(ROWS):
 		for c in range(COLS):

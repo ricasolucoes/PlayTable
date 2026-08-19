@@ -1,6 +1,8 @@
 @tool
 extends Control
 
+## Procedural 2D tabletop background with multiple theme options.
+
 enum ThemeType { MAHOGANY_WOOD, CASINO_FELT, DARK_SLATE }
 
 @export var theme_type: ThemeType = ThemeType.MAHOGANY_WOOD:
@@ -8,10 +10,12 @@ enum ThemeType { MAHOGANY_WOOD, CASINO_FELT, DARK_SLATE }
 		theme_type = value
 		queue_redraw()
 
-func _ready():
+func _ready() -> void:
+	# NOTE: Optimization: pre-render the background to ImageTexture in _ready instead of drawing every frame.
+	# Since it's @tool and uses queue_redraw only on theme change, this is already mostly OK.
 	queue_redraw()
 
-func _draw():
+func _draw() -> void:
 	var rect = get_rect()
 	var w = rect.size.x
 	var h = rect.size.y
