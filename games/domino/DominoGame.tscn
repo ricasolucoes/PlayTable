@@ -1,0 +1,155 @@
+[gd_scene load_steps=2 format=3 uid="uid://dominogameuid"]
+
+[ext_resource type="Script" path="res://games/domino/DominoGame.gd" id="1_script"]
+
+[node name="DominoGame" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_script")
+
+[node name="Background" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.1, 0.18, 0.12, 1)
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 20.0
+offset_top = 30.0
+offset_right = -20.0
+offset_bottom = -30.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 15
+
+[node name="TopBar" type="HBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 20
+
+[node name="BtnBack" type="Button" parent="VBoxContainer/TopBar"]
+custom_minimum_size = Vector2(100, 50)
+layout_mode = 2
+text = "Voltar"
+
+[node name="Title" type="Label" parent="VBoxContainer/TopBar"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 32
+text = "Dominó"
+
+[node name="AIArea" type="VBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+
+[node name="AIInfoLabel" type="Label" parent="VBoxContainer/AIArea"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.8, 0.85, 0.9, 1)
+theme_override_font_sizes/font_size = 20
+text = "IA: 7 pedras | Dorme: 14 pedras"
+horizontal_alignment = 1
+
+[node name="StatusLabel" type="Label" parent="VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+text = "Sua Vez!"
+horizontal_alignment = 1
+
+[node name="TableArea" type="VBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 10
+
+[node name="EndsLabel" type="Label" parent="VBoxContainer/TableArea"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+text = "Pontas: [ 6 ] <-----> [ 6 ]"
+horizontal_alignment = 1
+
+[node name="ScrollContainer" type="ScrollContainer" parent="VBoxContainer/TableArea"]
+layout_mode = 2
+size_flags_vertical = 3
+vertical_scroll_mode = 0
+
+[node name="ChainContainer" type="HBoxContainer" parent="VBoxContainer/TableArea/ScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/separation = 8
+alignment = 1
+
+[node name="Actions" type="HBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 15
+alignment = 1
+
+[node name="BtnPlayLeft" type="Button" parent="VBoxContainer/Actions"]
+visible = false
+custom_minimum_size = Vector2(160, 50)
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "👈 Ponta Esquerda"
+
+[node name="BtnPlayRight" type="Button" parent="VBoxContainer/Actions"]
+visible = false
+custom_minimum_size = Vector2(160, 50)
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "👉 Ponta Direita"
+
+[node name="BtnDraw" type="Button" parent="VBoxContainer/Actions"]
+visible = false
+custom_minimum_size = Vector2(200, 50)
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "📥 Comprar do Dorme"
+
+[node name="BtnPass" type="Button" parent="VBoxContainer/Actions"]
+visible = false
+custom_minimum_size = Vector2(160, 50)
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "⏭️ Passar a Vez"
+
+[node name="BtnRestart" type="Button" parent="VBoxContainer/Actions"]
+visible = false
+custom_minimum_size = Vector2(200, 50)
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "🔄 Novo Jogo"
+
+[node name="PlayerArea" type="VBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Label" type="Label" parent="VBoxContainer/PlayerArea"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "Sua Mão (Selecione a pedra para jogar):"
+horizontal_alignment = 1
+
+[node name="ScrollContainer" type="ScrollContainer" parent="VBoxContainer/PlayerArea"]
+custom_minimum_size = Vector2(0, 90)
+layout_mode = 2
+vertical_scroll_mode = 0
+
+[node name="HandContainer" type="HBoxContainer" parent="VBoxContainer/PlayerArea/ScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 10
+alignment = 1
+
+[connection signal="pressed" from="VBoxContainer/TopBar/BtnBack" to="." method="_on_btn_back_pressed"]
+[connection signal="pressed" from="VBoxContainer/Actions/BtnPlayLeft" to="." method="_on_btn_play_left_pressed"]
+[connection signal="pressed" from="VBoxContainer/Actions/BtnPlayRight" to="." method="_on_btn_play_right_pressed"]
+[connection signal="pressed" from="VBoxContainer/Actions/BtnDraw" to="." method="_on_btn_draw_pressed"]
+[connection signal="pressed" from="VBoxContainer/Actions/BtnPass" to="." method="_on_btn_pass_pressed"]
+[connection signal="pressed" from="VBoxContainer/Actions/BtnRestart" to="." method="_on_btn_restart_pressed"]
