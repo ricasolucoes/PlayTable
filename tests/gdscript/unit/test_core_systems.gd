@@ -1,0 +1,270 @@
+extends GutTest
+
+## Sistemas centrais — exercita o GDScript de producao.
+##
+## Especificacao herdada de tests/test_core_systems.py, que testava mocks
+## Python de SaveManager, Grid2D, Deck, TurnManager e GameAction. Aqui os
+## alvos sao os autoloads e as classes de shared/core_engine.
+
+
+# ------------------------------------------------------------------ SaveManager
+
+func before_each() -> void:
+	_backup_settings = SaveManager.settings.duplicate(true)
+
+
+func after_each() -> void:
+	SaveManager.settings = _backup_settings
+	SaveManager.save_data()
+
+
+var _backup_settings: Dictionary = {}
+
+
+func test_configuracoes_padrao() -> void:
+	SaveManager.settings = {"master_volume": 1.0, "theme_dark": true}
+	assert_eq(SaveManager.get_setting("master_volume"), 1.0, "volume cheio")
+	assert_eq(SaveManager.get_setting("theme_dark"), true, "tema escuro")
+
+
+func test_chave_inexistente_devolve_o_padrao_pedido() -> void:
+	assert_eq(SaveManager.get_setting("chave_que_nao_existe", "valor_padrao"), "valor_padrao")
+	assert_null(SaveManager.get_setting("chave_que_nao_existe"), "sem padrao devolve null")
+
+
+func test_gravar_e_reler_do_disco() -> void:
+	SaveManager.set_setting("master_volume", 0.75)
+	SaveManager.set_setting("theme_dark", false)
+	# Zera a memoria e recarrega do arquivo, como faz um novo boot.
+	SaveManager.settings = {}
+	SaveManager.load_data()
+	assert_eq(SaveManager.get_setting("master_volume"), 0.75, "volume persistido")
+	assert_eq(SaveManager.get_setting("theme_dark"), false, "tema persistido")
+
+
+func test_arquivo_de_configuracao_fica_em_user() -> void:
+	SaveManager.set_setting("master_volume", 0.5)
+	assert_true(FileAccess.file_exists(SaveManager.SAVE_PATH),
+		"arquivo criado em %s" % SaveManager.SAVE_PATH)
+
+
+# ----------------------------------------------------------------------- Grid2D
+
+func test_grid_respeita_os_limites() -> void:
+	var g := Grid2D.new(5, 5, 0)
+	assert_eq(g.rows, 5, "5 linhas")
+	assert_eq(g.cols, 5, "5 colunas")
+	assert_eq(g.cells.size(), 25, "25 celulas")
+	assert_true(g.is_valid(0, 0), "quina superior esquerda")
+	assert_true(g.is_valid(4, 4), "quina inferior direita")
+	assert_false(g.is_valid(5, 5), "fora por baixo")
+	assert_false(g.is_valid(-1, 0), "fora por cima")
+
+
+func test_leitura_e_escrita_de_celula() -> void:
+	var g := Grid2D.new(5, 5, 0)
+	g.set_cell(2, 2, 99)
+	assert_eq(g.get_cell(2, 2), 99, "valor gravado")
+	assert_null(g.get_cell(9, 9), "fora do grid devolve null")
+	g.set_cell(9, 9, 42)
+	assert_eq(g.count_matching(42), 0, "escrita fora do grid e ignorada")
+
+
+func test_indice_e_coordenada_sao_inversos() -> void:
+	var g := Grid2D.new(6, 7, 0)
+	for r in range(6):
+		for c in range(7):
+			var idx := g.get_index(r, c)
+			assert_eq(g.get_coord(idx), Vector2i(r, c), "ida e volta de (%d,%d)" % [r, c])
+
+
+func test_vizinhos_ortogonais_e_diagonais() -> void:
+	var g := Grid2D.new(5, 5, 0)
+	assert_eq(g.get_orthogonal_neighbors(0, 0).size(), 2, "quina tem 2 vizinhos ortogonais")
+	assert_eq(g.get_orthogonal_neighbors(2, 2).size(), 4, "centro tem 4")
+	assert_eq(g.get_all_neighbors(2, 2).size(), 8, "centro tem 8 no total")
+	assert_eq(g.get_all_neighbors(0, 0).size(), 3, "quina tem 3 no total")
+
+
+func test_sequencia_bidirecional() -> void:
+	var g := Grid2D.new(6, 7, 0)
+	for c in range(1, 5):
+		g.set_cell(5, c, 1)
+	assert_eq(g.count_streak_bidirectional(Vector2i(5, 2), Vector2i(0, 1), 1), 4,
+		"quatro seguidas na horizontal")
+	assert_eq(g.count_consecutive(Vector2i(5, 2), Vector2i(0, 1), 1), 2, "duas a direita")
+
+
+func test_clone_e_copia_profunda() -> void:
+	var g := Grid2D.new(6, 7, 0)
+	g.set_cell(5, 2, 1)
+	var copia: Grid2D = g.clone()
+	assert_eq(copia.get_cell(5, 2), 1, "copia carrega o valor")
+	copia.set_cell(5, 2, 2)
+	assert_eq(g.get_cell(5, 2), 1, "o original nao muda junto")
+
+
+func test_serializacao_do_grid() -> void:
+	var g := Grid2D.new(3, 3, 0)
+	g.set_cell(1, 1, 7)
+	var restaurado: Grid2D = Grid2D.from_dict(g.to_dict())
+	assert_eq(restaurado.rows, g.rows, "linhas")
+	assert_eq(restaurado.cols, g.cols, "colunas")
+	assert_eq(restaurado.cells, g.cells, "celulas iguais")
+
+
+func test_is_full_e_count_matching() -> void:
+	var g := Grid2D.new(2, 2, 0)
+	assert_true(g.is_full(null), "nenhuma celula e null")
+	assert_false(g.is_full(0), "todas sao 0")
+	g.fill(1)
+	assert_true(g.is_full(0), "nenhuma celula e 0")
+	assert_eq(g.count_matching(1), 4, "quatro celulas com 1")
+	assert_eq(g.find_all_matching(1).size(), 4, "quatro posicoes achadas")
+
+
+# ------------------------------------------------------------------- Card/Deck
+
+func test_baralho_frances_tem_52_cartas_metade_vermelha() -> void:
+	var baralho: Deck = Deck.create_standard_52()
+	assert_eq(baralho.size(), 52, "52 cartas")
+	var vermelhas := 0
+	var pretas := 0
+	for c in baralho.cards:
+		if c.is_red():
+			vermelhas += 1
+		elif c.is_black():
+			pretas += 1
+	assert_eq(vermelhas, 26, "26 vermelhas")
+	assert_eq(pretas, 26, "26 pretas")
+
+
+func test_baralho_com_as_alto() -> void:
+	var baralho: Deck = Deck.create_standard_52(true)
+	var ases := 0
+	for c in baralho.cards:
+		if c.value == 14:
+			ases += 1
+		assert_ne(c.value, 1, "nao sobra as valendo 1")
+	assert_eq(ases, 4, "quatro ases valendo 14")
+
+
+func test_baralho_uno_tem_108_cartas() -> void:
+	assert_eq(Deck.create_uno_deck().size(), 108, "108 cartas")
+
+
+func test_baralho_da_memoria_tem_pares() -> void:
+	var baralho: Deck = Deck.create_memory_deck()
+	assert_eq(baralho.size(), 16, "8 pares")
+	var por_par := {}
+	for c in baralho.cards:
+		var pid: int = c.custom_data["pair_id"]
+		por_par[pid] = por_par.get(pid, 0) + 1
+		assert_false(c.is_face_up, "cartas comecam fechadas")
+	assert_eq(por_par.size(), 8, "8 pair_ids distintos")
+	for pid in por_par:
+		assert_eq(por_par[pid], 2, "cada par tem 2 cartas")
+
+
+func test_comprar_cartas_esvazia_o_baralho() -> void:
+	var baralho: Deck = Deck.create_standard_52()
+	assert_eq(baralho.draw_many(5).size(), 5, "5 cartas na mao")
+	assert_eq(baralho.size(), 47, "47 no baralho")
+	baralho.draw_many(100)
+	assert_true(baralho.is_empty(), "baralho esgotado")
+	assert_null(baralho.draw(), "comprar de baralho vazio devolve null")
+
+
+func test_serializacao_de_carta() -> void:
+	var c := Card.new(12, Card.Suit.HEARTS)
+	var copia: Card = c.clone()
+	assert_eq(copia.value, 12, "valor")
+	assert_eq(copia.suit, Card.Suit.HEARTS, "naipe")
+	assert_eq(copia.color_type, Card.ColorType.RED, "copas e vermelho")
+	assert_eq(copia.get_short_name(), "Q♥", "nome curto")
+
+
+# ------------------------------------------------------------------ TurnManager
+
+func test_turnos_giram_em_circulo() -> void:
+	var jogadores: Array[Player] = []
+	for i in range(4):
+		jogadores.append(Player.new(i + 1, "P%d" % (i + 1)))
+	var tm := TurnManager.new(jogadores)
+	tm.start_game()
+	assert_true(tm.is_active, "partida ativa")
+	for i in range(12):
+		assert_eq(tm.get_current_player().name, "P%d" % ((i % 4) + 1), "volta %d" % i)
+		tm.next_turn()
+
+
+func test_contador_de_turnos_sobe() -> void:
+	var jogadores: Array[Player] = [Player.new(1, "A"), Player.new(2, "B")]
+	var tm := TurnManager.new(jogadores)
+	tm.start_game()
+	assert_eq(tm.turn_count, 1, "comeca em 1")
+	tm.next_turn()
+	tm.next_turn()
+	assert_eq(tm.turn_count, 3, "duas passagens depois")
+
+
+func test_turn_manager_sem_jogadores_nao_quebra() -> void:
+	var tm := TurnManager.new()
+	tm.start_game()
+	assert_false(tm.is_active, "nao ativa sem jogadores")
+	assert_null(tm.next_turn(), "nao ha proximo")
+	assert_null(tm.get_current_player(), "nao ha atual")
+
+
+func test_busca_de_jogador_por_id() -> void:
+	var jogadores: Array[Player] = [Player.new(7, "Sete"), Player.new(9, "Nove")]
+	var tm := TurnManager.new(jogadores)
+	assert_eq(tm.get_player_by_id(9).name, "Nove", "achou pelo id")
+	assert_null(tm.get_player_by_id(42), "id inexistente")
+
+
+func test_fim_de_partida_desativa_o_turn_manager() -> void:
+	var vencedor := Player.new(1, "A")
+	var tm := TurnManager.new([vencedor, Player.new(2, "B")] as Array[Player])
+	tm.start_game()
+	tm.end_game(vencedor, "batida")
+	assert_false(tm.is_active, "partida encerrada")
+	assert_null(tm.next_turn(), "nao passa mais turno")
+
+
+# ------------------------------------------------------------------- GameAction
+
+func test_serializacao_de_acao() -> void:
+	var acao := GameAction.new(1, "place_stone", {"row": 4, "col": 4}, 1720000000.0)
+	var d: Dictionary = acao.to_dict()
+	assert_eq(d["player_id"], 1, "id do jogador")
+	assert_eq(d["action_type"], "place_stone", "tipo")
+	assert_eq(d["payload"]["row"], 4, "linha no payload")
+	assert_eq(d["timestamp"], 1720000000.0, "carimbo preservado")
+
+
+func test_ida_e_volta_por_json() -> void:
+	var acao := GameAction.new(2, "play_card", {"card": "Q♥"}, 1720000000.0)
+	var voltou: GameAction = GameAction.from_json(acao.to_json())
+	assert_not_null(voltou, "json valido")
+	assert_eq(voltou.player_id, 2, "id")
+	assert_eq(voltou.action_type, "play_card", "tipo")
+	assert_eq(voltou.payload["card"], "Q♥", "payload")
+	assert_eq(voltou.timestamp, 1720000000.0, "carimbo")
+
+
+func test_json_invalido_devolve_null() -> void:
+	assert_null(GameAction.from_json("isto nao e json"), "texto solto")
+	assert_null(GameAction.from_json("[1, 2, 3]"), "json que nao e objeto")
+
+
+func test_carimbo_automatico_quando_nao_informado() -> void:
+	var acao := GameAction.new(1, "draw_tile")
+	assert_true(acao.timestamp > 0.0, "carimbo preenchido pelo relogio")
+
+
+func test_payload_e_copiado_e_nao_referenciado() -> void:
+	var payload := {"row": 1}
+	var acao := GameAction.new(1, "move", payload)
+	payload["row"] = 99
+	assert_eq(acao.payload["row"], 1, "a acao guardou uma copia")
