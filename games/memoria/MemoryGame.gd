@@ -1,4 +1,4 @@
-extends Control
+extends BaseGame
 
 ## Memory matching card game implementation.
 
@@ -11,17 +11,17 @@ var pairs_found: int = 0
 const TOTAL_PAIRS: int = 8
 var moves_count: int = 0
 var is_checking: bool = false
-var game_over: bool = false
 
 @onready var grid_container = $VBoxContainer/CenterContainer/Grid
 @onready var pairs_label = $VBoxContainer/ScoreBoard/PairsPanel/HBox/Value
 @onready var moves_label = $VBoxContainer/ScoreBoard/MovesPanel/HBox/Value
-@onready var status_label = $VBoxContainer/StatusCard/StatusLabel
 @onready var win_modal = $WinModal
 @onready var win_modal_title = $WinModal/Panel/VBox/WinTitle
 @onready var win_modal_sub = $WinModal/Panel/VBox/WinSub
 
 func _ready() -> void:
+	menu_scene_path = MENU_CARTAS
+	status_label = $VBoxContainer/StatusCard/StatusLabel
 	_start_new_game()
 
 func _start_new_game() -> void:
@@ -128,22 +128,10 @@ func _handle_game_won() -> void:
 	
 	win_modal_sub.text = "Você encontrou todos os 8 pares em " + str(moves_count) + " jogadas!\nClassificação: " + rating
 	
-	await get_tree().create_timer(0.6).timeout
-	win_modal.visible = true
-	win_modal.modulate.a = 0.0
-	var tw = create_tween()
-	tw.tween_property(win_modal, "modulate:a", 1.0, 0.3)
+	reveal_result_modal(win_modal)
 
 func _update_ui() -> void:
 	pairs_label.text = str(pairs_found) + " / " + str(TOTAL_PAIRS)
 	moves_label.text = str(moves_count)
 	if pairs_found == 0 and moves_count == 0:
 		status_label.text = "Toque em uma carta para começar"
-
-func _on_restart_pressed() -> void:
-	if AudioManager: AudioManager.play_click()
-	_start_new_game()
-
-func _on_back_pressed() -> void:
-	if AudioManager: AudioManager.play_click()
-	SceneManager.goto_scene("res://core/telas/MenuCartas.tscn")
