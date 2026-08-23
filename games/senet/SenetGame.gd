@@ -1,4 +1,4 @@
-extends Control
+extends GridGame
 
 ## SenetGame: Senet 3D do Antigo Egito com Tabuleiro Entalhado 3x10 e Peças Conoidais em Ouro/Obsidiana
 
@@ -18,40 +18,34 @@ var current_throw: int = 0
 var has_extra_throw: bool = false
 var can_throw: bool = true
 var is_player_turn: bool = true
-var game_over: bool = false
 var valid_moves: Array = []
 var pieces_3d: Dictionary = {}
 
-@onready var env_3d: TabletopEnvironment3D = $TabletopEnvironment3D
 @onready var board_3d: Board3D = $Board3D
 @onready var pieces_root: Node3D = $PiecesRoot
-@onready var status_label = $UI/VBoxContainer/StatusLabel
 @onready var score_label = $UI/VBoxContainer/ScoreLabel
 @onready var btn_cast_sticks = $UI/SticksArea/BtnCastSticks
 @onready var sticks_label = $UI/SticksArea/SticksLabel
-@onready var btn_restart = $UI/Actions/BtnRestart
-@onready var touch_grid = $UI/CenterContainer/TouchGrid
 
 func _ready() -> void:
+	env_3d = $TabletopEnvironment3D
+	status_label = $UI/VBoxContainer/StatusLabel
+	btn_restart = $UI/Actions/BtnRestart
 	board_3d.setup_board(3, 10, 0.65, "wood_checkered")
-	_setup_touch_grid()
+	build_touch_grid($UI/CenterContainer/TouchGrid, 3, 10, Vector2(34, 38), _on_cell_clicked)
 	_start_new_game()
 
-func _setup_touch_grid() -> void:
-	for c in touch_grid.get_children(): c.queue_free()
-	# Senet 3x10 grid serpentine
-	for r in range(3):
-		for c in range(10):
-			var sq_num: int = 0
-			if r == 0: sq_num = c + 1
-			elif r == 1: sq_num = 20 - c
-			else: sq_num = 21 + c
-			
-			var btn = Button.new()
-			btn.custom_minimum_size = Vector2(34, 38)
-			btn.flat = true
-			btn.pressed.connect(_on_square_clicked.bind(sq_num))
-			touch_grid.add_child(btn)
+## A grade compartilhada entrega (linha, coluna); o tabuleiro do Senet numera as
+## 30 casas em serpentina, e e por numero que o resto do jogo raciocina.
+func _on_cell_clicked(r: int, c: int) -> void:
+	_on_square_clicked(_get_square_number(r, c))
+
+func _get_square_number(r: int, c: int) -> int:
+	if r == 0:
+		return c + 1
+	elif r == 1:
+		return 20 - c
+	return 21 + c
 
 func _get_square_row_col(sq_num: int) -> Vector2i:
 	if sq_num <= 10:
@@ -237,16 +231,7 @@ func _play_ai_move():
 	_execute_move(2, chosen["from"], chosen["to"])
 
 func _end_game(winner: int) -> void:
-	game_over = true
-	btn_restart.show()
 	if winner == 1:
-		status_label.text = "🏆 Vitória dos Deuses! Você venceu o Senet 3D!"
-		env_3d.celebrate_win()
+		finish_game("🏆 Vitória dos Deuses! Você venceu o Senet 3D!", true)
 	else:
-		status_label.text = "A IA alcançou a imortalidade primeiro!"
-
-func _on_btn_restart_pressed() -> void:
-	_start_new_game()
-
-func _on_btn_back_pressed() -> void:
-	SceneManager.goto_scene("res://core/telas/MenuTabuleiro.tscn")
+		finish_game("A IA alcançou a imortalidade primeiro!")

@@ -175,3 +175,20 @@ func test_partida_completa_nao_trava() -> void:
 				lado = 2 if lado == 1 else 1
 		assert_true(jogo.game_over, "a partida terminou em menos de 3000 rodadas")
 		assert_true(jogo.player_borne_off >= 5 or jogo.ai_borne_off >= 5, "houve vencedor")
+
+
+func test_numero_da_casa_e_a_volta_da_linha_e_coluna() -> void:
+	# A grade de toque compartilhada entrega (linha, coluna) e o jogo raciocina
+	# por numero de casa: as duas conversoes tem de ser inversas uma da outra.
+	var jogo := _jogo()
+	for sq in range(1, 31):
+		var rc: Vector2i = jogo._get_square_row_col(sq)
+		assert_eq(jogo._get_square_number(rc.x, rc.y), sq, "casa %d fecha o ciclo" % sq)
+	var vistos: Array[int] = []
+	for r in range(3):
+		for c in range(10):
+			var sq: int = jogo._get_square_number(r, c)
+			assert_true(sq >= 1 and sq <= 30, "(%d,%d) cai dentro do tabuleiro" % [r, c])
+			assert_false(sq in vistos, "casa %d aparece uma vez so" % sq)
+			vistos.append(sq)
+	assert_eq(vistos.size(), 30, "as 30 casas cobertas")
