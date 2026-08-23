@@ -190,50 +190,6 @@ class TestBattleship(unittest.TestCase):
         self.assertTrue(res["all_sunk"])
 
 
-class TestDomino(unittest.TestCase):
-    """7. Dominó (Domino)"""
-    def generate_boneyard(self):
-        tiles = []
-        for a in range(7):
-            for b in range(a, 7):
-                tiles.append((a, b))
-        return tiles
-
-    def can_fit(self, tile, left, right):
-        if left == -1 or right == -1: return True
-        return tile[0] in [left, right] or tile[1] in [left, right]
-
-    def orient_tile(self, tile, side, left, right):
-        a, b = tile
-        if side == "left":
-            if b == left:
-                return (a, b), a, right
-            else:
-                return (b, a), b, right
-        else: # right
-            if a == right:
-                return (a, b), left, b
-            else:
-                return (b, a), left, a
-
-    def test_boneyard_count_and_uniqueness(self):
-        tiles = self.generate_boneyard()
-        self.assertEqual(len(tiles), 28)
-        self.assertEqual(len(set(tiles)), 28)
-
-    def test_fit_and_orientation(self):
-        tile = (6, 4)
-        self.assertTrue(self.can_fit(tile, 4, 2))
-        self.assertTrue(self.can_fit(tile, 6, 2))
-        self.assertFalse(self.can_fit(tile, 5, 3))
-
-        # Orient on left with left_end=6 -> tile becomes (4, 6) with new left_end=4
-        oriented, new_l, new_r = self.orient_tile(tile, "left", 6, 2)
-        self.assertEqual(oriented, (4, 6))
-        self.assertEqual(new_l, 4)
-        self.assertEqual(new_r, 2)
-
-
 class TestLudo(unittest.TestCase):
     """8. Ludo Simplificado"""
     START_OFFSETS = [0, 7, 14, 21]

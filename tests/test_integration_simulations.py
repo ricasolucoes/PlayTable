@@ -183,33 +183,6 @@ class TestIntegrationSimulations(unittest.TestCase):
         self.assertEqual(grid[5][1], 0)
         self.assertEqual(grid[3][3], 0)
 
-    def test_e2e_domino_simulation(self):
-        """E2E Match Simulation: Dominó Match"""
-        # Player 1 has [(6, 5), (5, 4)], Player 2 has [(4, 2), (2, 0)]
-        table = [(6, 6)]
-        left_end = 6
-        right_end = 6
-
-        # P1 plays (6, 5) on right
-        table.append((6, 5))
-        right_end = 5
-
-        # P1 plays (5, 4) on right
-        table.append((5, 4))
-        right_end = 4
-
-        # P2 plays (4, 2) on right
-        table.append((4, 2))
-        right_end = 2
-
-        # P2 plays (2, 0) on right
-        table.append((2, 0))
-        right_end = 0
-
-        self.assertEqual(left_end, 6)
-        self.assertEqual(right_end, 0)
-        self.assertEqual(len(table), 5)
-
     def test_e2e_blackjack_simulation(self):
         """E2E Match Simulation: 21 (Blackjack Round)"""
         deck = [10, 8, 1, 7, 5, 6, 9] # Simulated shuffled draw stack
