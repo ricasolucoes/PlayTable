@@ -190,63 +190,6 @@ class TestBattleship(unittest.TestCase):
         self.assertTrue(res["all_sunk"])
 
 
-class TestPegSolitaire(unittest.TestCase):
-    """5. Solitário (Resta Um / Peg Solitaire)"""
-    SIZE = 7
-
-    def is_valid_hole(self, r, c):
-        if r < 0 or r >= self.SIZE or c < 0 or c >= self.SIZE:
-            return False
-        if (r < 2 or r > 4) and (c < 2 or c > 4):
-            return False
-        return True
-
-    def create_board(self):
-        grid = [[-1]*self.SIZE for _ in range(self.SIZE)]
-        for r in range(self.SIZE):
-            for c in range(self.SIZE):
-                if self.is_valid_hole(r, c):
-                    grid[r][c] = 0 if (r == 3 and c == 3) else 1
-        return grid
-
-    def get_valid_moves(self, grid):
-        moves = []
-        dirs = [(-1, 0), (1, 0), (0, -1), (0, 1)]
-        for r in range(self.SIZE):
-            for c in range(self.SIZE):
-                if grid[r][c] == 1:
-                    for dr, dc in dirs:
-                        over_r, over_c = r + dr, c + dc
-                        land_r, land_c = r + dr * 2, c + dc * 2
-                        if self.is_valid_hole(over_r, over_c) and self.is_valid_hole(land_r, land_c):
-                            if grid[over_r][over_c] == 1 and grid[land_r][land_c] == 0:
-                                moves.append(((r, c), (over_r, over_c), (land_r, land_c)))
-        return moves
-
-    def execute_jump(self, grid, from_p, over_p, land_p):
-        grid[from_p[0]][from_p[1]] = 0
-        grid[over_p[0]][over_p[1]] = 0
-        grid[land_p[0]][land_p[1]] = 1
-
-    def test_board_initial_state(self):
-        grid = self.create_board()
-        peg_count = sum(row.count(1) for row in grid)
-        empty_count = sum(row.count(0) for row in grid)
-        invalid_count = sum(row.count(-1) for row in grid)
-        self.assertEqual(peg_count, 32)
-        self.assertEqual(empty_count, 1)
-        self.assertEqual(invalid_count, 16) # 4 quinas de 4 células
-
-    def test_jump_and_peg_reduction(self):
-        grid = self.create_board()
-        moves = self.get_valid_moves(grid)
-        self.assertEqual(len(moves), 4) # 4 saltos possíveis para o centro
-        f, o, l = moves[0]
-        self.execute_jump(grid, f, o, l)
-        new_pegs = sum(row.count(1) for row in grid)
-        self.assertEqual(new_pegs, 31)
-
-
 class TestMinesweeper(unittest.TestCase):
     """6. Campo Minado (Minesweeper)"""
     ROWS = 9

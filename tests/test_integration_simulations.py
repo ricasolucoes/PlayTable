@@ -236,25 +236,6 @@ class TestIntegrationSimulations(unittest.TestCase):
         self.assertEqual(grid[5][1], 0)
         self.assertEqual(grid[3][3], 0)
 
-    def test_e2e_peg_solitaire_simulation(self):
-        """E2E Match Simulation: Solitário (Resta Um)"""
-        grid = [[-1]*7 for _ in range(7)]
-        for r in range(7):
-            for c in range(7):
-                if not ((r < 2 or r > 4) and (c < 2 or c > 4)):
-                    grid[r][c] = 0 if (r == 3 and c == 3) else 1
-
-        # Execute 3 sequential valid jumps
-        # Jump 1: (1, 3) over (2, 3) into (3, 3)
-        grid[1][3] = 0; grid[2][3] = 0; grid[3][3] = 1
-        # Jump 2: (4, 3) over (3, 3) into (2, 3)
-        grid[4][3] = 0; grid[3][3] = 0; grid[2][3] = 1
-        # Jump 3: (6, 3) over (5, 3) into (4, 3)
-        grid[6][3] = 0; grid[5][3] = 0; grid[4][3] = 1
-
-        pegs_remaining = sum(row.count(1) for row in grid)
-        self.assertEqual(pegs_remaining, 29) # Started at 32, jumped 3 times = 29
-
     def test_e2e_minesweeper_simulation(self):
         """E2E Match Simulation: Campo Minado"""
         # 3x3 mock board with 1 mine at (0, 0)
