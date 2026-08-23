@@ -1,0 +1,79 @@
+name: CI
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # Precisa acompanhar a engine usada nos builds de release (ver CHANGELOG v0.3.0).
+  GODOT_VERSION: "4.6.3-stable"
+  # Versao do GUT fixada em tests/install_gut.sh; repetida aqui so para a chave de cache.
+  GUT_VERSION: "v9.7.1"
+
+jobs:
+  gut:
+    name: Testes GUT (headless)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Dependencias do Godot headless
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends libfontconfig1
+
+      - name: Cache do binario do Godot
+        id: cache-godot
+        uses: actions/cache@v4
+        with:
+          path: ~/.local/share/godot-bin
+          key: godot-${{ env.GODOT_VERSION }}-linux-x86_64
+
+      - name: Instalar Godot ${{ env.GODOT_VERSION }}
+        if: steps.cache-godot.outputs.cache-hit != 'true'
+        run: |
+          set -euo pipefail
+          mkdir -p ~/.local/share/godot-bin
+          url="https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}/Godot_v${GODOT_VERSION}_linux.x86_64.zip"
+          curl -fsSL -o /tmp/godot.zip "$url"
+          unzip -q -o /tmp/godot.zip -d /tmp/godot
+          mv /tmp/godot/Godot_v${GODOT_VERSION}_linux.x86_64 ~/.local/share/godot-bin/godot
+          chmod +x ~/.local/share/godot-bin/godot
+
+      - name: Expor o Godot no PATH
+        run: echo "$HOME/.local/share/godot-bin" >> "$GITHUB_PATH"
+
+      - name: Cache do addon GUT
+        id: cache-gut
+        uses: actions/cache@v4
+        with:
+          path: addons/gut
+          key: gut-${{ env.GUT_VERSION }}
+
+      - name: Instalar GUT
+        run: tests/install_gut.sh
+
+      - name: Importar recursos do projeto
+        run: godot --headless --path . --import
+
+      - name: Rodar a suite
+        run: |
+          # O GUT nao cria o diretorio do relatorio; sem ele o XML e descartado
+          # em silencio e o job passa sem publicar nada.
+          mkdir -p .gut_report
+          godot --headless --path . -s addons/gut/gut_cmdln.gd -gjunit_xml_file=res://.gut_report/results.xml
+
+      - name: Publicar o relatorio JUnit
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gut-junit
+          path: .gut_report/results.xml
+          if-no-files-found: warn
