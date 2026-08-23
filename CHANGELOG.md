@@ -4,6 +4,31 @@
 
 ## [Unreleased](https://github.com/ricardosierra/PlayTable/compare/v0.3.0...develop)
 
+### ✨ Novidades
+
+- [x] **Suíte de testes que roda o GDScript de verdade** — 332 testes GUT em 19 arquivos, executados headless contra os `.gd` e os `.tscn` de produção. Um arquivo por jogo (`tests/gdscript/unit/`), mais núcleo, i18n e um teste de integração que instancia as 16 cenas de verdade
+- [x] **CI no GitHub Actions** — `.github/workflows/ci.yml` roda a suíte em todo push e pull request, com Godot 4.6.3 e o addon GUT em cache, e publica o relatório JUnit como artefato
+- [x] **`tests/run_gut.sh`** — runner local que acha um Godot 4.4+ no `PATH`, no repositório ou em `/Applications`, instala o GUT sob demanda e reimporta os recursos quando a engine ou o addon mudam
+
+### 🐛 Correções
+
+- [x] **Resta Um estava intransitável** — `PegSolitaireGame._execute_jump` lia `target_dict["jumped"]`, chave que `PegSolitaireRules.get_valid_moves_for_peg` nunca devolveu (as chaves são `from`, `over` e `land`). O acesso derrubava a função com *Invalid access to property or key* antes de qualquer `set_cell`: selecionar uma esfera funcionava, tocar no furo de destino não fazia absolutamente nada. Nenhuma partida podia ser jogada até o fim
+
+### 🔧 Técnico
+
+- [x] **GUT 9.7.1 como framework** — roda por `-s addons/gut/gut_cmdln.gd`, sem janela e sem habilitar plugin, e sai com código 1 quando há falha. O addon não é versionado (11 MB de código de terceiros, 8,8 MB deles num único `.tscn` do painel do editor): `tests/install_gut.sh` busca a versão fixada sob demanda. A versão está amarrada à engine — o 9.7.x exige Godot 4.4+ e o 9.3.x é o último que roda na 4.3
+- [x] **Os 7 arquivos Python de teste foram removidos** — `test_board_games.py`, `test_card_games.py`, `test_integration_simulations.py`, `test_core_systems.py`, `test_i18n.py`, `test_all_games_catalog.py` e `run_tests.py`. Eles reimplementavam as regras de cada jogo em Python e testavam a reimplementação; os 70 arquivos `.gd` que rodam no aplicativo não eram exercitados por nada. Os casos foram aproveitados como especificação, um jogo por vez, e cada migração apagou o equivalente Python
+- [x] **`export_presets.cfg`** — passa a excluir `tests/*`, `addons/*` e `.gutconfig.json`, para o APK não carregar código de teste
+
+**Achados registrados, ainda sem decisão:**
+
+- [ ] **Regras duplicadas e código morto** — `TicTacToeRules.gd`, `ConnectFourRules.gd` e `MemoryRules.gd` não são referenciados por ninguém: as cenas têm a própria cópia das regras. `DominoGame` repete a orientação da pedra inline em dois lugares em vez de chamar `DominoRules.orient_tile_for_side`. Enquanto as duas versões existirem, os testes cobrem as duas — no Jogo da Velha, um teste compara as 6.561 posições possíveis para travar a divergência
+- [ ] **IA do Uno joga com a cor fixa** — `UnoRules.pick_best_color_for_hand` implementa a heurística de maioria que o teste Python cobria, mas `UnoLikeGame` não a chama: ao jogar um curinga, a IA fixa `active_color` em azul (ou vermelho, no caminho de comprar-e-jogar)
+- [ ] **`ConnectFourAI` promete minimax e não entrega** — o cabeçalho diz *"minimax with alpha-beta pruning"*; o código é vencer/bloquear/aleatório, sem poda e sem a preferência pela coluna central que o `ConnectFourRules` tem
+- [ ] **Tabuleiro do Quatro em Linha desenhado de cabeça para baixo** — `ConnectFourGame._make_move` calcula `visual_row = (ROWS - 1) - row` apoiado num comentário que diz *"logic row 0 is bottom"*, mas `drop_piece` preenche do índice 5 para o 0, então a linha 0 é o topo. A primeira ficha de cada coluna é desenhada em cima e a pilha cresce para baixo
+- [ ] **Nomes dos jogos nunca são traduzidos** — o `GameCatalog` aponta para chaves `GAME_DESC_*` que não existem no `translations.csv`, enquanto o CSV traz 16 chaves `GAME_*` com o nome de cada jogo que ninguém consome: `MenuTabuleiro` e `MenuCartas` montam o botão com `game.title`, texto fixo em português
+- [ ] **`KlondikeRules.can_place_on_foundation` não confere o naipe na fundação vazia** — aceita qualquer ás em qualquer uma das quatro. Só não vira bug porque `KlondikeGame` confere `card.suit == req_suit` antes de chamar
+
 ## [v0.3.0 (2026-08-23)](https://github.com/ricardosierra/PlayTable/compare/v0.2.1...v0.3.0)
 
 ### 🎨 Melhorias
