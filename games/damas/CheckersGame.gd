@@ -1,4 +1,4 @@
-extends Control
+extends GridGame
 
 ## CheckersGame: Damas com Tabuleiro 3D em Nogueira, Peças de Marfim/Obsidiana e Coroas Douradas
 
@@ -9,32 +9,21 @@ var grid_data: Grid2D
 var selected_pos: Vector2i = Vector2i(-1, -1)
 var valid_moves: Array[Dictionary] = []
 var is_player_turn: bool = true
-var game_over: bool = false
 var continuing_capture_pos: Vector2i = Vector2i(-1, -1)
 var pieces_3d: Dictionary = {}
 
-@onready var env_3d: TabletopEnvironment3D = $TabletopEnvironment3D
 @onready var board_3d: Board3D = $Board3D
 @onready var pieces_root: Node3D = $PiecesRoot
-@onready var status_label = $UI/VBoxContainer/StatusLabel
 @onready var score_label = $UI/VBoxContainer/ScoreLabel
-@onready var btn_restart = $UI/VBoxContainer/BtnRestart
-@onready var touch_grid = $UI/CenterContainer/TouchGrid
 
 func _ready() -> void:
+	env_3d = $TabletopEnvironment3D
+	status_label = $UI/VBoxContainer/StatusLabel
+	btn_restart = $UI/VBoxContainer/BtnRestart
 	board_3d.setup_board(CheckersRules.ROWS, CheckersRules.COLS, 0.75, "wood_checkered")
-	_setup_touch_grid()
+	build_touch_grid($UI/CenterContainer/TouchGrid, CheckersRules.ROWS, CheckersRules.COLS,
+		Vector2(40, 40), _on_cell_clicked)
 	_start_new_game()
-
-func _setup_touch_grid() -> void:
-	for c in touch_grid.get_children(): c.queue_free()
-	for r in range(CheckersRules.ROWS):
-		for c in range(CheckersRules.COLS):
-			var btn = Button.new()
-			btn.custom_minimum_size = Vector2(40, 40)
-			btn.flat = true
-			btn.pressed.connect(_on_cell_clicked.bind(r, c))
-			touch_grid.add_child(btn)
 
 func _start_new_game() -> void:
 	game_over = false
@@ -222,16 +211,7 @@ func _play_ai_turn():
 	status_label.text = "Sua Vez! (Marfim)"
 
 func _end_game(winner: int) -> void:
-	game_over = true
-	btn_restart.show()
 	if winner == 1:
-		status_label.text = "🏆 Você Venceu!"
-		env_3d.celebrate_win()
+		finish_game("🏆 Você Venceu!", true)
 	else:
-		status_label.text = "IA Venceu!"
-
-func _on_btn_restart_pressed() -> void:
-	_start_new_game()
-
-func _on_btn_back_pressed() -> void:
-	SceneManager.goto_scene("res://core/telas/MenuTabuleiro.tscn")
+		finish_game("IA Venceu!")
