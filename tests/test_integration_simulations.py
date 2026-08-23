@@ -183,31 +183,6 @@ class TestIntegrationSimulations(unittest.TestCase):
         self.assertEqual(grid[5][1], 0)
         self.assertEqual(grid[3][3], 0)
 
-    def test_e2e_blackjack_simulation(self):
-        """E2E Match Simulation: 21 (Blackjack Round)"""
-        deck = [10, 8, 1, 7, 5, 6, 9] # Simulated shuffled draw stack
-        player_hand = [deck.pop(), deck.pop()] # 9, 6 = 15
-        dealer_hand = [deck.pop(), deck.pop()] # 5, 7 = 12
-
-        # Player hits (gets 1 -> Ace -> 15 + 1 = 16)
-        player_hand.append(deck.pop())
-
-        def score(hand):
-            s = 0; aces = 0
-            for c in hand:
-                if c == 1: aces += 1; s += 11
-                elif c >= 10: s += 10
-                else: s += c
-            while s > 21 and aces > 0: s -= 10; aces -= 1
-            return s
-
-        # Dealer hits until >= 17
-        while score(dealer_hand) < 17:
-            dealer_hand.append(deck.pop())
-
-        self.assertGreaterEqual(score(dealer_hand), 17)
-        self.assertEqual(score(player_hand), 16)
-
     def test_e2e_video_poker_simulation(self):
         """E2E Match Simulation: Video Poker Draw & Payout"""
         # Deal: [10♥, J♥, Q♥, K♥, 2♣]

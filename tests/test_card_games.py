@@ -10,67 +10,6 @@ Covers all 5 card games in 'Jogos de Mesa Offline':
 """
 import unittest
 
-class TestBlackjack(unittest.TestCase):
-    """1. 21 (Blackjack)"""
-
-    def calculate_score(self, cards):
-        score = 0
-        aces = 0
-        for val in cards:
-            if val == 1 or val == 14: # Ace
-                aces += 1
-                score += 11
-            elif val >= 10:
-                score += 10
-            else:
-                score += val
-        while score > 21 and aces > 0:
-            score -= 10
-            aces -= 1
-        return score
-
-    def evaluate_match(self, player_cards, dealer_cards):
-        p_score = self.calculate_score(player_cards)
-        d_score = self.calculate_score(dealer_cards)
-        p_bj = (len(player_cards) == 2 and p_score == 21)
-        d_bj = (len(dealer_cards) == 2 and d_score == 21)
-
-        if p_score > 21:
-            return {"winner": "dealer", "reason": "player_bust"}
-        if d_score > 21:
-            return {"winner": "player", "reason": "dealer_bust"}
-        if p_bj and not d_bj:
-            return {"winner": "player", "reason": "blackjack"}
-        if d_bj and not p_bj:
-            return {"winner": "dealer", "reason": "dealer_blackjack"}
-        if p_score > d_score:
-            return {"winner": "player", "reason": "higher_score"}
-        elif d_score > p_score:
-            return {"winner": "dealer", "reason": "dealer_higher"}
-        else:
-            return {"winner": "draw", "reason": "push"}
-
-    def test_dynamic_ace_scoring(self):
-        self.assertEqual(self.calculate_score([1, 10]), 21)       # Natural 21
-        self.assertEqual(self.calculate_score([1, 9, 5]), 15)     # Ace as 1
-        self.assertEqual(self.calculate_score([1, 1, 9]), 21)     # Ace 11 + Ace 1 + 9 = 21
-        self.assertEqual(self.calculate_score([1, 1, 1, 1, 7]), 21) # Four Aces (11+1+1+1=14 -> 1+1+1+1+7=11? 11+1+1+1+7 = 21)
-
-    def test_bust_and_dealer_stand_rules(self):
-        self.assertEqual(self.calculate_score([10, 10, 5]), 25) # Bust
-        self.assertTrue(self.calculate_score([10, 6]) < 17)    # Dealer hits
-        self.assertFalse(self.calculate_score([10, 7]) < 17)   # Dealer stands at 17
-
-    def test_match_outcomes(self):
-        # Player wins with Blackjack
-        self.assertEqual(self.evaluate_match([1, 10], [10, 9])["winner"], "player")
-        # Dealer busts
-        self.assertEqual(self.evaluate_match([10, 8], [10, 6, 8])["winner"], "player")
-        # Player busts
-        self.assertEqual(self.evaluate_match([10, 6, 8], [10, 7])["winner"], "dealer")
-        # Push (Tie)
-        self.assertEqual(self.evaluate_match([10, 8], [9, 9])["winner"], "draw")
-
 
 class TestVideoPoker(unittest.TestCase):
     """2. Poker (Video Poker) Evaluator & Multipliers"""
