@@ -201,3 +201,21 @@ func test_partida_completa_nao_trava() -> void:
 		assert_true(achou, "sobrou casa livre fechada mas check_win negou a vitoria")
 	assert_true(RulesScript.check_win(g), "partida vencida abrindo todas as casas livres")
 	assert_eq(_conta_minas(g), MINAS, "as 10 minas continuam la")
+
+
+# ----------------------------------------------------------- MinesweeperGame
+
+const GameScene = preload("res://games/campo_minado/MinesweeperGame.tscn")
+
+
+func test_vitoria_anuncia_o_tempo_no_rotulo() -> void:
+	# "100%" dentro da string de formato precisa ser escapado: com um unico %
+	# o operador falha e o rotulo da vitoria fica vazio.
+	var jogo = add_child_autofree(GameScene.instantiate())
+	_minas_em(jogo.grid_data, [[0, 0]])
+	RulesScript.reveal_cell(jogo.grid_data, 8, 8)
+	jogo.elapsed_time = 42.0
+	jogo._check_win_condition()
+	assert_true(jogo.game_won, "partida vencida")
+	assert_string_contains(jogo.status_label.text, "100%", "o texto sobreviveu a formatacao")
+	assert_string_contains(jogo.status_label.text, "42 segundos", "o tempo entrou no texto")

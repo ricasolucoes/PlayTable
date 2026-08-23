@@ -166,7 +166,7 @@ func _check_win_condition() -> void:
 		game_won = true
 		timer_active = false
 		btn_smiley.text = "😎"
-		status_label.text = "🏆 Campo 100% Desarmado! Vitória em %d segundos!" % int(elapsed_time)
+		status_label.text = "🏆 Campo 100%% Desarmado! Vitória em %d segundos!" % int(elapsed_time)
 		env_3d.celebrate_win()
 
 func _on_btn_mode_pressed() -> void:
