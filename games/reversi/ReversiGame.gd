@@ -1,4 +1,4 @@
-extends Control
+extends GridGame
 
 ## ReversiGame: Reversi 3D com Tabuleiro em Feltro Esmeralda e Animação 3D de Virada de Discos
 
@@ -7,31 +7,19 @@ const ReversiRulesScript = preload("res://games/reversi/ReversiRules.gd")
 
 var grid_data: Grid2D
 var is_player_turn: bool = true
-var game_over: bool = false
 var pieces_3d: Dictionary = {}
 
-@onready var env_3d: TabletopEnvironment3D = $TabletopEnvironment3D
 @onready var board_3d: Board3D = $Board3D
 @onready var pieces_root: Node3D = $PiecesRoot
-@onready var status_label = $UI/VBoxContainer/StatusLabel
 @onready var score_label = $UI/VBoxContainer/ScoreLabel
-@onready var btn_restart = $UI/VBoxContainer/BtnRestart
-@onready var touch_grid = $UI/CenterContainer/TouchGrid
 
 func _ready() -> void:
+	env_3d = $TabletopEnvironment3D
+	status_label = $UI/VBoxContainer/StatusLabel
+	btn_restart = $UI/VBoxContainer/BtnRestart
 	board_3d.setup_board(8, 8, 0.75, "reversi_green")
-	_setup_touch_grid()
+	build_touch_grid($UI/CenterContainer/TouchGrid, 8, 8, Vector2(40, 40), _on_cell_clicked)
 	_start_new_game()
-
-func _setup_touch_grid() -> void:
-	for c in touch_grid.get_children(): c.queue_free()
-	for r in range(8):
-		for c in range(8):
-			var btn = Button.new()
-			btn.custom_minimum_size = Vector2(40, 40)
-			btn.flat = true
-			btn.pressed.connect(_on_cell_clicked.bind(r, c))
-			touch_grid.add_child(btn)
 
 func _start_new_game() -> void:
 	game_over = false
@@ -170,20 +158,11 @@ func _play_ai_turn():
 		_play_ai_turn()
 
 func _end_game() -> void:
-	game_over = true
-	btn_restart.show()
 	# get_winner devolve {"winner", "black", "white"}, nao o id do vencedor.
 	var winner: int = ReversiRules.get_winner(grid_data)["winner"]
 	if winner == 1:
-		status_label.text = "🏆 Você Venceu!"
-		env_3d.celebrate_win()
+		finish_game("🏆 Você Venceu!", true)
 	elif winner == 2:
-		status_label.text = "IA Venceu!"
+		finish_game("IA Venceu!")
 	else:
-		status_label.text = "Empate!"
-
-func _on_btn_restart_pressed() -> void:
-	_start_new_game()
-
-func _on_btn_back_pressed() -> void:
-	SceneManager.goto_scene("res://core/telas/MenuTabuleiro.tscn")
+		finish_game("Empate!")
