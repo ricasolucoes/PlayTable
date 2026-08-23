@@ -1,4 +1,4 @@
-extends Control
+extends GridGame
 
 ## MinesweeperGame: Campo Minado 3D com Teclas Mecânicas Táteis, Pinos de Bandeira e Minas Explosivas
 
@@ -8,7 +8,6 @@ const MinesweeperRulesScript = preload("res://games/campo_minado/MinesweeperRule
 var grid_data: Grid2D
 var first_click: bool = true
 var is_flag_mode: bool = false
-var game_over: bool = false
 var game_won: bool = false
 var elapsed_time: float = 0.0
 var timer_active: bool = false
@@ -16,15 +15,12 @@ var timer_active: bool = false
 var tiles_3d: Dictionary = {}
 var flags_3d: Dictionary = {}
 
-@onready var env_3d: TabletopEnvironment3D = $TabletopEnvironment3D
 @onready var board_3d: Board3D = $Board3D
 @onready var flags_root: Node3D = $FlagsRoot
-@onready var status_label = $UI/VBoxContainer/StatusLabel
 @onready var mines_label = $UI/VBoxContainer/Header/MinesLabel
 @onready var timer_label = $UI/VBoxContainer/Header/TimerLabel
 @onready var btn_mode = $UI/Controls/BtnMode
 @onready var btn_smiley = $UI/VBoxContainer/Header/BtnSmiley
-@onready var touch_grid = $UI/CenterContainer/TouchGrid
 
 const NUMBER_COLORS = [
 	Color(0, 0, 0, 0),
@@ -39,24 +35,17 @@ const NUMBER_COLORS = [
 ]
 
 func _ready() -> void:
+	env_3d = $TabletopEnvironment3D
+	status_label = $UI/VBoxContainer/StatusLabel
 	board_3d.setup_board(MinesweeperRules.ROWS, MinesweeperRules.COLS, 0.75, "slate_grid")
-	_setup_touch_grid()
+	build_touch_grid($UI/CenterContainer/TouchGrid, MinesweeperRules.ROWS, MinesweeperRules.COLS,
+		Vector2(40, 40), _on_cell_clicked)
 	_start_new_game()
 
 func _process(delta: float) -> void:
 	if timer_active and not game_over and not game_won:
 		elapsed_time += delta
 		timer_label.text = "⏱️ %03d" % int(elapsed_time)
-
-func _setup_touch_grid() -> void:
-	for c in touch_grid.get_children(): c.queue_free()
-	for r in range(MinesweeperRules.ROWS):
-		for c in range(MinesweeperRules.COLS):
-			var btn = Button.new()
-			btn.custom_minimum_size = Vector2(40, 40)
-			btn.flat = true
-			btn.pressed.connect(_on_cell_clicked.bind(r, c))
-			touch_grid.add_child(btn)
 
 func _start_new_game() -> void:
 	first_click = true
@@ -149,10 +138,9 @@ func _sync_revealed_3d() -> void:
 					tile.material_override = MaterialFactory3D.get_plastic(Color(0.14, 0.16, 0.2), false)
 
 func _trigger_game_over(hit_r: int, hit_c: int) -> void:
-	game_over = true
 	timer_active = false
 	btn_smiley.text = "😵"
-	status_label.text = "💥 BOOM! Você detonou uma mina!"
+	finish_game("💥 BOOM! Você detonou uma mina!")
 	
 	for r in range(MinesweeperRules.ROWS):
 		for c in range(MinesweeperRules.COLS):
@@ -166,8 +154,7 @@ func _check_win_condition() -> void:
 		game_won = true
 		timer_active = false
 		btn_smiley.text = "😎"
-		status_label.text = "🏆 Campo 100%% Desarmado! Vitória em %d segundos!" % int(elapsed_time)
-		env_3d.celebrate_win()
+		finish_game("🏆 Campo 100%% Desarmado! Vitória em %d segundos!" % int(elapsed_time), true)
 
 func _on_btn_mode_pressed() -> void:
 	is_flag_mode = not is_flag_mode
@@ -179,7 +166,4 @@ func _on_btn_mode_pressed() -> void:
 		btn_mode.self_modulate = Color(0.4, 0.7, 0.95)
 
 func _on_btn_smiley_pressed() -> void:
-	_start_new_game()
-
-func _on_btn_back_pressed() -> void:
-	SceneManager.goto_scene("res://core/telas/MenuTabuleiro.tscn")
+	restart_game()
