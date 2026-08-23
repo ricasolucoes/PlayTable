@@ -172,7 +172,8 @@ func _play_ai_turn():
 func _end_game() -> void:
 	game_over = true
 	btn_restart.show()
-	var winner = ReversiRules.get_winner(grid_data)
+	# get_winner devolve {"winner", "black", "white"}, nao o id do vencedor.
+	var winner: int = ReversiRules.get_winner(grid_data)["winner"]
 	if winner == 1:
 		status_label.text = "🏆 Você Venceu!"
 		env_3d.celebrate_win()

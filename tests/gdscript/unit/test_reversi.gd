@@ -161,3 +161,39 @@ func test_partida_completa_termina_com_o_tabuleiro_resolvido() -> void:
 	assert_true(jogadas > 0, "houve jogadas")
 	assert_eq(placar["black"] + placar["white"], 4 + jogadas, "cada jogada poe uma peca nova")
 	assert_true(placar["black"] + placar["white"] <= 64, "no maximo 64 pecas")
+
+
+# --------------------------------------------------------------- ReversiGame
+
+const GameScene = preload("res://games/reversi/ReversiGame.tscn")
+
+
+func _cena_com_placar(pretas: int, brancas: int) -> Node:
+	var jogo = add_child_autofree(GameScene.instantiate())
+	var g := _vazio()
+	var posta := 0
+	for i in range(pretas):
+		g.set_cell(posta / 8, posta % 8, PRETO)
+		posta += 1
+	for i in range(brancas):
+		g.set_cell(posta / 8, posta % 8, BRANCO)
+		posta += 1
+	jogo.grid_data = g
+	return jogo
+
+
+func test_fim_de_partida_anuncia_quem_venceu() -> void:
+	# get_winner devolve um dicionario; comparar o dicionario com 1 ou 2 dava
+	# sempre falso e o placar terminava em "Empate!" mesmo com vencedor.
+	var vitoria := _cena_com_placar(10, 3)
+	vitoria._end_game()
+	assert_true(vitoria.game_over, "partida encerrada")
+	assert_string_contains(vitoria.status_label.text, "Você Venceu", "vitoria do jogador anunciada")
+
+	var derrota := _cena_com_placar(3, 10)
+	derrota._end_game()
+	assert_string_contains(derrota.status_label.text, "IA Venceu", "vitoria da IA anunciada")
+
+	var empate := _cena_com_placar(4, 4)
+	empate._end_game()
+	assert_string_contains(empate.status_label.text, "Empate", "empate anunciado")
