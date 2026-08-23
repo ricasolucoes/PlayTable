@@ -12,6 +12,7 @@
 
 ### 🐛 Correções
 
+- [x] **Tweens soltos disparando sobre nós já liberados** — dez chamadas usavam `get_tree().create_tween()`, que cria o tween na SceneTree em vez de amarrá-lo ao nó animado. Ao trocar de cena, reiniciar a partida ou dar `queue_free` nas cartas do Jogo da Memória, o tween seguia rodando e chamava o callback sobre uma instância morta (*Trying to call a lambda with an invalid instance*). Trocadas por `Node.create_tween()`, que é o que o resto do projeto já usava
 - [x] **Resta Um estava intransitável** — `PegSolitaireGame._execute_jump` lia `target_dict["jumped"]`, chave que `PegSolitaireRules.get_valid_moves_for_peg` nunca devolveu (as chaves são `from`, `over` e `land`). O acesso derrubava a função com *Invalid access to property or key* antes de qualquer `set_cell`: selecionar uma esfera funcionava, tocar no furo de destino não fazia absolutamente nada. Nenhuma partida podia ser jogada até o fim
 
 ### 🔧 Técnico
