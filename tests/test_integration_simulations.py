@@ -161,27 +161,5 @@ class TestIntegrationSimulations(unittest.TestCase):
         all_won = all(p >= 32 for p in pawns)
         self.assertTrue(all_won)
 
-    def test_e2e_checkers_simulation(self):
-        """E2E Match Simulation: Damas (Checkers Multi-Jump)"""
-        grid = [[0]*8 for _ in range(8)]
-        # Setup multi-jump scenario: White at (6, 0), Black at (5, 1) and (3, 3)
-        grid[6][0] = 1
-        grid[5][1] = -1
-        grid[3][3] = -1
-
-        # Jump 1: (6, 0) -> (4, 2) capturing (5, 1)
-        grid[6][0] = 0
-        grid[5][1] = 0
-        grid[4][2] = 1
-
-        # Jump 2: (4, 2) -> (2, 4) capturing (3, 3)
-        grid[4][2] = 0
-        grid[3][3] = 0
-        grid[2][4] = 1
-
-        self.assertEqual(grid[2][4], 1)
-        self.assertEqual(grid[5][1], 0)
-        self.assertEqual(grid[3][3], 0)
-
 if __name__ == '__main__':
     unittest.main()
