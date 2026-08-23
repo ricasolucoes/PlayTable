@@ -2,9 +2,9 @@
 
 ---
 
-## [Unreleased](https://github.com/ricardosierra/jogos-de-mesa-offline/compare/v0.3.0...develop)
+## [Unreleased](https://github.com/ricardosierra/PlayTable/compare/v0.3.0...develop)
 
-## [v0.3.0 (2026-08-23)](https://github.com/ricardosierra/jogos-de-mesa-offline/compare/v0.2.1...v0.3.0)
+## [v0.3.0 (2026-08-23)](https://github.com/ricardosierra/PlayTable/compare/v0.2.1...v0.3.0)
 
 ### 🎨 Melhorias
 
@@ -16,7 +16,7 @@
 - [x] **Arquivos `.uid` versionados** — o Godot 4.4+ passou a identificar cada script por UID em vez de caminho; os 70 arquivos entram no versionamento, como a documentação do Godot exige, para que mover um script não quebre as referências
 
 
-## [v0.2.1 (2026-08-22)](https://github.com/ricardosierra/jogos-de-mesa-offline/compare/v0.2.0...v0.2.1)
+## [v0.2.1 (2026-08-22)](https://github.com/ricardosierra/PlayTable/compare/v0.2.0...v0.2.1)
 
 ### 🐛 Correções
 
@@ -31,7 +31,7 @@
 - [x] **Keystore de release removida do histórico** — a chave privada de assinatura estava versionada e publicamente acessível no GitHub e no GitLab, com a senha em claro no `build_apk.sh`. Histórico reescrito com `git filter-repo`, senha redigida e chave marcada como comprometida. Os SHAs de todos os commits mudaram e as tags foram recriadas
 - [x] **`build_apk.sh`** — export sempre sem assinatura; assinatura virou passo separado com `apksigner`, usando `KEYSTORE_PATH` (fora do repositório) e `KEYSTORE_PASSWORD` via ambiente
 
-## [v0.2.0 (2026-08-19)](https://github.com/ricardosierra/jogos-de-mesa-offline/compare/v0.1.0...v0.2.0)
+## [v0.2.0 (2026-08-19)](https://github.com/ricardosierra/PlayTable/compare/v0.1.0...v0.2.0)
 
 ### ✨ Novidades
 
@@ -62,7 +62,7 @@
 
 ---
 
-## [v0.1.0 (2026-08-18)](https://github.com/ricardosierra/jogos-de-mesa-offline/releases/tag/v0.1.0)
+## [v0.1.0 (2026-08-18)](https://github.com/ricardosierra/PlayTable/releases/tag/v0.1.0)
 
 ### ✨ Novidades
 
