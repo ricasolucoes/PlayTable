@@ -2,11 +2,11 @@
 
 ---
 
-## [Unreleased]
+## [Unreleased](https://github.com/ricardosierra/jogos-de-mesa-offline/compare/v0.2.0...develop)
 
-## [v0.2.0 (2026-08-19)](https://gitlab.com/sierratecnologia/jogos-de-mesa-offline/-/tags/v0.2.0)
+## [v0.2.0 (2026-08-19)](https://github.com/ricardosierra/jogos-de-mesa-offline/compare/v0.1.0...v0.2.0)
 
-### 🚀 Funcionalidades
+### ✨ Novidades
 
 - [x] **Suíte de Testes Automatizados e de Integração:** 64 testes unitários e de integração E2E criados e 100% aprovados, cobrindo todos os 16 minijogos de tabuleiro e cartas, persistência, regras de IA, internacionalização e simulações completas de partidas sem deadlocks
 - [x] **Runner de Testes Mestre (`tests/run_tests.py`):** Script executável via terminal com relatório visual consolidado de cobertura por jogo e métricas de execução
@@ -15,7 +15,7 @@
 - [x] **Internacionalização (i18n):** Suporte multilíngue completo com `LocaleManager.gd` e catálogos traduzidos em Português (`pt_BR`), Inglês (`en`) e Espanhol (`es`)
 - [x] **Sistema de Áudio Centralizado:** Implementação de `AudioManager.gd` para efeitos sonoros e controle de volume persistente
 
-### 🎨 Melhorias & Polimento Visual
+### 🎨 Melhorias
 
 - [x] **Ícone Vetorial Autoral (`icon.svg`):** Arte vetorial minimalista com dados e cartas estilizados em gradiente dourado e tema escuro
 - [x] **Aprimoramento Visual 3D:** Peças esculpidas, tabuleiros texturizados e integração com `TabletopBackground.gd` e `TabletopEnvironment3D`
@@ -35,9 +35,9 @@
 
 ---
 
-## [v0.1.0 (2026-08-18)](https://gitlab.com/sierratecnologia/jogos-de-mesa-offline/-/tags/v0.1.0)
+## [v0.1.0 (2026-08-18)](https://github.com/ricardosierra/jogos-de-mesa-offline/releases/tag/v0.1.0)
 
-### 🚀 Funcionalidades
+### ✨ Novidades
 
 - [x] **Estrutura Base do Projeto:** Inicialização do repositório Godot 4.3 Engine para 16 minijogos de tabuleiro e cartas
 - [x] **Navegação & Telas:** Menus de seleção divididos em Menu Principal, Menu de Tabuleiros e Menu de Cartas
