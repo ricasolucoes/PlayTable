@@ -25,9 +25,13 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Dependencias do Godot headless
+        # O binario oficial de Linux e o mesmo com e sem --headless: ele ainda
+        # linka X11 e GL em tempo de carga, mesmo usando o driver dummy. Os
+        # nomes abaixo existem no Ubuntu 22.04 e no 24.04.
         run: |
           sudo apt-get update
-          sudo apt-get install -y --no-install-recommends libfontconfig1
+          sudo apt-get install -y --no-install-recommends \
+            libfontconfig1 libx11-6 libxcursor1 libxinerama1 libxi6 libxrandr2 libgl1
 
       - name: Cache do binario do Godot
         id: cache-godot
