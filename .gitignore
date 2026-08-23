@@ -40,7 +40,13 @@ jdk-*/
 # Security - NEVER commit these
 release.keystore
 *.keystore
-export_presets.cfg
+*.jks
+*.p12
+*.pepk
+keystore.properties
+
+# NOTE: export_presets.cfg IS committed on purpose (F-Droid needs it to build).
+# It must never contain a keystore path, alias or password.
 
 # Python
 __pycache__/
