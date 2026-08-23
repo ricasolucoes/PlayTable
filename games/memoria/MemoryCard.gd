@@ -58,7 +58,7 @@ func flip(face_up: bool, on_complete: Callable = Callable()):
 	var pivot_x = size.x * 0.5
 	pivot_offset = Vector2(pivot_x, size.y * 0.5)
 	
-	var tw = get_tree().create_tween()
+	var tw = create_tween()
 	tw.tween_property(self, "scale:x", 0.0, 0.15).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
 	tw.tween_callback(func():
 		is_face_up = face_up
@@ -73,13 +73,13 @@ func flip(face_up: bool, on_complete: Callable = Callable()):
 func play_match_animation() -> void:
 	is_matched = true
 	set_process(true)
-	var tw = get_tree().create_tween()
+	var tw = create_tween()
 	tw.tween_property(self, "scale", Vector2(1.1, 1.1), 0.15).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	tw.tween_property(self, "scale", Vector2(1.0, 1.0), 0.15)
 
 func play_mismatch_shake() -> void:
 	var orig_x = position.x
-	var tw = get_tree().create_tween()
+	var tw = create_tween()
 	tw.tween_property(self, "position:x", orig_x - 8.0, 0.05)
 	tw.tween_property(self, "position:x", orig_x + 8.0, 0.05)
 	tw.tween_property(self, "position:x", orig_x - 6.0, 0.05)

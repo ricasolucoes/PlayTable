@@ -131,7 +131,7 @@ func _handle_game_won() -> void:
 	await get_tree().create_timer(0.6).timeout
 	win_modal.visible = true
 	win_modal.modulate.a = 0.0
-	var tw = get_tree().create_tween()
+	var tw = create_tween()
 	tw.tween_property(win_modal, "modulate:a", 1.0, 0.3)
 
 func _update_ui() -> void:

@@ -110,7 +110,7 @@ func _draw_realistic_o(hs: float) -> void:
 func play_spawn_animation() -> void:
 	scale = Vector2(1.45, 1.45)
 	modulate.a = 0.0
-	var tw = get_tree().create_tween()
+	var tw = create_tween()
 	tw.set_parallel(true)
 	tw.tween_property(self, "modulate:a", 1.0, 0.12)
 	tw.tween_property(self, "scale", Vector2(1.0, 1.0), 0.25).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)

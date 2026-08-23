@@ -82,7 +82,7 @@ func drop_to(target_y: float, on_finished: Callable = Callable()) -> void:
 	var dist = abs(target_y - start_y)
 	var duration = clampf(sqrt(dist / 900.0) * 0.45, 0.25, 0.55)
 	
-	var tween = get_tree().create_tween()
+	var tween = create_tween()
 	tween.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
 	tween.tween_property(self, "position:y", target_y, duration)
 	
@@ -90,7 +90,7 @@ func drop_to(target_y: float, on_finished: Callable = Callable()) -> void:
 		if AudioManager:
 			AudioManager.play_chip_drop()
 		# Slight bounce
-		var bounce_tween = get_tree().create_tween()
+		var bounce_tween = create_tween()
 		bounce_tween.set_trans(Tween.TRANS_BOUNCE).set_ease(Tween.EASE_OUT)
 		bounce_tween.tween_property(self, "position:y", target_y - 12.0, 0.08)
 		bounce_tween.tween_property(self, "position:y", target_y, 0.12)
