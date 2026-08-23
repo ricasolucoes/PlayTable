@@ -307,23 +307,5 @@ class TestIntegrationSimulations(unittest.TestCase):
         # P1 hand is now empty -> WIN!
         self.assertEqual(len(p1_hand), 0)
 
-    def test_e2e_memory_game_simulation(self):
-        """E2E Match Simulation: Jogo da Memória (Clear Board)"""
-        deck = [
-            {"id": 0, "pair": "A", "matched": False},
-            {"id": 1, "pair": "B", "matched": False},
-            {"id": 2, "pair": "A", "matched": False},
-            {"id": 3, "pair": "B", "matched": False}
-        ]
-        # Reveal (0, 2) -> Pair A matched
-        deck[0]["matched"] = True
-        deck[2]["matched"] = True
-        # Reveal (1, 3) -> Pair B matched
-        deck[1]["matched"] = True
-        deck[3]["matched"] = True
-
-        all_matched = all(c["matched"] for c in deck)
-        self.assertTrue(all_matched)
-
 if __name__ == '__main__':
     unittest.main()

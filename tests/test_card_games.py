@@ -254,23 +254,5 @@ class TestUnoLike(unittest.TestCase):
         self.assertEqual(self.pick_best_color(hand), "BLUE")
 
 
-class TestMemoryGame(unittest.TestCase):
-    """5. Jogo da Memória (Memory Game)"""
-
-    def test_pair_matching_and_win_condition(self):
-        card_a1 = {"pair_id": 1, "label": "🚀"}
-        card_a2 = {"pair_id": 1, "label": "🚀"}
-        card_b1 = {"pair_id": 2, "label": "🦄"}
-
-        # Matching pair
-        self.assertEqual(card_a1["pair_id"], card_a2["pair_id"])
-        # Non-matching pair
-        self.assertNotEqual(card_a1["pair_id"], card_b1["pair_id"])
-
-        # Win condition when pairs_found == total_pairs
-        total_pairs = 8
-        self.assertTrue(8 >= total_pairs and total_pairs > 0)
-        self.assertFalse(7 >= total_pairs and total_pairs > 0)
-
 if __name__ == '__main__':
     unittest.main()
