@@ -1,0 +1,16 @@
+PlayTable collects sixteen classic board and card games in a single app, built with the Godot engine.
+
+Everything runs on the device. There is no server to reach, no account to create, no advertising SDK and no analytics. Open the app on a plane and every game still works.
+
+Board games
+Tic-tac-toe, Connect Four, Checkers, Chess, Reversi, Nine Men's Morris, Dots and Boxes, Memory, Battleship, Mancala and Ludo.
+
+Card games
+Solitaire, Blackjack, War, Old Maid and Concentration.
+
+What you will not find
+No ads, no in-app purchases, no paywalled games, no login, no telemetry. Settings and statistics are stored locally on the device and never leave it.
+
+The interface is available in English, Portuguese and Spanish, switchable at runtime.
+
+The source code is MIT licensed and the game assets are generated procedurally by the app itself, so there are no third-party art or audio files with unclear terms.

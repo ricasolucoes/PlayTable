@@ -1,0 +1,16 @@
+PlayTable reúne dieciséis juegos clásicos de mesa y cartas en una sola aplicación, hecha con el motor Godot.
+
+Todo funciona en el dispositivo. No hay servidor que consultar, cuenta que crear, SDK de publicidad ni recolección de uso. Abre la aplicación en modo avión y todos los juegos siguen funcionando.
+
+Juegos de mesa
+Tres en raya, Conecta cuatro, Damas, Ajedrez, Reversi, Molino, Puntos y cajas, Memoria, Batalla naval, Mancala y Parchís.
+
+Juegos de cartas
+Solitario, Veintiuno, Guerra, Robamontón y Concentración.
+
+Lo que no vas a encontrar
+Sin anuncios, sin compras dentro de la aplicación, sin juegos bloqueados tras un pago, sin inicio de sesión, sin telemetría. Los ajustes y las estadísticas se guardan en el dispositivo y nunca salen de él.
+
+La interfaz está en español, portugués e inglés, con cambio en tiempo de ejecución.
+
+El código tiene licencia MIT y los elementos visuales se generan proceduralmente en la propia aplicación, así que no hay arte ni audio de terceros con licencia indefinida.

@@ -1,0 +1,1 @@
+Preparação para o F-Droid: preset de export do Android completo, cache do editor destrackado, correção dos autoloads que impedia todos os menus e jogos de carregar, e a keystore de release vazada purgada do histórico do git.

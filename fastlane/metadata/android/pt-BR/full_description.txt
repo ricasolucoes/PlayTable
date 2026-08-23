@@ -1,0 +1,16 @@
+O PlayTable reúne dezesseis jogos clássicos de tabuleiro e cartas em um aplicativo só, feito com a engine Godot.
+
+Tudo roda no aparelho. Não há servidor para consultar, conta para criar, SDK de propaganda nem coleta de uso. Abra o app em modo avião e todos os jogos continuam funcionando.
+
+Jogos de tabuleiro
+Jogo da velha, Quatro em linha, Damas, Xadrez, Reversi, Trilha, Pontos e caixas, Jogo da memória, Batalha naval, Mancala e Ludo.
+
+Jogos de cartas
+Paciência, Vinte e um, Guerra, Rouba-monte e Concentração.
+
+O que você não vai encontrar
+Sem anúncios, sem compras dentro do app, sem jogo trancado atrás de pagamento, sem login, sem telemetria. Configurações e estatísticas ficam no aparelho e não saem dele.
+
+A interface está em português, inglês e espanhol, com troca em tempo de execução.
+
+O código é licenciado sob MIT e os elementos visuais são gerados proceduralmente pelo próprio aplicativo, então não há arte ou áudio de terceiros com licença indefinida.
