@@ -19,22 +19,23 @@ var pieces_3d: Dictionary = {}
 @onready var status_label = $UI/VBoxContainer/StatusLabel
 @onready var score_label = $UI/VBoxContainer/ScoreLabel
 @onready var btn_restart = $UI/VBoxContainer/BtnRestart
-@onready var touch_grid = $UI/CenterContainer/TouchGrid
 
 func _ready() -> void:
+	env_3d.apply_theme(_build_theme())
 	board_3d.setup_board(CheckersRules.ROWS, CheckersRules.COLS, 0.75, "wood_checkered")
-	_setup_touch_grid()
+	# O tabuleiro se anuncia para a camera: nao existe distancia escrita a mao.
+	env_3d.set_safe_area(200.0, 130.0)
+	env_3d.frame_content(board_3d.content_size())
+	board_3d.cell_clicked.connect(_on_cell_clicked)
 	_start_new_game()
 
-func _setup_touch_grid() -> void:
-	for c in touch_grid.get_children(): c.queue_free()
-	for r in range(CheckersRules.ROWS):
-		for c in range(CheckersRules.COLS):
-			var btn = Button.new()
-			btn.custom_minimum_size = Vector2(40, 40)
-			btn.flat = true
-			btn.pressed.connect(_on_cell_clicked.bind(r, c))
-			touch_grid.add_child(btn)
+## Damas de salao: tabuleiro de bordo e nogueira sobre couro, luz de abajur.
+func _build_theme() -> GameTheme3D:
+	var theme := GameTheme3D.parlour_walnut()
+	theme.surface = &"leather"
+	theme.surface_color = Color(0.21, 0.13, 0.10)
+	theme.accent = Color(0.95, 0.78, 0.30)
+	return theme
 
 func _start_new_game() -> void:
 	game_over = false
@@ -51,27 +52,37 @@ func _start_new_game() -> void:
 func _sync_pieces_3d() -> void:
 	for p in pieces_root.get_children(): p.queue_free()
 	pieces_3d.clear()
-	
-	var player_count: int = 0
-	var ai_count: int = 0
+	board_3d.clear_states()
+
 	for r in range(CheckersRules.ROWS):
 		for c in range(CheckersRules.COLS):
-			board_3d.reset_cell_material(r, c)
 			var val = grid_data.get_cell(r, c)
 			if val != 0:
 				var piece = preload("res://shared/3d/Token3D.tscn").instantiate()
 				piece.token_type = "cylinder"
+				piece.token_radius = 0.30
 				piece.material_name = "ivory" if val > 0 else "obsidian"
-				piece.position = board_3d.get_cell_position_3d(r, c, 0.08)
+				piece.position = _cell_pos(r, c)
 				pieces_root.add_child(piece)
 				pieces_3d[Vector2i(r, c)] = piece
-				
+
 				if abs(val) == 2:
 					piece.promote_queen()
-					
-				if val > 0: player_count += 1
-				else: ai_count += 1
-				
+
+	_update_score()
+
+## Altura de apoio da peca: o topo da casa, nunca um valor solto.
+func _cell_pos(r: int, c: int) -> Vector3:
+	return board_3d.get_cell_position_3d(r, c, Tokens3D.TILE_THICKNESS)
+
+func _update_score() -> void:
+	var player_count: int = 0
+	var ai_count: int = 0
+	for r in range(CheckersRules.ROWS):
+		for c in range(CheckersRules.COLS):
+			var val = grid_data.get_cell(r, c)
+			if val > 0: player_count += 1
+			elif val < 0: ai_count += 1
 	score_label.text = "Você: %d  |  IA: %d" % [player_count, ai_count]
 
 func _on_cell_clicked(r: int, c: int):
@@ -92,19 +103,35 @@ func _on_cell_clicked(r: int, c: int):
 		selected_pos = clicked_pos
 		valid_moves = CheckersRules.get_valid_moves_for_piece(grid_data, selected_pos)
 		
-		# Limpa destaques anteriores e destaca destinos válidos
-		for row in range(CheckersRules.ROWS):
-			for col in range(CheckersRules.COLS):
-				board_3d.reset_cell_material(row, col)
-		board_3d.highlight_cell(r, c, Color(0.9, 0.75, 0.2))
-		for vm in valid_moves:
-			board_3d.highlight_cell(vm["to"].x, vm["to"].y, Color(0.2, 0.8, 0.4))
+		_show_selection(clicked_pos)
 	else:
+		# Tocar fora das proprias pecas desfaz a selecao.
+		_clear_selection()
 		selected_pos = Vector2i(-1, -1)
 		valid_moves.clear()
-		for row in range(CheckersRules.ROWS):
-			for col in range(CheckersRules.COLS):
-				board_3d.reset_cell_material(row, col)
+
+## Marca a origem, levanta a peca e aponta cada destino possivel. O destaque
+## usa tom E anel: quem nao distingue as cores ainda ve a marca.
+func _show_selection(origin: Vector2i) -> void:
+	board_3d.clear_states()
+	board_3d.set_cell_state(origin.x, origin.y, Board3D.CellState.SELECTED)
+	var destinations: Array = []
+	for vm in valid_moves:
+		destinations.append(vm["to"])
+	board_3d.set_cells_state(destinations, Board3D.CellState.VALID)
+
+	_lower_all_pieces()
+	var piece = pieces_3d.get(origin)
+	if piece:
+		piece.select(true)
+
+func _clear_selection() -> void:
+	board_3d.clear_states()
+	_lower_all_pieces()
+
+func _lower_all_pieces() -> void:
+	for piece in pieces_3d.values():
+		piece.select(false)
 
 func _execute_player_move(from_pos: Vector2i, move_dict: Dictionary):
 	var to_pos = move_dict["to"]
@@ -114,15 +141,16 @@ func _execute_player_move(from_pos: Vector2i, move_dict: Dictionary):
 	if piece_3d:
 		pieces_3d.erase(from_pos)
 		pieces_3d[to_pos] = piece_3d
-		var target_3d = board_3d.get_cell_position_3d(to_pos.x, to_pos.y, 0.08)
-		piece_3d.jump_to(target_3d, 0.5, 0.3)
+		piece_3d.select(false)
+		piece_3d.jump_to(_cell_pos(to_pos.x, to_pos.y),
+			Tokens3D.ARC_LONG if captured_pos != Vector2i(-1, -1) else Tokens3D.ARC_SHORT)
 		
 	if captured_pos != Vector2i(-1, -1):
 		var cap_piece = pieces_3d.get(captured_pos)
 		if cap_piece:
-			cap_piece.queue_free()
+			cap_piece.vanish()
 			pieces_3d.erase(captured_pos)
-			
+
 	var became_queen = CheckersRules.apply_move(grid_data, from_pos, to_pos, captured_pos)
 	if became_queen and piece_3d:
 		piece_3d.promote_queen()
@@ -150,7 +178,7 @@ func _execute_player_move(from_pos: Vector2i, move_dict: Dictionary):
 	_check_game_end_or_ai_turn()
 
 func _check_game_end_or_ai_turn():
-	_sync_pieces_3d()
+	_update_score()
 	var winner = CheckersRules.check_game_over(grid_data)
 	if winner != 0:
 		_end_game(winner)
@@ -176,15 +204,16 @@ func _play_ai_turn():
 	if piece_3d:
 		pieces_3d.erase(from_pos)
 		pieces_3d[to_pos] = piece_3d
-		var target_3d = board_3d.get_cell_position_3d(to_pos.x, to_pos.y, 0.08)
-		piece_3d.jump_to(target_3d, 0.5, 0.3)
+		piece_3d.select(false)
+		piece_3d.jump_to(_cell_pos(to_pos.x, to_pos.y),
+			Tokens3D.ARC_LONG if captured_pos != Vector2i(-1, -1) else Tokens3D.ARC_SHORT)
 		
 	if captured_pos != Vector2i(-1, -1):
 		var cap_piece = pieces_3d.get(captured_pos)
 		if cap_piece:
-			cap_piece.queue_free()
+			cap_piece.vanish()
 			pieces_3d.erase(captured_pos)
-			
+
 	var became_queen = CheckersRules.apply_move(grid_data, from_pos, to_pos, captured_pos)
 	if became_queen and piece_3d:
 		piece_3d.promote_queen()
@@ -200,24 +229,24 @@ func _play_ai_turn():
 			
 			pieces_3d.erase(to_pos)
 			pieces_3d[next_to] = piece_3d
-			var next_target_3d = board_3d.get_cell_position_3d(next_to.x, next_to.y, 0.08)
-			piece_3d.jump_to(next_target_3d, 0.5, 0.3)
+			piece_3d.jump_to(_cell_pos(next_to.x, next_to.y), Tokens3D.ARC_LONG)
 			
 			var next_cap_piece = pieces_3d.get(next_cap)
 			if next_cap_piece:
-				next_cap_piece.queue_free()
+				next_cap_piece.vanish()
 				pieces_3d.erase(next_cap)
 				
 			CheckersRules.apply_move(grid_data, to_pos, next_to, next_cap)
 			to_pos = next_to
 			further = CheckersRules.get_captures_for_piece(grid_data, to_pos)
 			
-	_sync_pieces_3d()
+	_update_score()
+	board_3d.set_cells_state([from_pos, to_pos], Board3D.CellState.LAST_MOVE)
 	var winner = CheckersRules.check_game_over(grid_data)
 	if winner != 0:
 		_end_game(winner)
 		return
-		
+
 	is_player_turn = true
 	status_label.text = "Sua Vez! (Marfim)"
 

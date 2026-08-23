@@ -7,7 +7,16 @@ script = ExtResource("1_script")
 
 [node name="FrameMesh" type="MeshInstance3D" parent="."]
 
+[node name="InlayMesh" type="MeshInstance3D" parent="."]
+
 [node name="CellsRoot" type="Node3D" parent="."]
 
-[node name="HoverMarker" type="MeshInstance3D" parent="."]
-visible = false
+[node name="Picker" type="Area3D" parent="."]
+input_ray_pickable = true
+monitoring = false
+monitorable = false
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Picker"]
+
+[connection signal="input_event" from="Picker" to="." method="_on_picker_input_event"]
+[connection signal="mouse_exited" from="Picker" to="." method="_on_picker_mouse_exited"]
