@@ -8,11 +8,11 @@ Este documento cataloga todos os jogos potenciais do ecossistema **Jogos de Mesa
 
 | Jogo | Tipo | Complexidade | Stack Recomendada | Estágio Atual | Arquivos / Localização |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **Quatro em Linha** | Tabuleiro | Baixa | Godot | ✅ **Implementado** | [`games/quatro_em_linha/`](file:///Users/sierra/Dev/Jogos/games/quatro_em_linha/) |
-| **Batalha Naval** | Tabuleiro | Média-Baixa | Godot | ✅ **Implementado** | [`games/batalha_naval/`](file:///Users/sierra/Dev/Jogos/games/batalha_naval/) |
-| **Reversi (Othello)** | Tabuleiro | Média | Godot | ✅ **Implementado** | [`games/reversi/`](file:///Users/sierra/Dev/Jogos/games/reversi/) |
-| **Dominó** | Tabuleiro/Mesa | Média | Godot | ✅ **Implementado** | [`games/domino/`](file:///Users/sierra/Dev/Jogos/games/domino/) |
-| **Solitário (Paciência)** | Cartas | Média | Godot | ✅ **Implementado** | [`games/solitario/`](file:///Users/sierra/Dev/Jogos/games/solitario/) |
+| **Quatro em Linha** | Tabuleiro | Baixa | Godot | ✅ **Implementado** | [`games/quatro_em_linha/`](../games/quatro_em_linha/) |
+| **Batalha Naval** | Tabuleiro | Média-Baixa | Godot | ✅ **Implementado** | [`games/batalha_naval/`](../games/batalha_naval/) |
+| **Reversi (Othello)** | Tabuleiro | Média | Godot | ✅ **Implementado** | [`games/reversi/`](../games/reversi/) |
+| **Dominó** | Tabuleiro/Mesa | Média | Godot | ✅ **Implementado** | [`games/domino/`](../games/domino/) |
+| **Solitário (Paciência)** | Cartas | Média | Godot | ✅ **Implementado** | [`games/solitario/`](../games/solitario/) |
 
 ### Detalhamento das Recomendações:
 
@@ -52,8 +52,8 @@ Este documento cataloga todos os jogos potenciais do ecossistema **Jogos de Mesa
 
 | Jogo | Mecânica Resumida | Complexidade | Stack Ideal | Estágio Atual | Arquivos / Localização |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **21 / Blackjack Simplificado** | Comprar até se aproximar de 21 sem estourar. Dealer para em 17+. | Muito Baixa | Godot / Flutter | ✅ **Implementado** | [`games/blackjack/`](file:///Users/sierra/Dev/Jogos/games/blackjack/) |
-| **Memória com Cartas** | Revelar 2 cartas por vez e encontrar todos os pares. | Muito Baixa | Godot / Flutter | ✅ **Implementado** | [`games/memoria/`](file:///Users/sierra/Dev/Jogos/games/memoria/) |
+| **21 / Blackjack Simplificado** | Comprar até se aproximar de 21 sem estourar. Dealer para em 17+. | Muito Baixa | Godot / Flutter | ✅ **Implementado** | [`games/blackjack/`](../games/blackjack/) |
+| **Memória com Cartas** | Revelar 2 cartas por vez e encontrar todos os pares. | Muito Baixa | Godot / Flutter | ✅ **Implementado** | [`games/memoria/`](../games/memoria/) |
 | **Maior Carta (High Card)** | Cada jogador revela uma carta; o maior valor vence. | Mínima | Flutter / Godot | 💡 **Backlog** | `games/maior_carta/` |
 | **Guerra (War Card Game)** | Batalha de cartas com acúmulo em empates. | Baixa | Flutter / Godot | 💡 **Backlog** | `games/guerra/` |
 | **Paciência Simples** | Ordenação direta de cartas por sequência. | Baixa | Flutter | 📋 **Planejado** | `games/paciencia_simples/` |
@@ -87,10 +87,10 @@ Este documento cataloga todos os jogos potenciais do ecossistema **Jogos de Mesa
 
 | Jogo | Especificação | Complexidade | Stack Ideal | Estágio Atual | Arquivos / Localização |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **Jogo da Velha (Tic-Tac-Toe)** | Grade 3×3 clássica com efeitos visuais e IA. | Muito Baixa | Godot / Flutter | ✅ **Implementado** | [`games/jogo_da_velha/`](file:///Users/sierra/Dev/Jogos/games/jogo_da_velha/) |
-| **Damas (Checkers)** | Tabuleiro 8×8, damas voadoras, capturas múltiplas obrigatórias, IA. | Média | Godot | ✅ **Implementado** | [`games/damas/`](file:///Users/sierra/Dev/Jogos/games/damas/) |
-| **Mancala (Kalah)** | Semeadura em 12 cavidades + 2 kalahas com captura de sementes. | Baixa-Média | Godot | ✅ **Implementado** | [`games/mancala/`](file:///Users/sierra/Dev/Jogos/games/mancala/) |
-| **Campo Minado (Minesweeper)** | Grade com contagem de minas adjacentes, bandeiras e primeiro clique seguro. | Baixa-Média | Godot | ✅ **Implementado** | [`games/campo_minado/`](file:///Users/sierra/Dev/Jogos/games/campo_minado/) |
+| **Jogo da Velha (Tic-Tac-Toe)** | Grade 3×3 clássica com efeitos visuais e IA. | Muito Baixa | Godot / Flutter | ✅ **Implementado** | [`games/jogo_da_velha/`](../games/jogo_da_velha/) |
+| **Damas (Checkers)** | Tabuleiro 8×8, damas voadoras, capturas múltiplas obrigatórias, IA. | Média | Godot | ✅ **Implementado** | [`games/damas/`](../games/damas/) |
+| **Mancala (Kalah)** | Semeadura em 12 cavidades + 2 kalahas com captura de sementes. | Baixa-Média | Godot | ✅ **Implementado** | [`games/mancala/`](../games/mancala/) |
+| **Campo Minado (Minesweeper)** | Grade com contagem de minas adjacentes, bandeiras e primeiro clique seguro. | Baixa-Média | Godot | ✅ **Implementado** | [`games/campo_minado/`](../games/campo_minado/) |
 | **Sudoku** | Grade 9×9 (subgrades 3×3) com gerador e validador de quebra-cabeças offline. | Baixa-Média | Flutter | 📋 **Planejado** | `games/sudoku/` |
 | **Kakuro Simplificado** | Cruzadinha numérica com somas por linha e coluna sem repetir dígitos. | Média | Flutter | 💡 **Backlog** | `games/kakuro/` |
 | **Nonogram (Picross)** | Pintura lógica em grade baseada em pistas numéricas nas bordas. | Média | Flutter | 💡 **Backlog** | `games/nonogram/` |

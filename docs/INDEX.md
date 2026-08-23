@@ -10,11 +10,11 @@ Aqui você encontra a listagem detalhada de todos os jogos previstos, seus está
 
 | Documento | Descrição |
 | :--- | :--- |
-| [Catálogo Completo de Jogos e Estágios](file:///Users/sierra/Dev/Jogos/docs/CATALOGO_JOGOS.md) | Lista exaustiva de todos os jogos possíveis (Recomendações, Cartas, Tabuleiro, Brasileiros), regras, stack recomendada e status atual de cada um. |
-| [Estágios e Roadmap de Desenvolvimento](file:///Users/sierra/Dev/Jogos/docs/ESTAGIOS_E_ROADMAP.md) | Cronograma de implementação, fases da esteira de produção e a ordem estratégica recomendada de execução. |
-| [Arquitetura e Stacks (Godot vs Flutter)](file:///Users/sierra/Dev/Jogos/docs/ARQUITETURA_E_STACK.md) | Estrutura modular (`core/`, `shared/`, `games/`), isolamento de regras de negócio, persistência local e guia de escolha de engine por tipo de jogo. |
-| [Guia de Arquitetura, Portabilidade e Multiplayer](file:///Users/sierra/Dev/Jogos/docs/GUIA_ARQUITETURA_E_PORTABILIDADE.md) | Módulos universais de cartas (`Card`, `Deck`), tabuleiros (`Grid2D`), jogadores (`IPlayerController`, `AI`, `Network`) e como portar para Flutter/TS/C#. |
-| [Diretrizes Open Source, Sem Anúncios e Legais](file:///Users/sierra/Dev/Jogos/docs/DIRETRIZES_SEM_ANUNCIOS_E_LEGAIS.md) | Princípios de privacidade (offline-first, zero ads, zero telemetria), geração procedural de assets e proteção legal para jogos tradicionais. |
+| [Catálogo Completo de Jogos e Estágios](CATALOGO_JOGOS.md) | Lista exaustiva de todos os jogos possíveis (Recomendações, Cartas, Tabuleiro, Brasileiros), regras, stack recomendada e status atual de cada um. |
+| [Estágios e Roadmap de Desenvolvimento](ESTAGIOS_E_ROADMAP.md) | Cronograma de implementação, fases da esteira de produção e a ordem estratégica recomendada de execução. |
+| [Arquitetura e Stacks (Godot vs Flutter)](ARQUITETURA_E_STACK.md) | Estrutura modular (`core/`, `shared/`, `games/`), isolamento de regras de negócio, persistência local e guia de escolha de engine por tipo de jogo. |
+| [Guia de Arquitetura, Portabilidade e Multiplayer](GUIA_ARQUITETURA_E_PORTABILIDADE.md) | Módulos universais de cartas (`Card`, `Deck`), tabuleiros (`Grid2D`), jogadores (`IPlayerController`, `AI`, `Network`) e como portar para Flutter/TS/C#. |
+| [Diretrizes Open Source, Sem Anúncios e Legais](DIRETRIZES_SEM_ANUNCIOS_E_LEGAIS.md) | Princípios de privacidade (offline-first, zero ads, zero telemetria), geração procedural de assets e proteção legal para jogos tradicionais. |
 
 ---
 
@@ -37,4 +37,4 @@ pie title Distribuição de Jogos por Estágio
 
 ---
 
-Para detalhes sobre cada jogo, acesse o [Catálogo Completo de Jogos](file:///Users/sierra/Dev/Jogos/docs/CATALOGO_JOGOS.md).
+Para detalhes sobre cada jogo, acesse o [Catálogo Completo de Jogos](CATALOGO_JOGOS.md).

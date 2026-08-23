@@ -37,7 +37,7 @@ graph TD
 ## 📦 Fases do Roadmap
 
 ### Fase 1: Fundação & Jogos de Tabuleiro Core (Status: 100% Concluído)
-- [x] **Arquitetura Base:** Gerenciador de cenas ([`SceneManager.gd`](file:///Users/sierra/Dev/Jogos/core/navegacao/SceneManager.gd)), persistência local ([`SaveManager.gd`](file:///Users/sierra/Dev/Jogos/core/save/SaveManager.gd)) e tema central.
+- [x] **Arquitetura Base:** Gerenciador de cenas ([`SceneManager.gd`](../core/navegacao/SceneManager.gd)), persistência local ([`SaveManager.gd`](../core/save/SaveManager.gd)) e tema central.
 - [x] **Menu Principal & Menus de Categoria:** Navegação entre telas de Tabuleiro, Cartas e Configurações.
 - [x] **Quatro em Linha:** Grade 7×6, física de queda, detecção de 4 em linha, modo IA.
 - [x] **Batalha Naval:** Grade dupla 10×10, 5 navios, IA de busca e destruição, interface de abas.
@@ -71,8 +71,8 @@ graph TD
 ---
 
 ### Fase 4: Polimento, Áudio & Distribuição (Status: Em Andamento)
-- [x] **Script de Build Android:** Script automatizado [`build_apk.sh`](file:///Users/sierra/Dev/Jogos/build_apk.sh) com assinatura local (`release.keystore`).
-- [x] **Preset de Exportação:** Configuração parametrizada em [`export_presets.cfg`](file:///Users/sierra/Dev/Jogos/export_presets.cfg).
+- [x] **Script de Build Android:** Script automatizado [`build_apk.sh`](../build_apk.sh); o export do Godot sai sem assinatura e a assinatura e feita a parte com `apksigner`, usando uma keystore mantida fora do repositorio (`KEYSTORE_PATH`) e a senha em `KEYSTORE_PASSWORD`.
+- [x] **Preset de Exportação:** Configuração parametrizada em [`export_presets.cfg`](../export_presets.cfg).
 - [ ] **Efeitos Sonoros (SFX):** Sons procedurais ou livres de royalties (colocação de peças, virada de cartas, vitória e derrota).
 - [ ] **Distribuição Open Source:** Publicação nas lojas e repositórios livres (F-Droid, GitHub Releases e APK direto).
 - [ ] **Suporte iOS (Xcode):** Exportação para macOS/iOS via Mac host.

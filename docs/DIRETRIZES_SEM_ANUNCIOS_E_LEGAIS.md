@@ -52,7 +52,7 @@ Ao implementar jogos de cartas e tabuleiro populares no Brasil e no mundo (Truco
 
 ### 🤖 Android
 - **F-Droid:** Inclusão no catálogo do F-Droid (focado exclusivamente em software livre e de código aberto, sem bibliotecas proprietárias).
-- **GitHub Releases:** Publicação de APKs e AABs assinados diretamente nas tags de versão do GitHub via scripts de automação ([`build_apk.sh`](file:///Users/sierra/Dev/Jogos/build_apk.sh)).
+- **GitHub Releases:** Publicação de APKs e AABs assinados diretamente nas tags de versão do GitHub via scripts de automação ([`build_apk.sh`](../build_apk.sh)).
 - **Google Play Store:** Opcional como aplicativo gratuito sem anúncios.
 
 ### 🍎 iOS / macOS
