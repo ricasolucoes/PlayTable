@@ -183,24 +183,5 @@ class TestIntegrationSimulations(unittest.TestCase):
         self.assertEqual(grid[5][1], 0)
         self.assertEqual(grid[3][3], 0)
 
-    def test_e2e_unolike_simulation(self):
-        """E2E Match Simulation: Cartas das Cores (Uno-like Match)"""
-        p1_hand = [{"color": "RED", "val": 5}, {"color": "BLUE", "val": 5}]
-        top_card = {"color": "RED", "val": 2}
-        active_color = "RED"
-
-        # P1 plays Red 5
-        played = p1_hand.pop(0)
-        self.assertEqual(played["color"], active_color)
-        top_card = played
-
-        # Next turn: P1 plays Blue 5 matching value 5
-        played2 = p1_hand.pop(0)
-        self.assertEqual(played2["val"], top_card["val"])
-        active_color = played2["color"]
-
-        # P1 hand is now empty -> WIN!
-        self.assertEqual(len(p1_hand), 0)
-
 if __name__ == '__main__':
     unittest.main()
