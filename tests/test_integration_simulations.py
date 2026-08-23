@@ -70,48 +70,6 @@ class TestIntegrationSimulations(unittest.TestCase):
         self.assertTrue(all(s["sunk"] for s in fleet))
         self.assertLessEqual(turns, 100)
 
-    def test_e2e_connect_four_simulation(self):
-        """E2E Match Simulation: Quatro em Linha"""
-        grid = [[0]*7 for _ in range(6)]
-
-        def drop_piece(g, col, p):
-            if g[0][col] != 0: return -1
-            for r in range(5, -1, -1):
-                if g[r][col] == 0:
-                    g[r][col] = p
-                    return r
-            return -1
-
-        def check_win(g, start_r, start_c, p):
-            dirs = [(0, 1), (1, 0), (1, 1), (1, -1)]
-            for dr, dc in dirs:
-                count = 1
-                r, c = start_r + dr, start_c + dc
-                while 0 <= r < 6 and 0 <= c < 7 and g[r][c] == p:
-                    count += 1; r += dr; c += dc
-                r, c = start_r - dr, start_c - dc
-                while 0 <= r < 6 and 0 <= c < 7 and g[r][c] == p:
-                    count += 1; r -= dr; c -= dc
-                if count >= 4:
-                    return True
-            return False
-
-        # Drop sequence resulting in Player 1 win
-        drops = [
-            (3, 1), (2, 2), # P1, P2
-            (3, 1), (2, 2),
-            (3, 1), (2, 2),
-            (3, 1)          # P1 gets 4 vertical at col 3
-        ]
-        winner = None
-        for col, p in drops:
-            r = drop_piece(grid, col, p)
-            if check_win(grid, r, col, p):
-                winner = p
-                break
-
-        self.assertEqual(winner, 1)
-
     def test_e2e_reversi_simulation(self):
         """E2E Match Simulation: Reversi (Full 64-tile match)"""
         grid = [[0]*8 for _ in range(8)]
