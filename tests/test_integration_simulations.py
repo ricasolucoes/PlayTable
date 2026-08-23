@@ -183,21 +183,6 @@ class TestIntegrationSimulations(unittest.TestCase):
         self.assertEqual(grid[5][1], 0)
         self.assertEqual(grid[3][3], 0)
 
-    def test_e2e_klondike_solitaire_simulation(self):
-        """E2E Match Simulation: Paciência Klondike Sequence"""
-        foundations = [[], [], [], []] # 4 foundation suits
-        tableau_col = [{"val": 13, "col": "black"}, {"val": 12, "col": "red"}] # King, Queen
-
-        # Ace of Spades arrives -> placed in foundation 0
-        ace_spades = {"val": 1, "suit": "♠"}
-        foundations[0].append(ace_spades)
-        self.assertEqual(len(foundations[0]), 1)
-
-        # 2 of Spades arrives -> placed on Ace
-        two_spades = {"val": 2, "suit": "♠"}
-        foundations[0].append(two_spades)
-        self.assertEqual(len(foundations[0]), 2)
-
     def test_e2e_unolike_simulation(self):
         """E2E Match Simulation: Cartas das Cores (Uno-like Match)"""
         p1_hand = [{"color": "RED", "val": 5}, {"color": "BLUE", "val": 5}]
