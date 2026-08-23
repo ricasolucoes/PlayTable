@@ -2,7 +2,9 @@
 
 ---
 
-## [Unreleased](https://github.com/ricardosierra/jogos-de-mesa-offline/compare/v0.2.0...develop)
+## [Unreleased](https://github.com/ricardosierra/jogos-de-mesa-offline/compare/v0.2.1...develop)
+
+## [v0.2.1 (2026-08-22)](https://github.com/ricardosierra/jogos-de-mesa-offline/compare/v0.2.0...v0.2.1)
 
 ### 🐛 Correções
 
@@ -14,6 +16,7 @@
 
 - [x] **`export_presets.cfg` completo e sem chaves** — o preset era um stub de ~17 chaves que o Godot 4.3 rejeitava (keystore parcialmente preenchida e `architecture/*` no singular, ignorado em favor de `architectures/*`). Regenerado com as 202 chaves de um preset real, sem nenhuma chave `keystore/*`, `package/signed=false`, `arm64-v8a` + `armeabi-v7a`, `package/name="PlayTable"`
 - [x] **Preparação para F-Droid** — `export_presets.cfg` versionado (removido do `.gitignore`), cache do editor `.godot/` removido do índice (o `uid_cache.bin` reprovava no scanner e o `project_metadata.cfg` vazava caminhos absolutos). Scanner do F-Droid passa de 1 problema para 0
+- [x] **Keystore de release removida do histórico** — a chave privada de assinatura estava versionada e publicamente acessível no GitHub e no GitLab, com a senha em claro no `build_apk.sh`. Histórico reescrito com `git filter-repo`, senha redigida e chave marcada como comprometida. Os SHAs de todos os commits mudaram e as tags foram recriadas
 - [x] **`build_apk.sh`** — export sempre sem assinatura; assinatura virou passo separado com `apksigner`, usando `KEYSTORE_PATH` (fora do repositório) e `KEYSTORE_PASSWORD` via ambiente
 
 ## [v0.2.0 (2026-08-19)](https://github.com/ricardosierra/jogos-de-mesa-offline/compare/v0.1.0...v0.2.0)
