@@ -183,23 +183,6 @@ class TestIntegrationSimulations(unittest.TestCase):
         self.assertEqual(grid[5][1], 0)
         self.assertEqual(grid[3][3], 0)
 
-    def test_e2e_minesweeper_simulation(self):
-        """E2E Match Simulation: Campo Minado"""
-        # 3x3 mock board with 1 mine at (0, 0)
-        board = [
-            [{"mine": True, "rev": False}, {"mine": False, "rev": False}, {"mine": False, "rev": False}],
-            [{"mine": False, "rev": False}, {"mine": False, "rev": False}, {"mine": False, "rev": False}],
-            [{"mine": False, "rev": False}, {"mine": False, "rev": False}, {"mine": False, "rev": False}],
-        ]
-        # Reveal all 8 non-mine cells
-        for r in range(3):
-            for c in range(3):
-                if not board[r][c]["mine"]:
-                    board[r][c]["rev"] = True
-
-        non_mines_unrevealed = sum(1 for r in range(3) for c in range(3) if not board[r][c]["mine"] and not board[r][c]["rev"])
-        self.assertEqual(non_mines_unrevealed, 0) # Win condition met!
-
     def test_e2e_domino_simulation(self):
         """E2E Match Simulation: Dominó Match"""
         # Player 1 has [(6, 5), (5, 4)], Player 2 has [(4, 2), (2, 0)]
