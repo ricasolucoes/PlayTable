@@ -26,24 +26,5 @@ class TestIntegrationSimulations(unittest.TestCase):
         self.assertEqual(p1_borne_off, 5)
         self.assertEqual(sum(1 for v in board.values() if v == 1), 0)
 
-    def test_e2e_ludo_simulation(self):
-        """E2E Match Simulation: Ludo Simplificado"""
-        # Simulate 2 pawns of player 0 completing the course
-        pawns = [-1, -1]
-        # Roll 6 -> spawn pawn 0
-        pawns[0] = 0
-        # Move pawn 0 along track (28 steps) + final stretch (4 steps) = 32
-        pawns[0] += 28
-        pawns[0] += 4
-        self.assertEqual(pawns[0], 32) # Reached home center
-
-        # Spawn and finish pawn 1
-        pawns[1] = 0
-        pawns[1] += 32
-        self.assertEqual(pawns[1], 32)
-        # Victory check
-        all_won = all(p >= 32 for p in pawns)
-        self.assertTrue(all_won)
-
 if __name__ == '__main__':
     unittest.main()

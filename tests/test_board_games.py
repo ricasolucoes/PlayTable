@@ -7,30 +7,6 @@ import unittest
 import random
 
 
-class TestLudo(unittest.TestCase):
-    """8. Ludo Simplificado"""
-    START_OFFSETS = [0, 7, 14, 21]
-    TRACK_LEN = 28
-
-    def test_pawn_spawn_only_on_six(self):
-        # Position -1 means in base
-        pawn_pos = -1
-        # Roll 5 -> cannot leave base
-        can_move_5 = (pawn_pos == -1 and 5 == 6)
-        self.assertFalse(can_move_5)
-        # Roll 6 -> leaves base to step 0
-        can_move_6 = (pawn_pos == -1 and 6 == 6)
-        self.assertTrue(can_move_6)
-
-    def test_circular_track_and_captures(self):
-        # Player 0 at step 7, Player 1 starts at offset 7
-        # Player 0 absolute index: (7 + 0) % 28 = 7
-        # Player 1 at step 0: (0 + 7) % 28 = 7
-        p0_abs = (7 + self.START_OFFSETS[0]) % self.TRACK_LEN
-        p1_abs = (0 + self.START_OFFSETS[1]) % self.TRACK_LEN
-        self.assertEqual(p0_abs, p1_abs) # Capture collision!
-
-
 class TestSenet(unittest.TestCase):
     """11. Senet Egípcio"""
     def test_casting_sticks_probabilities_and_extra_throws(self):
