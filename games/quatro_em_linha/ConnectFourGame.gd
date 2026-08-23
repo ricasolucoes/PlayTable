@@ -1,4 +1,4 @@
-extends Control
+extends BaseGame
 
 ## Connect Four board game implementation.
 
@@ -13,7 +13,6 @@ const PIECE_RADIUS = 34.0
 
 var board = null
 var is_player_turn: bool = true
-var game_over: bool = false
 var vs_ai: bool = true
 var score_p1: int = 0
 var score_p2: int = 0
@@ -23,7 +22,6 @@ var piece_instances = {} # Vector2i -> Piece node
 @onready var board_back = $BoardArea/BoardBack
 @onready var board_front = $BoardArea/BoardFront
 @onready var col_buttons_container = $BoardArea/ColButtons
-@onready var status_label = $VBoxContainer/StatusCard/StatusLabel
 @onready var p1_panel = $VBoxContainer/ScoreBoard/P1Panel
 @onready var p2_panel = $VBoxContainer/ScoreBoard/P2Panel
 @onready var p1_score_lbl = $VBoxContainer/ScoreBoard/P1Panel/HBox/Score
@@ -33,6 +31,7 @@ var piece_instances = {} # Vector2i -> Piece node
 @onready var win_modal_sub = $WinModal/Panel/VBox/WinSub
 
 func _ready() -> void:
+	status_label = $VBoxContainer/StatusCard/StatusLabel
 	board = BOARD_SCRIPT.new()
 	add_child(board)
 	
@@ -138,19 +137,14 @@ func _handle_game_won(winner_id: int, win_cells: Array[Vector2i]) -> void:
 		if piece_instances.has(cell):
 			piece_instances[cell].set_winning(true)
 			
-	await get_tree().create_timer(0.8).timeout
-	win_modal.visible = true
-	win_modal.modulate.a = 0.0
-	var tw = create_tween()
-	tw.tween_property(win_modal, "modulate:a", 1.0, 0.3)
+	reveal_result_modal(win_modal, 0.8)
 
 func _handle_game_draw() -> void:
 	game_over = true
 	win_modal_title.text = "Empate!"
 	win_modal_sub.text = "O tabuleiro ficou completamente cheio."
 	if AudioManager: AudioManager.play_draw()
-	await get_tree().create_timer(0.8).timeout
-	win_modal.visible = true
+	reveal_result_modal(win_modal, 0.8)
 
 func _update_turn_ui():
 	if game_over:
@@ -164,8 +158,7 @@ func _update_turn_ui():
 		p1_panel.modulate = Color(0.6, 0.6, 0.6, 0.7)
 		p2_panel.modulate = Color(1.0, 1.0, 1.0, 1.0)
 
-func _on_restart_pressed() -> void:
-	if AudioManager: AudioManager.play_click()
+func _start_new_game() -> void:
 	win_modal.visible = false
 	board.reset_board()
 	for child in pieces_layer.get_children():
@@ -174,7 +167,3 @@ func _on_restart_pressed() -> void:
 	game_over = false
 	is_player_turn = true
 	_update_turn_ui()
-
-func _on_back_pressed() -> void:
-	if AudioManager: AudioManager.play_click()
-	SceneManager.goto_scene("res://core/telas/MenuTabuleiro.tscn")
