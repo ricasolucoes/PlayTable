@@ -56,14 +56,35 @@ Bem-vindo ao repositório do **PlayTable** — um aplicativo unificado, gratuito
 ├── shared/                # Componentes visuais e lógica reaproveitável
 │   ├── pecas/             # Componentes de peões e peças
 │   └── theme/             # Tema global (MainTheme.tres)
-└── games/                 # Módulos dos 16 jogos isolados (Regras, IAs, Lógicas únicas)
+├── games/                 # Módulos dos 16 jogos isolados (Regras, IAs, Lógicas únicas)
+└── tests/                 # Suíte GUT rodando contra o GDScript de produção
+    ├── gdscript/unit/     # Um arquivo por jogo, mais núcleo e i18n
+    └── gdscript/integration/  # Catálogo: instancia as 16 cenas de verdade
 ```
+
+---
+
+## 🧪 Testes
+
+A suíte roda o GDScript real, headless, sem abrir janela:
+
+```bash
+tests/run_gut.sh                                   # suíte completa
+tests/run_gut.sh -gselect=reversi                  # só um arquivo
+GODOT=/caminho/para/godot-4.6 tests/run_gut.sh     # apontando a engine
+```
+
+O script busca um Godot 4.4+ no `PATH`, no repositório e em `/Applications`,
+instala o [GUT](https://github.com/bitwes/Gut) em `addons/gut` na primeira
+execução (o addon não é versionado) e reimporta os recursos quando a engine
+ou a versão do GUT mudam. O mesmo comando roda no GitHub Actions a cada push
+e pull request — veja `.github/workflows/ci.yml`.
 
 ---
 
 ## 🛠️ Tecnologias e Compilação
 
-- **Engine Principal:** Godot 4.3 (Mobile/Desktop) com suporte a exportação Android (`build_apk.sh`), iOS, Web e Desktop.
+- **Engine Principal:** Godot 4.6 (Mobile/Desktop) com suporte a exportação Android (`build_apk.sh`), iOS, Web e Desktop.
 - **Configuração de Export:** Versionada em `export_presets.cfg` (preset `Android`, arquiteturas `arm64-v8a` + `armeabi-v7a`).
   O preset é propositalmente **não assinado** (`package/signed=false`) e não contém keystore, alias nem senha —
   isso permite builds reproduzíveis por terceiros (F-Droid). A assinatura é feita à parte pelo `build_apk.sh`,
