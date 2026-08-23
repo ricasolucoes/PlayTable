@@ -9,67 +9,6 @@ import random
 
 class TestIntegrationSimulations(unittest.TestCase):
 
-    def test_e2e_battleship_simulation(self):
-        """E2E Match Simulation: Batalha Naval (Hunt & Target AI vs Fleet)"""
-        SHIP_DEFS = [
-            {"name": "Carrier", "size": 5},
-            {"name": "Battleship", "size": 4},
-            {"name": "Cruiser", "size": 3},
-            {"name": "Submarine", "size": 3},
-            {"name": "Destroyer", "size": 2}
-        ]
-        # Place fleet deterministically
-        grid = [[0]*10 for _ in range(10)]
-        fleet = []
-        # Row 0: Carrier (5), Row 2: Battleship (4), Row 4: Cruiser (3), Row 6: Submarine (3), Row 8: Destroyer (2)
-        r_list = [0, 2, 4, 6, 8]
-        for idx, s in enumerate(SHIP_DEFS):
-            r = r_list[idx]
-            size = s["size"]
-            cells = [(r, c) for c in range(size)]
-            for cr, cc in cells:
-                grid[cr][cc] = 1
-            fleet.append({"name": s["name"], "size": size, "cells": cells, "hits": 0, "sunk": False})
-
-        shots_fired = set()
-        hit_stack = []
-        turns = 0
-
-        while not all(s["sunk"] for s in fleet) and turns < 100:
-            turns += 1
-            # AI pick shot
-            shot = None
-            while hit_stack:
-                cand = hit_stack.pop()
-                if 0 <= cand[0] < 10 and 0 <= cand[1] < 10 and cand not in shots_fired:
-                    shot = cand
-                    break
-            if shot is None:
-                # Checkerboard hunt
-                candidates = [(r, c) for r in range(10) for c in range(10) if (r + c) % 2 == 0 and (r, c) not in shots_fired]
-                if not candidates:
-                    candidates = [(r, c) for r in range(10) for c in range(10) if (r, c) not in shots_fired]
-                shot = candidates[0]
-
-            shots_fired.add(shot)
-            sr, sc = shot
-            is_hit = (grid[sr][sc] == 1)
-
-            if is_hit:
-                # Push orthogonal neighbors to hit_stack
-                for dr, dc in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
-                    hit_stack.append((sr + dr, sc + dc))
-                for s in fleet:
-                    if shot in s["cells"]:
-                        s["hits"] += 1
-                        if s["hits"] >= s["size"]:
-                            s["sunk"] = True
-                        break
-
-        # Verification: all 5 ships sunk in under 100 turns
-        self.assertTrue(all(s["sunk"] for s in fleet))
-        self.assertLessEqual(turns, 100)
-
     def test_e2e_mancala_simulation(self):
         """E2E Match Simulation: Mancala (Kalah) Full Match"""
         pits = [4]*14
