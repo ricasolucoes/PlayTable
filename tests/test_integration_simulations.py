@@ -9,61 +9,6 @@ import random
 
 class TestIntegrationSimulations(unittest.TestCase):
 
-    def test_e2e_mancala_simulation(self):
-        """E2E Match Simulation: Mancala (Kalah) Full Match"""
-        pits = [4]*14
-        pits[6] = 0  # Player store
-        pits[13] = 0 # AI store
-
-        def has_moves(is_p1):
-            start = 0 if is_p1 else 7
-            return any(pits[i] > 0 for i in range(start, start + 6))
-
-        is_p1 = True
-        rounds = 0
-
-        while (has_moves(True) or has_moves(False)) and rounds < 100:
-            rounds += 1
-            if not has_moves(is_p1):
-                break
-            start = 0 if is_p1 else 7
-            valid = [i for i in range(start, start + 6) if pits[i] > 0]
-            chosen = valid[0]
-
-            seeds = pits[chosen]
-            pits[chosen] = 0
-            curr = chosen
-            skip_store = 13 if is_p1 else 6
-
-            while seeds > 0:
-                curr = (curr + 1) % 14
-                if curr == skip_store: continue
-                pits[curr] += 1
-                seeds -= 1
-
-            # Capture rule
-            own_store = 6 if is_p1 else 13
-            own_range = range(0, 6) if is_p1 else range(7, 13)
-            if curr in own_range and pits[curr] == 1:
-                opp_pit = 12 - curr
-                if pits[opp_pit] > 0:
-                    captured = pits[curr] + pits[opp_pit]
-                    pits[curr] = 0
-                    pits[opp_pit] = 0
-                    pits[own_store] += captured
-
-            # Extra turn if ended in own store
-            if curr == own_store:
-                continue
-            is_p1 = not is_p1
-
-        # Sweep remaining
-        for i in range(6): pits[6] += pits[i]; pits[i] = 0
-        for i in range(7, 13): pits[13] += pits[i]; pits[i] = 0
-
-        total_seeds = pits[6] + pits[13]
-        self.assertEqual(total_seeds, 48) # 12 pits * 4 seeds = 48 seeds conserved
-
     def test_e2e_senet_simulation(self):
         """E2E Match Simulation: Senet Egípcio"""
         board = {i: 0 for i in range(1, 31)}

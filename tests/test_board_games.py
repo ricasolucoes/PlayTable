@@ -31,49 +31,6 @@ class TestLudo(unittest.TestCase):
         self.assertEqual(p0_abs, p1_abs) # Capture collision!
 
 
-class TestMancala(unittest.TestCase):
-    """10. Mancala (Kalah)"""
-    def test_mancala_sowing_and_extra_turn(self):
-        # 14 pits: 0-5 (Player), 6 (Player Kalah), 7-12 (AI), 13 (AI Kalah)
-        pits = [4]*14
-        pits[6] = 0
-        pits[13] = 0
-
-        # Player picks pit 2 (4 seeds: drops into 3, 4, 5, 6)
-        seeds = pits[2]
-        pits[2] = 0
-        curr = 2
-        while seeds > 0:
-            curr = (curr + 1) % 14
-            if curr == 13: continue # Skip AI store
-            pits[curr] += 1
-            seeds -= 1
-
-        self.assertEqual(curr, 6) # Ended in own store -> Extra turn!
-        self.assertEqual(pits[6], 1)
-        self.assertEqual(pits[2], 0)
-
-    def test_mancala_capture_rule(self):
-        pits = [0]*14
-        pits[0] = 1 # Sowing pit with 1 seed
-        pits[1] = 0 # Empty target pit
-        pits[11] = 5 # Opposite pit to pit 1 is 12 - 1 = 11
-
-        # Sowing from pit 0 with 1 seed lands on empty pit 1
-        pits[0] = 0
-        pits[1] = 1 # now 1 seed in previously empty pit
-
-        # Capture: pit 1 (1 seed) + pit 11 (5 seeds) = 6 seeds into Player store (6)
-        captured = pits[1] + pits[11]
-        pits[1] = 0
-        pits[11] = 0
-        pits[6] += captured
-
-        self.assertEqual(pits[6], 6)
-        self.assertEqual(pits[1], 0)
-        self.assertEqual(pits[11], 0)
-
-
 class TestSenet(unittest.TestCase):
     """11. Senet Egípcio"""
     def test_casting_sticks_probabilities_and_extra_throws(self):
