@@ -152,3 +152,19 @@ func test_cena_executa_o_salto_removendo_a_esfera_saltada() -> void:
 	assert_eq(jogo.grid_data.get_cell(2, 3), VAZIO, "esfera saltada removida")
 	assert_eq(jogo.grid_data.get_cell(3, 3), PINO, "destino ocupado")
 	assert_eq(RulesScript.count_pegs(jogo.grid_data), 31, "31 esferas restantes")
+
+
+func test_grade_de_toque_desliga_os_cantos_que_nao_existem() -> void:
+	# A grade e 7x7, mas o tabuleiro em cruz so usa 33 das 49 posicoes: os
+	# quatro blocos 2x2 dos cantos nao podem receber toque.
+	var jogo = add_child_autofree(GameScene.instantiate())
+	var botoes: Array = jogo.get_node("UI/CenterContainer/TouchGrid").get_children()
+	assert_eq(botoes.size(), 49, "49 celulas na grade")
+	var ativos := 0
+	for i in range(botoes.size()):
+		var botao: Button = botoes[i]
+		var valida: bool = RulesScript.is_valid_cell(i / 7, i % 7)
+		assert_eq(not botao.disabled, valida, "celula (%d,%d)" % [i / 7, i % 7])
+		if not botao.disabled:
+			ativos += 1
+	assert_eq(ativos, 33, "33 casas jogaveis")

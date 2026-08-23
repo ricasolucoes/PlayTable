@@ -1,4 +1,4 @@
-extends Control
+extends GridGame
 
 ## PegSolitaireGame: Resta Um 3D com Tabuleiro Circular Entalhado e Esferas Polidas de Âmbar
 
@@ -8,22 +8,21 @@ const PegSolitaireRulesScript = preload("res://games/solitario/PegSolitaireRules
 var grid_data: Grid2D
 var selected_pos: Vector2i = Vector2i(-1, -1)
 var valid_targets: Array[Dictionary] = []
-var game_over: bool = false
 var marbles_3d: Dictionary = {}
 
-@onready var env_3d: TabletopEnvironment3D = $TabletopEnvironment3D
 @onready var board_root: Node3D = $BoardRoot
 @onready var marbles_root: Node3D = $MarblesRoot
-@onready var status_label = $UI/VBoxContainer/StatusLabel
 @onready var pegs_label = $UI/VBoxContainer/PegsLabel
-@onready var btn_restart = $UI/Actions/BtnRestart
-@onready var touch_grid = $UI/CenterContainer/TouchGrid
 
 const CELL_SIZE: float = 0.75
 
 func _ready() -> void:
+	env_3d = $TabletopEnvironment3D
+	status_label = $UI/VBoxContainer/StatusLabel
+	btn_restart = $UI/Actions/BtnRestart
 	_setup_3d_circular_board()
-	_setup_touch_grid()
+	build_touch_grid($UI/CenterContainer/TouchGrid, 7, 7, Vector2(44, 44),
+		_on_cell_clicked, PegSolitaireRules.is_valid_cell)
 	_start_new_game()
 
 func _setup_3d_circular_board() -> void:
@@ -69,19 +68,6 @@ func _setup_3d_circular_board() -> void:
 				hole.position = Vector3(start_x + (c * CELL_SIZE), 0.02, start_z + (r * CELL_SIZE))
 				hole.material_override = MaterialFactory3D.get_obsidian()
 				board_root.add_child(hole)
-
-func _setup_touch_grid() -> void:
-	for c in touch_grid.get_children(): c.queue_free()
-	for r in range(7):
-		for c in range(7):
-			var btn = Button.new()
-			btn.custom_minimum_size = Vector2(44, 44)
-			btn.flat = true
-			if PegSolitaireRules.is_valid_cell(r, c):
-				btn.pressed.connect(_on_cell_clicked.bind(r, c))
-			else:
-				btn.disabled = true
-			touch_grid.add_child(btn)
 
 func _get_cell_pos_3d(r: int, c: int) -> Vector3:
 	var start_x = -(7 * CELL_SIZE * 0.5) + (CELL_SIZE * 0.5)
@@ -176,19 +162,10 @@ func _execute_jump(from_pos: Vector2i, target_dict: Dictionary) -> void:
 		_end_game()
 
 func _end_game() -> void:
-	game_over = true
-	btn_restart.show()
-	var remaining = PegSolitaireRules.count_pegs(grid_data)
+	var remaining: int = PegSolitaireRules.count_pegs(grid_data)
 	if remaining == 1:
-		status_label.text = "🏆 Incrível! Apenas 1 esfera restante! Vitória perfeita!"
-		env_3d.celebrate_win()
+		finish_game("🏆 Incrível! Apenas 1 esfera restante! Vitória perfeita!", true)
 	elif remaining <= 3:
-		status_label.text = "Muito bem! Restaram apenas %d esferas." % remaining
+		finish_game("Muito bem! Restaram apenas %d esferas." % remaining)
 	else:
-		status_label.text = "Fim de Jogo! Restaram %d esferas." % remaining
-
-func _on_btn_restart_pressed() -> void:
-	_start_new_game()
-
-func _on_btn_back_pressed() -> void:
-	SceneManager.goto_scene("res://core/telas/MenuTabuleiro.tscn")
+		finish_game("Fim de Jogo! Restaram %d esferas." % remaining)
