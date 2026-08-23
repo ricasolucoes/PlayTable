@@ -27,7 +27,7 @@ TMP_DIR="$(mktemp -d)"
 trap 'rm -rf "$TMP_DIR"' EXIT
 
 echo "Baixando GUT $GUT_VERSION de $GUT_REPO ..."
-git clone --quiet --depth 1 --branch "$GUT_VERSION" "$GUT_REPO" "$TMP_DIR/gut"
+git -c advice.detachedHead=false clone --quiet --depth 1 --branch "$GUT_VERSION" "$GUT_REPO" "$TMP_DIR/gut"
 
 rm -rf "$TARGET"
 mkdir -p "$REPO_ROOT/addons"
