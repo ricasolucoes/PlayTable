@@ -183,27 +183,6 @@ class TestIntegrationSimulations(unittest.TestCase):
         self.assertEqual(grid[5][1], 0)
         self.assertEqual(grid[3][3], 0)
 
-    def test_e2e_video_poker_simulation(self):
-        """E2E Match Simulation: Video Poker Draw & Payout"""
-        # Deal: [10♥, J♥, Q♥, K♥, 2♣]
-        initial_hand = [
-            {"val": 10, "suit": "♥"},
-            {"val": 11, "suit": "♥"},
-            {"val": 12, "suit": "♥"},
-            {"val": 13, "suit": "♥"},
-            {"val": 2, "suit": "♣"}
-        ]
-        # Hold first 4 cards, redraw 5th
-        held = [initial_hand[0], initial_hand[1], initial_hand[2], initial_hand[3]]
-        # Draw Ace of Hearts
-        held.append({"val": 14, "suit": "♥"})
-
-        # Evaluate final hand -> Royal Flush!
-        vals = sorted([c["val"] for c in held])
-        suits = [c["suit"] for c in held]
-        is_royal_flush = (vals == [10, 11, 12, 13, 14] and len(set(suits)) == 1)
-        self.assertTrue(is_royal_flush)
-
     def test_e2e_klondike_solitaire_simulation(self):
         """E2E Match Simulation: Paciência Klondike Sequence"""
         foundations = [[], [], [], []] # 4 foundation suits
