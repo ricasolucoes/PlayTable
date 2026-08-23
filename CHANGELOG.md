@@ -2,7 +2,19 @@
 
 ---
 
-## [Unreleased](https://github.com/ricardosierra/jogos-de-mesa-offline/compare/v0.2.1...develop)
+## [Unreleased](https://github.com/ricardosierra/jogos-de-mesa-offline/compare/v0.3.0...develop)
+
+## [v0.3.0 (2026-08-23)](https://github.com/ricardosierra/jogos-de-mesa-offline/compare/v0.2.1...v0.3.0)
+
+### 🎨 Melhorias
+
+- [x] **APK 11 MB menor** — as 16 capturas de tela em `screenshots/` eram importadas pelo Godot e viajavam dentro do aplicativo, porque o preset usa `export_filter="all_resources"`; um `.gdignore` no diretório tira as imagens do pacote sem removê-las do repositório. De 63,5 MB para 52,4 MB
+
+### 🔧 Técnico
+
+- [x] **Migração para Godot 4.6** — a 4.3 não tem como ser compilada no buildserver do F-Droid: o Debian trixie de lá só oferece JDK 21 e 25, o Godot exige exatamente o 17 em todas as versões, e o Gradle 8.2 que a 4.3 carrega sequer roda em Java 21 (suporte veio no 8.5). A 4.6 traz Gradle 8.11.1 e AGP 8.6.1, que rodam em 21. Os 70 scripts e 27 cenas importaram e exportaram sem uma única alteração em `project.godot` ou `export_presets.cfg`
+- [x] **Arquivos `.uid` versionados** — o Godot 4.4+ passou a identificar cada script por UID em vez de caminho; os 70 arquivos entram no versionamento, como a documentação do Godot exige, para que mover um script não quebre as referências
+
 
 ## [v0.2.1 (2026-08-22)](https://github.com/ricardosierra/jogos-de-mesa-offline/compare/v0.2.0...v0.2.1)
 

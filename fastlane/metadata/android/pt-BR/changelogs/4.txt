@@ -1,0 +1,1 @@
+Migração para o Godot 4.6, que permite compilar o aplicativo a partir do código no F-Droid, e remoção das 16 capturas de tela que viajavam dentro do pacote: o APK ficou 11 MB menor.

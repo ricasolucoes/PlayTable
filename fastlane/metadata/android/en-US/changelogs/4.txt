@@ -1,0 +1,1 @@
+Migrated to Godot 4.6 so the app can be built from source on F-Droid, and removed the 16 bundled screenshots from the package: the APK is 11 MB smaller.
