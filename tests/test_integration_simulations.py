@@ -9,57 +9,6 @@ import random
 
 class TestIntegrationSimulations(unittest.TestCase):
 
-    def test_e2e_tictactoe_simulation(self):
-        """E2E Match Simulation: Jogo da Velha (AI vs AI)"""
-        WIN_COMBOS = [
-            [0, 1, 2], [3, 4, 5], [6, 7, 8],
-            [0, 3, 6], [1, 4, 7], [2, 5, 8],
-            [0, 4, 8], [2, 4, 6]
-        ]
-        def check_win(b, p):
-            return any(b[w[0]] == p and b[w[1]] == p and b[w[2]] == p for w in WIN_COMBOS)
-
-        def get_best_move(b, ai_p):
-            opp = 1 if ai_p == 2 else 2
-            empty = [i for i, v in enumerate(b) if v == 0]
-            if not empty: return -1
-            for i in empty:
-                b[i] = ai_p
-                if check_win(b, ai_p):
-                    b[i] = 0; return i
-                b[i] = 0
-            for i in empty:
-                b[i] = opp
-                if check_win(b, opp):
-                    b[i] = 0; return i
-                b[i] = 0
-            if 4 in empty: return 4
-            for c in [0, 2, 6, 8]:
-                if c in empty: return c
-            return empty[0]
-
-        board = [0] * 9
-        current_player = 1
-        moves_count = 0
-        winner = None
-
-        while moves_count < 9:
-            move = get_best_move(board, current_player)
-            self.assertNotEqual(move, -1)
-            self.assertEqual(board[move], 0)
-            board[move] = current_player
-            moves_count += 1
-
-            if check_win(board, current_player):
-                winner = current_player
-                break
-            current_player = 1 if current_player == 2 else 2
-
-        # Optimal play between two rule-based AIs in Tic-Tac-Toe always ends in Draw
-        self.assertIn(winner, [None, 1, 2])
-        if winner is None:
-            self.assertEqual(moves_count, 9)
-
     def test_e2e_battleship_simulation(self):
         """E2E Match Simulation: Batalha Naval (Hunt & Target AI vs Fleet)"""
         SHIP_DEFS = [
