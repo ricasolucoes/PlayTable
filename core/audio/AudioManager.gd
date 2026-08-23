@@ -1,4 +1,3 @@
-class_name AudioManager
 extends Node
 
 ## Manages sound effects via an audio player pool with procedurally generated sounds.

@@ -1,4 +1,3 @@
-class_name LocaleManager
 extends Node
 
 ## Manages application locale with auto-detection and persistence.

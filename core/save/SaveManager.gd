@@ -1,4 +1,3 @@
-class_name SaveManager
 extends Node
 
 ## Manages persistent user settings via JSON file.

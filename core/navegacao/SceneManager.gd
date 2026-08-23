@@ -1,4 +1,3 @@
-class_name SceneManager
 extends Node
 
 ## Manages scene transitions with a fade-to-black overlay.
