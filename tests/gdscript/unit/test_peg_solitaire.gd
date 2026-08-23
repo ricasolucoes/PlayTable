@@ -128,3 +128,27 @@ func test_partida_completa_nao_trava() -> void:
 		assert_true(saltos <= 31, "no maximo 31 saltos")
 	assert_eq(RulesScript.count_pegs(g), 32 - saltos, "cada salto tira um pino")
 	assert_true(RulesScript.count_pegs(g) < 32, "a partida progrediu")
+
+
+# ------------------------------------------------------------- PegSolitaireGame
+
+const GameScene = preload("res://games/solitario/PegSolitaireGame.tscn")
+
+
+func test_cena_monta_o_tabuleiro_inicial() -> void:
+	var jogo = add_child_autofree(GameScene.instantiate())
+	assert_eq(RulesScript.count_pegs(jogo.grid_data), 32, "32 esferas na mesa")
+	assert_eq(jogo.marbles_3d.size(), 32, "32 esferas desenhadas")
+	assert_false(jogo.game_over, "partida aberta")
+
+
+func test_cena_executa_o_salto_removendo_a_esfera_saltada() -> void:
+	var jogo = add_child_autofree(GameScene.instantiate())
+	jogo._on_cell_clicked(1, 3)
+	assert_eq(jogo.selected_pos, Vector2i(1, 3), "esfera selecionada")
+	assert_eq(jogo.valid_targets.size(), 1, "um destino possivel")
+	jogo._on_cell_clicked(3, 3)
+	assert_eq(jogo.grid_data.get_cell(1, 3), VAZIO, "origem esvaziada")
+	assert_eq(jogo.grid_data.get_cell(2, 3), VAZIO, "esfera saltada removida")
+	assert_eq(jogo.grid_data.get_cell(3, 3), PINO, "destino ocupado")
+	assert_eq(RulesScript.count_pegs(jogo.grid_data), 31, "31 esferas restantes")

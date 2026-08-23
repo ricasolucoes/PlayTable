@@ -148,7 +148,7 @@ func _on_cell_clicked(r: int, c: int):
 
 func _execute_jump(from_pos: Vector2i, target_dict: Dictionary) -> void:
 	var to_pos = target_dict["land"]
-	var jumped_pos = target_dict["jumped"]
+	var jumped_pos = target_dict["over"]
 	
 	grid_data.set_cell(from_pos.x, from_pos.y, 0)
 	grid_data.set_cell(jumped_pos.x, jumped_pos.y, 0)
