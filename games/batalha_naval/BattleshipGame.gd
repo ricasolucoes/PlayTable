@@ -1,4 +1,4 @@
-extends Control
+extends GridGame
 
 ## BattleshipGame: Batalha Naval 3D com Radar Oceânico Tático e Marcadores Tridimensionais
 
@@ -10,36 +10,24 @@ var ai_grid: Grid2D
 var player_ships: Array = []
 var ai_ships: Array = []
 var is_player_turn: bool = true
-var game_over: bool = false
 var viewing_radar: bool = true # true = Radar de Ataque (AI Grid), false = Frota Aliada (Player Grid)
 var markers_3d: Dictionary = {}
 var ships_3d: Array = []
 
-@onready var env_3d: TabletopEnvironment3D = $TabletopEnvironment3D
 @onready var board_3d: Board3D = $Board3D
 @onready var markers_root: Node3D = $MarkersRoot
 @onready var ships_root: Node3D = $ShipsRoot
-@onready var status_label = $UI/VBoxContainer/StatusLabel
 @onready var fleet_info_label = $UI/VBoxContainer/FleetInfoLabel
 @onready var btn_tab_radar = $UI/VBoxContainer/TabBar/BtnRadar
 @onready var btn_tab_fleet = $UI/VBoxContainer/TabBar/BtnFleet
-@onready var btn_restart = $UI/VBoxContainer/BtnRestart
-@onready var touch_grid = $UI/CenterContainer/TouchGrid
 
 func _ready() -> void:
+	env_3d = $TabletopEnvironment3D
+	status_label = $UI/VBoxContainer/StatusLabel
+	btn_restart = $UI/VBoxContainer/BtnRestart
 	board_3d.setup_board(10, 10, 0.65, "ocean_radar")
-	_setup_touch_grid()
+	build_touch_grid($UI/CenterContainer/TouchGrid, 10, 10, Vector2(32, 32), _on_cell_clicked)
 	_start_new_game()
-
-func _setup_touch_grid() -> void:
-	for c in touch_grid.get_children(): c.queue_free()
-	for r in range(10):
-		for c in range(10):
-			var btn = Button.new()
-			btn.custom_minimum_size = Vector2(32, 32)
-			btn.flat = true
-			btn.pressed.connect(_on_cell_clicked.bind(r, c))
-			touch_grid.add_child(btn)
 
 func _start_new_game() -> void:
 	game_over = false
@@ -200,13 +188,10 @@ func _play_ai_turn():
 	is_player_turn = true
 
 func _end_game(is_player_win: bool) -> void:
-	game_over = true
-	btn_restart.show()
 	if is_player_win:
-		status_label.text = "🏆 Vitória! Toda a frota inimiga foi destruída!"
-		env_3d.celebrate_win()
+		finish_game("🏆 Vitória! Toda a frota inimiga foi destruída!", true)
 	else:
-		status_label.text = "Derrota! Sua frota foi aniquilada."
+		finish_game("Derrota! Sua frota foi aniquilada.")
 
 func _on_btn_radar_pressed() -> void:
 	viewing_radar = true
@@ -216,8 +201,3 @@ func _on_btn_fleet_pressed() -> void:
 	viewing_radar = false
 	_update_view_mode()
 
-func _on_btn_restart_pressed() -> void:
-	_start_new_game()
-
-func _on_btn_back_pressed() -> void:
-	SceneManager.goto_scene("res://core/telas/MenuTabuleiro.tscn")
