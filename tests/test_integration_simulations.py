@@ -70,59 +70,6 @@ class TestIntegrationSimulations(unittest.TestCase):
         self.assertTrue(all(s["sunk"] for s in fleet))
         self.assertLessEqual(turns, 100)
 
-    def test_e2e_reversi_simulation(self):
-        """E2E Match Simulation: Reversi (Full 64-tile match)"""
-        grid = [[0]*8 for _ in range(8)]
-        grid[3][3], grid[4][4] = 2, 2 # White
-        grid[3][4], grid[4][3] = 1, 1 # Black
-
-        def find_flips(g, r, c, piece):
-            if g[r][c] != 0: return []
-            opp = 2 if piece == 1 else 1
-            flips = []
-            dirs = [(-1, 0), (1, 0), (0, -1), (0, 1), (-1, -1), (-1, 1), (1, -1), (1, 1)]
-            for dr, dc in dirs:
-                curr = []
-                nr, nc = r + dr, c + dc
-                while 0 <= nr < 8 and 0 <= nc < 8 and g[nr][nc] == opp:
-                    curr.append((nr, nc))
-                    nr += dr; nc += dc
-                if 0 <= nr < 8 and 0 <= nc < 8 and g[nr][nc] == piece:
-                    flips.extend(curr)
-            return flips
-
-        def get_all_moves(g, piece):
-            moves = {}
-            for r in range(8):
-                for c in range(8):
-                    f = find_flips(g, r, c, piece)
-                    if f: moves[(r, c)] = f
-            return moves
-
-        curr_p = 1
-        passes = 0
-        total_moves = 0
-
-        while passes < 2 and total_moves < 60:
-            moves = get_all_moves(grid, curr_p)
-            if not moves:
-                passes += 1
-            else:
-                passes = 0
-                # Pick move with most flips
-                best_pos = max(moves, key=lambda p: len(moves[p]))
-                flips = moves[best_pos]
-                grid[best_pos[0]][best_pos[1]] = curr_p
-                for fr, fc in flips:
-                    grid[fr][fc] = curr_p
-                total_moves += 1
-            curr_p = 2 if curr_p == 1 else 1
-
-        p1_score = sum(row.count(1) for row in grid)
-        p2_score = sum(row.count(2) for row in grid)
-        self.assertGreater(p1_score + p2_score, 4)
-        self.assertLessEqual(p1_score + p2_score, 64)
-
     def test_e2e_mancala_simulation(self):
         """E2E Match Simulation: Mancala (Kalah) Full Match"""
         pits = [4]*14

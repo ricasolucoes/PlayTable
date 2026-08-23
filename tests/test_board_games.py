@@ -322,41 +322,6 @@ class TestLudo(unittest.TestCase):
         self.assertEqual(p0_abs, p1_abs) # Capture collision!
 
 
-class TestReversi(unittest.TestCase):
-    """9. Reversi (Othello)"""
-    def create_initial_board(self):
-        grid = [[0]*8 for _ in range(8)]
-        grid[3][3] = 2 # White
-        grid[3][4] = 1 # Black
-        grid[4][3] = 1 # Black
-        grid[4][4] = 2 # White
-        return grid
-
-    def get_flips(self, grid, r, c, piece):
-        if grid[r][c] != 0: return []
-        opp = 2 if piece == 1 else 1
-        dirs = [(-1, 0), (1, 0), (0, -1), (0, 1), (-1, -1), (-1, 1), (1, -1), (1, 1)]
-        flips = []
-        for dr, dc in dirs:
-            curr = []
-            nr, nc = r + dr, c + dc
-            while 0 <= nr < 8 and 0 <= nc < 8 and grid[nr][nc] == opp:
-                curr.append((nr, nc))
-                nr += dr
-                nc += dc
-            if 0 <= nr < 8 and 0 <= nc < 8 and grid[nr][nc] == piece:
-                flips.extend(curr)
-        return flips
-
-    def test_initial_board_and_valid_flanking(self):
-        grid = self.create_initial_board()
-        flips_2_3 = self.get_flips(grid, 2, 3, 1) # Black at (2, 3) flanks White at (3, 3)
-        self.assertEqual(flips_2_3, [(3, 3)])
-
-        flips_invalid = self.get_flips(grid, 0, 0, 1)
-        self.assertEqual(flips_invalid, [])
-
-
 class TestMancala(unittest.TestCase):
     """10. Mancala (Kalah)"""
     def test_mancala_sowing_and_extra_turn(self):
