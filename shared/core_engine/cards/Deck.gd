@@ -1,13 +1,6 @@
 ## Represents a deck of cards.
 class_name Deck
-extends RefCounted
-
-const CardScript = preload("res://shared/core_engine/cards/Card.gd")
-
-var cards: Array[Card] = []
-
-func _init(initial_cards: Array[Card] = []) -> void:
-	cards = initial_cards.duplicate()
+extends CardCollection
 
 func shuffle() -> void:
 	cards.shuffle()
@@ -45,18 +38,6 @@ func recycle_from(source_cards: Array[Variant]) -> void:
 			copy.is_face_up = false
 			cards.append(copy)
 	shuffle()
-
-func size() -> int:
-	return cards.size()
-
-func count() -> int:
-	return cards.size()
-
-func is_empty() -> bool:
-	return cards.is_empty()
-
-func clear() -> void:
-	cards.clear()
 
 static func create_standard_52(aces_high: bool = false) -> Deck:
 	var deck = Deck.new()
@@ -117,12 +98,6 @@ static func create_memory_deck(custom_emojis: Array[String] = []) -> Deck:
 		deck.add_card(c2)
 		
 	return deck
-
-func to_dict() -> Dictionary:
-	var list = []
-	for c in cards:
-		list.append(c.to_dict())
-	return {"cards": list}
 
 static func from_dict(data: Dictionary) -> Deck:
 	var deck = Deck.new()
