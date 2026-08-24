@@ -1,0 +1,20 @@
+extends SceneTree
+func _initialize() -> void:
+	var t0 := Time.get_ticks_msec()
+	var w = TextureFactory3D.wood("walnut", Color(0.19,0.12,0.08), 11.0, 0.22)
+	var t1 := Time.get_ticks_msec()
+	var f = TextureFactory3D.felt("green", Color(0.07,0.30,0.19))
+	var t2 := Time.get_ticks_msec()
+	var m = TextureFactory3D.marble("white", Color(0.90,0.89,0.86), Color(0.55,0.56,0.60))
+	var t3 := Time.get_ticks_msec()
+	var l = TextureFactory3D.leather("brown", Color(0.30,0.18,0.12))
+	var t4 := Time.get_ticks_msec()
+	var iv = TextureFactory3D.ivory("bone", Color(0.94,0.91,0.84))
+	var t5 := Time.get_ticks_msec()
+	var cached_start := Time.get_ticks_msec()
+	for i in 100:
+		TextureFactory3D.wood("walnut", Color(0.19,0.12,0.08), 11.0, 0.22)
+	var cached_end := Time.get_ticks_msec()
+	print("wood=%dms felt=%dms marble=%dms leather=%dms ivory=%dms TOTAL=%dms | 100 cached hits=%dms" % [t1-t0, t2-t1, t3-t2, t4-t3, t5-t4, t5-t0, cached_end-cached_start])
+	print("albedo size=", w["albedo"].get_size(), " has_normal=", w["normal"] != null)
+	quit(0)
