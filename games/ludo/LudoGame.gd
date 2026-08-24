@@ -1,4 +1,4 @@
-extends Control
+extends BaseGame
 
 ## LudoGame: Ludo 3D com Tabuleiro em Cruz Colorido, Peões Esculpidos e Dado 3D Físico
 
@@ -18,19 +18,18 @@ var players_pawns = [
 var current_turn: int = 0
 var last_roll: int = 0
 var can_roll: bool = true
-var game_over: bool = false
 var pawns_3d = [[], [], [], []]
 
-@onready var env_3d: TabletopEnvironment3D = $TabletopEnvironment3D
 @onready var board_root: Node3D = $BoardRoot
 @onready var pawns_root: Node3D = $PawnsRoot
 @onready var dice_3d: Dice3D = $Dice3D
-@onready var status_label = $UI/VBoxContainer/StatusLabel
 @onready var btn_dice = $UI/DiceArea/BtnDice
 @onready var pawn_buttons_container = $UI/PawnSelectionArea/PawnButtons
-@onready var btn_restart = $UI/Actions/BtnRestart
 
 func _ready() -> void:
+	env_3d = $TabletopEnvironment3D
+	status_label = $UI/VBoxContainer/StatusLabel
+	btn_restart = $UI/Actions/BtnRestart
 	_setup_3d_ludo_board()
 	_setup_3d_pawns()
 	dice_3d.roll_finished.connect(_on_dice_roll_finished)
@@ -267,18 +266,9 @@ func _check_win(p: int) -> bool:
 			all_finished = false
 			break
 	if all_finished:
-		game_over = true
-		btn_restart.show()
 		if p == 0:
-			status_label.text = "🏆 Parabéns! Você venceu o Ludo 3D!"
-			env_3d.celebrate_win()
+			finish_game("🏆 Parabéns! Você venceu o Ludo 3D!", true)
 		else:
-			status_label.text = "%s venceu a partida!" % PLAYER_NAMES[p]
+			finish_game("%s venceu a partida!" % PLAYER_NAMES[p])
 		return true
 	return false
-
-func _on_btn_restart_pressed() -> void:
-	_start_new_game()
-
-func _on_btn_back_pressed() -> void:
-	SceneManager.goto_scene("res://core/telas/MenuTabuleiro.tscn")
