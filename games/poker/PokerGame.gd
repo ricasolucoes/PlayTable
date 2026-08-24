@@ -1,4 +1,4 @@
-extends Control
+extends BaseGame
 
 ## PokerGame: Video Poker 3D com Cartas Reais em Cassino, Seleção de Reter e Animações de Troca
 
@@ -16,11 +16,9 @@ var chips: int = 100
 var current_bet: int = 5
 var game_phase: String = "bet" # "bet", "hold", "result"
 
-@onready var env_3d: TabletopEnvironment3D = $TabletopEnvironment3D
 @onready var cards_root: Node3D = $CardsRoot
 @onready var chips_label = $UI/VBoxContainer/Header/ChipsLabel
 @onready var bet_label = $UI/VBoxContainer/Header/BetLabel
-@onready var status_label = $UI/VBoxContainer/StatusLabel
 @onready var payout_table_label = $UI/VBoxContainer/PayoutTableContainer/PayoutLabel
 @onready var btn_action = $UI/Controls/BtnAction
 @onready var btn_bet_minus = $UI/Controls/BtnBetMinus
@@ -36,6 +34,11 @@ var game_phase: String = "bet" # "bet", "hold", "result"
 const CARD_SPACING_X: float = 0.95
 
 func _ready() -> void:
+	# Video poker nao tem fim de partida nem botao reiniciar: das rodadas cuida
+	# o game_phase abaixo, e de BaseGame vem so a navegacao de volta.
+	menu_scene_path = MENU_CARTAS
+	env_3d = $TabletopEnvironment3D
+	status_label = $UI/VBoxContainer/StatusLabel
 	env_3d.set_felt_color(Color(0.2, 0.08, 0.28)) # Feltro Púrpura Imperial
 	player_hand = CardHand.new()
 	for i in range(5):
@@ -170,6 +173,3 @@ func _on_btn_bet_plus_pressed() -> void:
 	if game_phase != "bet": return
 	current_bet = min(chips, current_bet + 5)
 	_update_chips_ui()
-
-func _on_btn_back_pressed() -> void:
-	SceneManager.goto_scene("res://core/telas/MenuCartas.tscn")
