@@ -26,7 +26,7 @@ static func evaluate_hand(cards: Array) -> Dictionary:
 	vals.sort()
 	
 	# Checagem de Flush (todas do mesmo naipe)
-	var is_flush = (suits[0] == suits[1] and suits[1] == suits[2] and suits[2] == suits[3] and suits[3] == suits[4])
+	var is_flush := (suits[0] == suits[1] and suits[1] == suits[2] and suits[2] == suits[3] and suits[3] == suits[4])
 	
 	# Checagem de Straight (sequência)
 	var is_straight: bool = false
@@ -39,7 +39,7 @@ static func evaluate_hand(cards: Array) -> Dictionary:
 	var freq: Dictionary = {}
 	for v in vals:
 		freq[v] = freq.get(v, 0) + 1
-	var counts = freq.values()
+	var counts := freq.values()
 	counts.sort()
 	
 	# 1. Royal Flush

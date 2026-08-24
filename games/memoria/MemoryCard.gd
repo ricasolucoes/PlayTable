@@ -55,10 +55,10 @@ func flip(face_up: bool, on_complete: Callable = Callable()):
 		return
 		
 	is_animating = true
-	var pivot_x = size.x * 0.5
+	var pivot_x := size.x * 0.5
 	pivot_offset = Vector2(pivot_x, size.y * 0.5)
 	
-	var tw = create_tween()
+	var tw := create_tween()
 	tw.tween_property(self, "scale:x", 0.0, 0.15).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
 	tw.tween_callback(func():
 		is_face_up = face_up
@@ -73,30 +73,30 @@ func flip(face_up: bool, on_complete: Callable = Callable()):
 func play_match_animation() -> void:
 	is_matched = true
 	set_process(true)
-	var tw = create_tween()
+	var tw := create_tween()
 	tw.tween_property(self, "scale", Vector2(1.1, 1.1), 0.15).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	tw.tween_property(self, "scale", Vector2(1.0, 1.0), 0.15)
 
 func play_mismatch_shake() -> void:
-	var orig_x = position.x
-	var tw = create_tween()
+	var orig_x := position.x
+	var tw := create_tween()
 	tw.tween_property(self, "position:x", orig_x - 8.0, 0.05)
 	tw.tween_property(self, "position:x", orig_x + 8.0, 0.05)
 	tw.tween_property(self, "position:x", orig_x - 6.0, 0.05)
 	tw.tween_property(self, "position:x", orig_x, 0.05)
 
 func _draw() -> void:
-	var w = size.x
-	var h = size.y
-	var card_rect = Rect2(Vector2.ZERO, size)
+	var w := size.x
+	var h := size.y
+	var card_rect := Rect2(Vector2.ZERO, size)
 	
 	# 1. Soft Drop Shadow
 	draw_rect(Rect2(Vector2(0, 6), size), Color(0, 0, 0, 0.4), true)
 	
 	# 2. Matched Golden Aura
 	if is_matched:
-		var p = 0.5 + 0.5 * sin(glow_pulse)
-		var aura_c = Color(1.0, 0.85, 0.25, 0.6 * p)
+		var p := 0.5 + 0.5 * sin(glow_pulse)
+		var aura_c := Color(1.0, 0.85, 0.25, 0.6 * p)
 		draw_rect(Rect2(-6, -6, w + 12, h + 12), aura_c, false, 4.0)
 	
 	if not is_face_up:
@@ -109,17 +109,17 @@ func _draw_card_back(w: float, h: float) -> void:
 	draw_rect(Rect2(0, 0, w, h), Color(0.96, 0.94, 0.90), true)
 	
 	# Deep Royal Blue velvet inner rect
-	var inset = 8.0
-	var inner_rect = Rect2(inset, inset, w - inset * 2, h - inset * 2)
+	var inset := 8.0
+	var inner_rect := Rect2(inset, inset, w - inset * 2, h - inset * 2)
 	draw_rect(inner_rect, Color(0.08, 0.16, 0.38), true)
 	
 	# Gold filigree border
-	var gold = Color(0.88, 0.72, 0.32, 0.85)
+	var gold := Color(0.88, 0.72, 0.32, 0.85)
 	draw_rect(Rect2(inset + 3, inset + 3, w - (inset + 3) * 2, h - (inset + 3) * 2), gold, false, 1.5)
 	
 	# Victorian diamond lattice pattern
-	var center = Vector2(w * 0.5, h * 0.5)
-	var dia_size = 28.0
+	var center := Vector2(w * 0.5, h * 0.5)
+	var dia_size := 28.0
 	var dia_pts = [
 		center + Vector2(0, -dia_size),
 		center + Vector2(dia_size * 0.7, 0),
@@ -147,12 +147,12 @@ func _draw_card_front(w: float, h: float) -> void:
 	draw_rect(Rect2(0, 0, w, h), Color(0.98, 0.97, 0.94), true)
 	
 	# Elegant Inset Frame
-	var inset = 6.0
-	var gold_trim = Color(0.78, 0.64, 0.32, 0.6)
+	var inset := 6.0
+	var gold_trim := Color(0.78, 0.64, 0.32, 0.6)
 	draw_rect(Rect2(inset, inset, w - inset * 2, h - inset * 2), gold_trim, false, 1.5)
 	
 	# Center Icon Background Medallion
-	var center = Vector2(w * 0.5, h * 0.5)
+	var center := Vector2(w * 0.5, h * 0.5)
 	draw_circle(center + Vector2(0, 2), 44.0, Color(0.0, 0.0, 0.0, 0.06))
 	draw_circle(center, 42.0, Color(0.92, 0.90, 0.85))
 	draw_circle(center, 40.0, Color(0.96, 0.95, 0.92))
@@ -247,12 +247,12 @@ func _draw_shield(c: Vector2) -> void:
 	draw_rect(Rect2(c.x - 18, c.y - 6, 36, 8), Color(0.95, 0.80, 0.20), true)
 
 func _draw_star(c: Vector2) -> void:
-	var r_out = 22.0
-	var r_in = 9.0
+	var r_out := 22.0
+	var r_in := 9.0
 	var pts: PackedVector2Array = []
 	for i in range(10):
-		var angle = -PI * 0.5 + float(i) * PI / 5.0
-		var r = r_out if i % 2 == 0 else r_in
+		var angle := -PI * 0.5 + float(i) * PI / 5.0
+		var r := r_out if i % 2 == 0 else r_in
 		pts.append(c + Vector2(cos(angle), sin(angle)) * r)
 	draw_colored_polygon(pts, Color(0.98, 0.82, 0.12))
 	# Core highlight
@@ -270,16 +270,16 @@ func _draw_chest(c: Vector2) -> void:
 	draw_circle(c + Vector2(0, 2), 4.0, Color(0.2, 0.15, 0.05))
 
 func _draw_clover(c: Vector2) -> void:
-	var leaf_c = Color(0.18, 0.78, 0.28)
-	var leaf_r = 10.0
-	var offsets = [Vector2(0, -10), Vector2(10, 0), Vector2(0, 10), Vector2(-10, 0)]
+	var leaf_c := Color(0.18, 0.78, 0.28)
+	var leaf_r := 10.0
+	var offsets := [Vector2(0, -10), Vector2(10, 0), Vector2(0, 10), Vector2(-10, 0)]
 	for off in offsets:
 		draw_circle(c + off, leaf_r, leaf_c)
 	# Stem
 	draw_line(c, c + Vector2(8, 20), Color(0.12, 0.55, 0.18), 3.0)
 
 func _draw_key(c: Vector2) -> void:
-	var key_c = Color(0.92, 0.74, 0.22)
+	var key_c := Color(0.92, 0.74, 0.22)
 	# Ring top
 	draw_circle(c + Vector2(0, -12), 10.0, key_c)
 	draw_circle(c + Vector2(0, -12), 5.0, Color(0.96, 0.95, 0.92))

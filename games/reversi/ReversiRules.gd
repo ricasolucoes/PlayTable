@@ -21,7 +21,7 @@ const POSITIONAL_WEIGHTS = [
 ]
 
 static func create_initial_board() -> Grid2D:
-	var grid = Grid2D.new(ROWS, COLS, 0)
+	var grid := Grid2D.new(ROWS, COLS, 0)
 	grid.set_cell(3, 3, 2) # White
 	grid.set_cell(3, 4, 1) # Black
 	grid.set_cell(4, 3, 1) # Black
@@ -30,8 +30,8 @@ static func create_initial_board() -> Grid2D:
 
 static func find_all_valid_moves(grid: Grid2D, piece: int) -> Dictionary:
 	var moves: Dictionary = {}
-	var opponent = 2 if piece == 1 else 1
-	var directions = BoardCoord.ALL_8_DIRECTIONS
+	var opponent := 2 if piece == 1 else 1
+	var directions := BoardCoord.ALL_8_DIRECTIONS
 	
 	for r in range(ROWS):
 		for c in range(COLS):
@@ -58,14 +58,14 @@ static func find_all_valid_moves(grid: Grid2D, piece: int) -> Dictionary:
 	return moves
 
 static func get_valid_moves(grid: Grid2D, piece: int) -> Array[Vector2i]:
-	var moves = find_all_valid_moves(grid, piece)
+	var moves := find_all_valid_moves(grid, piece)
 	var list: Array[Vector2i] = []
 	for p in moves.keys():
 		list.append(p)
 	return list
 
 static func get_flipped_pieces(grid: Grid2D, pos: Vector2i, piece: int) -> Array[Vector2i]:
-	var moves = find_all_valid_moves(grid, piece)
+	var moves := find_all_valid_moves(grid, piece)
 	if moves.has(pos):
 		return moves[pos]
 	return []
@@ -74,7 +74,7 @@ static func get_best_move(grid: Grid2D, ai_piece: int) -> Vector2i:
 	return get_best_ai_move(grid, ai_piece)
 
 static func get_winner(grid: Grid2D) -> Dictionary:
-	var scores = count_scores(grid)
+	var scores := count_scores(grid)
 	if scores["black"] > scores["white"]:
 		return {"winner": 1, "black": scores["black"], "white": scores["white"]}
 	elif scores["white"] > scores["black"]:
@@ -88,24 +88,24 @@ static func apply_move(grid: Grid2D, pos: Vector2i, piece: int, flips: Array) ->
 		grid.set_cell_pos(f, piece)
 
 static func count_scores(grid: Grid2D) -> Dictionary:
-	var black = grid.count_matching(1)
-	var white = grid.count_matching(2)
+	var black := grid.count_matching(1)
+	var white := grid.count_matching(2)
 	return {"black": black, "white": white}
 
 static func get_best_ai_move(grid: Grid2D, ai_piece: int) -> Vector2i:
-	var moves = find_all_valid_moves(grid, ai_piece)
+	var moves := find_all_valid_moves(grid, ai_piece)
 	if moves.is_empty(): return Vector2i(-1, -1)
 	
-	var best_pos = Vector2i(-1, -1)
-	var best_score = -999999
+	var best_pos := Vector2i(-1, -1)
+	var best_score := -999999
 	
 	for pos in moves:
 		var flips = moves[pos]
-		var cloned_grid = grid.clone()
+		var cloned_grid := grid.clone()
 		apply_move(cloned_grid, pos, ai_piece, flips)
 		
 		# Depth 3 is a good balance for GDScript performance
-		var score = minimax(cloned_grid, 3, -999999, 999999, false, ai_piece)
+		var score := minimax(cloned_grid, 3, -999999, 999999, false, ai_piece)
 		
 		if score > best_score:
 			best_score = score
@@ -120,15 +120,15 @@ static func minimax(grid: Grid2D, depth: int, alpha: int, beta: int, maximizing:
 	if depth == 0:
 		return evaluate_board(grid, ai_piece)
 		
-	var current_piece = ai_piece if maximizing else (2 if ai_piece == 1 else 1)
-	var moves = find_all_valid_moves(grid, current_piece)
+	var current_piece := ai_piece if maximizing else (2 if ai_piece == 1 else 1)
+	var moves := find_all_valid_moves(grid, current_piece)
 	
 	if moves.is_empty():
 		# If neither side has moves, game over
-		var opponent = 2 if ai_piece == 1 else 1
-		var opp_moves = find_all_valid_moves(grid, opponent)
+		var opponent := 2 if ai_piece == 1 else 1
+		var opp_moves := find_all_valid_moves(grid, opponent)
 		if opp_moves.is_empty():
-			var scores = count_scores(grid)
+			var scores := count_scores(grid)
 			var ai_score = scores["black"] if ai_piece == 1 else scores["white"]
 			var opp_score = scores["white"] if ai_piece == 1 else scores["black"]
 			if ai_score > opp_score: return 99999
@@ -138,23 +138,23 @@ static func minimax(grid: Grid2D, depth: int, alpha: int, beta: int, maximizing:
 		return minimax(grid, depth - 1, alpha, beta, not maximizing, ai_piece)
 		
 	if maximizing:
-		var max_eval = -999999
+		var max_eval := -999999
 		for pos in moves:
 			var flips = moves[pos]
-			var cloned = grid.clone()
+			var cloned := grid.clone()
 			apply_move(cloned, pos, current_piece, flips)
-			var ev = minimax(cloned, depth - 1, alpha, beta, false, ai_piece)
+			var ev := minimax(cloned, depth - 1, alpha, beta, false, ai_piece)
 			max_eval = max(max_eval, ev)
 			alpha = max(alpha, ev)
 			if beta <= alpha: break
 		return max_eval
 	else:
-		var min_eval = 999999
+		var min_eval := 999999
 		for pos in moves:
 			var flips = moves[pos]
-			var cloned = grid.clone()
+			var cloned := grid.clone()
 			apply_move(cloned, pos, current_piece, flips)
-			var ev = minimax(cloned, depth - 1, alpha, beta, true, ai_piece)
+			var ev := minimax(cloned, depth - 1, alpha, beta, true, ai_piece)
 			min_eval = min(min_eval, ev)
 			beta = min(beta, ev)
 			if beta <= alpha: break
@@ -162,7 +162,7 @@ static func minimax(grid: Grid2D, depth: int, alpha: int, beta: int, maximizing:
 
 static func evaluate_board(grid: Grid2D, ai_piece: int) -> int:
 	var score: int = 0
-	var opponent = 2 if ai_piece == 1 else 1
+	var opponent := 2 if ai_piece == 1 else 1
 	for r in range(ROWS):
 		for c in range(COLS):
 			var cell = grid.get_cell(r, c)

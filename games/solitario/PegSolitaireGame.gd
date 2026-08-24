@@ -29,8 +29,8 @@ func _setup_3d_circular_board() -> void:
 	for c in board_root.get_children(): c.queue_free()
 	
 	# Base circular de madeira nobre
-	var base = MeshInstance3D.new()
-	var cyl = CylinderMesh.new()
+	var base := MeshInstance3D.new()
+	var cyl := CylinderMesh.new()
 	cyl.top_radius = 3.2
 	cyl.bottom_radius = 3.2
 	cyl.height = 0.16
@@ -41,8 +41,8 @@ func _setup_3d_circular_board() -> void:
 	board_root.add_child(base)
 	
 	# Friso central em nogueira
-	var inner = MeshInstance3D.new()
-	var inner_cyl = CylinderMesh.new()
+	var inner := MeshInstance3D.new()
+	var inner_cyl := CylinderMesh.new()
 	inner_cyl.top_radius = 2.9
 	inner_cyl.bottom_radius = 2.9
 	inner_cyl.height = 0.02
@@ -53,14 +53,14 @@ func _setup_3d_circular_board() -> void:
 	board_root.add_child(inner)
 	
 	# Furos / Cavidades das 33 posições
-	var start_x = -(7 * CELL_SIZE * 0.5) + (CELL_SIZE * 0.5)
-	var start_z = -(7 * CELL_SIZE * 0.5) + (CELL_SIZE * 0.5)
+	var start_x := -(7 * CELL_SIZE * 0.5) + (CELL_SIZE * 0.5)
+	var start_z := -(7 * CELL_SIZE * 0.5) + (CELL_SIZE * 0.5)
 	
 	for r in range(7):
 		for c in range(7):
 			if PegSolitaireRules.is_valid_cell(r, c):
-				var hole = MeshInstance3D.new()
-				var h_cyl = CylinderMesh.new()
+				var hole := MeshInstance3D.new()
+				var h_cyl := CylinderMesh.new()
 				h_cyl.top_radius = 0.22
 				h_cyl.bottom_radius = 0.15
 				h_cyl.height = 0.04
@@ -70,8 +70,8 @@ func _setup_3d_circular_board() -> void:
 				board_root.add_child(hole)
 
 func _get_cell_pos_3d(r: int, c: int) -> Vector3:
-	var start_x = -(7 * CELL_SIZE * 0.5) + (CELL_SIZE * 0.5)
-	var start_z = -(7 * CELL_SIZE * 0.5) + (CELL_SIZE * 0.5)
+	var start_x := -(7 * CELL_SIZE * 0.5) + (CELL_SIZE * 0.5)
+	var start_z := -(7 * CELL_SIZE * 0.5) + (CELL_SIZE * 0.5)
 	return Vector3(start_x + (c * CELL_SIZE), 0.14, start_z + (r * CELL_SIZE))
 
 func _start_new_game() -> void:
@@ -92,7 +92,7 @@ func _sync_marbles_3d() -> void:
 	for r in range(7):
 		for c in range(7):
 			if grid_data.get_cell(r, c) == 1:
-				var marble = preload("res://shared/3d/Token3D.tscn").instantiate()
+				var marble := preload("res://shared/3d/Token3D.tscn").instantiate()
 				marble.token_type = "sphere"
 				marble.material_name = "amber"
 				marble.position = _get_cell_pos_3d(r, c)
@@ -100,12 +100,12 @@ func _sync_marbles_3d() -> void:
 				marbles_3d[Vector2i(r, c)] = marble
 
 func _update_ui() -> void:
-	var pegs_count = PegSolitaireRules.count_pegs(grid_data)
+	var pegs_count := PegSolitaireRules.count_pegs(grid_data)
 	pegs_label.text = "Esferas Restantes: %d / 32" % pegs_count
 
 func _on_cell_clicked(r: int, c: int):
 	if game_over: return
-	var clicked_pos = Vector2i(r, c)
+	var clicked_pos := Vector2i(r, c)
 	
 	for vt in valid_targets:
 		if vt["land"] == clicked_pos:
@@ -119,7 +119,7 @@ func _on_cell_clicked(r: int, c: int):
 		
 		# Destaca esfera selecionada
 		for pos in marbles_3d.keys():
-			var m = marbles_3d[pos] as Token3D
+			var m := marbles_3d[pos] as Token3D
 			m.highlight(pos == selected_pos)
 			
 		if valid_targets.is_empty():
@@ -149,7 +149,7 @@ func _execute_jump(from_pos: Vector2i, target_dict: Dictionary) -> void:
 		
 	var jumped_marble = marbles_3d.get(jumped_pos)
 	if jumped_marble:
-		var tween = create_tween()
+		var tween := create_tween()
 		tween.tween_property(jumped_marble, "scale", Vector3(0.01, 0.01, 0.01), 0.2)
 		tween.tween_callback(func(): jumped_marble.queue_free())
 		marbles_3d.erase(jumped_pos)

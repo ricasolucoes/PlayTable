@@ -22,9 +22,9 @@ func load_data() -> void:
 	if FileAccess.file_exists(SAVE_PATH):
 		var file: FileAccess = FileAccess.open(SAVE_PATH, FileAccess.READ)
 		if file:
-			var content = file.get_as_text()
-			var json = JSON.new()
-			var err = json.parse(content)
+			var content := file.get_as_text()
+			var json := JSON.new()
+			var err := json.parse(content)
 			if err == OK:
 				if typeof(json.data) == TYPE_DICTIONARY:
 					settings = json.data

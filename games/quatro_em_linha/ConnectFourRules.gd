@@ -22,7 +22,7 @@ static func drop_piece(grid: Grid2D, col: int, player_id: int) -> int:
 	return -1
 
 static func check_win(grid: Grid2D, row: int, col: int, player_id: int) -> bool:
-	var pos = Vector2i(row, col)
+	var pos := Vector2i(row, col)
 	for dir in BoardCoord.CONNECT_4_DIRECTIONS:
 		if grid.count_streak_bidirectional(pos, dir, player_id) >= 4:
 			return true
@@ -61,26 +61,26 @@ static func get_valid_cols(grid: Grid2D) -> Array[int]:
 	return list
 
 static func get_best_move(grid: Grid2D, ai_player_id: int) -> int:
-	var opponent_id = 1 if ai_player_id == 2 else 2
-	var valid_moves = get_valid_cols(grid)
+	var opponent_id := 1 if ai_player_id == 2 else 2
+	var valid_moves := get_valid_cols(grid)
 	if valid_moves.is_empty(): return -1
 	
 	# 1. Ganhar na rodada
 	for c in valid_moves:
-		var sim_grid = grid.clone()
-		var r = drop_piece(sim_grid, c, ai_player_id)
+		var sim_grid := grid.clone()
+		var r := drop_piece(sim_grid, c, ai_player_id)
 		if r >= 0 and check_win(sim_grid, r, c, ai_player_id):
 			return c
 			
 	# 2. Bloquear oponente de ganhar
 	for c in valid_moves:
-		var sim_grid = grid.clone()
-		var r = drop_piece(sim_grid, c, opponent_id)
+		var sim_grid := grid.clone()
+		var r := drop_piece(sim_grid, c, opponent_id)
 		if r >= 0 and check_win(sim_grid, r, c, opponent_id):
 			return c
 			
 	# 3. Preferência pela coluna central (3) e adjacentes (2, 4)
-	var preferred_order = [3, 2, 4, 1, 5, 0, 6]
+	var preferred_order := [3, 2, 4, 1, 5, 0, 6]
 	for c in preferred_order:
 		if c in valid_moves:
 			return c

@@ -34,13 +34,13 @@ func _setup_grid_cells() -> void:
 	piece_nodes.clear()
 	
 	for i in range(9):
-		var btn = Button.new()
+		var btn := Button.new()
 		btn.custom_minimum_size = Vector2(150, 150)
 		btn.focus_mode = Control.FOCUS_NONE
 		btn.flat = true
 		
 		# Attach piece renderer inside button
-		var piece = Node2D.new()
+		var piece := Node2D.new()
 		piece.set_script(PIECE_SCRIPT)
 		piece.size = 120.0
 		piece.position = Vector2(75, 75)
@@ -58,14 +58,14 @@ func _on_cell_pressed(idx: int):
 
 func _place_move(idx: int, player_id: int):
 	board[idx] = player_id
-	var piece = piece_nodes[idx]
+	var piece := piece_nodes[idx]
 	piece.piece_type = piece.PieceType.X_PIECE if player_id == 1 else piece.PieceType.O_PIECE
 	piece.play_spawn_animation()
 	
 	if AudioManager:
 		AudioManager.play_piece_place()
 		
-	var win_combo = _check_win(player_id)
+	var win_combo := _check_win(player_id)
 	if win_combo.size() > 0:
 		_handle_game_won(player_id, win_combo)
 		return
@@ -91,7 +91,7 @@ func _do_ai_turn():
 	if game_over:
 		return
 		
-	var move = _get_ai_move()
+	var move := _get_ai_move()
 	if move != -1:
 		_place_move(move, 2)
 	else:
@@ -122,14 +122,14 @@ func _get_ai_move() -> int:
 		return 4
 		
 	# 4. Take corners
-	var corners = [0, 2, 6, 8]
+	var corners := [0, 2, 6, 8]
 	corners.shuffle()
 	for c in corners:
 		if board[c] == 0:
 			return c
 			
 	# 5. Take sides
-	var sides = [1, 3, 5, 7]
+	var sides := [1, 3, 5, 7]
 	sides.shuffle()
 	for s in sides:
 		if board[s] == 0:

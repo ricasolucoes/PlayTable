@@ -57,7 +57,7 @@ func _sync_pieces_3d() -> void:
 		for c in range(CheckersRules.COLS):
 			var val = grid_data.get_cell(r, c)
 			if val != 0:
-				var piece = preload("res://shared/3d/Token3D.tscn").instantiate()
+				var piece := preload("res://shared/3d/Token3D.tscn").instantiate()
 				piece.token_type = "cylinder"
 				piece.token_radius = 0.30
 				piece.material_name = "ivory" if val > 0 else "obsidian"
@@ -87,7 +87,7 @@ func _update_score() -> void:
 func _on_cell_clicked(r: int, c: int):
 	if game_over or not is_player_turn: return
 	
-	var clicked_pos = Vector2i(r, c)
+	var clicked_pos := Vector2i(r, c)
 	
 	for vm in valid_moves:
 		if vm["to"] == clicked_pos:
@@ -150,7 +150,7 @@ func _execute_player_move(from_pos: Vector2i, move_dict: Dictionary):
 			cap_piece.vanish()
 			pieces_3d.erase(captured_pos)
 
-	var became_queen = CheckersRules.apply_move(grid_data, from_pos, to_pos, captured_pos)
+	var became_queen := CheckersRules.apply_move(grid_data, from_pos, to_pos, captured_pos)
 	if became_queen and piece_3d:
 		piece_3d.promote_queen()
 		
@@ -159,7 +159,7 @@ func _execute_player_move(from_pos: Vector2i, move_dict: Dictionary):
 			board_3d.reset_cell_material(row, col)
 			
 	if captured_pos != Vector2i(-1, -1):
-		var further_captures = CheckersRules.get_captures_for_piece(grid_data, to_pos)
+		var further_captures := CheckersRules.get_captures_for_piece(grid_data, to_pos)
 		if further_captures.size() > 0:
 			continuing_capture_pos = to_pos
 			selected_pos = to_pos
@@ -178,7 +178,7 @@ func _execute_player_move(from_pos: Vector2i, move_dict: Dictionary):
 
 func _check_game_end_or_ai_turn():
 	_update_score()
-	var winner = CheckersRules.check_game_over(grid_data)
+	var winner := CheckersRules.check_game_over(grid_data)
 	if winner != 0:
 		_end_game(winner)
 		return
@@ -190,7 +190,7 @@ func _check_game_end_or_ai_turn():
 	_play_ai_turn()
 
 func _play_ai_turn():
-	var ai_move = CheckersRules.get_best_ai_move(grid_data)
+	var ai_move := CheckersRules.get_best_ai_move(grid_data)
 	if ai_move.is_empty():
 		_end_game(1)
 		return
@@ -213,16 +213,16 @@ func _play_ai_turn():
 			cap_piece.vanish()
 			pieces_3d.erase(captured_pos)
 
-	var became_queen = CheckersRules.apply_move(grid_data, from_pos, to_pos, captured_pos)
+	var became_queen := CheckersRules.apply_move(grid_data, from_pos, to_pos, captured_pos)
 	if became_queen and piece_3d:
 		piece_3d.promote_queen()
 		
 	# Capturas sucessivas da IA
 	if captured_pos != Vector2i(-1, -1):
-		var further = CheckersRules.get_captures_for_piece(grid_data, to_pos)
+		var further := CheckersRules.get_captures_for_piece(grid_data, to_pos)
 		while further.size() > 0:
 			await get_tree().create_timer(0.4).timeout
-			var next_m = further[0]
+			var next_m := further[0]
 			var next_to = next_m["to"]
 			var next_cap = next_m["captured"]
 			
@@ -241,7 +241,7 @@ func _play_ai_turn():
 			
 	_update_score()
 	board_3d.set_cells_state([from_pos, to_pos], Board3D.CellState.LAST_MOVE)
-	var winner = CheckersRules.check_game_over(grid_data)
+	var winner := CheckersRules.check_game_over(grid_data)
 	if winner != 0:
 		_end_game(winner)
 		return

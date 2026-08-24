@@ -32,7 +32,7 @@ func _draw():
 	if piece_type == PieceType.EMPTY:
 		return
 		
-	var hs = size * 0.5
+	var hs := size * 0.5
 	
 	if piece_type == PieceType.X_PIECE:
 		_draw_realistic_x(hs)
@@ -40,22 +40,22 @@ func _draw():
 		_draw_realistic_o(hs)
 
 func _draw_realistic_x(hs: float) -> void:
-	var arm_len = hs * 0.72
-	var thickness = hs * 0.32
+	var arm_len := hs * 0.72
+	var thickness := hs * 0.32
 	
-	var base_red = Color(0.88, 0.16, 0.18)
-	var dark_red = Color(0.48, 0.06, 0.08)
-	var light_red = Color(1.0, 0.45, 0.45)
+	var base_red := Color(0.88, 0.16, 0.18)
+	var dark_red := Color(0.48, 0.06, 0.08)
+	var light_red := Color(1.0, 0.45, 0.45)
 	
 	# Winning Glow
 	if is_winning:
-		var pulse = 0.5 + 0.5 * sin(glow_t)
-		var glow_c = Color(1.0, 0.9, 0.2, 0.7 * pulse)
+		var pulse := 0.5 + 0.5 * sin(glow_t)
+		var glow_c := Color(1.0, 0.9, 0.2, 0.7 * pulse)
 		draw_line(Vector2(-arm_len, -arm_len), Vector2(arm_len, arm_len), glow_c, thickness + 16.0)
 		draw_line(Vector2(-arm_len, arm_len), Vector2(arm_len, -arm_len), glow_c, thickness + 16.0)
 
 	# 1. Soft Drop Shadow
-	var shadow_offset = Vector2(0, 6)
+	var shadow_offset := Vector2(0, 6)
 	draw_line(Vector2(-arm_len, -arm_len) + shadow_offset, Vector2(arm_len, arm_len) + shadow_offset, Color(0, 0, 0, 0.4), thickness + 4.0)
 	draw_line(Vector2(-arm_len, arm_len) + shadow_offset, Vector2(arm_len, -arm_len) + shadow_offset, Color(0, 0, 0, 0.4), thickness + 4.0)
 	
@@ -76,19 +76,19 @@ func _draw_realistic_x(hs: float) -> void:
 	draw_circle(Vector2(-4, -4), thickness * 0.22, Color(1.0, 1.0, 1.0, 0.8))
 
 func _draw_realistic_o(hs: float) -> void:
-	var outer_r = hs * 0.72
-	var inner_r = hs * 0.38
-	var thickness = outer_r - inner_r
-	var mid_r = (outer_r + inner_r) * 0.5
+	var outer_r := hs * 0.72
+	var inner_r := hs * 0.38
+	var thickness := outer_r - inner_r
+	var mid_r := (outer_r + inner_r) * 0.5
 	
-	var gold_base = Color(0.96, 0.76, 0.16)
-	var gold_dark = Color(0.55, 0.38, 0.05)
-	var gold_light = Color(1.0, 0.95, 0.60)
-	var gold_spec = Color(1.0, 1.0, 0.90)
+	var gold_base := Color(0.96, 0.76, 0.16)
+	var gold_dark := Color(0.55, 0.38, 0.05)
+	var gold_light := Color(1.0, 0.95, 0.60)
+	var gold_spec := Color(1.0, 1.0, 0.90)
 	
 	# Winning Glow
 	if is_winning:
-		var pulse = 0.5 + 0.5 * sin(glow_t)
+		var pulse := 0.5 + 0.5 * sin(glow_t)
 		draw_circle(Vector2.ZERO, outer_r + 8.0 + pulse * 6.0, Color(1.0, 0.9, 0.2, 0.6 * pulse))
 	
 	# 1. Soft Drop Shadow
@@ -110,7 +110,7 @@ func _draw_realistic_o(hs: float) -> void:
 func play_spawn_animation() -> void:
 	scale = Vector2(1.45, 1.45)
 	modulate.a = 0.0
-	var tw = create_tween()
+	var tw := create_tween()
 	tw.set_parallel(true)
 	tw.tween_property(self, "modulate:a", 1.0, 0.12)
 	tw.tween_property(self, "scale", Vector2(1.0, 1.0), 0.25).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)

@@ -78,7 +78,7 @@ func _start_new_game() -> void:
 		player_hand.add(draw_pile.draw())
 		ai_hand.add(draw_pile.draw())
 		
-	var first_card = draw_pile.draw()
+	var first_card := draw_pile.draw()
 	while first_card != null and first_card.color_type == Card.ColorType.WILD:
 		draw_pile.push_front(first_card)
 		draw_pile.shuffle()
@@ -93,11 +93,11 @@ func _start_new_game() -> void:
 	_update_ui()
 
 func _spawn_top_discard_3d(card: Card) -> void:
-	var c_3d = preload("res://shared/3d/Card3D.tscn").instantiate()
+	var c_3d := preload("res://shared/3d/Card3D.tscn").instantiate()
 	c_3d.setup(card.get_display_value(), UnoRules.get_color_symbol(card.color_type), true)
 	
-	var rot_y = randf_range(-15.0, 15.0)
-	var target_pos = Vector3(0.0, 0.05 + (discard_cards_3d.size() * 0.004), -0.3)
+	var rot_y := randf_range(-15.0, 15.0)
+	var target_pos := Vector3(0.0, 0.05 + (discard_cards_3d.size() * 0.004), -0.3)
 	c_3d.position = target_pos + Vector3(0, 1.8, 0)
 	cards_root.add_child(c_3d)
 	discard_cards_3d.append(c_3d)
@@ -107,7 +107,7 @@ func _spawn_top_discard_3d(card: Card) -> void:
 func _draw_from_deck() -> Card:
 	if draw_pile.is_empty():
 		if discard_pile.size() > 1:
-			var top = discard_pile.pop()
+			var top := discard_pile.pop()
 			draw_pile.recycle_from(discard_pile.get_all())
 			discard_pile.clear()
 			discard_pile.push(top)
@@ -127,11 +127,11 @@ func _update_ui() -> void:
 	
 	# Mão do jogador
 	for c in player_cards_container.get_children(): c.queue_free()
-	var top_card = discard_pile.peek()
+	var top_card := discard_pile.peek()
 	
 	for i in range(player_hand.size()):
-		var card = player_hand.get_card(i)
-		var btn = Button.new()
+		var card := player_hand.get_card(i)
+		var btn := Button.new()
 		btn.custom_minimum_size = Vector2(72, 95)
 		btn.add_theme_font_size_override("font_size", 18)
 		
@@ -139,7 +139,7 @@ func _update_ui() -> void:
 		btn.self_modulate = card_col
 		btn.text = card.get_display_value()
 		
-		var can_play = UnoRules.can_play_card(card, top_card, active_color)
+		var can_play := UnoRules.can_play_card(card, top_card, active_color)
 		btn.disabled = not is_player_turn or not can_play or game_over or waiting_color_pick
 		
 		btn.pressed.connect(_on_player_card_clicked.bind(i))
@@ -148,8 +148,8 @@ func _update_ui() -> void:
 func _on_player_card_clicked(idx: int) -> void:
 	if not is_player_turn or game_over or waiting_color_pick: return
 	
-	var card = player_hand.get_card(idx)
-	var top_card = discard_pile.peek()
+	var card := player_hand.get_card(idx)
+	var top_card := discard_pile.peek()
 	
 	if not UnoRules.can_play_card(card, top_card, active_color): return
 	
@@ -173,7 +173,7 @@ func _on_color_chosen(col_type: Card.ColorType) -> void:
 	color_picker_modal.hide()
 	active_color = col_type
 	
-	var played_card = discard_pile.peek()
+	var played_card := discard_pile.peek()
 	_handle_card_effects_and_advance(played_card, true)
 
 func _handle_card_effects_and_advance(card: Card, was_player: bool) -> void:
@@ -255,10 +255,10 @@ func _handle_card_effects_and_advance(card: Card, was_player: bool) -> void:
 			_update_ui()
 
 func _play_ai_turn() -> void:
-	var top_card = discard_pile.peek()
+	var top_card := discard_pile.peek()
 	var playable_indices: Array = []
 	for i in range(ai_hand.size()):
-		var c = ai_hand.get_card(i)
+		var c := ai_hand.get_card(i)
 		if UnoRules.can_play_card(c, top_card, active_color):
 			playable_indices.append(i)
 			
@@ -282,7 +282,7 @@ func _play_ai_turn() -> void:
 		_update_ui()
 	else:
 		var chosen_idx = playable_indices.pick_random()
-		var card = ai_hand.remove_at(chosen_idx)
+		var card := ai_hand.remove_at(chosen_idx)
 		discard_pile.push(card)
 		_spawn_top_discard_3d(card)
 		

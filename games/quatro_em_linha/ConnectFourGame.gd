@@ -63,7 +63,7 @@ func _setup_column_buttons() -> void:
 		child.queue_free()
 		
 	for c in range(COLS):
-		var btn = Button.new()
+		var btn := Button.new()
 		btn.custom_minimum_size = Vector2(CELL_SIZE - 4.0, ROWS * CELL_SIZE + 40.0)
 		btn.flat = true
 		btn.focus_mode = Control.FOCUS_NONE
@@ -79,25 +79,25 @@ func _on_col_pressed(col: int):
 	_make_move(col, 1)
 
 func _make_move(col: int, player_id: int):
-	var row = ConnectFourRules.drop_piece(board, col, player_id)
+	var row := ConnectFourRules.drop_piece(board, col, player_id)
 	if row < 0:
 		return
 		
-	var piece = PIECE_SCENE.instantiate()
+	var piece := PIECE_SCENE.instantiate()
 	piece.is_red = (player_id == 1)
 	piece.radius = PIECE_RADIUS
 	pieces_layer.add_child(piece)
 	
-	var center_x = col * CELL_SIZE + (CELL_SIZE * 0.5)
-	var spawn_y = -60.0
-	var target_y = cell_center_y(row)
+	var center_x := col * CELL_SIZE + (CELL_SIZE * 0.5)
+	var spawn_y := -60.0
+	var target_y := cell_center_y(row)
 	
 	piece.position = Vector2(center_x, spawn_y)
 	piece_instances[Vector2i(row, col)] = piece
 	
-	var win_cells = ConnectFourRules.get_winning_cells(board, row, col, player_id)
-	var has_won = win_cells.size() >= 4
-	var is_board_full = ConnectFourRules.is_full(board)
+	var win_cells := ConnectFourRules.get_winning_cells(board, row, col, player_id)
+	var has_won := win_cells.size() >= 4
+	var is_board_full := ConnectFourRules.is_full(board)
 	
 	piece.drop_to(target_y, func():
 		if has_won:
@@ -122,7 +122,7 @@ func _make_move(col: int, player_id: int):
 func _do_ai_turn():
 	if game_over:
 		return
-	var ai_col = ConnectFourRules.get_best_move(board, 2)
+	var ai_col := ConnectFourRules.get_best_move(board, 2)
 	if ai_col != -1:
 		_make_move(ai_col, 2)
 	else:

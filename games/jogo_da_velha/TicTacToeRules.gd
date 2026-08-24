@@ -30,8 +30,8 @@ static func get_empty_indices(grid: Grid2D) -> Array[int]:
 	return list
 
 static func get_best_move(grid: Grid2D, ai_player_id: int) -> int:
-	var human_id = 1 if ai_player_id == 2 else 2
-	var empty = get_empty_indices(grid)
+	var human_id := 1 if ai_player_id == 2 else 2
+	var empty := get_empty_indices(grid)
 	if empty.is_empty(): return -1
 	
 	# 1. Tenta vencer na próxima jogada

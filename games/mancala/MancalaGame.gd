@@ -48,8 +48,8 @@ func _setup_3d_mancala_board() -> void:
 	for c in board_root.get_children(): c.queue_free()
 	
 	# Base de madeira entalhada
-	var base = MeshInstance3D.new()
-	var box = BoxMesh.new()
+	var base := MeshInstance3D.new()
+	var box := BoxMesh.new()
 	box.size = Vector3(6.6, 0.22, 2.2)
 	base.mesh = box
 	base.position = Vector3(0, -0.11, 0)
@@ -58,8 +58,8 @@ func _setup_3d_mancala_board() -> void:
 	
 	# Cavidades / Covas escavadas
 	for idx in PIT_POSITIONS_3D.keys():
-		var pit_mesh = MeshInstance3D.new()
-		var cyl = CylinderMesh.new()
+		var pit_mesh := MeshInstance3D.new()
+		var cyl := CylinderMesh.new()
 		var is_store = (idx == 6 or idx == 13)
 		cyl.top_radius = 0.45 if is_store else 0.32
 		cyl.bottom_radius = 0.38 if is_store else 0.28
@@ -72,7 +72,7 @@ func _setup_3d_mancala_board() -> void:
 func _setup_ui_buttons() -> void:
 	for c in player_pits_container.get_children(): c.queue_free()
 	for i in range(6):
-		var btn = Button.new()
+		var btn := Button.new()
 		btn.custom_minimum_size = Vector2(52, 60)
 		btn.pressed.connect(_on_player_pit_clicked.bind(i))
 		player_pits_container.add_child(btn)
@@ -99,14 +99,14 @@ func _sync_gems_3d() -> void:
 		var pit_pos = PIT_POSITIONS_3D[pit_idx]
 		var gem_list: Array = []
 		for g_i in range(count):
-			var gem = preload("res://shared/3d/Token3D.tscn").instantiate()
+			var gem := preload("res://shared/3d/Token3D.tscn").instantiate()
 			gem.token_type = "sphere"
 			gem.material_name = GEM_MATERIALS[g_i % GEM_MATERIALS.size()]
 			
 			# Espalha sementes levemente dentro da cova
-			var offset_x = (randf() - 0.5) * (0.4 if (pit_idx == 6 or pit_idx == 13) else 0.22)
-			var offset_z = (randf() - 0.5) * (0.4 if (pit_idx == 6 or pit_idx == 13) else 0.22)
-			var offset_y = 0.05 + (g_i * 0.04)
+			var offset_x := (randf() - 0.5) * (0.4 if (pit_idx == 6 or pit_idx == 13) else 0.22)
+			var offset_z := (randf() - 0.5) * (0.4 if (pit_idx == 6 or pit_idx == 13) else 0.22)
+			var offset_y := 0.05 + (g_i * 0.04)
 			gem.position = pit_pos + Vector3(offset_x, offset_y, offset_z)
 			
 			gems_root.add_child(gem)
@@ -118,7 +118,7 @@ func _update_ui() -> void:
 	ai_store_label.text = "Kalah IA:\n💎 %d" % pits[13]
 	
 	for i in range(6):
-		var btn = player_pits_container.get_child(i) as Button
+		var btn := player_pits_container.get_child(i) as Button
 		var count = pits[i]
 		btn.text = "%d" % count
 		btn.disabled = not is_player_turn or count == 0 or game_over
@@ -128,7 +128,7 @@ func _on_player_pit_clicked(pit_idx: int):
 	
 	var seeds = pits[pit_idx]
 	pits[pit_idx] = 0
-	var curr = pit_idx
+	var curr := pit_idx
 	
 	while seeds > 0:
 		curr = (curr + 1) % 14

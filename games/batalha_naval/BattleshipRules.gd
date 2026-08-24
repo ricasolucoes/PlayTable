@@ -34,7 +34,7 @@ static func count_sunk_ships(fleet: Array) -> int:
 	return count
 
 static func check_ship_sunk(fleet: Array, grid: Grid2D, r: int, c: int) -> Dictionary:
-	var pos = Vector2i(r, c)
+	var pos := Vector2i(r, c)
 	for s in fleet:
 		if pos in s["cells"]:
 			var all_hit: bool = true
@@ -64,7 +64,7 @@ static func place_all_ships_randomly(grid: Grid2D) -> Array[Dictionary]:
 		
 		while not placed and attempts < 300:
 			attempts += 1
-			var horizontal = randi() % 2 == 0
+			var horizontal := randi() % 2 == 0
 			var max_r = GRID_SIZE - 1 if horizontal else GRID_SIZE - size
 			var max_c = GRID_SIZE - size if horizontal else GRID_SIZE - 1
 			var r = randi() % (max_r + 1)
@@ -140,7 +140,7 @@ static func get_ai_shot(arg1, arg2 = null) -> Vector2i:
 
 	var ai_hit_stack: Array = arg1 if arg1 is Array else []
 	var shots_fired: Array = arg2 if arg2 is Array else []
-	var shot_pos = Vector2i(-1, -1)
+	var shot_pos := Vector2i(-1, -1)
 	
 	# 1. Alvos prioritários na pilha de caça (Hunt & Target)
 	while not ai_hit_stack.is_empty():
@@ -155,14 +155,14 @@ static func get_ai_shot(arg1, arg2 = null) -> Vector2i:
 		var candidates: Array[Vector2i] = []
 		for r in range(GRID_SIZE):
 			for c in range(GRID_SIZE):
-				var p = Vector2i(r, c)
+				var p := Vector2i(r, c)
 				if not (p in shots_fired):
 					if (r + c) % 2 == 0:
 						candidates.append(p)
 		if candidates.is_empty():
 			for r in range(GRID_SIZE):
 				for c in range(GRID_SIZE):
-					var p = Vector2i(r, c)
+					var p := Vector2i(r, c)
 					if not (p in shots_fired):
 						candidates.append(p)
 		if not candidates.is_empty():

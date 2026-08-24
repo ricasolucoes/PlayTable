@@ -41,7 +41,7 @@ func _sync_pieces_3d() -> void:
 			board_3d.reset_cell_material(r, c)
 			var val = grid_data.get_cell(r, c)
 			if val != 0:
-				var piece = preload("res://shared/3d/Token3D.tscn").instantiate()
+				var piece := preload("res://shared/3d/Token3D.tscn").instantiate()
 				piece.token_type = "cylinder"
 				piece.material_name = "obsidian" if val == 1 else "ivory"
 				piece.position = board_3d.get_cell_position_3d(r, c, 0.08)
@@ -60,15 +60,15 @@ func _highlight_valid_moves() -> void:
 			board_3d.reset_cell_material(r, c)
 			
 	if is_player_turn and not game_over:
-		var valids = ReversiRules.get_valid_moves(grid_data, 1)
+		var valids := ReversiRules.get_valid_moves(grid_data, 1)
 		for pos in valids:
 			board_3d.highlight_cell(pos.x, pos.y, Color(0.2, 0.8, 0.4))
 
 func _on_cell_clicked(r: int, c: int) -> void:
 	if game_over or not is_player_turn: return
 	
-	var pos = Vector2i(r, c)
-	var flipped = ReversiRules.get_flipped_pieces(grid_data, pos, 1)
+	var pos := Vector2i(r, c)
+	var flipped := ReversiRules.get_flipped_pieces(grid_data, pos, 1)
 	if flipped.size() == 0: return
 	
 	# Jogada do jogador
@@ -79,10 +79,10 @@ func _on_cell_clicked(r: int, c: int) -> void:
 		if p_3d:
 			p_3d.flip_180("obsidian", 0.35)
 			
-	var new_piece = preload("res://shared/3d/Token3D.tscn").instantiate()
+	var new_piece := preload("res://shared/3d/Token3D.tscn").instantiate()
 	new_piece.token_type = "cylinder"
 	new_piece.material_name = "obsidian"
-	var target_3d = board_3d.get_cell_position_3d(r, c, 0.08)
+	var target_3d := board_3d.get_cell_position_3d(r, c, 0.08)
 	new_piece.position = target_3d + Vector3(0, 2.5, 0)
 	pieces_root.add_child(new_piece)
 	pieces_3d[pos] = new_piece
@@ -102,8 +102,8 @@ func _update_scores() -> void:
 	score_label.text = "Você (Pretas): %d  |  IA (Brancas): %d" % [black_count, white_count]
 
 func _after_player_move():
-	var ai_moves = ReversiRules.get_valid_moves(grid_data, 2)
-	var player_moves = ReversiRules.get_valid_moves(grid_data, 1)
+	var ai_moves := ReversiRules.get_valid_moves(grid_data, 2)
+	var player_moves := ReversiRules.get_valid_moves(grid_data, 1)
 	
 	if ai_moves.size() == 0 and player_moves.size() == 0:
 		_end_game()
@@ -120,9 +120,9 @@ func _after_player_move():
 		_highlight_valid_moves()
 
 func _play_ai_turn():
-	var ai_move = ReversiRules.get_best_move(grid_data, 2)
+	var ai_move := ReversiRules.get_best_move(grid_data, 2)
 	if ai_move != Vector2i(-1, -1):
-		var flipped = ReversiRules.get_flipped_pieces(grid_data, ai_move, 2)
+		var flipped := ReversiRules.get_flipped_pieces(grid_data, ai_move, 2)
 		grid_data.set_cell(ai_move.x, ai_move.y, 2)
 		for f in flipped:
 			grid_data.set_cell(f.x, f.y, 2)
@@ -130,10 +130,10 @@ func _play_ai_turn():
 			if p_3d:
 				p_3d.flip_180("ivory", 0.35)
 				
-		var new_piece = preload("res://shared/3d/Token3D.tscn").instantiate()
+		var new_piece := preload("res://shared/3d/Token3D.tscn").instantiate()
 		new_piece.token_type = "cylinder"
 		new_piece.material_name = "ivory"
-		var target_3d = board_3d.get_cell_position_3d(ai_move.x, ai_move.y, 0.08)
+		var target_3d := board_3d.get_cell_position_3d(ai_move.x, ai_move.y, 0.08)
 		new_piece.position = target_3d + Vector3(0, 2.5, 0)
 		pieces_root.add_child(new_piece)
 		pieces_3d[ai_move] = new_piece
@@ -141,8 +141,8 @@ func _play_ai_turn():
 		
 	_update_scores()
 	
-	var player_moves = ReversiRules.get_valid_moves(grid_data, 1)
-	var ai_moves = ReversiRules.get_valid_moves(grid_data, 2)
+	var player_moves := ReversiRules.get_valid_moves(grid_data, 1)
+	var ai_moves := ReversiRules.get_valid_moves(grid_data, 2)
 	
 	if player_moves.size() == 0 and ai_moves.size() == 0:
 		_end_game()

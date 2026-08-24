@@ -27,12 +27,12 @@ static func has_any_valid_move(hand: Array, left_end: int, right_end: int) -> bo
 	return has_any_playable(hand, left_end, right_end)
 
 static func find_ai_move(hand: Array, left_end: int, right_end: int) -> Dictionary:
-	var playable = get_playable_indices(hand, left_end, right_end)
+	var playable := get_playable_indices(hand, left_end, right_end)
 	if playable.is_empty():
 		return {}
-	var idx = playable[0]
+	var idx := playable[0]
 	var tile = hand[idx]
-	var side = "left" if (left_end == -1 or tile["a"] == left_end or tile["b"] == left_end) else "right"
+	var side := "left" if (left_end == -1 or tile["a"] == left_end or tile["b"] == left_end) else "right"
 	return {"tile_index": idx, "side": side}
 
 static func get_playable_indices(hand: Array, left_end: int, right_end: int) -> Array[int]:
@@ -43,9 +43,9 @@ static func get_playable_indices(hand: Array, left_end: int, right_end: int) -> 
 	return list
 
 static func orient_tile_for_side(tile: Dictionary, side: String, left_end: int, right_end: int) -> Dictionary:
-	var oriented = tile.duplicate()
-	var new_left = left_end
-	var new_right = right_end
+	var oriented := tile.duplicate()
+	var new_left := left_end
+	var new_right := right_end
 	
 	if side == "left":
 		if oriented["b"] == left_end:

@@ -37,7 +37,7 @@ static func get_playable_cards(hand_cards: Array, active_color: Card.ColorType, 
 	return indices
 
 static func pick_best_color_for_hand(hand_cards: Array) -> Card.ColorType:
-	var counts = {
+	var counts := {
 		Card.ColorType.RED: 0,
 		Card.ColorType.BLUE: 0,
 		Card.ColorType.GREEN: 0,
@@ -47,8 +47,8 @@ static func pick_best_color_for_hand(hand_cards: Array) -> Card.ColorType:
 		if c is Card and counts.has(c.color_type):
 			counts[c.color_type] += 1
 			
-	var best_color = Card.ColorType.RED
-	var max_count = -1
+	var best_color := Card.ColorType.RED
+	var max_count := -1
 	for col in counts:
 		if counts[col] > max_count:
 			max_count = counts[col]

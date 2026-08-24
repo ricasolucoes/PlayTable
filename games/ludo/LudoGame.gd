@@ -39,8 +39,8 @@ func _setup_3d_ludo_board() -> void:
 	for c in board_root.get_children(): c.queue_free()
 	
 	# Base de madeira nobre
-	var base = MeshInstance3D.new()
-	var box = BoxMesh.new()
+	var base := MeshInstance3D.new()
+	var box := BoxMesh.new()
 	box.size = Vector3(6.5, 0.15, 6.5)
 	base.mesh = box
 	base.position = Vector3(0, -0.075, 0)
@@ -55,8 +55,8 @@ func _setup_3d_ludo_board() -> void:
 		Vector3(1.8, 0.01, 1.8)     # Amarelo (Canto inf-dir)
 	]
 	for p in range(4):
-		var q_mesh = MeshInstance3D.new()
-		var q_box = BoxMesh.new()
+		var q_mesh := MeshInstance3D.new()
+		var q_box := BoxMesh.new()
 		q_box.size = Vector3(2.4, 0.02, 2.4)
 		q_mesh.mesh = q_box
 		q_mesh.position = quad_offsets[p]
@@ -69,7 +69,7 @@ func _setup_3d_pawns() -> void:
 	
 	for p in range(4):
 		for idx in range(PAWNS_PER_PLAYER):
-			var pawn = preload("res://shared/3d/Token3D.tscn").instantiate()
+			var pawn := preload("res://shared/3d/Token3D.tscn").instantiate()
 			pawn.token_type = "pawn"
 			pawn.material_name = PLAYER_MAT_NAMES[p]
 			pawns_root.add_child(pawn)
@@ -83,7 +83,7 @@ func _get_track_position_3d(p: int, step_val: int, pawn_idx: int) -> Vector3:
 			Vector3(1.8, 0.2, -1.8),
 			Vector3(1.8, 0.2, 1.8)
 		]
-		var offset = Vector3(-0.35 if pawn_idx == 0 else 0.35, 0, 0)
+		var offset := Vector3(-0.35 if pawn_idx == 0 else 0.35, 0, 0)
 		return base_centers[p] + offset
 	elif step_val >= 32: # No centro (Vitória)
 		var center_offsets = [
@@ -94,7 +94,7 @@ func _get_track_position_3d(p: int, step_val: int, pawn_idx: int) -> Vector3:
 		]
 		return center_offsets[p]
 	elif step_val >= 28: # Reta final até o centro
-		var dist = (32 - step_val) * 0.45
+		var dist := (32 - step_val) * 0.45
 		match p:
 			0: return Vector3(0, 0.2, dist)
 			1: return Vector3(-dist, 0.2, 0)
@@ -103,8 +103,8 @@ func _get_track_position_3d(p: int, step_val: int, pawn_idx: int) -> Vector3:
 	else:
 		# Pista externa (28 casas circulares)
 		var abs_idx = (step_val + START_OFFSETS[p]) % TRACK_LENGTH
-		var angle = (float(abs_idx) / float(TRACK_LENGTH)) * TAU
-		var radius = 2.4
+		var angle := (float(abs_idx) / float(TRACK_LENGTH)) * TAU
+		var radius := 2.4
 		return Vector3(cos(angle) * radius, 0.2, sin(angle) * radius)
 	return Vector3.ZERO
 
@@ -133,7 +133,7 @@ func _sync_pawns_positions(immediate: bool = false) -> void:
 	for p in range(4):
 		for idx in range(PAWNS_PER_PLAYER):
 			var step_val = players_pawns[p][idx]
-			var target_pos = _get_track_position_3d(p, step_val, idx)
+			var target_pos := _get_track_position_3d(p, step_val, idx)
 			var pawn = pawns_3d[p][idx]
 			if immediate:
 				pawn.position = target_pos
@@ -145,7 +145,7 @@ func _on_btn_dice_pressed() -> void:
 	can_roll = false
 	btn_dice.disabled = true
 	
-	var rolled = randi_range(1, 6)
+	var rolled := randi_range(1, 6)
 	set_status("Rolando dado...")
 	dice_3d.roll(rolled, 0.75)
 
@@ -175,7 +175,7 @@ func _handle_player_roll(roll: int) -> void:
 		set_status("Escolha qual peão deseja mover:")
 		for c in pawn_buttons_container.get_children(): c.queue_free()
 		for idx in movable:
-			var btn = Button.new()
+			var btn := Button.new()
 			btn.custom_minimum_size = Vector2(140, 50)
 			btn.text = "Mover Peão %d" % (idx + 1)
 			btn.pressed.connect(_on_pawn_choice_selected.bind(idx, roll))
@@ -213,11 +213,11 @@ func _next_turn() -> void:
 		can_roll = false
 		btn_dice.disabled = true
 		await get_tree().create_timer(0.6).timeout
-		var ai_roll = randi_range(1, 6)
+		var ai_roll := randi_range(1, 6)
 		dice_3d.roll(ai_roll, 0.6)
 
 func _handle_ai_roll(roll: int) -> void:
-	var p = current_turn
+	var p := current_turn
 	var movable: Array = []
 	for idx in range(PAWNS_PER_PLAYER):
 		var pos = players_pawns[p][idx]
@@ -236,7 +236,7 @@ func _handle_ai_roll(roll: int) -> void:
 	if roll == 6:
 		set_status("%s tirou 6 e joga novamente!" % PLAYER_NAMES[p])
 		await get_tree().create_timer(0.6).timeout
-		var ai_roll = randi_range(1, 6)
+		var ai_roll := randi_range(1, 6)
 		dice_3d.roll(ai_roll, 0.6)
 	else:
 		_next_turn()

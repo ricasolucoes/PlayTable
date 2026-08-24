@@ -55,7 +55,7 @@ func _generate_deck() -> void:
 	symbol_pool.shuffle()
 	
 	for i in range(16):
-		var card = Control.new()
+		var card := Control.new()
 		card.set_script(CARD_SCRIPT)
 		card.symbol_type = symbol_pool[i]
 		card.is_face_up = false
@@ -122,7 +122,7 @@ func _handle_game_won() -> void:
 	if AudioManager: AudioManager.play_win()
 	
 	win_modal_title.text = "🏆 Parabéns!"
-	var rating = "⭐⭐⭐"
+	var rating := "⭐⭐⭐"
 	if moves_count > 16: rating = "⭐⭐"
 	if moves_count > 24: rating = "⭐"
 	

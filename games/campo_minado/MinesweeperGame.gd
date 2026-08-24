@@ -68,7 +68,7 @@ func _start_new_game() -> void:
 	_update_header_mines()
 
 func _update_header_mines() -> void:
-	var flagged = MinesweeperRules.count_flagged(grid_data)
+	var flagged := MinesweeperRules.count_flagged(grid_data)
 	mines_label.text = "💣 %02d" % max(0, MinesweeperRules.TOTAL_MINES - flagged)
 
 func _on_cell_clicked(r: int, c: int):
@@ -100,9 +100,9 @@ func _on_cell_clicked(r: int, c: int):
 	_check_win_condition()
 
 func _update_flag_3d(r: int, c: int, is_flagged: bool) -> void:
-	var pos = Vector2i(r, c)
+	var pos := Vector2i(r, c)
 	if is_flagged:
-		var flag = preload("res://shared/3d/Token3D.tscn").instantiate()
+		var flag := preload("res://shared/3d/Token3D.tscn").instantiate()
 		flag.token_type = "pawn"
 		flag.material_name = "ruby"
 		flag.position = board_3d.get_cell_position_3d(r, c, 0.15)

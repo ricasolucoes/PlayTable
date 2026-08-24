@@ -19,7 +19,7 @@ static func should_dealer_hit(cards: Array) -> bool:
 	return dealer_should_hit(cards)
 
 static func determine_winner(player_cards: Array, dealer_cards: Array) -> Winner:
-	var res = evaluate_match(player_cards, dealer_cards)
+	var res := evaluate_match(player_cards, dealer_cards)
 	if res["winner"] == "player": return Winner.PLAYER
 	elif res["winner"] == "dealer": return Winner.DEALER
 	else: return Winner.PUSH
@@ -53,8 +53,8 @@ static func dealer_should_hit(cards: Array) -> bool:
 	return calculate_score(cards) < 17
 
 static func evaluate_match(player_cards: Array, dealer_cards: Array) -> Dictionary:
-	var p_score = calculate_score(player_cards)
-	var d_score = calculate_score(dealer_cards)
+	var p_score := calculate_score(player_cards)
+	var d_score := calculate_score(dealer_cards)
 	
 	if p_score > 21:
 		return {"winner": "dealer", "reason": "player_bust", "message": "Estourou! Você Perdeu."}

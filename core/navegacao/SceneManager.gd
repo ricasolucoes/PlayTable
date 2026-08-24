@@ -5,7 +5,7 @@ extends Node
 var overlay: ColorRect
 
 func _ready() -> void:
-	var canvas = CanvasLayer.new()
+	var canvas := CanvasLayer.new()
 	canvas.layer = 100
 	add_child(canvas)
 	
@@ -17,7 +17,7 @@ func _ready() -> void:
 
 func goto_scene(path: String) -> void:
 	overlay.mouse_filter = Control.MOUSE_FILTER_STOP
-	var tween = create_tween()
+	var tween := create_tween()
 	tween.tween_property(overlay, "color:a", 1.0, 0.2)
 	tween.tween_callback(_deferred_goto_scene.bind(path))
 	tween.tween_property(overlay, "color:a", 0.0, 0.2)

@@ -89,7 +89,7 @@ func _render_fleet_view() -> void:
 				_spawn_peg_3d(r, c, true)
 
 func _spawn_peg_3d(r: int, c: int, is_hit: bool) -> void:
-	var peg = MeshInstance3D.new()
+	var peg := MeshInstance3D.new()
 	peg.mesh = MeshBuilder3D.create_peg_pin(0.35, 0.1)
 	peg.position = board_3d.get_cell_position_3d(r, c, 0.18)
 	
@@ -107,8 +107,8 @@ func _render_ship_3d(ship: Dictionary) -> void:
 	var start_r = ship["start_row"]
 	var start_c = ship["start_col"]
 	
-	var ship_mesh = MeshInstance3D.new()
-	var box = BoxMesh.new()
+	var ship_mesh := MeshInstance3D.new()
+	var box := BoxMesh.new()
 	var w = 0.4 if is_vert else (length * 0.65 * 0.9)
 	var l = (length * 0.65 * 0.9) if is_vert else 0.4
 	box.size = Vector3(w, 0.15, l)
@@ -118,16 +118,16 @@ func _render_ship_3d(ship: Dictionary) -> void:
 	var center_r = start_r + ((length - 1) * 0.5 if is_vert else 0.0)
 	var center_c = start_c + (0.0 if is_vert else (length - 1) * 0.5)
 	
-	var total_w = 10 * 0.65
-	var start_x = -(total_w * 0.5) + (0.65 * 0.5)
-	var start_z = -(total_w * 0.5) + (0.65 * 0.5)
+	var total_w := 10 * 0.65
+	var start_x := -(total_w * 0.5) + (0.65 * 0.5)
+	var start_z := -(total_w * 0.5) + (0.65 * 0.5)
 	
 	ship_mesh.position = Vector3(start_x + (center_c * 0.65), 0.1, start_z + (center_r * 0.65))
 	ships_root.add_child(ship_mesh)
 
 func _update_fleet_status_labels() -> void:
-	var ai_sunk = BattleshipRules.count_sunk_ships(ai_ships)
-	var player_sunk = BattleshipRules.count_sunk_ships(player_ships)
+	var ai_sunk := BattleshipRules.count_sunk_ships(ai_ships)
+	var player_sunk := BattleshipRules.count_sunk_ships(player_ships)
 	fleet_info_label.text = "Navios Inimigos Afundados: %d/5  |  Aliados: %d/5" % [ai_sunk, player_sunk]
 
 func _on_cell_clicked(r: int, c: int):
@@ -141,7 +141,7 @@ func _on_cell_clicked(r: int, c: int):
 	_spawn_peg_3d(r, c, is_hit)
 	
 	if is_hit:
-		var sunk_ship = BattleshipRules.check_ship_sunk(ai_ships, ai_grid, r, c)
+		var sunk_ship := BattleshipRules.check_ship_sunk(ai_ships, ai_grid, r, c)
 		if sunk_ship.size() > 0:
 			set_status("💥 Você afundou o %s inimigo!" % sunk_ship["name"])
 		else:
@@ -160,9 +160,9 @@ func _on_cell_clicked(r: int, c: int):
 	_play_ai_turn()
 
 func _play_ai_turn():
-	var ai_target = BattleshipRules.get_ai_shot(player_grid)
-	var r = ai_target.x
-	var c = ai_target.y
+	var ai_target := BattleshipRules.get_ai_shot(player_grid)
+	var r := ai_target.x
+	var c := ai_target.y
 	
 	var is_hit = (player_grid.get_cell(r, c) == 1)
 	player_grid.set_cell(r, c, 3 if is_hit else 2)
@@ -171,7 +171,7 @@ func _play_ai_turn():
 		_spawn_peg_3d(r, c, is_hit)
 		
 	if is_hit:
-		var sunk = BattleshipRules.check_ship_sunk(player_ships, player_grid, r, c)
+		var sunk := BattleshipRules.check_ship_sunk(player_ships, player_grid, r, c)
 		if sunk.size() > 0:
 			set_status("⚠️ Inimigo afundou seu %s!" % sunk["name"])
 		else:

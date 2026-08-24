@@ -49,11 +49,11 @@ func _start_new_game() -> void:
 		ai_hand.append(boneyard.pop_back())
 		
 	board_chain.clear()
-	var starting_tile = {}
+	var starting_tile := {}
 	var starting_player: int = 0
 	for double_val in range(6, -1, -1):
 		for p_idx in range(player_hand.size()):
-			var t = player_hand[p_idx]
+			var t := player_hand[p_idx]
 			if t["a"] == double_val and t["b"] == double_val:
 				starting_tile = player_hand.pop_at(p_idx)
 				starting_player = 1
@@ -61,7 +61,7 @@ func _start_new_game() -> void:
 		if starting_tile.size() > 0: break
 		
 		for ai_idx in range(ai_hand.size()):
-			var t = ai_hand[ai_idx]
+			var t := ai_hand[ai_idx]
 			if t["a"] == double_val and t["b"] == double_val:
 				starting_tile = ai_hand.pop_at(ai_idx)
 				starting_player = 2
@@ -92,17 +92,17 @@ func _start_new_game() -> void:
 func _render_table_tiles_3d() -> void:
 	for c in table_tiles_root.get_children(): c.queue_free()
 	
-	var total_tiles = board_chain.size()
-	var spacing_x = 0.95
-	var start_x = -(total_tiles * spacing_x * 0.5) + (spacing_x * 0.5)
+	var total_tiles := board_chain.size()
+	var spacing_x := 0.95
+	var start_x := -(total_tiles * spacing_x * 0.5) + (spacing_x * 0.5)
 	
 	for i in range(total_tiles):
-		var tile_data = board_chain[i]
-		var tile_mesh = MeshInstance3D.new()
+		var tile_data := board_chain[i]
+		var tile_mesh := MeshInstance3D.new()
 		tile_mesh.mesh = MeshBuilder3D.create_domino_tile(0.9, 0.45, 0.1)
 		tile_mesh.material_override = MaterialFactory3D.get_ivory()
 		
-		var pos_x = start_x + (i * spacing_x)
+		var pos_x := start_x + (i * spacing_x)
 		tile_mesh.position = Vector3(pos_x, 0.05, 0.0)
 		
 		# Se for bucha (duplo), rotaciona em 90 graus
@@ -110,8 +110,8 @@ func _render_table_tiles_3d() -> void:
 			tile_mesh.rotation_degrees = Vector3(0, 90, 0)
 			
 		# Rebite central dourado
-		var rivet = MeshInstance3D.new()
-		var cyl = CylinderMesh.new()
+		var rivet := MeshInstance3D.new()
+		var cyl := CylinderMesh.new()
 		cyl.top_radius = 0.04
 		cyl.bottom_radius = 0.04
 		cyl.height = 0.12
@@ -128,8 +128,8 @@ func _update_ui() -> void:
 	# Mão do Jogador
 	for c in player_hand_container.get_children(): c.queue_free()
 	for i in range(player_hand.size()):
-		var tile = player_hand[i]
-		var btn = Button.new()
+		var tile := player_hand[i]
+		var btn := Button.new()
 		btn.custom_minimum_size = Vector2(72, 80)
 		btn.add_theme_font_size_override("font_size", 20)
 		btn.text = "%d\n---\n%d" % [tile["a"], tile["b"]]
@@ -137,7 +137,7 @@ func _update_ui() -> void:
 		if i == selected_tile_idx:
 			btn.self_modulate = Color(0.95, 0.8, 0.2)
 		else:
-			var can_play = DominoRules.can_play_tile(tile, left_end, right_end)
+			var can_play := DominoRules.can_play_tile(tile, left_end, right_end)
 			btn.self_modulate = Color(0.3, 0.75, 0.4) if (is_player_turn and can_play) else Color(0.85, 0.85, 0.85)
 			
 		btn.pressed.connect(_on_player_tile_selected.bind(i))
@@ -154,7 +154,7 @@ func _update_action_buttons():
 		return
 		
 	if selected_tile_idx >= 0 and selected_tile_idx < player_hand.size():
-		var tile = player_hand[selected_tile_idx]
+		var tile := player_hand[selected_tile_idx]
 		var can_left = (tile["a"] == left_end or tile["b"] == left_end)
 		var can_right = (tile["a"] == right_end or tile["b"] == right_end)
 		
@@ -165,7 +165,7 @@ func _update_action_buttons():
 	else:
 		btn_play_left.hide()
 		btn_play_right.hide()
-		var has_moves = DominoRules.has_any_valid_move(player_hand, left_end, right_end)
+		var has_moves := DominoRules.has_any_valid_move(player_hand, left_end, right_end)
 		if has_moves:
 			btn_draw.hide()
 			btn_pass.hide()
@@ -199,7 +199,7 @@ func _play_player_tile(side: String):
 			board_chain.push_front(tile)
 			left_end = tile["a"]
 		else:
-			var flipped = {"a": tile["b"], "b": tile["a"]}
+			var flipped := {"a": tile["b"], "b": tile["a"]}
 			board_chain.push_front(flipped)
 			left_end = flipped["a"]
 	else:
@@ -207,7 +207,7 @@ func _play_player_tile(side: String):
 			board_chain.push_back(tile)
 			right_end = tile["b"]
 		else:
-			var flipped = {"a": tile["b"], "b": tile["a"]}
+			var flipped := {"a": tile["b"], "b": tile["a"]}
 			board_chain.push_back(flipped)
 			right_end = flipped["b"]
 			
@@ -243,7 +243,7 @@ func _on_btn_pass_pressed():
 	_play_ai_turn()
 
 func _play_ai_turn():
-	var ai_play = DominoRules.find_ai_move(ai_hand, left_end, right_end)
+	var ai_play := DominoRules.find_ai_move(ai_hand, left_end, right_end)
 	if ai_play.size() > 0:
 		var t_idx = ai_play["tile_index"]
 		var side = ai_play["side"]
@@ -255,7 +255,7 @@ func _play_ai_turn():
 				board_chain.push_front(tile)
 				left_end = tile["a"]
 			else:
-				var flipped = {"a": tile["b"], "b": tile["a"]}
+				var flipped := {"a": tile["b"], "b": tile["a"]}
 				board_chain.push_front(flipped)
 				left_end = flipped["a"]
 		else:
@@ -263,7 +263,7 @@ func _play_ai_turn():
 				board_chain.push_back(tile)
 				right_end = tile["b"]
 			else:
-				var flipped = {"a": tile["b"], "b": tile["a"]}
+				var flipped := {"a": tile["b"], "b": tile["a"]}
 				board_chain.push_back(flipped)
 				right_end = flipped["b"]
 				
@@ -289,8 +289,8 @@ func _play_ai_turn():
 	_update_ui()
 
 func _check_board_lock() -> void:
-	var p_pts = DominoRules.calculate_hand_points(player_hand)
-	var ai_pts = DominoRules.calculate_hand_points(ai_hand)
+	var p_pts := DominoRules.calculate_hand_points(player_hand)
+	var ai_pts := DominoRules.calculate_hand_points(ai_hand)
 	if p_pts < ai_pts:
 		_end_game("Jogo Fechado! Você venceu por pontos (%d x %d)!" % [p_pts, ai_pts], true)
 	elif ai_pts < p_pts:

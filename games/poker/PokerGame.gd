@@ -89,15 +89,15 @@ func _on_btn_action_pressed():
 		for c in cards_root.get_children(): c.queue_free()
 		cards_3d.clear()
 		
-		var start_x = -(5 * CARD_SPACING_X * 0.5) + (CARD_SPACING_X * 0.5)
+		var start_x := -(5 * CARD_SPACING_X * 0.5) + (CARD_SPACING_X * 0.5)
 		
 		for i in range(5):
-			var card = deck.draw()
+			var card := deck.draw()
 			player_hand.add(card)
 			
-			var c_3d = preload("res://shared/3d/Card3D.tscn").instantiate()
+			var c_3d := preload("res://shared/3d/Card3D.tscn").instantiate()
 			c_3d.setup(card.get_display_value(), card.get_suit_symbol(), true)
-			var target_pos = Vector3(start_x + (i * CARD_SPACING_X), 0.05, 0.0)
+			var target_pos := Vector3(start_x + (i * CARD_SPACING_X), 0.05, 0.0)
 			c_3d.position = Vector3(2.5, 0.4, -1.8)
 			cards_root.add_child(c_3d)
 			cards_3d.append(c_3d)
@@ -114,19 +114,19 @@ func _on_btn_action_pressed():
 		
 	elif game_phase == "hold":
 		# Troca as cartas não retidas
-		var start_x = -(5 * CARD_SPACING_X * 0.5) + (CARD_SPACING_X * 0.5)
+		var start_x := -(5 * CARD_SPACING_X * 0.5) + (CARD_SPACING_X * 0.5)
 		
 		for i in range(5):
 			if not held_cards[i]:
-				var new_card = deck.draw()
+				var new_card := deck.draw()
 				player_hand.cards[i] = new_card
 				
-				var old_3d = cards_3d[i]
+				var old_3d := cards_3d[i]
 				old_3d.queue_free()
 				
-				var c_3d = preload("res://shared/3d/Card3D.tscn").instantiate()
+				var c_3d := preload("res://shared/3d/Card3D.tscn").instantiate()
 				c_3d.setup(new_card.get_display_value(), new_card.get_suit_symbol(), true)
-				var target_pos = Vector3(start_x + (i * CARD_SPACING_X), 0.05, 0.0)
+				var target_pos := Vector3(start_x + (i * CARD_SPACING_X), 0.05, 0.0)
 				c_3d.position = Vector3(2.5, 0.4, -1.8)
 				cards_root.add_child(c_3d)
 				cards_3d[i] = c_3d
@@ -141,12 +141,12 @@ func _on_card_clicked(idx: int) -> void:
 	if game_phase != "hold": return
 	held_cards[idx] = not held_cards[idx]
 	
-	var c_3d = cards_3d[idx]
+	var c_3d := cards_3d[idx]
 	c_3d.hover(held_cards[idx])
 	touch_buttons[idx].text = "RETER" if held_cards[idx] else ""
 
 func _evaluate_poker_hand() -> void:
-	var result = PokerEvaluator.evaluate(player_hand.get_all())
+	var result := PokerEvaluator.evaluate(player_hand.get_all())
 	var hand_name = result["name"]
 	var mult = result["multiplier"]
 	var win_amount = current_bet * mult

@@ -20,7 +20,7 @@ static func count_flagged(grid: Grid2D) -> int:
 	return count
 
 static func create_empty_grid() -> Grid2D:
-	var grid = Grid2D.new(ROWS, COLS)
+	var grid := Grid2D.new(ROWS, COLS)
 	for r in range(ROWS):
 		for c in range(COLS):
 			grid.set_cell(r, c, {
@@ -34,8 +34,8 @@ static func create_empty_grid() -> Grid2D:
 static func generate_mines(grid: Grid2D, safe_r: int, safe_c: int, count: int = MINES_COUNT) -> void:
 	var placed: int = 0
 	while placed < count:
-		var r = randi() % ROWS
-		var c = randi() % COLS
+		var r := randi() % ROWS
+		var c := randi() % COLS
 		# Não coloca na célula do primeiro clique nem nas 8 vizinhas
 		if abs(r - safe_r) <= 1 and abs(c - safe_c) <= 1:
 			continue
@@ -52,7 +52,7 @@ static func generate_mines(grid: Grid2D, safe_r: int, safe_c: int, count: int = 
 			if cell["is_mine"]: continue
 			
 			var mine_count: int = 0
-			var neighbors = grid.get_all_neighbors(r, c)
+			var neighbors := grid.get_all_neighbors(r, c)
 			for n in neighbors:
 				if grid.get_cell(n.x, n.y)["is_mine"]:
 					mine_count += 1
@@ -74,7 +74,7 @@ static func reveal_cell(grid: Grid2D, start_r: int, start_c: int) -> Array[Vecto
 		revealed_positions.append(pos)
 		
 		if cell["adjacent_mines"] == 0:
-			var neighbors = grid.get_all_neighbors(pos.x, pos.y)
+			var neighbors := grid.get_all_neighbors(pos.x, pos.y)
 			for n in neighbors:
 				var n_cell = grid.get_cell(n.x, n.y)
 				if not n_cell["is_revealed"] and not n_cell["is_flagged"] and not n_cell["is_mine"]:

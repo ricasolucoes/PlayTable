@@ -11,7 +11,7 @@ const COLS = 8
 # 1: Brancas (Player), 2: Dama Branca, -1: Pretas (IA/Oponente), -2: Dama Preta
 
 static func create_initial_board() -> Grid2D:
-	var grid = Grid2D.new(ROWS, COLS, 0)
+	var grid := Grid2D.new(ROWS, COLS, 0)
 	for r in range(ROWS):
 		for c in range(COLS):
 			if (r + c) % 2 == 1:
@@ -28,7 +28,7 @@ static func get_piece_captures(grid: Grid2D, r: int, c: int) -> Array[Dictionary
 	
 	var is_player = piece > 0
 	var is_king = abs(piece) == 2
-	var directions = [Vector2i(-1, -1), Vector2i(-1, 1), Vector2i(1, -1), Vector2i(1, 1)]
+	var directions := [Vector2i(-1, -1), Vector2i(-1, 1), Vector2i(1, -1), Vector2i(1, 1)]
 	
 	for d in directions:
 		if not is_king:
@@ -52,7 +52,7 @@ static func get_piece_captures(grid: Grid2D, r: int, c: int) -> Array[Dictionary
 	return captures
 
 static func get_captures_for_piece(grid: Grid2D, pos: Vector2i) -> Array[Dictionary]:
-	var caps = get_piece_captures(grid, pos.x, pos.y)
+	var caps := get_piece_captures(grid, pos.x, pos.y)
 	var formatted: Array[Dictionary] = []
 	for c in caps:
 		var cap_pos = c["captures"][0] if (c.has("captures") and c["captures"].size() > 0) else Vector2i(-1, -1)
@@ -64,7 +64,7 @@ static func get_captures_for_piece(grid: Grid2D, pos: Vector2i) -> Array[Diction
 	return formatted
 
 static func get_valid_moves_for_piece(grid: Grid2D, pos: Vector2i) -> Array[Dictionary]:
-	var moves = get_piece_moves(grid, pos.x, pos.y)
+	var moves := get_piece_moves(grid, pos.x, pos.y)
 	var formatted: Array[Dictionary] = []
 	for m in moves:
 		var cap_pos = m["captures"][0] if (m.has("captures") and m["captures"].size() > 0) else Vector2i(-1, -1)
@@ -76,9 +76,9 @@ static func get_valid_moves_for_piece(grid: Grid2D, pos: Vector2i) -> Array[Dict
 	return formatted
 
 static func get_best_ai_move(grid: Grid2D) -> Dictionary:
-	var moves = get_all_valid_moves(grid, -1)
+	var moves := get_all_valid_moves(grid, -1)
 	if moves.is_empty(): return {}
-	var chosen = moves[0]
+	var chosen := moves[0]
 	var cap_pos = chosen["captures"][0] if (chosen.has("captures") and chosen["captures"].size() > 0) else Vector2i(-1, -1)
 	return {
 		"from": chosen["from"],
@@ -87,7 +87,7 @@ static func get_best_ai_move(grid: Grid2D) -> Dictionary:
 	}
 
 static func apply_move(grid: Grid2D, from_pos: Vector2i, to_pos: Vector2i, captured_pos: Vector2i = Vector2i(-1, -1)) -> Dictionary:
-	var move = {
+	var move := {
 		"from": from_pos,
 		"to": to_pos,
 		"captures": [captured_pos] if captured_pos != Vector2i(-1, -1) else []
@@ -95,8 +95,8 @@ static func apply_move(grid: Grid2D, from_pos: Vector2i, to_pos: Vector2i, captu
 	return execute_move(grid, move)
 
 static func check_game_over(grid: Grid2D) -> int:
-	var p1_moves = get_all_valid_moves(grid, 1)
-	var p2_moves = get_all_valid_moves(grid, -1)
+	var p1_moves := get_all_valid_moves(grid, 1)
+	var p2_moves := get_all_valid_moves(grid, -1)
 	var p1_pieces: int = 0
 	var p2_pieces: int = 0
 	for cell in grid.cells:
@@ -109,7 +109,7 @@ static func check_game_over(grid: Grid2D) -> int:
 	return 0
 
 static func get_piece_moves(grid: Grid2D, r: int, c: int) -> Array[Dictionary]:
-	var moves = get_piece_captures(grid, r, c)
+	var moves := get_piece_captures(grid, r, c)
 	if not moves.is_empty():
 		return moves
 		
@@ -128,8 +128,8 @@ static func get_piece_moves(grid: Grid2D, r: int, c: int) -> Array[Dictionary]:
 		directions.append(Vector2i(1, 1))
 		
 	for d in directions:
-		var nr = r + d.x
-		var nc = c + d.y
+		var nr := r + d.x
+		var nc := c + d.y
 		if grid.is_valid(nr, nc) and grid.get_cell(nr, nc) == 0:
 			moves.append({
 				"from": Vector2i(r, c),
@@ -140,14 +140,14 @@ static func get_piece_moves(grid: Grid2D, r: int, c: int) -> Array[Dictionary]:
 	return moves
 
 static func get_all_valid_moves(grid: Grid2D, side: int) -> Array[Dictionary]:
-	var is_player = side > 0
+	var is_player := side > 0
 	var all_moves: Array[Dictionary] = []
 	var has_captures: bool = false
 	for r in range(ROWS):
 		for c in range(COLS):
 			var p = grid.get_cell(r, c)
 			if p != 0 and (p > 0) == is_player:
-				var caps = get_piece_captures(grid, r, c)
+				var caps := get_piece_captures(grid, r, c)
 				if not caps.is_empty():
 					has_captures = true
 					for cap in caps:
@@ -160,7 +160,7 @@ static func get_all_valid_moves(grid: Grid2D, side: int) -> Array[Dictionary]:
 		for c in range(COLS):
 			var p = grid.get_cell(r, c)
 			if p != 0 and (p > 0) == is_player:
-				var mvs = get_piece_moves(grid, r, c)
+				var mvs := get_piece_moves(grid, r, c)
 				for m in mvs:
 					all_moves.append(m)
 					

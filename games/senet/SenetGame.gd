@@ -85,11 +85,11 @@ func _sync_pieces_3d() -> void:
 	
 	for sq in range(1, 31):
 		var val = board[sq]
-		var rc = _get_square_row_col(sq)
+		var rc := _get_square_row_col(sq)
 		board_3d.reset_cell_material(rc.x, rc.y)
 		
 		if val != 0:
-			var piece = preload("res://shared/3d/Token3D.tscn").instantiate()
+			var piece := preload("res://shared/3d/Token3D.tscn").instantiate()
 			piece.token_type = "pawn"
 			piece.material_name = "gold" if val == 1 else "obsidian"
 			piece.position = board_3d.get_cell_position_3d(rc.x, rc.y, 0.12)
@@ -103,7 +103,7 @@ func _on_btn_cast_sticks_pressed() -> void:
 	can_throw = false
 	btn_cast_sticks.disabled = true
 	
-	var throw_res = _cast_sticks()
+	var throw_res := _cast_sticks()
 	current_throw = throw_res["value"]
 	has_extra_throw = throw_res["extra"]
 	
@@ -118,7 +118,7 @@ func _on_btn_cast_sticks_pressed() -> void:
 		else:
 			set_status("Escolha qual peça avançar %d casas:" % current_throw)
 			for m in valid_moves:
-				var rc = _get_square_row_col(m["from"])
+				var rc := _get_square_row_col(m["from"])
 				board_3d.highlight_cell(rc.x, rc.y, Color(0.2, 0.85, 0.4))
 	else:
 		_play_ai_move()
@@ -132,16 +132,16 @@ func _cast_sticks() -> Dictionary:
 			disp += "⚪"
 		else:
 			disp += "⚫"
-	var val = 5 if white_count == 0 else white_count
-	var extra = (val == 1 or val == 4 or val == 5)
+	var val := 5 if white_count == 0 else white_count
+	var extra := (val == 1 or val == 4 or val == 5)
 	return {"value": val, "extra": extra, "display": disp}
 
 func _get_valid_moves(player_id: int, steps: int) -> Array:
-	var opponent = 2 if player_id == 1 else 1
+	var opponent := 2 if player_id == 1 else 1
 	var moves: Array = []
 	for sq in range(1, 31):
 		if board[sq] == player_id:
-			var target = sq + steps
+			var target := sq + steps
 			if target == 31: # Retirada do tabuleiro
 				moves.append({"from": sq, "to": 31})
 			elif target < 31:
@@ -165,7 +165,7 @@ func _on_square_clicked(sq_num: int) -> void:
 			return
 
 func _execute_move(player_id: int, from_sq: int, to_sq: int):
-	var opponent = 2 if player_id == 1 else 1
+	var opponent := 2 if player_id == 1 else 1
 	
 	if to_sq == 31:
 		board[from_sq] = 0
@@ -182,7 +182,7 @@ func _execute_move(player_id: int, from_sq: int, to_sq: int):
 		# Casa da Água (27) afoga e manda para o Renascimento (15)
 		if to_sq == 27:
 			board[to_sq] = 0
-			var rebirth = 15
+			var rebirth := 15
 			while board[rebirth] != 0 and rebirth > 1:
 				rebirth -= 1
 			board[rebirth] = player_id
@@ -220,7 +220,7 @@ func _handle_end_of_turn() -> void:
 			_on_btn_cast_sticks_pressed()
 
 func _play_ai_move():
-	var ai_moves = _get_valid_moves(2, current_throw)
+	var ai_moves := _get_valid_moves(2, current_throw)
 	if ai_moves.is_empty():
 		set_status("IA sem movimentos possíveis!")
 		await get_tree().create_timer(0.8).timeout

@@ -22,7 +22,7 @@ static func has_any_valid_moves(grid: Grid2D) -> bool:
 	return count_total_moves(grid) > 0
 
 static func create_initial_board() -> Grid2D:
-	var grid = Grid2D.new(SIZE, SIZE, -1)
+	var grid := Grid2D.new(SIZE, SIZE, -1)
 	for r in range(SIZE):
 		for c in range(SIZE):
 			if is_valid_hole(r, c):
@@ -38,7 +38,7 @@ static func get_valid_moves_for_peg(grid: Grid2D, pos: Vector2i) -> Array[Dictio
 	var moves: Array[Dictionary] = []
 	if grid.get_cell_pos(pos) != 1: return moves
 	
-	var directions = [Vector2i(-1, 0), Vector2i(1, 0), Vector2i(0, -1), Vector2i(0, 1)]
+	var directions := [Vector2i(-1, 0), Vector2i(1, 0), Vector2i(0, -1), Vector2i(0, 1)]
 	for d in directions:
 		var over = pos + d
 		var land = pos + (d * 2)

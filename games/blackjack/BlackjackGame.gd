@@ -47,10 +47,10 @@ func _start_new_game() -> void:
 	deck.shuffle()
 	
 	# Distribuição inicial em 3D
-	var p_c1 = deck.draw()
-	var d_c1 = deck.draw() # Carta oculta do dealer
-	var p_c2 = deck.draw()
-	var d_c2 = deck.draw()
+	var p_c1 := deck.draw()
+	var d_c1 := deck.draw() # Carta oculta do dealer
+	var p_c2 := deck.draw()
+	var d_c2 := deck.draw()
 	
 	player_hand.add(p_c1)
 	dealer_hand.add(d_c1)
@@ -69,19 +69,19 @@ func _start_new_game() -> void:
 		_reveal_dealer_and_end("🏆 Blackjack Natural! Você Venceu!", true)
 
 func _spawn_card_3d(card: Card, is_player: bool, index: int, face_up: bool) -> Card3D:
-	var c_3d = preload("res://shared/3d/Card3D.tscn").instantiate()
-	var disp_val = card.get_display_value()
-	var suit_sym = card.get_suit_symbol()
+	var c_3d := preload("res://shared/3d/Card3D.tscn").instantiate()
+	var disp_val := card.get_display_value()
+	var suit_sym := card.get_suit_symbol()
 	c_3d.setup(disp_val, suit_sym, face_up)
 	
-	var shoe_pos = Vector3(2.6, 0.4, -1.8)
+	var shoe_pos := Vector3(2.6, 0.4, -1.8)
 	c_3d.position = shoe_pos
 	cards_root.add_child(c_3d)
 	
-	var target_z = 0.8 if is_player else -0.8
-	var spacing_x = 0.85
-	var start_x = -1.2 + (index * spacing_x)
-	var target_pos = Vector3(start_x, 0.05 + (index * 0.005), target_z)
+	var target_z := 0.8 if is_player else -0.8
+	var spacing_x := 0.85
+	var start_x := -1.2 + (index * spacing_x)
+	var target_pos := Vector3(start_x, 0.05 + (index * 0.005), target_z)
 	
 	c_3d.deal_to(target_pos, 0.0, 0.45)
 	
@@ -93,21 +93,21 @@ func _spawn_card_3d(card: Card, is_player: bool, index: int, face_up: bool) -> C
 	return c_3d
 
 func _update_labels(show_dealer: bool) -> void:
-	var p_score = BlackjackRules.calculate_hand_value(player_hand.get_all())
+	var p_score := BlackjackRules.calculate_hand_value(player_hand.get_all())
 	player_score_label.text = "Sua Mão: %d pontos" % p_score
 	
 	if show_dealer or game_over:
-		var d_score = BlackjackRules.calculate_hand_value(dealer_hand.get_all())
+		var d_score := BlackjackRules.calculate_hand_value(dealer_hand.get_all())
 		dealer_score_label.text = "Mão da Mesa (Dealer): %d pontos" % d_score
 	else:
-		var visible_cards = dealer_hand.get_all().slice(1)
-		var partial_score = BlackjackRules.calculate_hand_value(visible_cards)
+		var visible_cards := dealer_hand.get_all().slice(1)
+		var partial_score := BlackjackRules.calculate_hand_value(visible_cards)
 		dealer_score_label.text = "Mão da Mesa: %d + [Oculta]" % partial_score
 
 func _on_btn_hit_pressed() -> void:
 	if game_over: return
 	
-	var card = deck.draw()
+	var card := deck.draw()
 	player_hand.add(card)
 	_spawn_card_3d(card, true, player_hand.size() - 1, true)
 	_update_labels(false)
@@ -132,13 +132,13 @@ func _on_btn_stand_pressed() -> void:
 	# Dealer joga até 17+
 	while BlackjackRules.should_dealer_hit(dealer_hand.get_all()):
 		await get_tree().create_timer(0.6).timeout
-		var card = deck.draw()
+		var card := deck.draw()
 		dealer_hand.add(card)
 		_spawn_card_3d(card, false, dealer_hand.size() - 1, true)
 		_update_labels(true)
 		
-	var outcome = BlackjackRules.determine_winner(player_hand.get_all(), dealer_hand.get_all())
-	var d_score = BlackjackRules.calculate_hand_value(dealer_hand.get_all())
+	var outcome := BlackjackRules.determine_winner(player_hand.get_all(), dealer_hand.get_all())
+	var d_score := BlackjackRules.calculate_hand_value(dealer_hand.get_all())
 	
 	if outcome == BlackjackRules.Winner.PLAYER:
 		if d_score > 21:

@@ -77,7 +77,7 @@ func _start_new_game() -> void:
 	selected_source = ""
 	selected_card_idx = -1
 	
-	var deck = Deck.create_standard_52()
+	var deck := Deck.create_standard_52()
 	deck.shuffle()
 	
 	stock.clear()
@@ -87,12 +87,12 @@ func _start_new_game() -> void:
 	
 	for c in range(7):
 		for r in range(c + 1):
-			var card = deck.draw()
+			var card := deck.draw()
 			card.is_face_up = (r == c)
 			tableau[c].push(card)
 			
 	while not deck.is_empty():
-		var card = deck.draw()
+		var card := deck.draw()
 		card.is_face_up = false
 		stock.push(card)
 		
@@ -105,40 +105,40 @@ func _sync_3d_table() -> void:
 	
 	# Renderiza Stock (Monte)
 	for i in range(stock.size()):
-		var card = stock.cards[i]
-		var c_3d = preload("res://shared/3d/Card3D.tscn").instantiate()
+		var card := stock.cards[i]
+		var c_3d := preload("res://shared/3d/Card3D.tscn").instantiate()
 		c_3d.setup(card.get_display_value(), card.get_suit_symbol(), false)
 		c_3d.position = STOCK_POS_3D + Vector3(0, i * 0.003, 0)
 		cards_root.add_child(c_3d)
 		
 	# Renderiza Waste (Descarte)
 	for i in range(waste.size()):
-		var card = waste.cards[i]
-		var c_3d = preload("res://shared/3d/Card3D.tscn").instantiate()
+		var card := waste.cards[i]
+		var c_3d := preload("res://shared/3d/Card3D.tscn").instantiate()
 		c_3d.setup(card.get_display_value(), card.get_suit_symbol(), true)
 		c_3d.position = WASTE_POS_3D + Vector3(0, i * 0.003, 0)
 		cards_root.add_child(c_3d)
 		
 	# Renderiza Fundações (4 naipes)
 	for f_idx in range(4):
-		var f_pile = foundations[f_idx]
-		var pos_x = FOUNDATION_START_X + (f_idx * 0.8)
+		var f_pile := foundations[f_idx]
+		var pos_x := FOUNDATION_START_X + (f_idx * 0.8)
 		for i in range(f_pile.size()):
-			var card = f_pile.cards[i]
-			var c_3d = preload("res://shared/3d/Card3D.tscn").instantiate()
+			var card := f_pile.cards[i]
+			var c_3d := preload("res://shared/3d/Card3D.tscn").instantiate()
 			c_3d.setup(card.get_display_value(), card.get_suit_symbol(), true)
 			c_3d.position = Vector3(pos_x, 0.05 + (i * 0.003), -2.0)
 			cards_root.add_child(c_3d)
 			
 	# Renderiza Tableau (7 colunas em cascata)
 	for col_idx in range(7):
-		var col_pile = tableau[col_idx]
-		var pos_x = TABLEAU_START_X + (col_idx * TABLEAU_SPACING_X)
+		var col_pile := tableau[col_idx]
+		var pos_x := TABLEAU_START_X + (col_idx * TABLEAU_SPACING_X)
 		for r_idx in range(col_pile.size()):
-			var card = col_pile.cards[r_idx]
-			var c_3d = preload("res://shared/3d/Card3D.tscn").instantiate()
+			var card := col_pile.cards[r_idx]
+			var c_3d := preload("res://shared/3d/Card3D.tscn").instantiate()
 			c_3d.setup(card.get_display_value(), card.get_suit_symbol(), card.is_face_up)
-			var pos_z = TABLEAU_START_Z + (r_idx * TABLEAU_CASCADE_Z)
+			var pos_z := TABLEAU_START_Z + (r_idx * TABLEAU_CASCADE_Z)
 			c_3d.position = Vector3(pos_x, 0.05 + (r_idx * 0.006), pos_z)
 			cards_root.add_child(c_3d)
 
@@ -150,7 +150,7 @@ func _update_ui() -> void:
 		btn_waste.text = "Vazio"
 		btn_waste.disabled = true
 	else:
-		var top = waste.peek()
+		var top := waste.peek()
 		btn_waste.text = "%s %s" % [top.get_display_value(), top.get_suit_symbol()]
 		btn_waste.disabled = false
 		
@@ -158,14 +158,14 @@ func _update_ui() -> void:
 		if foundations[i].is_empty():
 			foundation_buttons[i].text = "%s" % SUIT_ICONS[i]
 		else:
-			var top = foundations[i].peek()
+			var top := foundations[i].peek()
 			foundation_buttons[i].text = "%s %s" % [top.get_display_value(), top.get_suit_symbol()]
 			
 	for i in range(7):
 		if tableau[i].is_empty():
 			tableau_buttons[i].text = "Col %d\n(Vazio)" % (i + 1)
 		else:
-			var top = tableau[i].peek()
+			var top := tableau[i].peek()
 			tableau_buttons[i].text = "Col %d\n%s %s" % [i + 1, top.get_display_value(), top.get_suit_symbol()]
 
 func _on_stock_pressed() -> void:
@@ -176,12 +176,12 @@ func _on_stock_pressed() -> void:
 	if stock.is_empty():
 		if waste.is_empty(): return
 		while not waste.is_empty():
-			var c = waste.pop()
+			var c := waste.pop()
 			c.is_face_up = false
 			stock.push(c)
 		set_status("Monte reiniciado.")
 	else:
-		var card = stock.pop()
+		var card := stock.pop()
 		card.is_face_up = true
 		waste.push(card)
 		set_status("Carta virada do monte.")
@@ -194,16 +194,16 @@ func _on_waste_pressed() -> void:
 	if game_over or waste.is_empty(): return
 	selected_source = "waste"
 	selected_card_idx = waste.size() - 1
-	var top = waste.peek()
+	var top := waste.peek()
 	set_status("Selecionado: %s %s do descarte." % [top.get_display_value(), top.get_suit_symbol()])
 
 func _on_foundation_pressed(f_idx: int):
 	if game_over: return
-	var f_pile = foundations[f_idx]
+	var f_pile := foundations[f_idx]
 	var req_suit = FOUNDATION_SUITS[f_idx]
 	
 	if selected_source == "waste":
-		var card = waste.peek()
+		var card := waste.peek()
 		if KlondikeRules.can_place_on_foundation(card, f_pile, req_suit):
 			waste.pop()
 			f_pile.push(card)
@@ -213,10 +213,10 @@ func _on_foundation_pressed(f_idx: int):
 			_check_win()
 			return
 	elif selected_source.begins_with("tableau_"):
-		var col_idx = selected_source.split("_")[1].to_int()
-		var col_pile = tableau[col_idx]
+		var col_idx := selected_source.split("_")[1].to_int()
+		var col_pile := tableau[col_idx]
 		if not col_pile.is_empty():
-			var card = col_pile.peek()
+			var card := col_pile.peek()
 			if KlondikeRules.can_place_on_foundation(card, f_pile, req_suit):
 				col_pile.pop()
 				if not col_pile.is_empty(): col_pile.peek().is_face_up = true
@@ -231,18 +231,18 @@ func _on_foundation_pressed(f_idx: int):
 
 func _on_tableau_col_pressed(col_idx: int):
 	if game_over: return
-	var target_col = tableau[col_idx]
+	var target_col := tableau[col_idx]
 	
 	if selected_source == "":
 		if not target_col.is_empty():
 			selected_source = "tableau_%d" % col_idx
 			selected_card_idx = target_col.size() - 1
-			var top = target_col.peek()
+			var top := target_col.peek()
 			set_status("Selecionado: %s %s da Coluna %d" % [top.get_display_value(), top.get_suit_symbol(), col_idx + 1])
 		return
 		
 	if selected_source == "waste":
-		var card = waste.peek()
+		var card := waste.peek()
 		if KlondikeRules.can_place_on_tableau(card, target_col):
 			waste.pop()
 			target_col.push(card)
@@ -250,16 +250,16 @@ func _on_tableau_col_pressed(col_idx: int):
 			_clear_selection_and_update()
 			return
 	elif selected_source.begins_with("tableau_"):
-		var src_col_idx = selected_source.split("_")[1].to_int()
+		var src_col_idx := selected_source.split("_")[1].to_int()
 		if src_col_idx == col_idx:
 			selected_source = ""
 			selected_card_idx = -1
 			set_status("Seleção desfeita.")
 			return
 			
-		var src_col = tableau[src_col_idx]
+		var src_col := tableau[src_col_idx]
 		if not src_col.is_empty():
-			var card = src_col.peek()
+			var card := src_col.peek()
 			if KlondikeRules.can_place_on_tableau(card, target_col):
 				src_col.pop()
 				if not src_col.is_empty(): src_col.peek().is_face_up = true
