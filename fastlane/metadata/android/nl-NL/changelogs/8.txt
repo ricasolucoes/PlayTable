@@ -1,0 +1,1 @@
+Vernieuwde 3D-tafel: warmere belichting, een eigen thema per spel en een camera die het bord vanzelf in beeld brengt. Nieuw uiterlijk voor Dammen en Mijnenveger. Ondersteuning voor Google Play Games. Opgelost: Peg Solitaire kon niet worden uitgespeeld en animaties bleven doorlopen na het verlaten van een scherm.

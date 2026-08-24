@@ -1,0 +1,1 @@
+Mesa 3D rediseñada: luz más cálida, un tema propio para cada juego y una cámara que encuadra el tablero sola. Damas y Buscaminas con nuevo aspecto. Compatible con Google Play Games. Correcciones: el Senku no permitía terminar la partida y las animaciones seguían corriendo al salir de una pantalla.

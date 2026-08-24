@@ -1,0 +1,1 @@
+Ombyggt 3D-bord: varmare ljus, ett eget tema för varje spel och en kamera som ramar in brädet av sig själv. Nytt utseende för Dam och Minröj. Stöd för Google Play Games. Rättat: Pinnsolitär gick inte att spela klart och animationer fortsatte efter att man lämnat en skärm.

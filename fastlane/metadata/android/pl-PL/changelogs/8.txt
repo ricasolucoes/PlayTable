@@ -1,0 +1,1 @@
+Przebudowany stół 3D: cieplejsze światło, osobny motyw dla każdej gry i kamera, która sama kadruje planszę. Nowy wygląd Warcabów i Sapera. Obsługa Google Play Games. Poprawki: układanki Solitaire z kołkami nie dało się ukończyć, a animacje działały dalej po opuszczeniu ekranu.

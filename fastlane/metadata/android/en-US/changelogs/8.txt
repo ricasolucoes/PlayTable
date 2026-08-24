@@ -1,0 +1,1 @@
+Rebuilt 3D table: warmer lighting, a dedicated theme for each game and a camera that frames the board on its own. New look for Checkers and Minesweeper. Google Play Games support. Fixes: Peg Solitaire could not be completed, and animations kept running after leaving a screen.

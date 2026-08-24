@@ -1,0 +1,1 @@
+Bàn chơi 3D được dựng lại: ánh sáng ấm hơn, mỗi trò chơi có chủ đề riêng và camera tự căn khung bàn cờ. Cờ đam và Dò mìn có diện mạo mới. Hỗ trợ Google Play Games. Sửa lỗi: không thể chơi hết ván Cờ chốt và hoạt ảnh vẫn chạy sau khi rời màn hình.

@@ -1,0 +1,1 @@
+Tavolo 3D ricostruito: luce più calda, un tema dedicato a ogni gioco e una telecamera che inquadra la plancia da sola. Nuovo aspetto per Dama e Campo Minato. Supporto a Google Play Games. Correzioni: il Solitario con i pioli non si poteva completare e le animazioni continuavano dopo aver lasciato una schermata.

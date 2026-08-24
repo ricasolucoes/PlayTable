@@ -1,0 +1,1 @@
+Mesa 3D refeita: luz mais quente, tema próprio para cada jogo e câmera que enquadra o tabuleiro sozinha. Damas e Campo Minado com visual novo. Integração com o Google Play Games. Correções: o Resta Um não deixava concluir a partida e animações seguiam rodando ao trocar de tela.

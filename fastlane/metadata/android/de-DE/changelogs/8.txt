@@ -1,0 +1,1 @@
+Neu gestalteter 3D-Tisch: wärmeres Licht, ein eigenes Thema pro Spiel und eine Kamera, die das Brett von selbst einrahmt. Neuer Look für Dame und Minesweeper. Unterstützung für Google Play Games. Behoben: Peg-Solitaire ließ sich nicht zu Ende spielen und Animationen liefen nach dem Verlassen eines Bildschirms weiter.

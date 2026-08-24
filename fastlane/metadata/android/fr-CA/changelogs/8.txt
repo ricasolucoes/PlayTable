@@ -1,0 +1,1 @@
+Table 3D refaite : lumière plus chaude, un thème propre à chaque jeu et une caméra qui cadre le plateau toute seule. Nouveau look pour les Dames et le Démineur. Prise en charge de Google Play Games. Corrections : le Solitaire à billes ne pouvait pas être terminé et les animations continuaient après avoir quitté un écran.

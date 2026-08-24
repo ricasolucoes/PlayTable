@@ -1,0 +1,1 @@
+Meja 3D dibangun ulang: pencahayaan lebih hangat, tema tersendiri untuk tiap permainan, dan kamera yang membingkai papan secara otomatis. Tampilan baru untuk Dam dan Minesweeper. Dukungan Google Play Games. Perbaikan: Peg Solitaire tidak bisa diselesaikan dan animasi terus berjalan setelah meninggalkan layar.
