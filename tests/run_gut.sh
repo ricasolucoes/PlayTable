@@ -57,10 +57,12 @@ fi
 
 echo "Godot: $GODOT_BIN ($(godot_version "$GODOT_BIN"))"
 
-if [[ ! -f "$REPO_ROOT/addons/gut/gut_cmdln.gd" ]]; then
-	echo "GUT ausente; instalando..."
-	"$REPO_ROOT/tests/install_gut.sh"
-fi
+# Sempre delega ao install_gut.sh: ele compara o carimbo .gut_version com a
+# versao fixada e so baixa quando diferem. Conferir apenas se gut_cmdln.gd
+# existe deixaria passar uma instalacao velha — foi o que aconteceu com o
+# 9.3.0 (Godot 4.3) sobrevivendo a migracao para a 4.6, onde ele nem carrega:
+# o 9.3.0 declara `class_name Logger`, que na 4.6 e uma classe nativa.
+"$REPO_ROOT/tests/install_gut.sh"
 
 # O GUT registra class_names proprios; sem importar, o gut_cmdln.gd aborta.
 # Trocar de versao da engine tambem invalida o cache, por isso o carimbo.
