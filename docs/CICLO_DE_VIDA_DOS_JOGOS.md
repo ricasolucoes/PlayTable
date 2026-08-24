@@ -100,7 +100,25 @@ custo de abstração sem ganho de reuso. **Fica como está.**
 - No Blackjack, `_start_game()` passou a se chamar `_start_new_game()`: era a
   única das 11 cópias do botão reiniciar que chamava outro nome.
 
-## 6. Resultado
+## 6. O que `BaseGame` deliberadamente **não** integrou
+
+O plano original pedia que a classe compartilhada também integrasse
+`core/estatisticas`, `core/save`, `core/i18n` e `core/audio`. Só o último
+entrou — `play_click()`, que os botões voltar e reiniciar agora tocam nos 16
+jogos. Os outros três ficaram de fora, e por motivos diferentes:
+
+| Sistema | Estado | Por quê |
+| :-- | :-- | :-- |
+| `core/audio` | **Integrado** | `AudioManager.play_click()` em `play_click()`. |
+| `core/estatisticas` | **Não existe** | O diretório está vazio e o git não rastreia nada dentro dele. Não há API para integrar; integrar significaria *escrever* um sistema de estatísticas, que é outra tarefa. |
+| `core/save` | Fora | `SaveManager` tem só `set_setting`/`get_setting`. Nenhum jogo persiste partida ou placar hoje — o Jogo da Velha e o Quatro em Linha guardam o placar em memória, e há teste que tranca esse comportamento. Persistir exigiria inventar um contrato (o que é uma partida? o que é um placar?) que nenhum jogo pede. |
+| `core/i18n` | Fora | Os 16 jogos escrevem o status em português fixo, e o `translations.csv` não tem chave para nenhuma dessas frases. Traduzir é um projeto próprio, com chave nova para cada mensagem; enfiar `tr()` em `set_status()` só faria a frase passar por uma tabela onde ela não está. |
+
+A regra que guiou os três cortes é a do próprio enunciado: se acomodar o
+sistema exigisse bandeira ou condicional em `BaseGame`, a abstração estaria
+errada. Nenhum dos três cabia sem inventar contrato novo.
+
+## 7. Resultado
 
 Contagem depois da migração dos 16 jogos, pelo mesmo `grep` da seção 2, agora
 sobre `games/` **e** `shared/`:
