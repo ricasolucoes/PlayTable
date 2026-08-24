@@ -18,7 +18,10 @@ extends BaseGame
 ## tabuleiro — o Resta Um deixa de fora 16 dos 49 quadrados.
 func build_touch_grid(container: Node, rows: int, cols: int, cell_size: Vector2,
 		on_cell: Callable, is_cell_enabled: Callable = Callable()) -> void:
+	# Sair da arvore antes do queue_free: a liberacao so acontece no fim do
+	# quadro, e ate la a grade antiga continuaria contando como celula.
 	for child in container.get_children():
+		container.remove_child(child)
 		child.queue_free()
 
 	for r in range(rows):
