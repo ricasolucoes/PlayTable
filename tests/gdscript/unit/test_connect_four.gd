@@ -11,8 +11,6 @@ extends GutTest
 ## [coluna][linha] — e por isso sao testadas separadamente.
 
 const RulesScript = preload("res://games/quatro_em_linha/ConnectFourRules.gd")
-const BoardScript = preload("res://games/quatro_em_linha/ConnectFourBoard.gd")
-const AIScript = preload("res://games/quatro_em_linha/ConnectFourAI.gd")
 const GameScene = preload("res://games/quatro_em_linha/ConnectFourGame.tscn")
 
 const ROWS := 6
@@ -21,10 +19,6 @@ const COLS := 7
 
 func _grid() -> Grid2D:
 	return Grid2D.new(ROWS, COLS, 0)
-
-
-func _board() -> Node:
-	return autofree(BoardScript.new())
 
 
 # ------------------------------------------------------------ ConnectFourRules
@@ -135,116 +129,63 @@ func test_get_best_move_nao_suja_o_tabuleiro() -> void:
 	assert_eq(Array(g.cells), antes, "grid restaurado apos a busca")
 
 
-# ------------------------------------- ConnectFourBoard / AI (usados pela cena)
+# ------------------------------- Guardas que vinham do par ConnectFourBoard/AI
 
-func test_board_comeca_com_42_casas_vazias() -> void:
-	var b := _board()
-	assert_eq(b.grid.size(), COLS, "7 colunas")
-	for col in b.grid:
-		assert_eq(col.size(), ROWS, "6 linhas por coluna")
-		for v in col:
-			assert_eq(v, 0, "casa vazia")
+## ConnectFourBoard e ConnectFourAI foram apagados: eram a mesma logica escrita
+## de novo, e era essa copia que a cena usava enquanto a suite exercitava a
+## outra. Os testes que so repetiam as regras sairam junto; ficaram os tres que
+## cobriam algo proprio, agora apontados para ConnectFourRules.
 
-
-func test_board_empilha_e_recusa_coluna_cheia() -> void:
-	var b := _board()
-	assert_eq(b.drop_piece(2, 1), ROWS - 1, "primeira no fundo")
-	for _i in range(ROWS - 1):
-		assert_ne(b.drop_piece(2, 1), -1, "resto da coluna")
-	assert_false(b.can_drop(2), "coluna cheia")
-	assert_eq(b.drop_piece(2, 1), -1, "recusada")
-
-
-func test_board_devolve_as_casas_vencedoras() -> void:
-	var b := _board()
-	for c in range(4):
-		b.drop_piece(c, 1)
-	var cells: Array[Vector2i] = b.get_winning_cells(3, ROWS - 1, 1)
-	assert_eq(cells.size(), 4, "4 casas na linha vencedora")
-	assert_true(b.check_win(3, ROWS - 1, 1), "vitoria horizontal")
-
-
-func test_board_reconhece_vitoria_vertical_e_diagonal() -> void:
-	var vertical := _board()
-	for _i in range(4):
-		vertical.drop_piece(6, 2)
-	assert_true(vertical.check_win(6, ROWS - 4, 2), "vitoria vertical")
-
-	var diagonal := _board()
-	diagonal.drop_piece(0, 1)
-	diagonal.drop_piece(1, 2); diagonal.drop_piece(1, 1)
-	diagonal.drop_piece(2, 2); diagonal.drop_piece(2, 2); diagonal.drop_piece(2, 1)
-	diagonal.drop_piece(3, 2); diagonal.drop_piece(3, 2)
-	diagonal.drop_piece(3, 2); diagonal.drop_piece(3, 1)
-	assert_true(diagonal.check_win(3, ROWS - 4, 1), "vitoria diagonal")
-
-
-func test_board_reset_esvazia_o_tabuleiro() -> void:
-	var b := _board()
-	for c in range(COLS):
-		b.drop_piece(c, 1)
-	b.reset_board()
-	assert_eq(b.grid.size(), COLS, "continua com 7 colunas apos o reset")
-	for col in b.grid:
-		for v in col:
-			assert_eq(v, 0, "casa limpa")
-
-
-func test_ia_da_cena_fecha_a_propria_vitoria() -> void:
-	var b := _board()
-	for c in range(3):
-		b.drop_piece(c, 2)
-	assert_eq(AIScript.get_best_move(b), 3, "IA (2) fecha em 3")
-
-
-func test_ia_da_cena_bloqueia_a_vitoria_do_jogador() -> void:
-	var b := _board()
-	for c in range(3):
-		b.drop_piece(c, 1)
-	assert_eq(AIScript.get_best_move(b), 3, "IA bloqueia em 3")
-
-
-func test_ia_da_cena_nao_deixa_lixo_no_tabuleiro() -> void:
-	# _simulate_drop escreve direto em board.grid; o undo tem de cobrir tudo.
-	var b := _board()
-	b.drop_piece(0, 1)
-	b.drop_piece(1, 2)
-	var antes: Array = b.grid.duplicate(true)
-	var escolha: int = AIScript.get_best_move(b)
-	assert_true(escolha >= 0 and escolha < COLS, "coluna valida")
-	assert_eq(b.grid, antes, "tabuleiro restaurado apos a busca")
-
-
-func test_ia_da_cena_so_escolhe_coluna_jogavel() -> void:
-	var b := _board()
+func test_get_best_move_so_escolhe_coluna_jogavel() -> void:
+	var g := _grid()
 	# Enche todas as colunas menos a 5, alternando para nao formar 4 seguidas.
 	for c in range(COLS):
 		if c == 5:
 			continue
 		for r in range(ROWS):
-			b.drop_piece(c, 1 + (r + c) % 2)
-	assert_eq(AIScript.get_best_move(b), 5, "unica coluna livre")
+			RulesScript.drop_piece(g, c, 1 + (r + c) % 2)
+	assert_eq(RulesScript.get_best_move(g, 2), 5, "unica coluna livre")
 
 
 func test_partida_completa_da_ia_contra_ela_mesma_termina() -> void:
 	# Guarda contra deadlock: substitui test_e2e_connect_four_simulation.
 	for _partida in range(10):
-		var b := _board()
+		var g := _grid()
 		var vez := 1
 		var jogadas := 0
 		var vencedor := 0
 		while jogadas < ROWS * COLS:
-			var col: int = AIScript.get_best_move(b)
+			var col: int = RulesScript.get_best_move(g, vez)
 			if col == -1:
 				break
-			var row: int = b.drop_piece(col, vez)
+			var row: int = RulesScript.drop_piece(g, col, vez)
 			assert_true(row >= 0, "IA escolheu coluna jogavel")
 			jogadas += 1
-			if b.check_win(col, row, vez):
+			if RulesScript.check_win(g, row, col, vez):
 				vencedor = vez
 				break
 			vez = 1 if vez == 2 else 2
-		assert_true(vencedor != 0 or b.is_full(), "partida acaba com vitoria ou tabuleiro cheio")
+		assert_true(vencedor != 0 or RulesScript.is_full(g),
+			"partida acaba com vitoria ou tabuleiro cheio")
+
+
+func test_get_winning_cells_devolve_a_sequencia_inteira() -> void:
+	var g := _grid()
+	for c in range(4):
+		RulesScript.drop_piece(g, c, 1)
+	var celulas := RulesScript.get_winning_cells(g, ROWS - 1, 3, 1)
+	assert_eq(celulas.size(), 4, "quatro casas na horizontal")
+	for celula in celulas:
+		assert_eq(g.get_cell_pos(celula), 1, "cada casa devolvida e do vencedor")
+
+
+func test_get_winning_cells_vazio_quando_nao_ha_quatro() -> void:
+	var g := _grid()
+	for c in range(3):
+		RulesScript.drop_piece(g, c, 1)
+	assert_eq(RulesScript.get_winning_cells(g, ROWS - 1, 2, 1).size(), 0,
+		"tres seguidas nao formam sequencia vencedora")
+
 
 
 # ------------------------------------------------- Orientacao do desenho

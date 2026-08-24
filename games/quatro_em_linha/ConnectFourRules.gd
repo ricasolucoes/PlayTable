@@ -28,6 +28,25 @@ static func check_win(grid: Grid2D, row: int, col: int, player_id: int) -> bool:
 			return true
 	return false
 
+## As casas que formam a sequencia vencedora passando por (row, col).
+##
+## Devolve (linha, coluna), a convencao do Grid2D e do resto desta classe. Vazio
+## quando a jogada nao fecha quatro. Vivia so em ConnectFourBoard.
+static func get_winning_cells(grid: Grid2D, row: int, col: int, player_id: int) -> Array[Vector2i]:
+	var origem := Vector2i(row, col)
+	for dir in BoardCoordScript.CONNECT_4_DIRECTIONS:
+		var celulas: Array[Vector2i] = [origem]
+		for sentido in [1, -1]:
+			var passo: Vector2i = dir * sentido
+			var p: Vector2i = origem + passo
+			while grid.is_valid_pos(p) and grid.get_cell_pos(p) == player_id:
+				celulas.append(p)
+				p += passo
+		if celulas.size() >= 4:
+			return celulas
+	return [] as Array[Vector2i]
+
+
 static func is_full(grid: Grid2D) -> bool:
 	for c in range(COLS):
 		if grid.get_cell(0, c) == 0:

@@ -1,12 +1,13 @@
 @tool
 extends Control
 
-## Helper class for Quatro Em Linha.
+## Desenho do tabuleiro do Quatro em Linha. As medidas vêm do ConnectFourLayout
+## e as dimensões em casas do ConnectFourRules.
 
-const COLS = 7
-const ROWS = 6
-const CELL_SIZE = 86.0
-const HOLE_RADIUS = 34.0
+const COLS = ConnectFourRules.COLS
+const ROWS = ConnectFourRules.ROWS
+const CELL_SIZE = ConnectFourLayout.CELL_SIZE
+const HOLE_RADIUS = ConnectFourLayout.HOLE_RADIUS
 
 func _draw() -> void:
 	var total_w = COLS * CELL_SIZE

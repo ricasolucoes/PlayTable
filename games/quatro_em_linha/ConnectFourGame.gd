@@ -2,21 +2,24 @@ extends BaseGame
 
 ## Connect Four board game implementation.
 
-const BOARD_SCRIPT = preload("res://games/quatro_em_linha/ConnectFourBoard.gd")
-const AI_SCRIPT = preload("res://games/quatro_em_linha/ConnectFourAI.gd")
 const PIECE_SCENE = preload("res://shared/pecas/Piece.tscn")
 
-const COLS = 7
-const ROWS = 6
-const CELL_SIZE = 86.0
-const PIECE_RADIUS = 34.0
+## As dimensoes vem das regras: ConnectFourBoard declarava as suas e o jogo
+## tambem, tres copias de ROWS/COLS que precisavam concordar por acidente.
+const COLS = ConnectFourRules.COLS
+const ROWS = ConnectFourRules.ROWS
+const CELL_SIZE = ConnectFourLayout.CELL_SIZE
+const PIECE_RADIUS = ConnectFourLayout.HOLE_RADIUS
 
-var board = null
+## Estado da partida. As jogadas passam por ConnectFourRules, que e o que a
+## suite exercita -- antes havia um ConnectFourBoard com a mesma logica escrita
+## de novo sobre um Array de Arrays.
+var board: Grid2D = null
 var is_player_turn: bool = true
 var vs_ai: bool = true
 var score_p1: int = 0
 var score_p2: int = 0
-var piece_instances = {} # Vector2i -> Piece node
+var piece_instances := {}  ## Vector2i(linha, coluna) -> no da ficha
 
 @onready var pieces_layer = $BoardArea/PiecesLayer
 @onready var board_back = $BoardArea/BoardBack
@@ -44,8 +47,7 @@ func cell_center_y(row: int) -> float:
 
 func _ready() -> void:
 	status_label = $VBoxContainer/StatusCard/StatusLabel
-	board = BOARD_SCRIPT.new()
-	add_child(board)
+	board = Grid2D.new(ROWS, COLS, 0)
 	
 	_setup_board_visuals()
 	_setup_column_buttons()
@@ -71,13 +73,13 @@ func _setup_column_buttons() -> void:
 func _on_col_pressed(col: int):
 	if game_over or not is_player_turn:
 		return
-	if not board.can_drop(col):
+	if not ConnectFourRules.can_drop(board, col):
 		return
 		
 	_make_move(col, 1)
 
 func _make_move(col: int, player_id: int):
-	var row = board.drop_piece(col, player_id)
+	var row = ConnectFourRules.drop_piece(board, col, player_id)
 	if row < 0:
 		return
 		
@@ -91,11 +93,11 @@ func _make_move(col: int, player_id: int):
 	var target_y = cell_center_y(row)
 	
 	piece.position = Vector2(center_x, spawn_y)
-	piece_instances[Vector2i(col, row)] = piece
+	piece_instances[Vector2i(row, col)] = piece
 	
-	var win_cells = board.get_winning_cells(col, row, player_id)
+	var win_cells = ConnectFourRules.get_winning_cells(board, row, col, player_id)
 	var has_won = win_cells.size() >= 4
-	var is_board_full = board.is_full()
+	var is_board_full = ConnectFourRules.is_full(board)
 	
 	piece.drop_to(target_y, func():
 		if has_won:
@@ -120,7 +122,7 @@ func _make_move(col: int, player_id: int):
 func _do_ai_turn():
 	if game_over:
 		return
-	var ai_col = AI_SCRIPT.get_best_move(board)
+	var ai_col = ConnectFourRules.get_best_move(board, 2)
 	if ai_col != -1:
 		_make_move(ai_col, 2)
 	else:
@@ -170,7 +172,7 @@ func _update_turn_ui():
 
 func _start_new_game() -> void:
 	win_modal.visible = false
-	board.reset_board()
+	board.fill(0)
 	for child in pieces_layer.get_children():
 		child.queue_free()
 	piece_instances.clear()
