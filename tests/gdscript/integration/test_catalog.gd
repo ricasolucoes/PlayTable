@@ -158,7 +158,7 @@ func test_o_tema_da_interface_carrega() -> void:
 
 # --------------------------------------------------- Ciclo de vida compartilhado
 
-## O ciclo que os 16 jogos repetiam mora em shared/BaseGame.gd desde a v0.4.0.
+## O ciclo que os 16 jogos repetiam passou a morar em shared/BaseGame.gd.
 ## Os dois testes abaixo trancam isso pelo lado de fora: que todo jogo de fato
 ## herda a classe, e que nenhum voltou a escrever a propria copia.
 

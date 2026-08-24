@@ -15,8 +15,11 @@ nesse caso, e nenhum dos 16 jogos herda dela.
 
 O único trecho reaproveitável que ela contém é o botão voltar, que resolve o
 menu de origem por `SaveManager.get_setting("current_menu")` — chave que os dois
-menus gravam antes de abrir um jogo. Os 16 jogos ignoram essa chave e escrevem o
-caminho do menu à mão.
+menus gravam **apenas** ao abrir o *placeholder*, e não ao abrir um jogo de
+verdade. Os 16 jogos, por isso, não têm como ler essa chave e escrevem o caminho
+do menu à mão. Ao final, `GenericGame` também passou a herdar de `BaseGame`: o
+botão voltar dela é a 14ª cópia, e o que era leitura da chave virou o
+`menu_scene_path` que ela mesma preenche.
 
 ## 2. Função duplicada × o que já existia
 
@@ -46,9 +49,10 @@ não tem*. Mancala, Ludo e Dominó são jogos de tabuleiro sem grade; Blackjack 
 Poker são de cartas e mesmo assim compartilham botão voltar e reiniciar.
 
 - **`shared/BaseGame.gd`** (`class_name BaseGame extends Control`) — herdada
-  pelos 16. Só ciclo de vida: navegação de volta, reinício, `game_over`,
-  `finish_game()`, `set_status()` e `reveal_result_modal()`. Nenhum estado de
-  partida, nenhuma bandeira de exceção.
+  pelos 16 jogos e pelo *placeholder*. Só ciclo de vida: navegação de volta,
+  reinício, `game_over`, `finish_game()`, `set_status()` e
+  `reveal_result_modal()`. Nenhum estado de partida, nenhuma bandeira de
+  exceção.
 - **`shared/GridGame.gd`** (`class_name GridGame extends BaseGame`) — herdada
   pelos 6 jogos cujo tabuleiro é uma grade de células tocáveis (Reversi, Damas,
   Batalha Naval, Campo Minado, Resta Um, Senet). Acrescenta apenas
@@ -56,6 +60,14 @@ Poker são de cartas e mesmo assim compartilham botão voltar e reiniciar.
 
 Os jogos de cartas **não** ganham `build_touch_grid`, e nada em `BaseGame`
 precisa saber se quem herda tem tabuleiro, IA, dado ou baralho.
+
+O **Poker** é o caso-limite: video poker não tem fim de partida nem botão
+reiniciar — a rodada anda por um `game_phase` de três estados. Ele herda
+`BaseGame` **só pela navegação** e deixa `finish_game()`, `btn_restart` e
+`_start_new_game()` intocados. Nenhuma bandeira foi acrescentada a `BaseGame`
+para acomodá-lo: os três nós opcionais já eram nulos por padrão. Se algum dia
+for preciso um `if` em `BaseGame` para caber um jogo, é sinal de separar as
+bases — não foi preciso.
 
 ## 4. Por que a IA continua separada
 
@@ -80,6 +92,36 @@ custo de abstração sem ganho de reuso. **Fica como está.**
 - O botão **reiniciar** passa a tocar o clique nos 16 jogos (antes: só nos 3 jogos 2D).
 - O modal de **empate** do Jogo da Velha passa a entrar com o mesmo *fade* do
   modal de vitória (antes aparecia seco).
-- No Campo Minado e na Paciência, a vitória passa a marcar também `game_over`
-  (antes só `game_won`/`game_over`, dependendo do jogo); as duas bandeiras já
-  bloqueavam a mesma coisa.
+- No Campo Minado, a vitória passa a marcar também `game_over` (antes só
+  `game_won`); as duas bandeiras já bloqueavam a mesma coisa.
+- Na Paciência, `game_won` **era** o `game_over` do jogo com outro nome —
+  guardava os quatro tratadores de toque e nada mais. Virou a bandeira herdada,
+  uma a menos e não uma a mais.
+- No Blackjack, `_start_game()` passou a se chamar `_start_new_game()`: era a
+  única das 11 cópias do botão reiniciar que chamava outro nome.
+
+## 6. Resultado
+
+Contagem depois da migração dos 16 jogos, pelo mesmo `grep` da seção 2, agora
+sobre `games/` **e** `shared/`:
+
+| Função | Antes | Depois | Onde ficou |
+| :-- | --: | --: | :-- |
+| `_on_btn_back_pressed` | 14 | **1** | `BaseGame` |
+| `_on_back_pressed` | 3 | **1** | `BaseGame` (alias) |
+| `_on_btn_restart_pressed` | 11 | **1** | `BaseGame` |
+| `_on_restart_pressed` | 3 | **1** | `BaseGame` (alias) |
+| `_setup_touch_grid` | 6 | **0** | virou `GridGame.build_touch_grid()` |
+| `_end_game` | 8 | 8 | de cada jogo, todas terminando em `finish_game()` |
+| `_start_new_game` | 12 | 16 | de cada jogo — agora é o ponto de extensão declarado |
+| `_ready` | 24 | 24 | de cada jogo, como previsto |
+
+`games/` perdeu 207 linhas; `shared/` ganhou 152, das quais 146 são as duas
+classes novas. Um commit por jogo, com a suíte GUT verde em cada um.
+
+**Testes que trancam o resultado:** `tests/gdscript/unit/test_shared_lifecycle.gd`
+bate direto em `BaseGame` e `GridGame`; em `tests/gdscript/integration/test_catalog.gd`,
+`test_cada_jogo_volta_para_o_menu_da_sua_categoria` instancia as 16 cenas e confere
+o `menu_scene_path`, e `test_nenhum_jogo_reescreve_o_ciclo_de_vida` lê os `.gd` de
+`games/` e reprova qualquer cópia nova do botão voltar, do reiniciar ou do
+`game_over`.
