@@ -7,38 +7,31 @@ extends GutTest
 const RulesScript = preload("res://games/memoria/MemoryRules.gd")
 const GameScene = preload("res://games/memoria/MemoryGame.tscn")
 
-
-func _carta(pair_id: int) -> Card:
-	return Card.new(0, Card.Suit.NONE, Card.ColorType.NONE, "custom", {"pair_id": pair_id})
-
-
 # ---------------------------------------------------------------- MemoryRules
 
-func test_cartas_com_o_mesmo_pair_id_casam() -> void:
-	assert_true(RulesScript.is_match(_carta(1), _carta(1)), "mesmo par")
+## MemoryRules falava de Card e de custom_data["pair_id"], um modelo que
+## MemoryGame nunca usou -- a cena monta Control com symbol_type: int. A regra
+## passou a falar o modelo do jogo, e estes testes batem no que a partida chama.
 
+func test_simbolos_iguais_formam_par() -> void:
+	assert_true(RulesScript.symbols_match(3, 3), "mesmo simbolo")
+	assert_false(RulesScript.symbols_match(3, 4), "simbolos diferentes")
 
-func test_cartas_com_pair_id_diferente_nao_casam() -> void:
-	assert_false(RulesScript.is_match(_carta(1), _carta(2)), "pares diferentes")
-
-
-func test_sem_pair_id_o_criterio_e_o_valor() -> void:
-	assert_true(RulesScript.is_match(Card.new(7), Card.new(7)), "mesmo valor")
-	assert_false(RulesScript.is_match(Card.new(7), Card.new(8)), "valores diferentes")
-
-
-func test_carta_nula_nunca_casa() -> void:
-	assert_false(RulesScript.is_match(null, _carta(1)), "primeira nula")
-	assert_false(RulesScript.is_match(_carta(1), null), "segunda nula")
-	assert_false(RulesScript.is_match(null, null), "as duas nulas")
-
-
-func test_vitoria_so_com_todos_os_pares() -> void:
+func test_partida_vence_quando_todos_os_pares_sairam() -> void:
 	assert_true(RulesScript.is_game_won(8, 8), "8 de 8 vence")
-	assert_false(RulesScript.is_game_won(7, 8), "7 de 8 nao vence")
-	assert_true(RulesScript.is_game_won(9, 8), "mais que o total tambem vence")
-	assert_false(RulesScript.is_game_won(0, 0), "sem pares nao ha vitoria")
+	assert_false(RulesScript.is_game_won(7, 8), "faltando um par nao vence")
 
+func test_contagem_acima_do_total_ainda_vence() -> void:
+	# MemoryGame comparava com ==; um par contado duas vezes deixaria a partida
+	# sem fim. A regra usa >=.
+	assert_true(RulesScript.is_game_won(9, 8), "passou do total, venceu igual")
+
+func test_total_zero_nao_vence() -> void:
+	assert_false(RulesScript.is_game_won(0, 0), "sem pares nao ha partida ganha")
+
+func test_total_padrao_e_o_da_partida() -> void:
+	assert_eq(RulesScript.TOTAL_PAIRS, 8, "oito pares por partida")
+	assert_true(RulesScript.is_game_won(8), "o total padrao vale sem passar o segundo argumento")
 
 # ----------------------------------------------------------------- MemoryGame
 
@@ -54,13 +47,11 @@ func test_baralho_tem_16_cartas_em_8_pares() -> void:
 	for simbolo in contagem:
 		assert_eq(contagem[simbolo], 2, "simbolo %s aparece 2 vezes" % str(simbolo))
 
-
 func test_todas_as_cartas_comecam_viradas_para_baixo() -> void:
 	var jogo = add_child_autofree(GameScene.instantiate())
 	for carta in jogo.cards:
 		assert_false(carta.is_face_up, "carta fechada")
 		assert_false(carta.is_matched, "carta ainda nao casada")
-
 
 func test_partida_comeca_zerada() -> void:
 	var jogo = add_child_autofree(GameScene.instantiate())
@@ -69,13 +60,11 @@ func test_partida_comeca_zerada() -> void:
 	assert_false(jogo.game_over, "partida aberta")
 	assert_null(jogo.first_card, "nenhuma carta selecionada")
 
-
 func test_primeira_carta_clicada_vira_a_selecionada() -> void:
 	var jogo = add_child_autofree(GameScene.instantiate())
 	jogo._on_card_clicked(jogo.cards[0])
 	assert_eq(jogo.first_card, jogo.cards[0], "primeira carta guardada")
 	assert_eq(jogo.moves_count, 0, "jogada so conta no par")
-
 
 func test_clicar_duas_vezes_na_mesma_carta_e_ignorado() -> void:
 	var jogo = add_child_autofree(GameScene.instantiate())
@@ -83,7 +72,6 @@ func test_clicar_duas_vezes_na_mesma_carta_e_ignorado() -> void:
 	jogo._on_card_clicked(jogo.cards[0])
 	assert_null(jogo.second_card, "nao virou par consigo mesma")
 	assert_eq(jogo.moves_count, 0, "nenhuma jogada contada")
-
 
 func _par_de(jogo) -> Array:
 	# Devolve duas cartas com o mesmo simbolo.
@@ -93,14 +81,12 @@ func _par_de(jogo) -> Array:
 				return [jogo.cards[i], jogo.cards[j]]
 	return []
 
-
 func _diferentes_de(jogo) -> Array:
 	for i in range(jogo.cards.size()):
 		for j in range(i + 1, jogo.cards.size()):
 			if jogo.cards[i].symbol_type != jogo.cards[j].symbol_type:
 				return [jogo.cards[i], jogo.cards[j]]
 	return []
-
 
 func test_par_correto_conta_ponto() -> void:
 	var jogo = add_child_autofree(GameScene.instantiate())
@@ -110,7 +96,6 @@ func test_par_correto_conta_ponto() -> void:
 	jogo._on_card_clicked(par[1])
 	assert_eq(jogo.pairs_found, 1, "1 par encontrado")
 	assert_eq(jogo.moves_count, 1, "1 jogada contada")
-
 
 func test_par_errado_nao_conta_ponto() -> void:
 	var jogo = add_child_autofree(GameScene.instantiate())
@@ -122,7 +107,6 @@ func test_par_errado_nao_conta_ponto() -> void:
 	assert_eq(jogo.moves_count, 1, "a jogada conta mesmo errando")
 	assert_true(jogo.is_checking, "o jogo trava a mesa enquanto mostra o erro")
 
-
 func test_reiniciar_zera_a_partida() -> void:
 	var jogo = add_child_autofree(GameScene.instantiate())
 	var par := _par_de(jogo)
@@ -132,7 +116,6 @@ func test_reiniciar_zera_a_partida() -> void:
 	assert_eq(jogo.pairs_found, 0, "pares zerados")
 	assert_eq(jogo.moves_count, 0, "jogadas zeradas")
 	assert_false(jogo.game_over, "partida reaberta")
-
 
 func test_partida_completa_encontra_os_oito_pares() -> void:
 	# Guarda contra deadlock: substitui test_e2e_memory_game_simulation.

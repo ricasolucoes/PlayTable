@@ -8,16 +8,16 @@ var cards: Array[Control] = []
 var first_card: Control = null
 var second_card: Control = null
 var pairs_found: int = 0
-const TOTAL_PAIRS: int = 8
+const TOTAL_PAIRS: int = MemoryRules.TOTAL_PAIRS
 var moves_count: int = 0
 var is_checking: bool = false
 
-@onready var grid_container = $VBoxContainer/CenterContainer/Grid
-@onready var pairs_label = $VBoxContainer/ScoreBoard/PairsPanel/HBox/Value
-@onready var moves_label = $VBoxContainer/ScoreBoard/MovesPanel/HBox/Value
-@onready var win_modal = $WinModal
-@onready var win_modal_title = $WinModal/Panel/VBox/WinTitle
-@onready var win_modal_sub = $WinModal/Panel/VBox/WinSub
+@onready var grid_container: GridContainer = $VBoxContainer/CenterContainer/Grid
+@onready var pairs_label: Label = $VBoxContainer/ScoreBoard/PairsPanel/HBox/Value
+@onready var moves_label: Label = $VBoxContainer/ScoreBoard/MovesPanel/HBox/Value
+@onready var win_modal: ColorRect = $WinModal
+@onready var win_modal_title: Label = $WinModal/Panel/VBox/WinTitle
+@onready var win_modal_sub: Label = $WinModal/Panel/VBox/WinSub
 
 func _ready() -> void:
 	menu_scene_path = MENU_CARTAS
@@ -64,7 +64,7 @@ func _generate_deck() -> void:
 		grid_container.add_child(card)
 		cards.append(card)
 
-func _on_card_clicked(card: Control):
+func _on_card_clicked(card: Control) -> void:
 	if is_checking or game_over:
 		return
 	if card == first_card or card.is_matched:
@@ -84,7 +84,7 @@ func _on_card_clicked(card: Control):
 func _check_match() -> void:
 	is_checking = true
 	
-	if first_card.symbol_type == second_card.symbol_type:
+	if MemoryRules.symbols_match(first_card.symbol_type, second_card.symbol_type):
 		# Match found!
 		pairs_found += 1
 		_update_ui()
@@ -98,7 +98,7 @@ func _check_match() -> void:
 		second_card = null
 		is_checking = false
 		
-		if pairs_found == TOTAL_PAIRS:
+		if MemoryRules.is_game_won(pairs_found, TOTAL_PAIRS):
 			_handle_game_won()
 		else:
 			set_status("Par encontrado! Continue assim!")

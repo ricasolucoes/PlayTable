@@ -49,7 +49,7 @@ func _on_gui_input(event: InputEvent) -> void:
 		if not is_animating and not is_face_up and not is_matched:
 			card_clicked.emit(self)
 
-func flip(face_up: bool, on_complete: Callable = Callable()):
+func flip(face_up: bool, on_complete: Callable = Callable()) -> void:
 	if is_face_up == face_up or is_animating:
 		if on_complete.is_valid(): on_complete.call()
 		return

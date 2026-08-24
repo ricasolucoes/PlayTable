@@ -1,15 +1,26 @@
 class_name MemoryRules
 extends RefCounted
 
-## Rules and logic for Memoria.
+## Regras do Jogo da Memória.
+##
+## Falava de `Card` e de `custom_data["pair_id"]`, um modelo que `MemoryGame`
+## nunca usou: a cena monta os próprios `Control` com `symbol_type: int` e
+## comparava os dois símbolos inline. A regra ficava sem chamador e o jogo sem
+## regra. `Deck.create_memory_deck()`, que existia só para alimentar aquele
+## modelo, saiu junto — nada além de um teste a chamava.
 
-const CardScript = preload("res://shared/core_engine/cards/Card.gd")
+## Quantos pares uma partida tem.
+const TOTAL_PAIRS := 8
 
-static func is_match(card1: Card, card2: Card) -> bool:
-	if card1 == null or card2 == null: return false
-	if card1.custom_data.has("pair_id") and card2.custom_data.has("pair_id"):
-		return card1.custom_data["pair_id"] == card2.custom_data["pair_id"]
-	return card1.value == card2.value
 
-static func is_game_won(pairs_found: int, total_pairs: int) -> bool:
+## Duas cartas viradas formam par quando mostram o mesmo símbolo.
+static func symbols_match(first_symbol: int, second_symbol: int) -> bool:
+	return first_symbol == second_symbol
+
+
+## A partida acaba quando todos os pares saíram.
+##
+## O `>=` não é preciosismo: `MemoryGame` comparava com `==`, e um par contado
+## duas vezes por um clique duplo deixaria a partida sem fim.
+static func is_game_won(pairs_found: int, total_pairs: int = TOTAL_PAIRS) -> bool:
 	return pairs_found >= total_pairs and total_pairs > 0

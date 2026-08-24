@@ -13,7 +13,7 @@ func draw() -> Card:
 func draw_many(count: int) -> Array[Card]:
 	var result: Array[Card] = []
 	for i in range(count):
-		var c = draw()
+		var c := draw()
 		if c != null:
 			result.append(c)
 	return result
@@ -40,18 +40,18 @@ func recycle_from(source_cards: Array[Variant]) -> void:
 	shuffle()
 
 static func create_standard_52(aces_high: bool = false) -> Deck:
-	var deck = Deck.new()
-	var suits = [Card.Suit.HEARTS, Card.Suit.DIAMONDS, Card.Suit.CLUBS, Card.Suit.SPADES]
+	var deck := Deck.new()
+	var suits := [Card.Suit.HEARTS, Card.Suit.DIAMONDS, Card.Suit.CLUBS, Card.Suit.SPADES]
 	for s in suits:
-		var col = Card.ColorType.RED if (s == Card.Suit.HEARTS or s == Card.Suit.DIAMONDS) else Card.ColorType.BLACK
+		var col := Card.ColorType.RED if (s == Card.Suit.HEARTS or s == Card.Suit.DIAMONDS) else Card.ColorType.BLACK
 		for v in range(1, 14):
-			var final_val = 14 if (aces_high and v == 1) else v
-			var card = Card.new(final_val, s, col, "standard")
+			var final_val := 14 if (aces_high and v == 1) else v
+			var card := Card.new(final_val, s, col, "standard")
 			deck.add_card(card)
 	return deck
 
 static func create_uno_deck() -> Deck:
-	var deck = Deck.new()
+	var deck := Deck.new()
 	var colors = [
 		{"type": Card.ColorType.RED, "suit": Card.Suit.NONE},
 		{"type": Card.ColorType.BLUE, "suit": Card.Suit.NONE},
@@ -82,25 +82,8 @@ static func create_uno_deck() -> Deck:
 		
 	return deck
 
-static func create_memory_deck(custom_emojis: Array[String] = []) -> Deck:
-	var deck = Deck.new()
-	var emojis = custom_emojis
-	if emojis.is_empty():
-		emojis = ["🚀", "🦄", "🍕", "🎸", "💎", "🍄", "⭐", "🐱"]
-		
-	for i in range(emojis.size()):
-		var emoji = emojis[i]
-		var c1 = Card.new(i + 1, Card.Suit.NONE, Card.ColorType.NONE, "memory_pair", {"label": emoji, "pair_id": i})
-		var c2 = Card.new(i + 1, Card.Suit.NONE, Card.ColorType.NONE, "memory_pair", {"label": emoji, "pair_id": i})
-		c1.is_face_up = false
-		c2.is_face_up = false
-		deck.add_card(c1)
-		deck.add_card(c2)
-		
-	return deck
-
 static func from_dict(data: Dictionary) -> Deck:
-	var deck = Deck.new()
+	var deck := Deck.new()
 	var list = data.get("cards", [])
 	for item in list:
 		deck.add_card(Card.from_dict(item))
