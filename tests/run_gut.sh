@@ -82,9 +82,23 @@ if [[ ! -f "$STAMP" || "$(cat "$STAMP")" != "$WANT" ]]; then
 	echo "$WANT" > "$STAMP"
 fi
 
+# Um arquivo de teste que nao compila nao reprova nada: o GUT o descarta com
+# "Ignoring script ... because it does not extend GutTest", um aviso no meio da
+# saida, e segue com os outros. O arquivo some da suite sem ninguem notar --
+# aconteceu com test_table_item_3d.gd, que sumiu por um `:=` que nao inferia.
+SAIDA="$(mktemp)"
+trap 'rm -f "$SAIDA"' EXIT
+
 set +e
-"$GODOT_BIN" --headless --path "$REPO_ROOT" -s addons/gut/gut_cmdln.gd "$@"
-STATUS=$?
+"$GODOT_BIN" --headless --path "$REPO_ROOT" -s addons/gut/gut_cmdln.gd "$@" 2>&1 | tee "$SAIDA"
+STATUS=${PIPESTATUS[0]}
 set -e
+
+if grep -q "Ignoring script" "$SAIDA"; then
+	echo "" >&2
+	echo "ERRO: o GUT descartou arquivo(s) de teste -- provavelmente erro de parse:" >&2
+	grep "Ignoring script" "$SAIDA" >&2
+	STATUS=1
+fi
 
 exit "$STATUS"
