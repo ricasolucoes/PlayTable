@@ -1,0 +1,14 @@
+PlayTable vereint sechzehn zeitlose Brett- und Kartenspiel-Klassiker in einer einzigen, performanten App auf Basis der Godot-Engine.
+
+Alles läuft vollständig lokal auf Ihrem Gerät. Keine Serververbindung nötig, keine Benutzerkonten, keine Werbung und keinerlei Datenerfassung. Auch im Flugmodus sind alle Spiele uneingeschränkt verfügbar.
+
+Enthaltene Brettspiele:
+Tic-Tac-Toe, Vier gewinnt, Dame, Schach, Reversi, Mühle, Käsekästchen, Memory-Spiel, Schiffe versenken, Mancala und Ludo (Mensch ärgere dich nicht).
+
+Enthaltene Kartenspiele:
+Solitär (Klondike), Blackjack (17 und 4), Krieg, Kartenklau und Konzentration.
+
+Was Sie NIEMALS finden werden:
+Keine Werbung, keine In-App-Käufe, keine Bezahlschranken, keine Registrierung und keine Telemetrie. Alle Einstellungen und Statistiken bleiben privat auf Ihrem Gerät.
+
+Elegante 3D-Grafik und flüssige Bedienung. 100% Open Source unter der MIT-Lizenz.

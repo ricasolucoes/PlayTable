@@ -1,0 +1,14 @@
+PlayTable, Godot motoruyla geliştirilmiş 16 klasik masa ve kart oyununu tek bir hafif uygulamada topluyor.
+
+Her şey tamamen cihazınızda çalışır. Harici sunuculara bağlanma, hesap oluşturma, reklam veya veri toplama yoktur. Uçak modunu açsanız bile tüm oyunlar sorunsuz çalışmaya devam eder.
+
+Masa Oyunları:
+Tic-Tac-Toe (SOS), Dörtlü Sıra, Dama, Satranç, Reversi, Dokuz Taş, Noktalar ve Kutular, Hafıza Oyunu, Amiral Battı, Mankala ve Kızmabirader (Ludo).
+
+Kart Oyunları:
+Solitaire (Fal), Blackjack (21), Savaş Oyunu, Deste Çalma ve Konsantrasyon.
+
+Neler YOKTUR:
+Reklam yok, uygulama içi satın alma yok, kilitli içerik yok, giriş zorunluluğu yok ve veri takibi yok. Ayarlarınız ve istatistikleriniz cihazınızda güvende kalır.
+
+Modern 3D grafikler ve akıcı dokunmatik kontroller. MIT lisanslı açık kaynak kod.

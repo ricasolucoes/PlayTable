@@ -1,0 +1,14 @@
+O PlayTable reúne dezasseis jogos clássicos de tabuleiro e cartas numa única aplicação, desenvolvida com a engine Godot.
+
+Tudo funciona diretamente no dispositivo. Não existem servidores para consultar, contas para criar, publicidade ou recolha de dados. Abra a aplicação em modo de voo e todos os jogos continuam a funcionar.
+
+Jogos de tabuleiro:
+Jogo do galo, Quatro em linha, Damas, Xadrez, Reversi, Trilha, Pontos e caixas, Jogo da memória, Batalha naval, Mancala e Ludo.
+
+Jogos de cartas:
+Paciência (Solitário), Vinte e um (Blackjack), Guerra, Rouba-monte e Concentração.
+
+O que não vai encontrar:
+Sem anúncios, sem compras na aplicação, sem jogos bloqueados, sem login, sem telemetria. Definições e estatísticas permanecem sempre no seu dispositivo.
+
+Interface em português, inglês e espanhol. Código aberto sob licença MIT.

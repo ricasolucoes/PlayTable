@@ -1,0 +1,1 @@
+Första versionen av PlayTable med 16 klassiska bräd- och kortspel, 3D-grafik, flerspråksstöd och 100% offline utan reklam.

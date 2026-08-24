@@ -1,0 +1,14 @@
+PlayTable riunisce sedici intramontabili giochi da tavolo e di carte in un'unica applicazione reattiva e leggera, creata con il motore Godot.
+
+Tutto funziona interamente sul tuo dispositivo. Nessun server esterno, nessun account da creare, nessuna pubblicità e nessun tracciamento. Attiva la modalità aereo e continua a giocare senza limiti.
+
+Giochi da tavolo inclusi:
+Tris (Tic-Tac-Toe), Forza 4, Dama, Scacchi, Reversi, Mulino (Filetto), Punti e linee, Gioco della memoria, Battaglia navale, Mancala e Ludo.
+
+Giochi di carte inclusi:
+Solitario (Klondike), Blackjack (Ventuno), Guerra, Ruba-mazzetto e Concentrazione.
+
+Cosa NON troverai mai:
+Nessuna pubblicità, nessun acquisto in-app, nessun paywall, nessun login obbligatorio e zero telemetria. Le impostazioni e le statistiche restano sul tuo dispositivo.
+
+Grafica 3D curata e comandi touch fluidi. 100% open source sotto licenza MIT.

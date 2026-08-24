@@ -1,0 +1,14 @@
+PlayTable tập hợp 16 trò chơi cờ và bài kinh điển vượt thời gian trong một ứng dụng mượt mà, được xây dựng trên nền tảng Godot engine.
+
+Mọi trò chơi đều chạy hoàn toàn cục bộ trên thiết bị của bạn. Không cần kết nối máy chủ, không cần đăng ký tài khoản, không có quảng cáo và không thu thập dữ liệu cá nhân. Bật chế độ máy bay và chơi mọi lúc mọi nơi.
+
+Các trò chơi cờ bao gồm:
+Cờ ca-rô (Tic-Tac-Toe), Nối 4 (Connect Four), Cờ đam (Checkers), Cờ vua (Chess), Cờ lật Reversi, Cờ Mo-ris, Chấm và ô vuông, Trò chơi trí nhớ, Bắn tàu chiến (Battleship), Mancala (Ô ăn quan) và Cờ cá ngựa (Ludo).
+
+Các trò chơi bài bao gồm:
+Solitaire (Xếp bài), Xì dách Blackjack (21), Chiến tranh bài (War), Cướp chồng bài và Tập trung trí nhớ.
+
+Cam kết trải nghiệm thuần túy:
+Không quảng cáo, không mua hàng trong ứng dụng, không khóa tính năng, không cần đăng nhập và không theo dõi dữ liệu. Cài đặt và điểm số lưu hoàn toàn trên máy bạn.
+
+Đồ họa 3D đẹp mắt, điều khiển chạm nhạy bén. Mã nguồn mở 100% theo giấy phép MIT.

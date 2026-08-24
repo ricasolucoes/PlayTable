@@ -1,0 +1,1 @@
+Lancio iniziale di PlayTable con 16 giochi classici da tavolo e di carte, grafica 3D, esperienza 100% offline e senza pubblicità.

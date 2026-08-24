@@ -15,6 +15,8 @@ Aqui você encontra a listagem detalhada de todos os jogos previstos, seus está
 | [Arquitetura e Stacks (Godot vs Flutter)](ARQUITETURA_E_STACK.md) | Estrutura modular (`core/`, `shared/`, `games/`), isolamento de regras de negócio, persistência local e guia de escolha de engine por tipo de jogo. |
 | [Guia de Arquitetura, Portabilidade e Multiplayer](GUIA_ARQUITETURA_E_PORTABILIDADE.md) | Módulos universais de cartas (`Card`, `Deck`), tabuleiros (`Grid2D`), jogadores (`IPlayerController`, `AI`, `Network`) e como portar para Flutter/TS/C#. |
 | [Ciclo de Vida Compartilhado dos Jogos](CICLO_DE_VIDA_DOS_JOGOS.md) | Levantamento da duplicação entre os 16 jogos, o que `GenericGame` cobria de fato e o desenho de `BaseGame`/`GridGame` em `shared/`. |
+| [Google Play Games & Sidekick Overlay](PLAY_GAMES_SIDEKICK.md) | Guia completo de Play Games Services v2, overlay Sidekick (IA Gemini Live, utilitários, gravação) e configuração no Play Console. |
+| [Política de Privacidade](../PRIVACY_POLICY.md) | Declaração de privacidade, ausência de anúncios, ausência de ID de publicidade (AD_ID) e diretrizes LGPD/GDPR/COPPA. |
 | [Diretrizes Open Source, Sem Anúncios e Legais](DIRETRIZES_SEM_ANUNCIOS_E_LEGAIS.md) | Princípios de privacidade (offline-first, zero ads, zero telemetria), geração procedural de assets e proteção legal para jogos tradicionais. |
 
 ---

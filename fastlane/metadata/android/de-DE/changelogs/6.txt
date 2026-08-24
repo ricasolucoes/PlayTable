@@ -1,0 +1,1 @@
+Erste Veröffentlichung von PlayTable mit 16 klassischen Brett- und Kartenspielen, 3D-Grafik, Offline-Modus und ohne Werbung.

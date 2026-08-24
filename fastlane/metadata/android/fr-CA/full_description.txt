@@ -1,0 +1,14 @@
+PlayTable rassemble seize grands classiques des jeux de société et de cartes dans une seule application fluide, propulsée par le moteur Godot.
+
+Tout fonctionne localement sur votre appareil. Aucun serveur distant, aucun compte requis, aucune publicité et aucun suivi de données. Activez le mode avion et profitez de tous les jeux à tout moment.
+
+Jeux de plateau inclus :
+Morpion (Tic-Tac-Toe), Puissance 4, Dames, Échecs, Reversi (Othello), Jeu du moulin, La Pipopipette (Points et carrés), Jeu de mémoire, Bataille navale, Mancala et Ludo (Petits chevaux).
+
+Jeux de cartes inclus :
+Solitaire (Klondike), Blackjack (21), Bataille, Vole-paquet et Concentration.
+
+Ce que vous ne trouverez JAMAIS :
+Aucune publicité, aucun achat intégré, aucun contenu payant, aucune connexion obligatoire. Vos données et statistiques restent strictement sur votre appareil.
+
+Graphismes 3D soignés, commandes tactiles intuitives. 100% open source sous licence MIT.

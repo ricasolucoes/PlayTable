@@ -63,9 +63,6 @@ func _start_new_game() -> void:
 	for r in range(MinesweeperRules.ROWS):
 		for c in range(MinesweeperRules.COLS):
 			board_3d.reset_cell_material(r, c)
-			var tile_mesh = board_3d.cell_meshes[r][c] as MeshInstance3D
-			tile_mesh.position.y = 0.06 # Tecla elevada
-			tile_mesh.material_override = MaterialFactory3D.get_plastic(Color(0.28, 0.32, 0.38), true)
 			
 	grid_data = MinesweeperRules.create_empty_grid()
 	_update_header_mines()
@@ -121,21 +118,11 @@ func _sync_revealed_3d() -> void:
 		for c in range(MinesweeperRules.COLS):
 			var cell = grid_data.get_cell(r, c)
 			if cell["is_revealed"]:
-				var tile = board_3d.cell_meshes[r][c] as MeshInstance3D
-				# Tecla afunda ao ser pressionada
-				var tween = create_tween()
-				tween.tween_property(tile, "position:y", 0.01, 0.15)
-				
 				var count = cell["adjacent_mines"]
 				if count > 0:
-					var mat = StandardMaterial3D.new()
-					mat.albedo_color = NUMBER_COLORS[count]
-					mat.emission_enabled = true
-					mat.emission = NUMBER_COLORS[count]
-					mat.emission_energy_multiplier = 0.5
-					tile.material_override = mat
+					board_3d.set_cell_state(r, c, Board3D.CellState.HIGHLIGHT)
 				else:
-					tile.material_override = MaterialFactory3D.get_plastic(Color(0.14, 0.16, 0.2), false)
+					board_3d.set_cell_state(r, c, Board3D.CellState.LAST_MOVE)
 
 func _trigger_game_over(hit_r: int, hit_c: int) -> void:
 	timer_active = false
@@ -146,8 +133,7 @@ func _trigger_game_over(hit_r: int, hit_c: int) -> void:
 		for c in range(MinesweeperRules.COLS):
 			var cell = grid_data.get_cell(r, c)
 			if cell["is_mine"]:
-				var tile = board_3d.cell_meshes[r][c] as MeshInstance3D
-				tile.material_override = MaterialFactory3D.get_glow(Color(1.0, 0.2, 0.1), 3.0)
+				board_3d.set_cell_state(r, c, Board3D.CellState.INVALID)
 
 func _check_win_condition() -> void:
 	if MinesweeperRules.check_win(grid_data):

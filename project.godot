@@ -12,7 +12,7 @@ config_version=5
 
 config/name="PlayTable"
 config/description="Coleção de jogos de tabuleiro e cartas offline em 3D imersivo."
-config/icon="res://icon.svg"
+config/icon="res://icon.png"
 config/use_custom_user_dir=true
 config/custom_user_dir_name="user_data"
 run/main_scene="res://core/telas/MainMenu.tscn"
@@ -28,6 +28,7 @@ SaveManager="*res://core/save/SaveManager.gd"
 LocaleManager="*res://core/i18n/LocaleManager.gd"
 SceneManager="*res://core/navegacao/SceneManager.gd"
 AudioManager="*res://core/audio/AudioManager.gd"
+PlayGamesManager="*res://core/services/PlayGamesManager.gd"
 
 [internationalization]
 

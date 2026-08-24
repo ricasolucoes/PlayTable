@@ -1,0 +1,14 @@
+PlayTable brengt zestien tijdloze bord- en kaartspellen samen in één snelle en elegante app, aangedreven door de Godot-engine.
+
+Alles draait volledig lokaal op je apparaat. Geen externe servers, geen accounts, geen advertenties en geen tracking. Zet je telefoon op vliegtuigmodus en speel ongestoord verder.
+
+Inbegrepen bordspellen:
+Boter-kaas-en-eieren, Vier op 'n rij, Dammen, Schaken, Reversi, Molenspel, Kamertje verhuren, Geheugenspel (Memory), Zeeslag, Mancala en Mens-erger-je-niet (Ludo).
+
+Inbegrepen kaartspellen:
+Patience / Solitaire (Klondike), Blackjack (Eenentwintigen), Oorlogje, Kaartenkaping en Concentratie.
+
+Wat je NOOIT zult vinden:
+Geen reclame, geen in-app aankopen, geen betaalmuren, geen verplichte logins en nul telemetrie. Je instellingen en statistieken blijven lokaal op je apparaat.
+
+Stijlvolle 3D-beelden en soepele bediening. 100% open source onder de MIT-licentie.

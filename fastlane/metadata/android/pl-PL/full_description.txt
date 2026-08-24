@@ -1,0 +1,14 @@
+PlayTable łączy szesnaście klasycznych gier planszowych i karcianych w jednej szybkiej i lekkiej aplikacji opartej na silniku Godot.
+
+Wszystko działa całkowicie lokalnie na Twoim urządzeniu. Brak zewnętrznych serwerów, brak konieczności rejestracji, brak reklam i brak śledzenia danych. Włącz tryb samolotowy i graj bez przeszkód.
+
+Gry planszowe:
+Kółko i krzyżyk, Czwórki (Connect Four), Warcaby, Szachy, Reversi, Młynek, Kropki i kwadraty, Gra pamięciowa (Memory), Statki (Okręty), Mankala i Chińczyk (Ludo).
+
+Gry karciane:
+Pasjans (Solitaire), Blackjack (Oczko / 21), Wojna, Złodziej kart i Koncentracja.
+
+Czego NIGDY nie znajdziesz:
+Brak reklam, brak mikropłatności, brak zablokowanych funkcji, brak logowania i telemetrii. Twoje statystyki i ustawienia pozostają wyłącznie na Twoim telefonie.
+
+Estetyczna grafika 3D i płynne sterowanie dotykowe. Open source na licencji MIT.
