@@ -25,10 +25,25 @@ static func tier() -> int:
 	return _tier
 
 static func set_tier(value: int) -> void:
-	_tier = clampi(value, Tier.LOW, Tier.HIGH)
+	var novo := clampi(value, Tier.LOW, Tier.HIGH)
+	var mudou := novo != tier()
+	_tier = novo
 	var save := _save_manager()
 	if save:
 		save.set_setting(SETTING_TIER, _tier)
+	if mudou:
+		_invalidate_generated_assets()
+
+
+## Descarta o que foi gerado com o tier anterior.
+##
+## MeshBuilder3D guarda malhas construidas com Quality3D.radial_segments() e
+## TextureFactory3D guarda texturas, e nenhuma das chaves de cache inclui o
+## tier. As tres clear_cache() existiam para isto e ninguem as chamava: trocar a
+## qualidade nao mudava nada do que ja tinha sido gerado, pelo resto da sessao.
+static func _invalidate_generated_assets() -> void:
+	MeshBuilder3D.clear_cache()
+	MaterialFactory3D.clear_cache()
 
 ## Verdadeiro quando o jogador pediu menos movimento (ou o SO pediu por ele).
 ## Movimento reduzido encurta e simplifica: nunca remove a informacao da jogada.
