@@ -179,3 +179,21 @@ func test_partida_completa_nao_trava() -> void:
 				vez = 1 - vez
 		assert_true(maos[0].is_empty() or maos[1].is_empty() or baralho.is_empty(),
 			"a partida termina por batida ou por monte esgotado")
+
+
+func test_pick_best_color_segue_a_maioria_da_mao() -> void:
+	var mao := [_numero(1, VERDE), _numero(5, VERDE), _numero(9, VERDE), _numero(3, AZUL)]
+	assert_eq(RulesScript.pick_best_color_for_hand(mao), VERDE,
+		"escolhe a cor que a mao tem mais")
+
+
+func test_pick_best_color_ignora_curinga_na_contagem() -> void:
+	var mao := [_numero(2, AMARELO), _numero(4, AMARELO), _acao(13, CURINGA, "wild")]
+	assert_eq(RulesScript.pick_best_color_for_hand(mao), AMARELO,
+		"o curinga nao conta como cor")
+
+
+func test_pick_best_color_com_mao_vazia_devolve_uma_cor_valida() -> void:
+	var cor = RulesScript.pick_best_color_for_hand([])
+	assert_true(cor in [VERMELHO, AZUL, VERDE, AMARELO],
+		"mao vazia ainda devolve cor jogavel, nunca curinga")

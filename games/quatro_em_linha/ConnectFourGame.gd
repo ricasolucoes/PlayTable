@@ -30,6 +30,18 @@ var piece_instances = {} # Vector2i -> Piece node
 @onready var win_modal_title = $WinModal/Panel/VBox/WinTitle
 @onready var win_modal_sub = $WinModal/Panel/VBox/WinSub
 
+## Centro vertical da linha `row` na area de desenho.
+##
+## `drop_piece` preenche do indice ROWS-1 para o 0, entao a linha ROWS-1 e o
+## fundo da coluna. No desenho o y cresce para baixo, ou seja o fundo tambem e o
+## maior y: linha logica e linha visual sao a mesma, sem inversao. Havia um
+## `(ROWS - 1) - row` aqui, apoiado num comentario que dizia o contrario, e ele
+## desenhava a primeira ficha de cada coluna no topo com a pilha crescendo para
+## baixo.
+func cell_center_y(row: int) -> float:
+	return row * CELL_SIZE + (CELL_SIZE * 0.5)
+
+
 func _ready() -> void:
 	status_label = $VBoxContainer/StatusCard/StatusLabel
 	board = BOARD_SCRIPT.new()
@@ -76,9 +88,7 @@ func _make_move(col: int, player_id: int):
 	
 	var center_x = col * CELL_SIZE + (CELL_SIZE * 0.5)
 	var spawn_y = -60.0
-	# In logic row 0 is bottom, row 5 is top. Visual row 0 is top, visual row 5 is bottom
-	var visual_row = (ROWS - 1) - row
-	var target_y = visual_row * CELL_SIZE + (CELL_SIZE * 0.5)
+	var target_y = cell_center_y(row)
 	
 	piece.position = Vector2(center_x, spawn_y)
 	piece_instances[Vector2i(col, row)] = piece

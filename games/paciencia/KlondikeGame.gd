@@ -204,7 +204,7 @@ func _on_foundation_pressed(f_idx: int):
 	
 	if selected_source == "waste":
 		var card = waste.peek()
-		if card.suit == req_suit and KlondikeRules.can_place_on_foundation(card, f_pile):
+		if KlondikeRules.can_place_on_foundation(card, f_pile, req_suit):
 			waste.pop()
 			f_pile.push(card)
 			moves_count += 1
@@ -217,7 +217,7 @@ func _on_foundation_pressed(f_idx: int):
 		var col_pile = tableau[col_idx]
 		if not col_pile.is_empty():
 			var card = col_pile.peek()
-			if card.suit == req_suit and KlondikeRules.can_place_on_foundation(card, f_pile):
+			if KlondikeRules.can_place_on_foundation(card, f_pile, req_suit):
 				col_pile.pop()
 				if not col_pile.is_empty(): col_pile.peek().is_face_up = true
 				f_pile.push(card)

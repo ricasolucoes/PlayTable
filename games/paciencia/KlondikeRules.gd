@@ -5,11 +5,14 @@ extends RefCounted
 
 const CardScript = preload("res://shared/core_engine/cards/Card.gd")
 
-static func can_place_on_foundation(card: Card, foundation_pile) -> bool:
+## `required_suit` e o naipe que a fundacao guarda. Com -1 a fundacao aceita o as
+## de qualquer naipe -- so use assim quando a pilha ainda nao tem dono.
+static func can_place_on_foundation(card: Card, foundation_pile, required_suit: int = -1) -> bool:
 	if card == null: return false
 	var top = foundation_pile.peek() if (foundation_pile != null and foundation_pile.has_method("peek") and not foundation_pile.is_empty()) else null
 	if top == null:
-		return card.value == 1
+		# Fundacao vazia so abre com as, e so com o as do naipe que ela guarda.
+		return card.value == 1 and (required_suit == -1 or card.suit == required_suit)
 	return card.suit == top.suit and card.value == top.value + 1
 
 static func can_place_on_tableau(card: Card, tableau_pile) -> bool:

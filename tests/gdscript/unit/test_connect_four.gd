@@ -13,6 +13,7 @@ extends GutTest
 const RulesScript = preload("res://games/quatro_em_linha/ConnectFourRules.gd")
 const BoardScript = preload("res://games/quatro_em_linha/ConnectFourBoard.gd")
 const AIScript = preload("res://games/quatro_em_linha/ConnectFourAI.gd")
+const GameScene = preload("res://games/quatro_em_linha/ConnectFourGame.tscn")
 
 const ROWS := 6
 const COLS := 7
@@ -244,3 +245,26 @@ func test_partida_completa_da_ia_contra_ela_mesma_termina() -> void:
 				break
 			vez = 1 if vez == 2 else 2
 		assert_true(vencedor != 0 or b.is_full(), "partida acaba com vitoria ou tabuleiro cheio")
+
+
+# ------------------------------------------------- Orientacao do desenho
+
+## A primeira ficha de uma coluna tem de ser desenhada no fundo.
+##
+## drop_piece devolve ROWS-1 na primeira jogada, e no desenho o y cresce para
+## baixo. Havia um (ROWS - 1) - row invertendo isso: a pilha nascia no topo e
+## crescia para baixo.
+func test_a_linha_do_fundo_e_desenhada_embaixo() -> void:
+	var jogo = add_child_autofree(GameScene.instantiate())
+	var y_fundo: float = jogo.cell_center_y(ROWS - 1)
+	var y_topo: float = jogo.cell_center_y(0)
+	assert_gt(y_fundo, y_topo, "a linha ROWS-1 fica abaixo da linha 0 na tela")
+
+
+func test_a_pilha_cresce_do_fundo_para_o_topo() -> void:
+	var jogo = add_child_autofree(GameScene.instantiate())
+	var grid := _grid()
+	var primeira := RulesScript.drop_piece(grid, 3, 1)
+	var segunda := RulesScript.drop_piece(grid, 3, 2)
+	assert_gt(jogo.cell_center_y(primeira), jogo.cell_center_y(segunda),
+		"a segunda ficha da coluna e desenhada acima da primeira")

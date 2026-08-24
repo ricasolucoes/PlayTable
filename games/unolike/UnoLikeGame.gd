@@ -272,7 +272,7 @@ func _play_ai_turn() -> void:
 				discard_pile.push(drawn)
 				_spawn_top_discard_3d(drawn)
 				if drawn.color_type == Card.ColorType.WILD:
-					active_color = Card.ColorType.RED
+					active_color = UnoRules.pick_best_color_for_hand(ai_hand.cards)
 				else:
 					active_color = drawn.color_type
 				_handle_card_effects_and_advance(drawn, false)
@@ -287,7 +287,7 @@ func _play_ai_turn() -> void:
 		_spawn_top_discard_3d(card)
 		
 		if card.color_type == Card.ColorType.WILD:
-			active_color = Card.ColorType.BLUE
+			active_color = UnoRules.pick_best_color_for_hand(ai_hand.cards)
 		else:
 			active_color = card.color_type
 			

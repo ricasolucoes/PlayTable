@@ -108,6 +108,19 @@ func test_can_place_on_foundation_le_o_topo_da_pilha() -> void:
 	assert_false(RulesScript.can_place_on_foundation(null, pilha), "carta nula")
 
 
+func test_fundacao_vazia_so_aceita_o_as_do_proprio_naipe() -> void:
+	# Sem required_suit a regra segue aceitando qualquer as: e o contrato antigo.
+	assert_true(RulesScript.can_place_on_foundation(_carta(1, COPAS), _pilha([])),
+		"sem naipe exigido, qualquer as abre")
+	# Com o naipe da fundacao, so o as daquele naipe entra.
+	assert_true(RulesScript.can_place_on_foundation(_carta(1, ESPADAS), _pilha([]), ESPADAS),
+		"as de espadas na fundacao de espadas")
+	assert_false(RulesScript.can_place_on_foundation(_carta(1, COPAS), _pilha([]), ESPADAS),
+		"as de copas nao abre a fundacao de espadas")
+	assert_false(RulesScript.can_place_on_foundation(_carta(2, ESPADAS), _pilha([]), ESPADAS),
+		"fundacao vazia so abre com as")
+
+
 func test_can_place_on_tableau_le_o_topo_da_pilha() -> void:
 	assert_true(RulesScript.can_place_on_tableau(_carta(13, COPAS), _pilha([])), "rei na coluna vazia")
 	var pilha := _pilha([_carta(13, ESPADAS)])
