@@ -3,8 +3,6 @@ extends RefCounted
 
 ## Rules and logic for Jogo Da Velha.
 
-const Grid2DScript = preload("res://shared/core_engine/board/Grid2D.gd")
-
 const WIN_COMBOS = [
 	[0, 1, 2], [3, 4, 5], [6, 7, 8], # Linhas
 	[0, 3, 6], [1, 4, 7], [2, 5, 8], # Colunas
@@ -12,10 +10,21 @@ const WIN_COMBOS = [
 ]
 
 static func check_win(grid: Grid2D, player_id: int) -> bool:
+	return not get_winning_combo(grid, player_id).is_empty()
+
+## A trinca que fecha a vitoria de `player_id`, ou vazia se nao ha vitoria.
+##
+## `check_win` responde sim ou nao; a cena precisa das tres casas para desenhar
+## o risco por cima delas, e por isso mantinha a propria copia das WIN_COMBOS.
+static func get_winning_combo(grid: Grid2D, player_id: int) -> Array[int]:
 	for combo in WIN_COMBOS:
-		if grid.cells[combo[0]] == player_id and grid.cells[combo[1]] == player_id and grid.cells[combo[2]] == player_id:
-			return true
-	return false
+		if grid.cells[combo[0]] == player_id \
+				and grid.cells[combo[1]] == player_id \
+				and grid.cells[combo[2]] == player_id:
+			var res: Array[int] = []
+			res.append_array(combo)
+			return res
+	return [] as Array[int]
 
 static func is_draw(grid: Grid2D) -> bool:
 	for c in grid.cells:

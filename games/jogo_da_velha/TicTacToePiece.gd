@@ -28,7 +28,7 @@ func set_winning(win: bool) -> void:
 	set_process(win)
 	queue_redraw()
 
-func _draw():
+func _draw() -> void:
 	if piece_type == PieceType.EMPTY:
 		return
 		

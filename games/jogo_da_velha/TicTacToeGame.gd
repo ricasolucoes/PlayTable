@@ -4,22 +4,24 @@ extends BaseGame
 
 const PIECE_SCRIPT = preload("res://games/jogo_da_velha/TicTacToePiece.gd")
 
-var board = [0,0,0, 0,0,0, 0,0,0] # 0=empty, 1=X, 2=O
+## Estado da partida. As regras moram em TicTacToeRules, que a suite ja
+## exercitava enquanto a cena rodava a propria copia delas.
+var board: Grid2D = Grid2D.new(3, 3, 0)
 var vs_ai: bool = true
 var is_player_turn: bool = true
 var score_x: int = 0
 var score_o: int = 0
 var piece_nodes: Array[Node2D] = []
 
-@onready var grid_container = $BoardContainer/Grid
-@onready var x_panel = $VBoxContainer/ScoreBoard/P1Panel
-@onready var o_panel = $VBoxContainer/ScoreBoard/P2Panel
-@onready var x_score_lbl = $VBoxContainer/ScoreBoard/P1Panel/HBox/Score
-@onready var o_score_lbl = $VBoxContainer/ScoreBoard/P2Panel/HBox/Score
-@onready var win_modal = $WinModal
-@onready var win_modal_title = $WinModal/Panel/VBox/WinTitle
-@onready var win_modal_sub = $WinModal/Panel/VBox/WinSub
-@onready var strike_line = $BoardContainer/StrikeLine
+@onready var grid_container: GridContainer = $BoardContainer/Grid
+@onready var x_panel: PanelContainer = $VBoxContainer/ScoreBoard/P1Panel
+@onready var o_panel: PanelContainer = $VBoxContainer/ScoreBoard/P2Panel
+@onready var x_score_lbl: Label = $VBoxContainer/ScoreBoard/P1Panel/HBox/Score
+@onready var o_score_lbl: Label = $VBoxContainer/ScoreBoard/P2Panel/HBox/Score
+@onready var win_modal: ColorRect = $WinModal
+@onready var win_modal_title: Label = $WinModal/Panel/VBox/WinTitle
+@onready var win_modal_sub: Label = $WinModal/Panel/VBox/WinSub
+@onready var strike_line: Line2D = $BoardContainer/StrikeLine
 
 func _ready() -> void:
 	status_label = $VBoxContainer/StatusCard/StatusLabel
@@ -50,14 +52,14 @@ func _setup_grid_cells() -> void:
 		btn.pressed.connect(_on_cell_pressed.bind(i))
 		grid_container.add_child(btn)
 
-func _on_cell_pressed(idx: int):
-	if game_over or not is_player_turn or board[idx] != 0:
+func _on_cell_pressed(idx: int) -> void:
+	if game_over or not is_player_turn or board.cells[idx] != 0:
 		return
 		
 	_place_move(idx, 1)
 
-func _place_move(idx: int, player_id: int):
-	board[idx] = player_id
+func _place_move(idx: int, player_id: int) -> void:
+	board.cells[idx] = player_id
 	var piece := piece_nodes[idx]
 	piece.piece_type = piece.PieceType.X_PIECE if player_id == 1 else piece.PieceType.O_PIECE
 	piece.play_spawn_animation()
@@ -65,12 +67,12 @@ func _place_move(idx: int, player_id: int):
 	if AudioManager:
 		AudioManager.play_piece_place()
 		
-	var win_combo := _check_win(player_id)
+	var win_combo := TicTacToeRules.get_winning_combo(board, player_id)
 	if win_combo.size() > 0:
 		_handle_game_won(player_id, win_combo)
 		return
 		
-	if _is_draw():
+	if TicTacToeRules.is_draw(board):
 		_handle_game_draw()
 		return
 		
@@ -87,73 +89,16 @@ func _place_move(idx: int, player_id: int):
 		is_player_turn = true
 		_update_turn_ui()
 
-func _do_ai_turn():
+func _do_ai_turn() -> void:
 	if game_over:
 		return
 		
-	var move := _get_ai_move()
+	var move := TicTacToeRules.get_best_move(board, 2)
 	if move != -1:
 		_place_move(move, 2)
 	else:
 		is_player_turn = true
 		_update_turn_ui()
-
-func _get_ai_move() -> int:
-	# 1. Win if possible
-	for i in range(9):
-		if board[i] == 0:
-			board[i] = 2
-			if _check_win(2).size() > 0:
-				board[i] = 0
-				return i
-			board[i] = 0
-			
-	# 2. Block player win
-	for i in range(9):
-		if board[i] == 0:
-			board[i] = 1
-			if _check_win(1).size() > 0:
-				board[i] = 0
-				return i
-			board[i] = 0
-			
-	# 3. Take center
-	if board[4] == 0:
-		return 4
-		
-	# 4. Take corners
-	var corners := [0, 2, 6, 8]
-	corners.shuffle()
-	for c in corners:
-		if board[c] == 0:
-			return c
-			
-	# 5. Take sides
-	var sides := [1, 3, 5, 7]
-	sides.shuffle()
-	for s in sides:
-		if board[s] == 0:
-			return s
-			
-	return -1
-
-func _check_win(p: int) -> Array[int]:
-	var wins = [
-		[0,1,2], [3,4,5], [6,7,8], # rows
-		[0,3,6], [1,4,7], [2,5,8], # cols
-		[0,4,8], [2,4,6]           # diags
-	]
-	for w in wins:
-		if board[w[0]] == p and board[w[1]] == p and board[w[2]] == p:
-			var res: Array[int] = []
-			res.append_array(w)
-			return res
-	return []
-
-func _is_draw() -> bool:
-	for c in board:
-		if c == 0: return false
-	return true
 
 func _handle_game_won(winner_id: int, combo: Array[int]) -> void:
 	game_over = true
@@ -197,7 +142,7 @@ func _update_turn_ui() -> void:
 
 func _start_new_game() -> void:
 	win_modal.visible = false
-	board = [0,0,0, 0,0,0, 0,0,0]
+	board.fill(0)
 	game_over = false
 	is_player_turn = true
 	strike_line.visible = false

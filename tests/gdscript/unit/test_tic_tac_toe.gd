@@ -153,7 +153,7 @@ func _novo_jogo() -> Node:
 
 func test_cena_monta_nove_casas() -> void:
 	var jogo := _novo_jogo()
-	assert_eq(jogo.board.size(), 9, "9 casas no modelo")
+	assert_eq(jogo.board.cells.size(), 9, "9 casas no modelo")
 	assert_eq(jogo.piece_nodes.size(), 9, "9 pecas desenhadas")
 	assert_false(jogo.game_over, "partida comeca aberta")
 
@@ -161,56 +161,60 @@ func test_cena_monta_nove_casas() -> void:
 func test_clique_em_casa_ocupada_e_ignorado() -> void:
 	var jogo := _novo_jogo()
 	jogo._on_cell_pressed(0)
-	assert_eq(jogo.board[0], X, "primeira jogada aceita")
+	assert_eq(jogo.board.cells[0], X, "primeira jogada aceita")
 	jogo.is_player_turn = true
 	jogo._on_cell_pressed(0)
-	assert_eq(jogo.board[0], X, "casa ocupada nao muda de dono")
+	assert_eq(jogo.board.cells[0], X, "casa ocupada nao muda de dono")
 
 
 func test_clique_apos_o_fim_da_partida_e_ignorado() -> void:
 	var jogo := _novo_jogo()
-	jogo.board = [1,1,1, 0,0,0, 0,0,0]
+	jogo.board.cells.assign([1,1,1, 0,0,0, 0,0,0])
 	jogo.game_over = true
 	jogo._on_cell_pressed(3)
-	assert_eq(jogo.board[3], VAZIO, "tabuleiro congelado depois do fim")
+	assert_eq(jogo.board.cells[3], VAZIO, "tabuleiro congelado depois do fim")
 
 
-func test_check_win_da_cena_devolve_a_trinca() -> void:
+func test_trinca_vencedora_sai_das_regras() -> void:
 	var jogo := _novo_jogo()
-	jogo.board = [1,0,0, 0,1,0, 0,0,1]
-	assert_eq(jogo._check_win(X), [0, 4, 8] as Array[int], "diagonal principal")
-	assert_eq(jogo._check_win(O), [] as Array[int], "O nao venceu")
+	jogo.board.cells.assign([1,0,0, 0,1,0, 0,0,1])
+	assert_eq(RulesScript.get_winning_combo(jogo.board, X), [0, 4, 8] as Array[int],
+		"diagonal principal")
+	assert_eq(RulesScript.get_winning_combo(jogo.board, O), [] as Array[int],
+		"O nao venceu")
 
 
 func test_ia_da_cena_fecha_e_bloqueia() -> void:
+	# A cena chama TicTacToeRules.get_best_move(board, 2); estes casos passam a
+	# bater na mesma funcao que a partida usa.
 	var jogo := _novo_jogo()
-	jogo.board = [2,2,0, 1,1,0, 0,0,0]
-	assert_eq(jogo._get_ai_move(), 2, "fecha a propria vitoria")
-	jogo.board = [1,1,0, 2,0,0, 0,0,0]
-	assert_eq(jogo._get_ai_move(), 2, "bloqueia a vitoria de X")
-	jogo.board = [0,0,0, 0,0,0, 0,0,0]
-	assert_eq(jogo._get_ai_move(), 4, "prefere o centro")
-	jogo.board = [1,2,1, 1,2,2, 2,1,1]
-	assert_eq(jogo._get_ai_move(), -1, "sem jogada possivel")
+	jogo.board.cells.assign([2,2,0, 1,1,0, 0,0,0])
+	assert_eq(RulesScript.get_best_move(jogo.board, 2), 2, "fecha a propria vitoria")
+	jogo.board.cells.assign([1,1,0, 2,0,0, 0,0,0])
+	assert_eq(RulesScript.get_best_move(jogo.board, 2), 2, "bloqueia a vitoria de X")
+	jogo.board.cells.assign([0,0,0, 0,0,0, 0,0,0])
+	assert_eq(RulesScript.get_best_move(jogo.board, 2), 4, "prefere o centro")
+	jogo.board.cells.assign([1,2,1, 1,2,2, 2,1,1])
+	assert_eq(RulesScript.get_best_move(jogo.board, 2), -1, "sem jogada possivel")
 
 
 func test_reiniciar_limpa_o_tabuleiro_e_preserva_o_placar() -> void:
 	var jogo := _novo_jogo()
-	jogo.board = [1,1,1, 2,2,0, 0,0,0]
+	jogo.board.cells.assign([1,1,1, 2,2,0, 0,0,0])
 	jogo.game_over = true
 	jogo.score_x = 3
 	jogo._on_restart_pressed()
-	assert_eq(jogo.board, [0,0,0, 0,0,0, 0,0,0], "tabuleiro zerado")
+	assert_eq(Array(jogo.board.cells), [0,0,0, 0,0,0, 0,0,0], "tabuleiro zerado")
 	assert_false(jogo.game_over, "partida reaberta")
 	assert_true(jogo.is_player_turn, "vez volta para o jogador")
 	assert_eq(jogo.score_x, 3, "placar acumulado sobrevive ao reinicio")
 
 
-func test_regras_da_cena_batem_com_TicTacToeRules() -> void:
-	# TicTacToeRules.gd nao e usado por TicTacToeGame.gd: a cena tem a sua
-	# propria copia das regras. Enquanto as duas existirem, elas tem de
-	# concordar — este teste falha no dia em que uma delas mudar sozinha.
-	var jogo := _novo_jogo()
+## A cena tinha a propria copia das regras e este teste varria as 6.561
+## posicoes possiveis para travar a divergencia entre as duas. Agora
+## TicTacToeGame chama TicTacToeRules, entao a varredura passou a conferir o que
+## de fato importa: que get_winning_combo e check_win nunca discordem entre si.
+func test_combo_e_check_win_nunca_discordam() -> void:
 	var divergencias: Array[String] = []
 	for mascara in range(6561):  # 3^8, varrendo tabuleiros de 8 casas
 		var celulas := []
@@ -219,11 +223,10 @@ func test_regras_da_cena_batem_com_TicTacToeRules() -> void:
 			celulas.append(resto % 3)
 			resto /= 3
 		celulas.append(0)
-		jogo.board = celulas.duplicate()
 		var grid := _grid(celulas)
 		for jogador in [X, O]:
-			var da_cena: bool = jogo._check_win(jogador).size() > 0
-			var das_regras: bool = RulesScript.check_win(grid, jogador)
-			if da_cena != das_regras:
-				divergencias.append("check_win(%s, %d)" % [str(celulas), jogador])
-	assert_eq(divergencias, [] as Array[String], "cena e Rules divergem")
+			var tem_combo: bool = not RulesScript.get_winning_combo(grid, jogador).is_empty()
+			var venceu: bool = RulesScript.check_win(grid, jogador)
+			if tem_combo != venceu:
+				divergencias.append("%s / %d" % [str(celulas), jogador])
+	assert_eq(divergencias, [] as Array[String], "combo e check_win divergem")
