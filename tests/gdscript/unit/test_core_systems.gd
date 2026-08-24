@@ -4,7 +4,9 @@ extends GutTest
 ##
 ## Especificacao herdada de tests/test_core_systems.py, que testava mocks
 ## Python de SaveManager, Grid2D, Deck, TurnManager e GameAction. Aqui os
-## alvos sao os autoloads e as classes de shared/core_engine.
+## alvos sao os autoloads e as classes de shared/core_engine que os jogos de
+## fato usam -- TurnManager e GameAction sairam junto com o framework de
+## jogadores e rede, que nenhum dos 16 jogos chegou a instanciar.
 
 
 # ------------------------------------------------------------------ SaveManager
@@ -182,89 +184,3 @@ func test_serializacao_de_carta() -> void:
 	assert_eq(copia.suit, Card.Suit.HEARTS, "naipe")
 	assert_eq(copia.color_type, Card.ColorType.RED, "copas e vermelho")
 	assert_eq(copia.get_short_name(), "Q♥", "nome curto")
-
-
-# ------------------------------------------------------------------ TurnManager
-
-func test_turnos_giram_em_circulo() -> void:
-	var jogadores: Array[Player] = []
-	for i in range(4):
-		jogadores.append(Player.new(i + 1, "P%d" % (i + 1)))
-	var tm := TurnManager.new(jogadores)
-	tm.start_game()
-	assert_true(tm.is_active, "partida ativa")
-	for i in range(12):
-		assert_eq(tm.get_current_player().name, "P%d" % ((i % 4) + 1), "volta %d" % i)
-		tm.next_turn()
-
-
-func test_contador_de_turnos_sobe() -> void:
-	var jogadores: Array[Player] = [Player.new(1, "A"), Player.new(2, "B")]
-	var tm := TurnManager.new(jogadores)
-	tm.start_game()
-	assert_eq(tm.turn_count, 1, "comeca em 1")
-	tm.next_turn()
-	tm.next_turn()
-	assert_eq(tm.turn_count, 3, "duas passagens depois")
-
-
-func test_turn_manager_sem_jogadores_nao_quebra() -> void:
-	var tm := TurnManager.new()
-	tm.start_game()
-	assert_false(tm.is_active, "nao ativa sem jogadores")
-	assert_null(tm.next_turn(), "nao ha proximo")
-	assert_null(tm.get_current_player(), "nao ha atual")
-
-
-func test_busca_de_jogador_por_id() -> void:
-	var jogadores: Array[Player] = [Player.new(7, "Sete"), Player.new(9, "Nove")]
-	var tm := TurnManager.new(jogadores)
-	assert_eq(tm.get_player_by_id(9).name, "Nove", "achou pelo id")
-	assert_null(tm.get_player_by_id(42), "id inexistente")
-
-
-func test_fim_de_partida_desativa_o_turn_manager() -> void:
-	var vencedor := Player.new(1, "A")
-	var tm := TurnManager.new([vencedor, Player.new(2, "B")] as Array[Player])
-	tm.start_game()
-	tm.end_game(vencedor, "batida")
-	assert_false(tm.is_active, "partida encerrada")
-	assert_null(tm.next_turn(), "nao passa mais turno")
-
-
-# ------------------------------------------------------------------- GameAction
-
-func test_serializacao_de_acao() -> void:
-	var acao := GameAction.new(1, "place_stone", {"row": 4, "col": 4}, 1720000000.0)
-	var d: Dictionary = acao.to_dict()
-	assert_eq(d["player_id"], 1, "id do jogador")
-	assert_eq(d["action_type"], "place_stone", "tipo")
-	assert_eq(d["payload"]["row"], 4, "linha no payload")
-	assert_eq(d["timestamp"], 1720000000.0, "carimbo preservado")
-
-
-func test_ida_e_volta_por_json() -> void:
-	var acao := GameAction.new(2, "play_card", {"card": "Q♥"}, 1720000000.0)
-	var voltou: GameAction = GameAction.from_json(acao.to_json())
-	assert_not_null(voltou, "json valido")
-	assert_eq(voltou.player_id, 2, "id")
-	assert_eq(voltou.action_type, "play_card", "tipo")
-	assert_eq(voltou.payload["card"], "Q♥", "payload")
-	assert_eq(voltou.timestamp, 1720000000.0, "carimbo")
-
-
-func test_json_invalido_devolve_null() -> void:
-	assert_null(GameAction.from_json("isto nao e json"), "texto solto")
-	assert_null(GameAction.from_json("[1, 2, 3]"), "json que nao e objeto")
-
-
-func test_carimbo_automatico_quando_nao_informado() -> void:
-	var acao := GameAction.new(1, "draw_tile")
-	assert_true(acao.timestamp > 0.0, "carimbo preenchido pelo relogio")
-
-
-func test_payload_e_copiado_e_nao_referenciado() -> void:
-	var payload := {"row": 1}
-	var acao := GameAction.new(1, "move", payload)
-	payload["row"] = 99
-	assert_eq(acao.payload["row"], 1, "a acao guardou uma copia")
