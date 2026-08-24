@@ -1,4 +1,4 @@
-extends Control
+extends BaseGame
 
 ## KlondikeGame: Paciência Klondike 3D com Empilhamento Físico de Cartas, Cascatas e Fundações
 
@@ -18,13 +18,9 @@ var tableau: Array[CardPile] = []
 var selected_source: String = ""
 var selected_card_idx: int = -1
 var moves_count: int = 0
-var game_won: bool = false
 
-@onready var env_3d: TabletopEnvironment3D = $TabletopEnvironment3D
 @onready var cards_root: Node3D = $CardsRoot
-@onready var status_label = $UI/VBoxContainer/Header/StatusLabel
 @onready var moves_label = $UI/VBoxContainer/Header/MovesLabel
-@onready var btn_restart = $UI/VBoxContainer/Header/BtnRestart
 
 @onready var btn_stock = $UI/TopRow/StockArea/BtnStock
 @onready var btn_waste = $UI/TopRow/StockArea/BtnWaste
@@ -54,6 +50,10 @@ const TABLEAU_START_Z = -0.7
 const TABLEAU_CASCADE_Z = 0.22
 
 func _ready() -> void:
+	menu_scene_path = MENU_CARTAS
+	env_3d = $TabletopEnvironment3D
+	status_label = $UI/VBoxContainer/Header/StatusLabel
+	btn_restart = $UI/VBoxContainer/Header/BtnRestart
 	env_3d.set_felt_color(Color(0.06, 0.3, 0.18))
 	stock = CardPile.new()
 	waste = CardPile.new()
@@ -73,7 +73,7 @@ func _ready() -> void:
 
 func _start_new_game() -> void:
 	moves_count = 0
-	game_won = false
+	game_over = false
 	selected_source = ""
 	selected_card_idx = -1
 	
@@ -169,7 +169,7 @@ func _update_ui() -> void:
 			tableau_buttons[i].text = "Col %d\n%s %s" % [i + 1, top.get_display_value(), top.get_suit_symbol()]
 
 func _on_stock_pressed() -> void:
-	if game_won: return
+	if game_over: return
 	selected_source = ""
 	selected_card_idx = -1
 	
@@ -191,14 +191,14 @@ func _on_stock_pressed() -> void:
 	_update_ui()
 
 func _on_waste_pressed() -> void:
-	if game_won or waste.is_empty(): return
+	if game_over or waste.is_empty(): return
 	selected_source = "waste"
 	selected_card_idx = waste.size() - 1
 	var top = waste.peek()
 	status_label.text = "Selecionado: %s %s do descarte." % [top.get_display_value(), top.get_suit_symbol()]
 
 func _on_foundation_pressed(f_idx: int):
-	if game_won: return
+	if game_over: return
 	var f_pile = foundations[f_idx]
 	var req_suit = FOUNDATION_SUITS[f_idx]
 	
@@ -230,7 +230,7 @@ func _on_foundation_pressed(f_idx: int):
 	status_label.text = "Jogada inválida para esta fundação."
 
 func _on_tableau_col_pressed(col_idx: int):
-	if game_won: return
+	if game_over: return
 	var target_col = tableau[col_idx]
 	
 	if selected_source == "":
@@ -280,12 +280,4 @@ func _check_win() -> void:
 	var total_found: int = 0
 	for f in foundations: total_found += f.size()
 	if total_found == 52:
-		game_won = true
-		status_label.text = "🏆 Parabéns! Você completou a Paciência 3D!"
-		env_3d.celebrate_win()
-
-func _on_btn_restart_pressed() -> void:
-	_start_new_game()
-
-func _on_btn_back_pressed() -> void:
-	SceneManager.goto_scene("res://core/telas/MenuCartas.tscn")
+		finish_game("🏆 Parabéns! Você completou a Paciência 3D!", true)
