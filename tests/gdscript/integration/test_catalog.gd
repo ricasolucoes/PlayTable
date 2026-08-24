@@ -154,3 +154,61 @@ func test_o_tema_da_interface_carrega() -> void:
 	assert_ne(tema, "", "tema configurado")
 	assert_true(ResourceLoader.exists(tema), "%s existe" % tema)
 	assert_true(load(tema) is Theme, "%s e um Theme" % tema)
+
+
+# --------------------------------------------------- Ciclo de vida compartilhado
+
+## O ciclo que os 16 jogos repetiam mora em shared/BaseGame.gd desde a v0.4.0.
+## Os dois testes abaixo trancam isso pelo lado de fora: que todo jogo de fato
+## herda a classe, e que nenhum voltou a escrever a propria copia.
+
+const CICLO_COMPARTILHADO := [
+	"func _on_btn_back_pressed",
+	"func _on_back_pressed",
+	"func _on_btn_restart_pressed",
+	"func _on_restart_pressed",
+	"var game_over",
+]
+
+
+func _scripts_dos_jogos() -> Array[String]:
+	var achados: Array[String] = []
+	var jogos := DirAccess.open("res://games")
+	assert_not_null(jogos, "res://games abre")
+	if jogos == null:
+		return achados
+	for pasta in jogos.get_directories():
+		var dir := DirAccess.open("res://games".path_join(pasta))
+		if dir == null:
+			continue
+		for arquivo in dir.get_files():
+			if arquivo.ends_with(".gd"):
+				achados.append("res://games".path_join(pasta).path_join(arquivo))
+	return achados
+
+
+func test_cada_jogo_volta_para_o_menu_da_sua_categoria() -> void:
+	var esperado := {}
+	for definicao in GameCatalog.get_board_games():
+		esperado[definicao.scene_path] = BaseGame.MENU_TABULEIRO
+	for definicao in GameCatalog.get_card_games():
+		esperado[definicao.scene_path] = BaseGame.MENU_CARTAS
+	assert_eq(esperado.size(), 16, "os 16 jogos do catalogo")
+
+	for caminho in esperado:
+		var jogo: Node = add_child_autofree((load(caminho) as PackedScene).instantiate())
+		assert_true(jogo is BaseGame, "%s herda BaseGame" % caminho)
+		if jogo is BaseGame:
+			assert_eq((jogo as BaseGame).menu_scene_path, esperado[caminho],
+				"%s volta para o menu da categoria" % caminho)
+
+
+func test_nenhum_jogo_reescreve_o_ciclo_de_vida() -> void:
+	var scripts := _scripts_dos_jogos()
+	assert_gt(scripts.size(), 16, "um script por jogo, no minimo")
+	for caminho in scripts:
+		var codigo := FileAccess.get_file_as_string(caminho)
+		assert_ne(codigo, "", "%s foi lido" % caminho)
+		for assinatura in CICLO_COMPARTILHADO:
+			assert_false(codigo.contains(assinatura),
+				"%s redeclara '%s' — o ciclo mora em shared/BaseGame.gd" % [caminho, assinatura])
