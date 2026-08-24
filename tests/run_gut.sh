@@ -66,8 +66,15 @@ echo "Godot: $GODOT_BIN ($(godot_version "$GODOT_BIN"))"
 
 # O GUT registra class_names proprios; sem importar, o gut_cmdln.gd aborta.
 # Trocar de versao da engine tambem invalida o cache, por isso o carimbo.
+#
+# O carimbo tambem cobre a lista de class_name do projeto: uma classe nova so
+# entra em global_script_class_cache.cfg depois de um --import, e ate la quem
+# herda dela morre em "Could not find base class". Conferir so engine e GUT
+# deixava passar exatamente esse caso.
 STAMP="$REPO_ROOT/.godot/.gut_import_stamp"
-WANT="$(godot_version "$GODOT_BIN")|$(cat "$REPO_ROOT/addons/gut/.gut_version" 2>/dev/null || echo none)"
+CLASSES="$(grep -rhE '^class_name ' "$REPO_ROOT/core" "$REPO_ROOT/games" "$REPO_ROOT/shared" \
+	--include='*.gd' 2>/dev/null | sort | shasum | cut -d' ' -f1)"
+WANT="$(godot_version "$GODOT_BIN")|$(cat "$REPO_ROOT/addons/gut/.gut_version" 2>/dev/null || echo none)|$CLASSES"
 if [[ ! -f "$STAMP" || "$(cat "$STAMP")" != "$WANT" ]]; then
 	echo "Importando recursos (engine ou GUT mudaram)..."
 	"$GODOT_BIN" --headless --path "$REPO_ROOT" --import >/dev/null 2>&1 || true
