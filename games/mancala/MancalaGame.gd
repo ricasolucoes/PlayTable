@@ -1,17 +1,13 @@
-extends Control
+extends BaseGame
 
 ## MancalaGame: Mancala 3D com Tabuleiro Esculpido em Madeira Nobre e Gemas Preciosas
 
 var pits: Array = []
 var is_player_turn: bool = true
-var game_over: bool = false
 var gems_3d: Dictionary = {}
 
-@onready var env_3d: TabletopEnvironment3D = $TabletopEnvironment3D
 @onready var board_root: Node3D = $BoardRoot
 @onready var gems_root: Node3D = $GemsRoot
-@onready var status_label = $UI/VBoxContainer/StatusLabel
-@onready var btn_restart = $UI/VBoxContainer/BtnRestart
 @onready var player_pits_container = $UI/CenterContainer/VBox/PlayerRow
 @onready var ai_pits_container = $UI/CenterContainer/VBox/AIRow
 @onready var player_store_label = $UI/CenterContainer/HBoxStores/PlayerStoreLabel
@@ -41,6 +37,9 @@ const PIT_POSITIONS_3D = {
 const GEM_MATERIALS = ["ruby", "sapphire", "emerald", "amber", "gold"]
 
 func _ready() -> void:
+	env_3d = $TabletopEnvironment3D
+	status_label = $UI/VBoxContainer/StatusLabel
+	btn_restart = $UI/VBoxContainer/BtnRestart
 	_setup_3d_mancala_board()
 	_setup_ui_buttons()
 	_start_new_game()
@@ -218,20 +217,11 @@ func _check_game_over() -> bool:
 		_sync_gems_3d()
 		_update_ui()
 		
-		game_over = true
-		btn_restart.show()
 		if pits[6] > pits[13]:
-			status_label.text = "🏆 Você Venceu! (%d x %d)" % [pits[6], pits[13]]
-			env_3d.celebrate_win()
+			finish_game("🏆 Você Venceu! (%d x %d)" % [pits[6], pits[13]], true)
 		elif pits[13] > pits[6]:
-			status_label.text = "IA Venceu! (%d x %d)" % [pits[13], pits[6]]
+			finish_game("IA Venceu! (%d x %d)" % [pits[13], pits[6]])
 		else:
-			status_label.text = "Empate! (%d x %d)" % [pits[6], pits[13]]
+			finish_game("Empate! (%d x %d)" % [pits[6], pits[13]])
 		return true
 	return false
-
-func _on_btn_restart_pressed() -> void:
-	_start_new_game()
-
-func _on_btn_back_pressed() -> void:
-	SceneManager.goto_scene("res://core/telas/MenuTabuleiro.tscn")
