@@ -1,4 +1,4 @@
-extends Control
+extends BaseGame
 
 ## BlackjackGame: 21 / Blackjack 3D com Cartas Físicas em Mesa de Cassino e Animação de Distribuição
 
@@ -10,27 +10,27 @@ const BlackjackRulesScript = preload("res://games/blackjack/BlackjackRules.gd")
 var deck: Deck
 var player_hand: CardHand
 var dealer_hand: CardHand
-var game_over: bool = false
 
 var player_cards_3d: Array = []
 var dealer_cards_3d: Array = []
 
-@onready var env_3d: TabletopEnvironment3D = $TabletopEnvironment3D
 @onready var cards_root: Node3D = $CardsRoot
-@onready var status = $UI/VBoxContainer/Status
 @onready var dealer_score_label = $UI/VBoxContainer/DealerScoreLabel
 @onready var player_score_label = $UI/VBoxContainer/PlayerScoreLabel
 @onready var btn_hit = $UI/Buttons/BtnHit
 @onready var btn_stand = $UI/Buttons/BtnStand
-@onready var btn_restart = $UI/Buttons/BtnRestart
 
 func _ready() -> void:
+	menu_scene_path = MENU_CARTAS
+	env_3d = $TabletopEnvironment3D
+	status_label = $UI/VBoxContainer/Status
+	btn_restart = $UI/Buttons/BtnRestart
 	env_3d.set_felt_color(Color(0.06, 0.32, 0.18)) # Verde cassino clássico
 	player_hand = CardHand.new()
 	dealer_hand = CardHand.new()
-	_start_game()
+	_start_new_game()
 
-func _start_game() -> void:
+func _start_new_game() -> void:
 	game_over = false
 	player_hand.clear()
 	dealer_hand.clear()
@@ -63,7 +63,7 @@ func _start_game() -> void:
 	_spawn_card_3d(d_c2, false, 1, true) # Visível
 	
 	_update_labels(false)
-	status.text = "Sua vez! Pedir carta ou parar?"
+	status_label.text = "Sua vez! Pedir carta ou parar?"
 	
 	if BlackjackRules.is_blackjack(player_hand.get_all()):
 		_reveal_dealer_and_end("🏆 Blackjack Natural! Você Venceu!", true)
@@ -120,7 +120,7 @@ func _on_btn_stand_pressed() -> void:
 	
 	btn_hit.disabled = true
 	btn_stand.disabled = true
-	status.text = "Vez do Dealer..."
+	status_label.text = "Vez do Dealer..."
 	
 	# Vira a carta oculta do dealer em 3D
 	if dealer_cards_3d.size() > 0:
@@ -157,16 +157,6 @@ func _reveal_dealer_and_end(msg: String, is_player_win: bool) -> void:
 	_end_game(msg, is_player_win)
 
 func _end_game(msg: String, is_player_win: bool) -> void:
-	game_over = true
-	status.text = msg
+	finish_game(msg, is_player_win)
 	btn_hit.disabled = true
 	btn_stand.disabled = true
-	btn_restart.show()
-	if is_player_win:
-		env_3d.celebrate_win()
-
-func _on_btn_restart_pressed() -> void:
-	_start_game()
-
-func _on_btn_back_pressed() -> void:
-	SceneManager.goto_scene("res://core/telas/MenuCartas.tscn")
