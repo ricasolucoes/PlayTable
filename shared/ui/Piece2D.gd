@@ -1,7 +1,12 @@
 @tool
 extends Node2D
 
-## A 2D game piece with procedural 3D-look rendering and winning glow animation.
+## Ficha 2D desenhada por código, com aparência de volume e brilho de vitória.
+##
+## Chamava-se shared/pecas/Piece.gd, o único diretório em português dentro de
+## shared/ e um nome que colidia com o class_name Piece de
+## shared/core_engine/board/Piece.gd, que é outra coisa: dado de tabuleiro, sem
+## desenho nenhum.
 
 const SHADOW_OFFSET := Vector2(0, 4)
 const SHADOW_EXTRA_RADIUS := 2.0
