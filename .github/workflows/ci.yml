@@ -61,18 +61,17 @@ jobs:
           path: addons/gut
           key: gut-${{ env.GUT_VERSION }}
 
-      - name: Instalar GUT
-        run: tests/install_gut.sh
-
-      - name: Importar recursos do projeto
-        run: godot --headless --path . --import
-
       - name: Rodar a suite
+        # Passa pelo mesmo runner da maquina local, e nao pelo gut_cmdln.gd
+        # direto. O runner instala o GUT na versao fixada, reimporta quando a
+        # engine, o addon ou a lista de class_name mudam, e reprova quando o GUT
+        # descarta um arquivo de teste por erro de parse -- tres guardas que a
+        # CI nao tinha enquanto chamava o Godot por conta propria.
         run: |
           # O GUT nao cria o diretorio do relatorio; sem ele o XML e descartado
           # em silencio e o job passa sem publicar nada.
           mkdir -p .gut_report
-          godot --headless --path . -s addons/gut/gut_cmdln.gd -gjunit_xml_file=res://.gut_report/results.xml
+          tests/run_gut.sh -gjunit_xml_file=res://.gut_report/results.xml
 
       - name: Publicar o relatorio JUnit
         if: always()
