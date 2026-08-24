@@ -98,7 +98,7 @@ func _start_new_game() -> void:
 		
 	_sync_3d_table()
 	_update_ui()
-	status_label.text = "Paciência Klondike 3D iniciada!"
+	set_status("Paciência Klondike 3D iniciada!")
 
 func _sync_3d_table() -> void:
 	for c in cards_root.get_children(): c.queue_free()
@@ -179,12 +179,12 @@ func _on_stock_pressed() -> void:
 			var c = waste.pop()
 			c.is_face_up = false
 			stock.push(c)
-		status_label.text = "Monte reiniciado."
+		set_status("Monte reiniciado.")
 	else:
 		var card = stock.pop()
 		card.is_face_up = true
 		waste.push(card)
-		status_label.text = "Carta virada do monte."
+		set_status("Carta virada do monte.")
 		
 	moves_count += 1
 	_sync_3d_table()
@@ -195,7 +195,7 @@ func _on_waste_pressed() -> void:
 	selected_source = "waste"
 	selected_card_idx = waste.size() - 1
 	var top = waste.peek()
-	status_label.text = "Selecionado: %s %s do descarte." % [top.get_display_value(), top.get_suit_symbol()]
+	set_status("Selecionado: %s %s do descarte." % [top.get_display_value(), top.get_suit_symbol()])
 
 func _on_foundation_pressed(f_idx: int):
 	if game_over: return
@@ -208,7 +208,7 @@ func _on_foundation_pressed(f_idx: int):
 			waste.pop()
 			f_pile.push(card)
 			moves_count += 1
-			status_label.text = "Movido para fundação!"
+			set_status("Movido para fundação!")
 			_clear_selection_and_update()
 			_check_win()
 			return
@@ -222,12 +222,12 @@ func _on_foundation_pressed(f_idx: int):
 				if not col_pile.is_empty(): col_pile.peek().is_face_up = true
 				f_pile.push(card)
 				moves_count += 1
-				status_label.text = "Movido para fundação!"
+				set_status("Movido para fundação!")
 				_clear_selection_and_update()
 				_check_win()
 				return
 				
-	status_label.text = "Jogada inválida para esta fundação."
+	set_status("Jogada inválida para esta fundação.")
 
 func _on_tableau_col_pressed(col_idx: int):
 	if game_over: return
@@ -238,7 +238,7 @@ func _on_tableau_col_pressed(col_idx: int):
 			selected_source = "tableau_%d" % col_idx
 			selected_card_idx = target_col.size() - 1
 			var top = target_col.peek()
-			status_label.text = "Selecionado: %s %s da Coluna %d" % [top.get_display_value(), top.get_suit_symbol(), col_idx + 1]
+			set_status("Selecionado: %s %s da Coluna %d" % [top.get_display_value(), top.get_suit_symbol(), col_idx + 1])
 		return
 		
 	if selected_source == "waste":
@@ -254,7 +254,7 @@ func _on_tableau_col_pressed(col_idx: int):
 		if src_col_idx == col_idx:
 			selected_source = ""
 			selected_card_idx = -1
-			status_label.text = "Seleção desfeita."
+			set_status("Seleção desfeita.")
 			return
 			
 		var src_col = tableau[src_col_idx]
@@ -268,7 +268,7 @@ func _on_tableau_col_pressed(col_idx: int):
 				_clear_selection_and_update()
 				return
 				
-	status_label.text = "Jogada inválida."
+	set_status("Jogada inválida.")
 
 func _clear_selection_and_update() -> void:
 	selected_source = ""

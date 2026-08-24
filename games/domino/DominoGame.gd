@@ -80,12 +80,12 @@ func _start_new_game() -> void:
 	_update_ui()
 	
 	if starting_player == 1:
-		status_label.text = "Você abriu com [%d|%d]! Vez da IA..." % [starting_tile["a"], starting_tile["b"]]
+		set_status("Você abriu com [%d|%d]! Vez da IA..." % [starting_tile["a"], starting_tile["b"]])
 		is_player_turn = false
 		await get_tree().create_timer(0.8).timeout
 		_play_ai_turn()
 	else:
-		status_label.text = "IA abriu com [%d|%d]! Sua vez." % [starting_tile["a"], starting_tile["b"]]
+		set_status("IA abriu com [%d|%d]! Sua vez." % [starting_tile["a"], starting_tile["b"]])
 		is_player_turn = true
 		_update_action_buttons()
 
@@ -219,7 +219,7 @@ func _play_player_tile(side: String):
 		return
 		
 	is_player_turn = false
-	status_label.text = "Vez da IA..."
+	set_status("Vez da IA...")
 	_update_action_buttons()
 	await get_tree().create_timer(0.8).timeout
 	_play_ai_turn()
@@ -228,12 +228,12 @@ func _on_btn_draw_pressed() -> void:
 	if boneyard.size() > 0:
 		var drawn = boneyard.pop_back()
 		player_hand.append(drawn)
-		status_label.text = "Você comprou uma pedra do monte."
+		set_status("Você comprou uma pedra do monte.")
 		_update_ui()
 
 func _on_btn_pass_pressed():
 	consecutive_passes += 1
-	status_label.text = "Você passou a vez."
+	set_status("Você passou a vez.")
 	if consecutive_passes >= 2:
 		_check_board_lock()
 		return
@@ -268,7 +268,7 @@ func _play_ai_turn():
 				right_end = flipped["b"]
 				
 		_render_table_tiles_3d()
-		status_label.text = "IA jogou na ponta %s. Sua vez!" % side
+		set_status("IA jogou na ponta %s. Sua vez!" % side)
 		
 		if ai_hand.size() == 0:
 			_end_game("A IA bateu e venceu a partida!", false)
@@ -277,10 +277,10 @@ func _play_ai_turn():
 		if boneyard.size() > 0:
 			var drawn = boneyard.pop_back()
 			ai_hand.append(drawn)
-			status_label.text = "IA comprou do monte e passou a vez. Sua vez!"
+			set_status("IA comprou do monte e passou a vez. Sua vez!")
 		else:
 			consecutive_passes += 1
-			status_label.text = "IA passou a vez. Sua vez!"
+			set_status("IA passou a vez. Sua vez!")
 			if consecutive_passes >= 2:
 				_check_board_lock()
 				return

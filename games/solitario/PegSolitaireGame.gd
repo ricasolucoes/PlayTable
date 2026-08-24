@@ -83,7 +83,7 @@ func _start_new_game() -> void:
 	grid_data = PegSolitaireRules.create_initial_board()
 	_sync_marbles_3d()
 	_update_ui()
-	status_label.text = "Toque em uma esfera para selecionar e saltar!"
+	set_status("Toque em uma esfera para selecionar e saltar!")
 
 func _sync_marbles_3d() -> void:
 	for m in marbles_root.get_children(): m.queue_free()
@@ -123,9 +123,9 @@ func _on_cell_clicked(r: int, c: int):
 			m.highlight(pos == selected_pos)
 			
 		if valid_targets.is_empty():
-			status_label.text = "Esta esfera não tem saltos possíveis."
+			set_status("Esta esfera não tem saltos possíveis.")
 		else:
-			status_label.text = "Selecione o furo de destino iluminado!"
+			set_status("Selecione o furo de destino iluminado!")
 	else:
 		selected_pos = Vector2i(-1, -1)
 		valid_targets.clear()

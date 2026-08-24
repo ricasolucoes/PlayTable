@@ -28,7 +28,7 @@ func _start_new_game() -> void:
 	
 	grid_data = ReversiRules.create_initial_board()
 	_sync_pieces_3d()
-	status_label.text = "Sua Vez! (Pretas / Obsidiana)"
+	set_status("Sua Vez! (Pretas / Obsidiana)")
 
 func _sync_pieces_3d() -> void:
 	for p in pieces_root.get_children(): p.queue_free()
@@ -111,12 +111,12 @@ func _after_player_move():
 		
 	if ai_moves.size() > 0:
 		is_player_turn = false
-		status_label.text = "Vez da IA (Brancas)..."
+		set_status("Vez da IA (Brancas)...")
 		_highlight_valid_moves()
 		await get_tree().create_timer(0.6).timeout
 		_play_ai_turn()
 	else:
-		status_label.text = "IA sem jogadas! Sua vez novamente."
+		set_status("IA sem jogadas! Sua vez novamente.")
 		_highlight_valid_moves()
 
 func _play_ai_turn():
@@ -150,10 +150,10 @@ func _play_ai_turn():
 		
 	if player_moves.size() > 0:
 		is_player_turn = true
-		status_label.text = "Sua Vez! (Pretas)"
+		set_status("Sua Vez! (Pretas)")
 		_highlight_valid_moves()
 	else:
-		status_label.text = "Você sem jogadas! Vez da IA..."
+		set_status("Você sem jogadas! Vez da IA...")
 		await get_tree().create_timer(0.6).timeout
 		_play_ai_turn()
 

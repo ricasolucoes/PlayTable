@@ -75,7 +75,7 @@ func _start_new_game() -> void:
 		board[i] = 1 if i % 2 == 1 else 2
 		
 	sticks_label.text = "Lance as 4 varetas sagradas"
-	status_label.text = "Sua Vez! Lance as varetas."
+	set_status("Sua Vez! Lance as varetas.")
 	btn_cast_sticks.disabled = false
 	_sync_pieces_3d()
 
@@ -112,11 +112,11 @@ func _on_btn_cast_sticks_pressed() -> void:
 	if is_player_turn:
 		valid_moves = _get_valid_moves(1, current_throw)
 		if valid_moves.is_empty():
-			status_label.text = "Sem movimentos possíveis com %d!" % current_throw
+			set_status("Sem movimentos possíveis com %d!" % current_throw)
 			await get_tree().create_timer(0.9).timeout
 			_handle_end_of_turn()
 		else:
-			status_label.text = "Escolha qual peça avançar %d casas:" % current_throw
+			set_status("Escolha qual peça avançar %d casas:" % current_throw)
 			for m in valid_moves:
 				var rc = _get_square_row_col(m["from"])
 				board_3d.highlight_cell(rc.x, rc.y, Color(0.2, 0.85, 0.4))
@@ -211,10 +211,10 @@ func _handle_end_of_turn() -> void:
 		is_player_turn = not is_player_turn
 		can_throw = true
 		if is_player_turn:
-			status_label.text = "Sua Vez! Lance as varetas."
+			set_status("Sua Vez! Lance as varetas.")
 			btn_cast_sticks.disabled = false
 		else:
-			status_label.text = "Vez da IA..."
+			set_status("Vez da IA...")
 			btn_cast_sticks.disabled = true
 			await get_tree().create_timer(0.7).timeout
 			_on_btn_cast_sticks_pressed()
@@ -222,7 +222,7 @@ func _handle_end_of_turn() -> void:
 func _play_ai_move():
 	var ai_moves = _get_valid_moves(2, current_throw)
 	if ai_moves.is_empty():
-		status_label.text = "IA sem movimentos possíveis!"
+		set_status("IA sem movimentos possíveis!")
 		await get_tree().create_timer(0.8).timeout
 		_handle_end_of_turn()
 		return

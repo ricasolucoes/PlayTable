@@ -2,7 +2,7 @@ extends BaseGame
 
 ## Connect Four board game implementation.
 
-const PIECE_SCENE = preload("res://shared/pecas/Piece.tscn")
+const PIECE_SCENE = preload("res://shared/ui/Piece2D.tscn")
 
 ## As dimensoes vem das regras: ConnectFourBoard declarava as suas e o jogo
 ## tambem, tres copias de ROWS/COLS que precisavam concordar por acidente.
@@ -162,11 +162,11 @@ func _update_turn_ui():
 	if game_over:
 		return
 	if is_player_turn:
-		status_label.text = "Sua Vez (Fichas Vermelhas)"
+		set_status("Sua Vez (Fichas Vermelhas)")
 		p1_panel.modulate = Color(1.0, 1.0, 1.0, 1.0)
 		p2_panel.modulate = Color(0.6, 0.6, 0.6, 0.7)
 	else:
-		status_label.text = "Vez da IA (Fichas Douradas)..."
+		set_status("Vez da IA (Fichas Douradas)...")
 		p1_panel.modulate = Color(0.6, 0.6, 0.6, 0.7)
 		p2_panel.modulate = Color(1.0, 1.0, 1.0, 1.0)
 

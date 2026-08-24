@@ -63,7 +63,7 @@ func _start_new_game() -> void:
 	_spawn_card_3d(d_c2, false, 1, true) # Visível
 	
 	_update_labels(false)
-	status_label.text = "Sua vez! Pedir carta ou parar?"
+	set_status("Sua vez! Pedir carta ou parar?")
 	
 	if BlackjackRules.is_blackjack(player_hand.get_all()):
 		_reveal_dealer_and_end("🏆 Blackjack Natural! Você Venceu!", true)
@@ -120,7 +120,7 @@ func _on_btn_stand_pressed() -> void:
 	
 	btn_hit.disabled = true
 	btn_stand.disabled = true
-	status_label.text = "Vez do Dealer..."
+	set_status("Vez do Dealer...")
 	
 	# Vira a carta oculta do dealer em 3D
 	if dealer_cards_3d.size() > 0:

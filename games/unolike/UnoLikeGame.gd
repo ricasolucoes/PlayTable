@@ -89,7 +89,7 @@ func _start_new_game() -> void:
 	is_player_turn = true
 	
 	_spawn_top_discard_3d(first_card)
-	status_label.text = "Sua Vez! Jogue uma carta que combine com a cor ou valor."
+	set_status("Sua Vez! Jogue uma carta que combine com a cor ou valor.")
 	_update_ui()
 
 func _spawn_top_discard_3d(card: Card) -> void:
@@ -112,7 +112,7 @@ func _draw_from_deck() -> Card:
 			discard_pile.clear()
 			discard_pile.push(top)
 			draw_pile.shuffle()
-			status_label.text = "Descarte reciclado no monte!"
+			set_status("Descarte reciclado no monte!")
 		else:
 			return null
 	return draw_pile.draw()
@@ -161,7 +161,7 @@ func _on_player_card_clicked(idx: int) -> void:
 		waiting_color_pick = true
 		pending_wild4 = (card.special_type == Card.SpecialType.WILD_DRAW_FOUR)
 		color_picker_modal.show()
-		status_label.text = "Escolha a nova cor da mesa!"
+		set_status("Escolha a nova cor da mesa!")
 		_update_ui()
 		return
 		
@@ -187,9 +187,9 @@ func _handle_card_effects_and_advance(card: Card, was_player: bool) -> void:
 		return
 		
 	if was_player and player_hand.size() == 1:
-		status_label.text = "⚠️ UNO! Você tem apenas 1 carta!"
+		set_status("⚠️ UNO! Você tem apenas 1 carta!")
 	elif not was_player and ai_hand.size() == 1:
-		status_label.text = "⚠️ Atenção: IA gritou UNO (1 carta restante)!"
+		set_status("⚠️ Atenção: IA gritou UNO (1 carta restante)!")
 		
 	var skip_next: bool = false
 	match card.special_type:
@@ -199,14 +199,14 @@ func _handle_card_effects_and_advance(card: Card, was_player: bool) -> void:
 					var d: Card = _draw_from_deck()
 					if d != null:
 						ai_hand.add(d)
-				status_label.text = "IA comprou +2 cartas e perdeu a vez!"
+				set_status("IA comprou +2 cartas e perdeu a vez!")
 				skip_next = true
 			else:
 				for i in range(2):
 					var d: Card = _draw_from_deck()
 					if d != null:
 						player_hand.add(d)
-				status_label.text = "Você comprou +2 cartas e perdeu a vez!"
+				set_status("Você comprou +2 cartas e perdeu a vez!")
 				skip_next = true
 				
 		Card.SpecialType.WILD_DRAW_FOUR:
@@ -215,43 +215,43 @@ func _handle_card_effects_and_advance(card: Card, was_player: bool) -> void:
 					var d: Card = _draw_from_deck()
 					if d != null:
 						ai_hand.add(d)
-				status_label.text = "IA comprou +4 cartas e perdeu a vez!"
+				set_status("IA comprou +4 cartas e perdeu a vez!")
 				skip_next = true
 			else:
 				for i in range(4):
 					var d: Card = _draw_from_deck()
 					if d != null:
 						player_hand.add(d)
-				status_label.text = "Você comprou +4 cartas e perdeu a vez!"
+				set_status("Você comprou +4 cartas e perdeu a vez!")
 				skip_next = true
 				
 		Card.SpecialType.SKIP, Card.SpecialType.REVERSE:
 			skip_next = true
-			status_label.text = "Vez bloqueada!"
+			set_status("Vez bloqueada!")
 			
 	_update_ui()
 	
 	if was_player:
 		if skip_next:
 			is_player_turn = true
-			status_label.text = "Sua vez novamente!"
+			set_status("Sua vez novamente!")
 			_update_ui()
 		else:
 			is_player_turn = false
-			status_label.text = "Vez da IA..."
+			set_status("Vez da IA...")
 			_update_ui()
 			await get_tree().create_timer(0.9).timeout
 			_play_ai_turn()
 	else:
 		if skip_next:
 			is_player_turn = false
-			status_label.text = "IA joga novamente!"
+			set_status("IA joga novamente!")
 			_update_ui()
 			await get_tree().create_timer(0.9).timeout
 			_play_ai_turn()
 		else:
 			is_player_turn = true
-			status_label.text = "Sua Vez! Escolha uma carta."
+			set_status("Sua Vez! Escolha uma carta.")
 			_update_ui()
 
 func _play_ai_turn() -> void:
@@ -266,7 +266,7 @@ func _play_ai_turn() -> void:
 		var drawn: Card = _draw_from_deck()
 		if drawn != null:
 			ai_hand.add(drawn)
-			status_label.text = "IA não tinha jogadas e comprou uma carta."
+			set_status("IA não tinha jogadas e comprou uma carta.")
 			if UnoRules.can_play_card(drawn, top_card, active_color):
 				ai_hand.cards.erase(drawn)
 				discard_pile.push(drawn)
@@ -278,7 +278,7 @@ func _play_ai_turn() -> void:
 				_handle_card_effects_and_advance(drawn, false)
 				return
 		is_player_turn = true
-		status_label.text = "Sua Vez! Escolha uma carta."
+		set_status("Sua Vez! Escolha uma carta.")
 		_update_ui()
 	else:
 		var chosen_idx = playable_indices.pick_random()
@@ -298,12 +298,12 @@ func _on_btn_draw_pressed() -> void:
 	var drawn: Card = _draw_from_deck()
 	if drawn != null:
 		player_hand.add(drawn)
-		status_label.text = "Você comprou uma carta."
+		set_status("Você comprou uma carta.")
 		_update_ui()
 		
 		# Passa a vez
 		is_player_turn = false
-		status_label.text = "Vez da IA..."
+		set_status("Vez da IA...")
 		_update_ui()
 		await get_tree().create_timer(0.8).timeout
 		_play_ai_turn()

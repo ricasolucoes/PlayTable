@@ -53,9 +53,9 @@ func _reset_to_bet_phase() -> void:
 	game_phase = "bet"
 	if chips <= 0:
 		chips = 50
-		status_label.text = "Recarga grátis de 50 fichas!"
+		set_status("Recarga grátis de 50 fichas!")
 	else:
-		status_label.text = "Ajuste sua aposta e clique em 'DAR CARTAS'!"
+		set_status("Ajuste sua aposta e clique em 'DAR CARTAS'!")
 		
 	held_cards = [false, false, false, false, false]
 	for i in range(5):
@@ -77,7 +77,7 @@ func _update_chips_ui() -> void:
 func _on_btn_action_pressed():
 	if game_phase == "bet":
 		if chips < current_bet:
-			status_label.text = "Fichas insuficientes para esta aposta!"
+			set_status("Fichas insuficientes para esta aposta!")
 			return
 		chips -= current_bet
 		_update_chips_ui()
@@ -110,7 +110,7 @@ func _on_btn_action_pressed():
 		btn_bet_plus.disabled = true
 		btn_action.text = "🔄 TROCAR CARTAS"
 		game_phase = "hold"
-		status_label.text = "Toque nas cartas que deseja RETER (HOLD)!"
+		set_status("Toque nas cartas que deseja RETER (HOLD)!")
 		
 	elif game_phase == "hold":
 		# Troca as cartas não retidas
@@ -153,10 +153,10 @@ func _evaluate_poker_hand() -> void:
 	
 	if mult > 0:
 		chips += win_amount
-		status_label.text = "🏆 %s! Você ganhou %d fichas!" % [hand_name, win_amount]
+		set_status("🏆 %s! Você ganhou %d fichas!" % [hand_name, win_amount])
 		env_3d.celebrate_win()
 	else:
-		status_label.text = "%s. Nenhuma combinação premiada." % hand_name
+		set_status("%s. Nenhuma combinação premiada." % hand_name)
 		
 	_update_chips_ui()
 	btn_action.text = "🃏 NOVA RODADA"

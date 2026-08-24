@@ -74,7 +74,7 @@ func _on_card_clicked(card: Control):
 	
 	if first_card == null:
 		first_card = card
-		status_label.text = "Escolha a segunda carta..."
+		set_status("Escolha a segunda carta...")
 	else:
 		second_card = card
 		moves_count += 1
@@ -101,10 +101,10 @@ func _check_match() -> void:
 		if pairs_found == TOTAL_PAIRS:
 			_handle_game_won()
 		else:
-			status_label.text = "Par encontrado! Continue assim!"
+			set_status("Par encontrado! Continue assim!")
 	else:
 		# Mismatch
-		status_label.text = "Não foi dessa vez..."
+		set_status("Não foi dessa vez...")
 		await get_tree().create_timer(0.4).timeout
 		first_card.play_mismatch_shake()
 		second_card.play_mismatch_shake()
@@ -115,7 +115,7 @@ func _check_match() -> void:
 		first_card = null
 		second_card = null
 		is_checking = false
-		status_label.text = "Encontre os pares correspondentes"
+		set_status("Encontre os pares correspondentes")
 
 func _handle_game_won() -> void:
 	game_over = true
@@ -134,4 +134,4 @@ func _update_ui() -> void:
 	pairs_label.text = str(pairs_found) + " / " + str(TOTAL_PAIRS)
 	moves_label.text = str(moves_count)
 	if pairs_found == 0 and moves_count == 0:
-		status_label.text = "Toque em uma carta para começar"
+		set_status("Toque em uma carta para começar")

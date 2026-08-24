@@ -187,11 +187,11 @@ func _handle_game_draw() -> void:
 func _update_turn_ui() -> void:
 	if game_over: return
 	if is_player_turn:
-		status_label.text = "Sua Vez (Cruz X Carmesim)"
+		set_status("Sua Vez (Cruz X Carmesim)")
 		x_panel.modulate = Color(1.0, 1.0, 1.0, 1.0)
 		o_panel.modulate = Color(0.6, 0.6, 0.6, 0.7)
 	else:
-		status_label.text = "Vez do Computador (Anel O Dourado)..."
+		set_status("Vez do Computador (Anel O Dourado)...")
 		x_panel.modulate = Color(0.6, 0.6, 0.6, 0.7)
 		o_panel.modulate = Color(1.0, 1.0, 1.0, 1.0)
 

@@ -86,7 +86,7 @@ func _start_new_game() -> void:
 	for i in range(14):
 		pits.append(0 if (i == 6 or i == 13) else 4)
 		
-	status_label.text = "Sua Vez! Escolha uma cova para semear."
+	set_status("Sua Vez! Escolha uma cova para semear.")
 	_sync_gems_3d()
 	_update_ui()
 
@@ -142,7 +142,7 @@ func _on_player_pit_clicked(pit_idx: int):
 		pits[curr] = 0
 		pits[12 - curr] = 0
 		pits[6] += captured
-		status_label.text = "💎 Captura espetacular! +%d gemas!" % captured
+		set_status("💎 Captura espetacular! +%d gemas!" % captured)
 		
 	_sync_gems_3d()
 	_update_ui()
@@ -150,11 +150,11 @@ func _on_player_pit_clicked(pit_idx: int):
 	if _check_game_over(): return
 	
 	if curr == 6:
-		status_label.text = "Última gema caiu na sua Kalah! Jogue novamente."
+		set_status("Última gema caiu na sua Kalah! Jogue novamente.")
 		return
 		
 	is_player_turn = false
-	status_label.text = "Vez da IA..."
+	set_status("Vez da IA...")
 	_update_ui()
 	await get_tree().create_timer(0.7).timeout
 	_play_ai_turn()
@@ -184,7 +184,7 @@ func _play_ai_turn():
 		pits[curr] = 0
 		pits[12 - curr] = 0
 		pits[13] += captured
-		status_label.text = "IA capturou suas gemas!"
+		set_status("IA capturou suas gemas!")
 		
 	_sync_gems_3d()
 	_update_ui()
@@ -192,13 +192,13 @@ func _play_ai_turn():
 	if _check_game_over(): return
 	
 	if curr == 13:
-		status_label.text = "IA jogou no próprio Kalah e joga novamente!"
+		set_status("IA jogou no próprio Kalah e joga novamente!")
 		await get_tree().create_timer(0.7).timeout
 		_play_ai_turn()
 		return
 		
 	is_player_turn = true
-	status_label.text = "Sua Vez! Escolha uma cova."
+	set_status("Sua Vez! Escolha uma cova.")
 	_update_ui()
 
 func _check_game_over() -> bool:

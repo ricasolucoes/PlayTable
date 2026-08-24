@@ -46,7 +46,7 @@ func _start_new_game() -> void:
 	
 	grid_data = CheckersRules.create_initial_board()
 	_sync_pieces_3d()
-	status_label.text = "Sua Vez! (Marfim)"
+	set_status("Sua Vez! (Marfim)")
 
 func _sync_pieces_3d() -> void:
 	for p in pieces_root.get_children(): p.queue_free()
@@ -167,7 +167,7 @@ func _execute_player_move(from_pos: Vector2i, move_dict: Dictionary):
 			board_3d.highlight_cell(to_pos.x, to_pos.y, Color(0.9, 0.75, 0.2))
 			for vm in valid_moves:
 				board_3d.highlight_cell(vm["to"].x, vm["to"].y, Color(0.2, 0.8, 0.4))
-			status_label.text = "Captura múltipla obrigatória!"
+			set_status("Captura múltipla obrigatória!")
 			return
 			
 	continuing_capture_pos = Vector2i(-1, -1)
@@ -184,7 +184,7 @@ func _check_game_end_or_ai_turn():
 		return
 		
 	is_player_turn = false
-	status_label.text = "Vez da IA (Obsidiana)..."
+	set_status("Vez da IA (Obsidiana)...")
 	await get_tree().create_timer(0.6).timeout
 	
 	_play_ai_turn()
@@ -247,7 +247,7 @@ func _play_ai_turn():
 		return
 
 	is_player_turn = true
-	status_label.text = "Sua Vez! (Marfim)"
+	set_status("Sua Vez! (Marfim)")
 
 func _end_game(winner: int) -> void:
 	if winner == 1:

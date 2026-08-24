@@ -42,7 +42,7 @@ func _start_new_game() -> void:
 	ai_ships = BattleshipRules.place_all_ships_random(ai_grid)
 	
 	_update_view_mode()
-	status_label.text = "Sua Vez! Selecione uma coordenada no Radar."
+	set_status("Sua Vez! Selecione uma coordenada no Radar.")
 
 func _update_view_mode() -> void:
 	for m in markers_root.get_children(): m.queue_free()
@@ -143,11 +143,11 @@ func _on_cell_clicked(r: int, c: int):
 	if is_hit:
 		var sunk_ship = BattleshipRules.check_ship_sunk(ai_ships, ai_grid, r, c)
 		if sunk_ship.size() > 0:
-			status_label.text = "💥 Você afundou o %s inimigo!" % sunk_ship["name"]
+			set_status("💥 Você afundou o %s inimigo!" % sunk_ship["name"])
 		else:
-			status_label.text = "🎯 Fogo certeiro!"
+			set_status("🎯 Fogo certeiro!")
 	else:
-		status_label.text = "🌊 Água!"
+		set_status("🌊 Água!")
 		
 	_update_fleet_status_labels()
 	
@@ -173,11 +173,11 @@ func _play_ai_turn():
 	if is_hit:
 		var sunk = BattleshipRules.check_ship_sunk(player_ships, player_grid, r, c)
 		if sunk.size() > 0:
-			status_label.text = "⚠️ Inimigo afundou seu %s!" % sunk["name"]
+			set_status("⚠️ Inimigo afundou seu %s!" % sunk["name"])
 		else:
-			status_label.text = "⚠️ Inimigo acertou sua frota!"
+			set_status("⚠️ Inimigo acertou sua frota!")
 	else:
-		status_label.text = "Inimigo atirou na água. Sua vez!"
+		set_status("Inimigo atirou na água. Sua vez!")
 		
 	_update_fleet_status_labels()
 	

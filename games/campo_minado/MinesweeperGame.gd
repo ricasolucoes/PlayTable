@@ -55,7 +55,7 @@ func _start_new_game() -> void:
 	timer_active = false
 	timer_label.text = "⏱️ 000"
 	btn_smiley.text = "🙂"
-	status_label.text = "Toque em uma tecla mecânica para iniciar!"
+	set_status("Toque em uma tecla mecânica para iniciar!")
 	
 	for f in flags_root.get_children(): f.queue_free()
 	flags_3d.clear()
@@ -89,7 +89,7 @@ func _on_cell_clicked(r: int, c: int):
 		first_click = false
 		MinesweeperRules.generate_mines(grid_data, r, c)
 		timer_active = true
-		status_label.text = "Campo desarmado!"
+		set_status("Campo desarmado!")
 		
 	if cell["is_mine"]:
 		_trigger_game_over(r, c)

@@ -126,7 +126,7 @@ func _start_new_game() -> void:
 	dice_3d.set_value_immediate(6)
 	btn_dice.text = "🎲 Rolar Dado"
 	btn_dice.disabled = false
-	status_label.text = "Sua Vez! Toque no dado para rolar."
+	set_status("Sua Vez! Toque no dado para rolar.")
 	_sync_pawns_positions(true)
 
 func _sync_pawns_positions(immediate: bool = false) -> void:
@@ -146,7 +146,7 @@ func _on_btn_dice_pressed() -> void:
 	btn_dice.disabled = true
 	
 	var rolled = randi_range(1, 6)
-	status_label.text = "Rolando dado..."
+	set_status("Rolando dado...")
 	dice_3d.roll(rolled, 0.75)
 
 func _on_dice_roll_finished(val: int) -> void:
@@ -166,13 +166,13 @@ func _handle_player_roll(roll: int) -> void:
 		elif pos >= 0 and pos + roll <= 32: movable.append(idx)
 		
 	if movable.is_empty():
-		status_label.text = "Sem movimentos possíveis com %d!" % roll
+		set_status("Sem movimentos possíveis com %d!" % roll)
 		await get_tree().create_timer(0.8).timeout
 		_next_turn()
 	elif movable.size() == 1:
 		_move_player_pawn(movable[0], roll)
 	else:
-		status_label.text = "Escolha qual peão deseja mover:"
+		set_status("Escolha qual peão deseja mover:")
 		for c in pawn_buttons_container.get_children(): c.queue_free()
 		for idx in movable:
 			var btn = Button.new()
@@ -196,7 +196,7 @@ func _move_player_pawn(idx: int, roll: int) -> void:
 	if _check_win(0): return
 	
 	if roll == 6:
-		status_label.text = "Tirou 6! Você ganha mais um turno."
+		set_status("Tirou 6! Você ganha mais um turno.")
 		can_roll = true
 		btn_dice.disabled = false
 	else:
@@ -205,11 +205,11 @@ func _move_player_pawn(idx: int, roll: int) -> void:
 func _next_turn() -> void:
 	current_turn = (current_turn + 1) % 4
 	if current_turn == 0:
-		status_label.text = "Sua Vez! Toque no dado para rolar."
+		set_status("Sua Vez! Toque no dado para rolar.")
 		can_roll = true
 		btn_dice.disabled = false
 	else:
-		status_label.text = "Vez da %s..." % PLAYER_NAMES[current_turn]
+		set_status("Vez da %s..." % PLAYER_NAMES[current_turn])
 		can_roll = false
 		btn_dice.disabled = true
 		await get_tree().create_timer(0.6).timeout
@@ -234,7 +234,7 @@ func _handle_ai_roll(roll: int) -> void:
 	if _check_win(p): return
 	
 	if roll == 6:
-		status_label.text = "%s tirou 6 e joga novamente!" % PLAYER_NAMES[p]
+		set_status("%s tirou 6 e joga novamente!" % PLAYER_NAMES[p])
 		await get_tree().create_timer(0.6).timeout
 		var ai_roll = randi_range(1, 6)
 		dice_3d.roll(ai_roll, 0.6)
@@ -256,7 +256,7 @@ func _check_captures(active_p: int, active_idx: int) -> void:
 				if active_abs == other_abs:
 					# Captura! Peão adversário volta para a base
 					players_pawns[other_p][other_idx] = -1
-					status_label.text = "💥 Peão capturado e mandado de volta à base!"
+					set_status("💥 Peão capturado e mandado de volta à base!")
 					_sync_pawns_positions()
 
 func _check_win(p: int) -> bool:
