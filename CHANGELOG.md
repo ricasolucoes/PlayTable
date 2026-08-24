@@ -2,18 +2,26 @@
 
 ---
 
-## [Unreleased](https://github.com/ricardosierra/PlayTable/compare/v0.3.0...develop)
+## [Unreleased](https://github.com/ricardosierra/PlayTable/compare/v0.4.0...develop)
+
+## [v0.4.0 (2026-08-24)](https://github.com/ricardosierra/PlayTable/compare/v0.3.0...v0.4.0)
 
 ### ✨ Novidades
 
 - [x] **Suíte de testes que roda o GDScript de verdade** — 350 testes GUT em 20 arquivos, executados headless contra os `.gd` e os `.tscn` de produção. Um arquivo por jogo (`tests/gdscript/unit/`), mais núcleo, i18n e um teste de integração que instancia as 16 cenas de verdade
 - [x] **CI no GitHub Actions** — `.github/workflows/ci.yml` roda a suíte em todo push e pull request, com Godot 4.6.3 e o addon GUT em cache, e publica o relatório JUnit como artefato
 - [x] **`tests/run_gut.sh`** — runner local que acha um Godot 4.4+ no `PATH`, no repositório ou em `/Applications`, instala o GUT sob demanda e reimporta os recursos quando a engine ou o addon mudam
+- [x] **Mesa 3D reconstruída** — o trabalho que estava parado num branch de segurança desde antes da v0.3.0 entrou: `CameraRig3D` (enquadramento calculado a partir do próprio tabuleiro, sem distância escrita à mão), `GameTheme3D` (paletas nomeadas por ambientação), `TextureFactory3D` e `CardArt2D` (texturas e faces de carta geradas em tempo de execução), `CardAtlas3D`, `Quality3D` (níveis de qualidade) e `Tokens3D` (constantes de arco, duração e espessura que os jogos repetiam). Mais cinco ferramentas de bancada em `tools/` para prévia de atlas, *benchmark* de textura e conferência de malha e referências
+- [x] **Google Play Games** — `core/services/PlayGamesManager.gd` entra como autoload, com o roteiro de integração em `docs/PLAY_GAMES_SIDEKICK.md`
+- [x] **Ficha de loja em 27 idiomas** — título, descrição curta, descrição completa, *feature graphic* e capturas para `ar`, `de-DE`, `en-AU/CA/GB/US`, `es-419/ES/US`, `fr-CA/FR`, `hi-IN`, `id`, `it-IT`, `ja-JP`, `ko-KR`, `nl-NL`, `pl-PL`, `pt-BR/PT`, `ru-RU`, `sv-SE`, `th`, `tr-TR`, `vi`, `zh-CN/TW`
+- [x] **Política de privacidade** — `PRIVACY_POLICY.md` e `docs/privacy.html`, exigidas pela ficha da Play Store
+- [x] **`build_aab.sh`** — gera e assina o *bundle* de release. A senha do *keystore* é lida de um arquivo fora do repositório; nada de credencial versionada
 
 ### 🐛 Correções
 
 - [x] **Tweens soltos disparando sobre nós já liberados** — dez chamadas usavam `get_tree().create_tween()`, que cria o tween na SceneTree em vez de amarrá-lo ao nó animado. Ao trocar de cena, reiniciar a partida ou dar `queue_free` nas cartas do Jogo da Memória, o tween seguia rodando e chamava o callback sobre uma instância morta (*Trying to call a lambda with an invalid instance*). Trocadas por `Node.create_tween()`, que é o que o resto do projeto já usava
 - [x] **Resta Um estava intransitável** — `PegSolitaireGame._execute_jump` lia `target_dict["jumped"]`, chave que `PegSolitaireRules.get_valid_moves_for_peg` nunca devolveu (as chaves são `from`, `over` e `land`). O acesso derrubava a função com *Invalid access to property or key* antes de qualquer `set_cell`: selecionar uma esfera funcionava, tocar no furo de destino não fazia absolutamente nada. Nenhuma partida podia ser jogada até o fim
+- [x] **A suíte de testes não rodava desde a migração para a Godot 4.6** — `tests/run_gut.sh` só chamava o `install_gut.sh` quando `addons/gut/gut_cmdln.gd` estava ausente, então a versão fixada nunca era conferida e o GUT 9.3.0 da época da 4.3 sobreviveu à migração feita na v0.3.0. Na 4.6 esse addon nem carrega: o 9.3.0 declara `class_name Logger` e a 4.6 passou a ter uma classe nativa com esse nome, então o `gut.gd` morre em *Parse Error: The member "Logger" shadows a native class*. Pior, o `gut_cmdln.gd` ainda saía com código 0 — a CI e o runner local davam verde sem ter executado um único teste. O runner agora sempre delega ao `install_gut.sh`, que já compara o carimbo `.gut_version` com a versão fixada
 
 ### 🔧 Técnico
 
@@ -27,6 +35,9 @@
 - [x] **GUT 9.7.1 como framework** — roda por `-s addons/gut/gut_cmdln.gd`, sem janela e sem habilitar plugin, e sai com código 1 quando há falha. O addon não é versionado (11 MB de código de terceiros, 8,8 MB deles num único `.tscn` do painel do editor): `tests/install_gut.sh` busca a versão fixada sob demanda. A versão está amarrada à engine — o 9.7.x exige Godot 4.4+ e o 9.3.x é o último que roda na 4.3
 - [x] **Os 7 arquivos Python de teste foram removidos** — `test_board_games.py`, `test_card_games.py`, `test_integration_simulations.py`, `test_core_systems.py`, `test_i18n.py`, `test_all_games_catalog.py` e `run_tests.py`. Eles reimplementavam as regras de cada jogo em Python e testavam a reimplementação; os 70 arquivos `.gd` que rodam no aplicativo não eram exercitados por nada. Os casos foram aproveitados como especificação, um jogo por vez, e cada migração apagou o equivalente Python
 - [x] **`export_presets.cfg`** — passa a excluir `tests/*`, `addons/*` e `.gutconfig.json`, para o APK não carregar código de teste
+- [x] **Todos os branches de trabalho convergiram** — `claude/p07-gut-testes-reais`, `claude/p15-deduplicacao-jogos`, `claude/p04-varredura-segredos` e `claude/safety-p07` entraram na `develop` e daí na `master`; só `master` e `develop` seguem existindo. O único conflito real foi em `games/damas/CheckersGame.gd`, onde os dois lados mexeram no `_ready()`: ficou a herança de `GridGame` e o preenchimento dos nós de `BaseGame` da p15, mais o `apply_theme()`, o `set_safe_area()` e o `frame_content()` da safety-p07
+- [x] **Campo Minado passou a falar com o tabuleiro pela API de estado** — `_sync_revealed_3d` e `_trigger_game_over` mexiam direto em `board_3d.cell_meshes[r][c]`, montando `StandardMaterial3D` na mão para cada casa; agora usam `board_3d.set_cell_state()` com `HIGHLIGHT`, `LAST_MOVE` e `INVALID`
+- [x] **Empacotamento em AAB** — `export_presets.cfg` passa a `gradle_build/export_format=1`, com `min_sdk=24` e `target_sdk=35`, e o caminho de saída vira `build/android/PlayTable.aab`
 
 **Achados registrados, ainda sem decisão:**
 
@@ -47,7 +58,6 @@
 
 - [x] **Migração para Godot 4.6** — a 4.3 não tem como ser compilada no buildserver do F-Droid: o Debian trixie de lá só oferece JDK 21 e 25, o Godot exige exatamente o 17 em todas as versões, e o Gradle 8.2 que a 4.3 carrega sequer roda em Java 21 (suporte veio no 8.5). A 4.6 traz Gradle 8.11.1 e AGP 8.6.1, que rodam em 21. Os 70 scripts e 27 cenas importaram e exportaram sem uma única alteração em `project.godot` ou `export_presets.cfg`
 - [x] **Arquivos `.uid` versionados** — o Godot 4.4+ passou a identificar cada script por UID em vez de caminho; os 70 arquivos entram no versionamento, como a documentação do Godot exige, para que mover um script não quebre as referências
-
 
 ## [v0.2.1 (2026-08-22)](https://github.com/ricardosierra/PlayTable/compare/v0.2.0...v0.2.1)
 
