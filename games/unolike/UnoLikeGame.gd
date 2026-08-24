@@ -1,4 +1,4 @@
-extends Control
+extends BaseGame
 
 ## UNO-like card game with 3D card animations and AI opponent.
 
@@ -34,23 +34,23 @@ var ai_hand: CardHand
 
 var active_color: Card.ColorType = Card.ColorType.RED
 var is_player_turn: bool = true
-var game_over: bool = false
 var waiting_color_pick: bool = false
 var pending_wild4: bool = false
 
 var discard_cards_3d: Array[Card3D] = []
 
-@onready var env_3d: TabletopEnvironment3D = $TabletopEnvironment3D
 @onready var cards_root: Node3D = $CardsRoot
 @onready var active_color_banner = $UI/VBoxContainer/ActiveColorBanner
 @onready var ai_info_label = $UI/VBoxContainer/AIInfoLabel
-@onready var status_label = $UI/VBoxContainer/StatusLabel
 @onready var player_cards_container = $UI/PlayerArea/ScrollContainer/CardsContainer
 @onready var color_picker_modal = $UI/ColorPickerModal
-@onready var btn_restart = $UI/Actions/BtnRestart
 @onready var btn_draw = $UI/Actions/BtnDraw
 
 func _ready() -> void:
+	menu_scene_path = MENU_CARTAS
+	env_3d = $TabletopEnvironment3D
+	status_label = $UI/VBoxContainer/StatusLabel
+	btn_restart = $UI/Actions/BtnRestart
 	env_3d.set_felt_color(Color(0.12, 0.14, 0.22)) # Feltro Grafite Escuro
 	player_hand = CardHand.new()
 	ai_hand = CardHand.new()
@@ -309,14 +309,4 @@ func _on_btn_draw_pressed() -> void:
 		_play_ai_turn()
 
 func _end_game(msg: String, is_player_win: bool) -> void:
-	game_over = true
-	status_label.text = msg
-	btn_restart.show()
-	if is_player_win:
-		env_3d.celebrate_win()
-
-func _on_btn_restart_pressed() -> void:
-	_start_new_game()
-
-func _on_btn_back_pressed() -> void:
-	SceneManager.goto_scene("res://core/telas/MenuCartas.tscn")
+	finish_game(msg, is_player_win)
