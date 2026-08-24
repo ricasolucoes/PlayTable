@@ -2,11 +2,6 @@ extends BaseGame
 
 ## PokerGame: Video Poker 3D com Cartas Reais em Cassino, Seleção de Reter e Animações de Troca
 
-const CardScript = preload("res://shared/core_engine/cards/Card.gd")
-const DeckScript = preload("res://shared/core_engine/cards/Deck.gd")
-const CardHandScript = preload("res://shared/core_engine/cards/CardHand.gd")
-const PokerEvaluatorScript = preload("res://games/poker/PokerEvaluator.gd")
-
 var deck: Deck
 var player_hand: CardHand
 var held_cards = [false, false, false, false, false]
@@ -17,12 +12,12 @@ var current_bet: int = 5
 var game_phase: String = "bet" # "bet", "hold", "result"
 
 @onready var cards_root: Node3D = $CardsRoot
-@onready var chips_label = $UI/VBoxContainer/Header/ChipsLabel
-@onready var bet_label = $UI/VBoxContainer/Header/BetLabel
-@onready var payout_table_label = $UI/VBoxContainer/PayoutTableContainer/PayoutLabel
-@onready var btn_action = $UI/Controls/BtnAction
-@onready var btn_bet_minus = $UI/Controls/BtnBetMinus
-@onready var btn_bet_plus = $UI/Controls/BtnBetPlus
+@onready var chips_label: Label = $UI/VBoxContainer/Header/ChipsLabel
+@onready var bet_label: Label = $UI/VBoxContainer/Header/BetLabel
+@onready var payout_table_label: Label = $UI/VBoxContainer/PayoutTableContainer/PayoutLabel
+@onready var btn_action: Button = $UI/Controls/BtnAction
+@onready var btn_bet_minus: Button = $UI/Controls/BtnBetMinus
+@onready var btn_bet_plus: Button = $UI/Controls/BtnBetPlus
 @onready var touch_buttons = [
 	$UI/CenterContainer/HBoxCards/BtnC0,
 	$UI/CenterContainer/HBoxCards/BtnC1,
@@ -74,7 +69,7 @@ func _update_chips_ui() -> void:
 	chips_label.text = "💰 Fichas: %d" % chips
 	bet_label.text = "Aposta: %d" % current_bet
 
-func _on_btn_action_pressed():
+func _on_btn_action_pressed() -> void:
 	if game_phase == "bet":
 		if chips < current_bet:
 			set_status("Fichas insuficientes para esta aposta!")

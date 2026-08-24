@@ -127,8 +127,8 @@ func is_black() -> bool:
 	return color_type == ColorType.BLACK
 
 func get_short_name() -> String:
-	var sym = get_suit_symbol()
-	var val = get_display_value()
+	var sym := get_suit_symbol()
+	var val := get_display_value()
 	if sym != "":
 		return "%s%s" % [val, sym]
 	return val

@@ -30,7 +30,7 @@ func slice_from(start_idx: int) -> Array[Card]:
 	return result
 
 static func from_dict(data: Dictionary) -> CardPile:
-	var pile = CardPile.new()
+	var pile := CardPile.new()
 	var list = data.get("cards", [])
 	for item in list:
 		pile.push(Card.from_dict(item))

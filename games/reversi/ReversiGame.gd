@@ -2,16 +2,13 @@ extends GridGame
 
 ## ReversiGame: Reversi 3D com Tabuleiro em Feltro Esmeralda e Animação 3D de Virada de Discos
 
-const Grid2DScript = preload("res://shared/core_engine/board/Grid2D.gd")
-const ReversiRulesScript = preload("res://games/reversi/ReversiRules.gd")
-
 var grid_data: Grid2D
 var is_player_turn: bool = true
 var pieces_3d: Dictionary = {}
 
 @onready var board_3d: Board3D = $Board3D
 @onready var pieces_root: Node3D = $PiecesRoot
-@onready var score_label = $UI/VBoxContainer/ScoreLabel
+@onready var score_label: Label = $UI/VBoxContainer/ScoreLabel
 
 func _ready() -> void:
 	env_3d = $TabletopEnvironment3D
@@ -39,7 +36,7 @@ func _sync_pieces_3d() -> void:
 	for r in range(8):
 		for c in range(8):
 			board_3d.reset_cell_material(r, c)
-			var val = grid_data.get_cell(r, c)
+			var val: int = grid_data.get_cell(r, c)
 			if val != 0:
 				var piece := preload("res://shared/3d/Token3D.tscn").instantiate()
 				piece.token_type = "cylinder"
@@ -96,12 +93,12 @@ func _update_scores() -> void:
 	var white_count: int = 0
 	for r in range(8):
 		for c in range(8):
-			var v = grid_data.get_cell(r, c)
+			var v: int = grid_data.get_cell(r, c)
 			if v == 1: black_count += 1
 			elif v == 2: white_count += 1
 	score_label.text = "Você (Pretas): %d  |  IA (Brancas): %d" % [black_count, white_count]
 
-func _after_player_move():
+func _after_player_move() -> void:
 	var ai_moves := ReversiRules.get_valid_moves(grid_data, 2)
 	var player_moves := ReversiRules.get_valid_moves(grid_data, 1)
 	
@@ -119,7 +116,7 @@ func _after_player_move():
 		set_status("IA sem jogadas! Sua vez novamente.")
 		_highlight_valid_moves()
 
-func _play_ai_turn():
+func _play_ai_turn() -> void:
 	var ai_move := ReversiRules.get_best_move(grid_data, 2)
 	if ai_move != Vector2i(-1, -1):
 		var flipped := ReversiRules.get_flipped_pieces(grid_data, ai_move, 2)

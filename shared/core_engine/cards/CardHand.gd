@@ -12,7 +12,7 @@ func add_many(new_cards: Array[Variant]) -> void:
 			cards.append(c)
 
 func remove_card(card: Card) -> bool:
-	var idx = cards.find(card)
+	var idx := cards.find(card)
 	if idx != -1:
 		cards.remove_at(idx)
 		return true
@@ -33,7 +33,7 @@ func sort_by_suit() -> void:
 	)
 
 static func from_dict(data: Dictionary) -> CardHand:
-	var hand = CardHand.new()
+	var hand := CardHand.new()
 	var list = data.get("cards", [])
 	for item in list:
 		hand.add(Card.from_dict(item))

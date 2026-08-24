@@ -8,10 +8,10 @@ var gems_3d: Dictionary = {}
 
 @onready var board_root: Node3D = $BoardRoot
 @onready var gems_root: Node3D = $GemsRoot
-@onready var player_pits_container = $UI/CenterContainer/VBox/PlayerRow
-@onready var ai_pits_container = $UI/CenterContainer/VBox/AIRow
-@onready var player_store_label = $UI/CenterContainer/HBoxStores/PlayerStoreLabel
-@onready var ai_store_label = $UI/CenterContainer/HBoxStores/AIStoreLabel
+@onready var player_pits_container: HBoxContainer = $UI/CenterContainer/VBox/PlayerRow
+@onready var ai_pits_container: HBoxContainer = $UI/CenterContainer/VBox/AIRow
+@onready var player_store_label: Label = $UI/CenterContainer/HBoxStores/PlayerStoreLabel
+@onready var ai_store_label: Label = $UI/CenterContainer/HBoxStores/AIStoreLabel
 
 const PIT_POSITIONS_3D = {
 	# Jogador (0 a 5): De -2.0 a +2.0 em X, Z = 0.6
@@ -123,7 +123,7 @@ func _update_ui() -> void:
 		btn.text = "%d" % count
 		btn.disabled = not is_player_turn or count == 0 or game_over
 
-func _on_player_pit_clicked(pit_idx: int):
+func _on_player_pit_clicked(pit_idx: int) -> void:
 	if game_over or not is_player_turn or pits[pit_idx] == 0: return
 	
 	var seeds = pits[pit_idx]
@@ -159,7 +159,7 @@ func _on_player_pit_clicked(pit_idx: int):
 	await get_tree().create_timer(0.7).timeout
 	_play_ai_turn()
 
-func _play_ai_turn():
+func _play_ai_turn() -> void:
 	var valid_pits: Array = []
 	for i in range(7, 13):
 		if pits[i] > 0: valid_pits.append(i)

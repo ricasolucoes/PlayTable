@@ -3,9 +3,6 @@ extends RefCounted
 
 ## Rules and logic for Reversi.
 
-const Grid2DScript = preload("res://shared/core_engine/board/Grid2D.gd")
-const BoardCoordScript = preload("res://shared/core_engine/board/BoardCoord.gd")
-
 const ROWS = 8
 const COLS = 8
 
@@ -129,8 +126,8 @@ static func minimax(grid: Grid2D, depth: int, alpha: int, beta: int, maximizing:
 		var opp_moves := find_all_valid_moves(grid, opponent)
 		if opp_moves.is_empty():
 			var scores := count_scores(grid)
-			var ai_score = scores["black"] if ai_piece == 1 else scores["white"]
-			var opp_score = scores["white"] if ai_piece == 1 else scores["black"]
+			var ai_score: bool = scores["black"] if ai_piece == 1 else scores["white"]
+			var opp_score: bool = scores["white"] if ai_piece == 1 else scores["black"]
 			if ai_score > opp_score: return 99999
 			elif ai_score < opp_score: return -99999
 			else: return 0
@@ -165,7 +162,7 @@ static func evaluate_board(grid: Grid2D, ai_piece: int) -> int:
 	var opponent := 2 if ai_piece == 1 else 1
 	for r in range(ROWS):
 		for c in range(COLS):
-			var cell = grid.get_cell(r, c)
+			var cell: int = grid.get_cell(r, c)
 			if cell == ai_piece:
 				score += POSITIONAL_WEIGHTS[r][c]
 			elif cell == opponent:

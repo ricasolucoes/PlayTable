@@ -23,8 +23,8 @@ var pawns_3d = [[], [], [], []]
 @onready var board_root: Node3D = $BoardRoot
 @onready var pawns_root: Node3D = $PawnsRoot
 @onready var dice_3d: Dice3D = $Dice3D
-@onready var btn_dice = $UI/DiceArea/BtnDice
-@onready var pawn_buttons_container = $UI/PawnSelectionArea/PawnButtons
+@onready var btn_dice: Button = $UI/DiceArea/BtnDice
+@onready var pawn_buttons_container: HBoxContainer = $UI/PawnSelectionArea/PawnButtons
 
 func _ready() -> void:
 	env_3d = $TabletopEnvironment3D

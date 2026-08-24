@@ -2,9 +2,6 @@ extends GridGame
 
 ## CheckersGame: Damas com Tabuleiro 3D em Nogueira, Peças de Marfim/Obsidiana e Coroas Douradas
 
-const Grid2DScript = preload("res://shared/core_engine/board/Grid2D.gd")
-const CheckersRulesScript = preload("res://games/damas/CheckersRules.gd")
-
 var grid_data: Grid2D
 var selected_pos: Vector2i = Vector2i(-1, -1)
 var valid_moves: Array[Dictionary] = []
@@ -14,7 +11,7 @@ var pieces_3d: Dictionary = {}
 
 @onready var board_3d: Board3D = $Board3D
 @onready var pieces_root: Node3D = $PiecesRoot
-@onready var score_label = $UI/VBoxContainer/ScoreLabel
+@onready var score_label: Label = $UI/VBoxContainer/ScoreLabel
 
 func _ready() -> void:
 	env_3d = $TabletopEnvironment3D
@@ -55,7 +52,7 @@ func _sync_pieces_3d() -> void:
 
 	for r in range(CheckersRules.ROWS):
 		for c in range(CheckersRules.COLS):
-			var val = grid_data.get_cell(r, c)
+			var val: int = grid_data.get_cell(r, c)
 			if val != 0:
 				var piece := preload("res://shared/3d/Token3D.tscn").instantiate()
 				piece.token_type = "cylinder"
@@ -79,12 +76,12 @@ func _update_score() -> void:
 	var ai_count: int = 0
 	for r in range(CheckersRules.ROWS):
 		for c in range(CheckersRules.COLS):
-			var val = grid_data.get_cell(r, c)
+			var val: int = grid_data.get_cell(r, c)
 			if val > 0: player_count += 1
 			elif val < 0: ai_count += 1
 	score_label.text = "Você: %d  |  IA: %d" % [player_count, ai_count]
 
-func _on_cell_clicked(r: int, c: int):
+func _on_cell_clicked(r: int, c: int) -> void:
 	if game_over or not is_player_turn: return
 	
 	var clicked_pos := Vector2i(r, c)
@@ -97,7 +94,7 @@ func _on_cell_clicked(r: int, c: int):
 	if continuing_capture_pos != Vector2i(-1, -1):
 		return
 		
-	var val = grid_data.get_cell(r, c)
+	var val: int = grid_data.get_cell(r, c)
 	if val > 0: # Peça do jogador
 		selected_pos = clicked_pos
 		valid_moves = CheckersRules.get_valid_moves_for_piece(grid_data, selected_pos)
@@ -132,7 +129,7 @@ func _lower_all_pieces() -> void:
 	for piece in pieces_3d.values():
 		piece.select(false)
 
-func _execute_player_move(from_pos: Vector2i, move_dict: Dictionary):
+func _execute_player_move(from_pos: Vector2i, move_dict: Dictionary) -> void:
 	var to_pos = move_dict["to"]
 	var captured_pos = move_dict["captured"]
 	
@@ -176,7 +173,7 @@ func _execute_player_move(from_pos: Vector2i, move_dict: Dictionary):
 	
 	_check_game_end_or_ai_turn()
 
-func _check_game_end_or_ai_turn():
+func _check_game_end_or_ai_turn() -> void:
 	_update_score()
 	var winner := CheckersRules.check_game_over(grid_data)
 	if winner != 0:
@@ -189,7 +186,7 @@ func _check_game_end_or_ai_turn():
 	
 	_play_ai_turn()
 
-func _play_ai_turn():
+func _play_ai_turn() -> void:
 	var ai_move := CheckersRules.get_best_ai_move(grid_data)
 	if ai_move.is_empty():
 		_end_game(1)

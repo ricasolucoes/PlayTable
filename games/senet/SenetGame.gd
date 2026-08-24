@@ -23,9 +23,9 @@ var pieces_3d: Dictionary = {}
 
 @onready var board_3d: Board3D = $Board3D
 @onready var pieces_root: Node3D = $PiecesRoot
-@onready var score_label = $UI/VBoxContainer/ScoreLabel
-@onready var btn_cast_sticks = $UI/SticksArea/BtnCastSticks
-@onready var sticks_label = $UI/SticksArea/SticksLabel
+@onready var score_label: Label = $UI/VBoxContainer/ScoreLabel
+@onready var btn_cast_sticks: Button = $UI/SticksArea/BtnCastSticks
+@onready var sticks_label: Label = $UI/SticksArea/SticksLabel
 
 func _ready() -> void:
 	env_3d = $TabletopEnvironment3D
@@ -164,7 +164,7 @@ func _on_square_clicked(sq_num: int) -> void:
 			_execute_move(1, m["from"], m["to"])
 			return
 
-func _execute_move(player_id: int, from_sq: int, to_sq: int):
+func _execute_move(player_id: int, from_sq: int, to_sq: int) -> void:
 	var opponent := 2 if player_id == 1 else 1
 	
 	if to_sq == 31:
@@ -219,7 +219,7 @@ func _handle_end_of_turn() -> void:
 			await get_tree().create_timer(0.7).timeout
 			_on_btn_cast_sticks_pressed()
 
-func _play_ai_move():
+func _play_ai_move() -> void:
 	var ai_moves := _get_valid_moves(2, current_throw)
 	if ai_moves.is_empty():
 		set_status("IA sem movimentos possíveis!")

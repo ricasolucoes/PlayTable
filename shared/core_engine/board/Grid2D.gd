@@ -49,7 +49,7 @@ func clear(default_val: Variant = null) -> void:
 
 func get_orthogonal_neighbors(r: int, c: int) -> Array[Vector2i]:
 	var result: Array[Vector2i] = []
-	var dirs = [Vector2i(-1, 0), Vector2i(1, 0), Vector2i(0, -1), Vector2i(0, 1)]
+	var dirs := [Vector2i(-1, 0), Vector2i(1, 0), Vector2i(0, -1), Vector2i(0, 1)]
 	for d in dirs:
 		var nr = r + d.x
 		var nc = c + d.y
@@ -104,7 +104,7 @@ func is_full(empty_value: Variant = null) -> bool:
 	return true
 
 func clone() -> Grid2D:
-	var g = Grid2D.new(rows, cols)
+	var g := Grid2D.new(rows, cols)
 	g.cells = cells.duplicate(true)
 	return g
 
@@ -116,6 +116,6 @@ func to_dict() -> Dictionary:
 	}
 
 static func from_dict(data: Dictionary) -> Grid2D:
-	var g = Grid2D.new(int(data.get("rows", 0)), int(data.get("cols", 0)))
+	var g := Grid2D.new(int(data.get("rows", 0)), int(data.get("cols", 0)))
 	g.cells = data.get("cells", []).duplicate(true)
 	return g

@@ -2,9 +2,6 @@ extends GridGame
 
 ## MinesweeperGame: Campo Minado 3D com Teclas Mecânicas Táteis, Pinos de Bandeira e Minas Explosivas
 
-const Grid2DScript = preload("res://shared/core_engine/board/Grid2D.gd")
-const MinesweeperRulesScript = preload("res://games/campo_minado/MinesweeperRules.gd")
-
 var grid_data: Grid2D
 var first_click: bool = true
 var is_flag_mode: bool = false
@@ -17,10 +14,10 @@ var flags_3d: Dictionary = {}
 
 @onready var board_3d: Board3D = $Board3D
 @onready var flags_root: Node3D = $FlagsRoot
-@onready var mines_label = $UI/VBoxContainer/Header/MinesLabel
-@onready var timer_label = $UI/VBoxContainer/Header/TimerLabel
-@onready var btn_mode = $UI/Controls/BtnMode
-@onready var btn_smiley = $UI/VBoxContainer/Header/BtnSmiley
+@onready var mines_label: Label = $UI/VBoxContainer/Header/MinesLabel
+@onready var timer_label: Label = $UI/VBoxContainer/Header/TimerLabel
+@onready var btn_mode: Button = $UI/Controls/BtnMode
+@onready var btn_smiley: Button = $UI/VBoxContainer/Header/BtnSmiley
 
 const NUMBER_COLORS = [
 	Color(0, 0, 0, 0),
@@ -71,9 +68,9 @@ func _update_header_mines() -> void:
 	var flagged := MinesweeperRules.count_flagged(grid_data)
 	mines_label.text = "💣 %02d" % max(0, MinesweeperRules.TOTAL_MINES - flagged)
 
-func _on_cell_clicked(r: int, c: int):
+func _on_cell_clicked(r: int, c: int) -> void:
 	if game_over or game_won: return
-	var cell = grid_data.get_cell(r, c)
+	var cell: Dictionary = grid_data.get_cell(r, c)
 	
 	if is_flag_mode:
 		if not cell["is_revealed"]:
@@ -116,7 +113,7 @@ func _update_flag_3d(r: int, c: int, is_flagged: bool) -> void:
 func _sync_revealed_3d() -> void:
 	for r in range(MinesweeperRules.ROWS):
 		for c in range(MinesweeperRules.COLS):
-			var cell = grid_data.get_cell(r, c)
+			var cell: Dictionary = grid_data.get_cell(r, c)
 			if cell["is_revealed"]:
 				var count = cell["adjacent_mines"]
 				if count > 0:
@@ -131,7 +128,7 @@ func _trigger_game_over(hit_r: int, hit_c: int) -> void:
 	
 	for r in range(MinesweeperRules.ROWS):
 		for c in range(MinesweeperRules.COLS):
-			var cell = grid_data.get_cell(r, c)
+			var cell: Dictionary = grid_data.get_cell(r, c)
 			if cell["is_mine"]:
 				board_3d.set_cell_state(r, c, Board3D.CellState.INVALID)
 

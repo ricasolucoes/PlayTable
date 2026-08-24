@@ -46,12 +46,12 @@ func roll(target_val: int, duration: float = 0.8) -> void:
 	var spin_y = target_rot.y + (PI * 4.0 * (1 if randf() > 0.5 else -1))
 	var spin_z = target_rot.z + (PI * 2.0 * (1 if randf() > 0.5 else -1))
 	
-	var tween = create_tween().set_parallel(true)
+	var tween := create_tween().set_parallel(true)
 	tween.tween_property(self, "rotation", Vector3(spin_x, spin_y, spin_z), duration).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 	
 	# Salto e quique do dado na mesa
-	var tween_y = create_tween().set_parallel(false)
-	var orig_y = position.y
+	var tween_y := create_tween().set_parallel(false)
+	var orig_y := position.y
 	tween_y.tween_property(self, "position:y", orig_y + 1.2, duration * 0.35).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 	tween_y.tween_property(self, "position:y", orig_y, duration * 0.45).set_trans(Tween.TRANS_BOUNCE).set_ease(Tween.EASE_OUT)
 	

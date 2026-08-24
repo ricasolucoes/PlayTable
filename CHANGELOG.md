@@ -2,7 +2,7 @@
 
 ---
 
-## [Unreleased](https://github.com/ricardosierra/PlayTable/compare/v0.4.0...develop)
+## [Unreleased](https://github.com/ricasolucoes/PlayTable/compare/v0.4.0...develop)
 
 ### 🐛 Correções
 
@@ -24,7 +24,7 @@
 - [x] **`shared/pecas/Piece.gd` virou `shared/ui/Piece2D.gd`** — o nome colidia com o `class_name Piece` de `shared/core_engine/board/Piece.gd`, que é outra coisa, e `shared/pecas` era o único diretório em português dentro de `shared/`
 
 
-## [v0.4.0 (2026-08-24)](https://github.com/ricardosierra/PlayTable/compare/v0.3.0...v0.4.0)
+## [v0.4.0 (2026-08-24)](https://github.com/ricasolucoes/PlayTable/compare/v0.3.0...v0.4.0)
 
 ### ✨ Novidades
 
@@ -68,7 +68,7 @@
 - [ ] **Nomes dos jogos nunca são traduzidos** — o `GameCatalog` aponta para chaves `GAME_DESC_*` que não existem no `translations.csv`, enquanto o CSV traz 16 chaves `GAME_*` com o nome de cada jogo que ninguém consome: `MenuTabuleiro` e `MenuCartas` montam o botão com `game.title`, texto fixo em português
 - [ ] **`KlondikeRules.can_place_on_foundation` não confere o naipe na fundação vazia** — aceita qualquer ás em qualquer uma das quatro. Só não vira bug porque `KlondikeGame` confere `card.suit == req_suit` antes de chamar
 
-## [v0.3.0 (2026-08-23)](https://github.com/ricardosierra/PlayTable/compare/v0.2.1...v0.3.0)
+## [v0.3.0 (2026-08-23)](https://github.com/ricasolucoes/PlayTable/compare/v0.2.1...v0.3.0)
 
 ### 🎨 Melhorias
 
@@ -79,7 +79,7 @@
 - [x] **Migração para Godot 4.6** — a 4.3 não tem como ser compilada no buildserver do F-Droid: o Debian trixie de lá só oferece JDK 21 e 25, o Godot exige exatamente o 17 em todas as versões, e o Gradle 8.2 que a 4.3 carrega sequer roda em Java 21 (suporte veio no 8.5). A 4.6 traz Gradle 8.11.1 e AGP 8.6.1, que rodam em 21. Os 70 scripts e 27 cenas importaram e exportaram sem uma única alteração em `project.godot` ou `export_presets.cfg`
 - [x] **Arquivos `.uid` versionados** — o Godot 4.4+ passou a identificar cada script por UID em vez de caminho; os 70 arquivos entram no versionamento, como a documentação do Godot exige, para que mover um script não quebre as referências
 
-## [v0.2.1 (2026-08-22)](https://github.com/ricardosierra/PlayTable/compare/v0.2.0...v0.2.1)
+## [v0.2.1 (2026-08-22)](https://github.com/ricasolucoes/PlayTable/compare/v0.2.0...v0.2.1)
 
 ### 🐛 Correções
 
@@ -94,7 +94,7 @@
 - [x] **Keystore de release removida do histórico** — a chave privada de assinatura estava versionada e publicamente acessível no GitHub e no GitLab, com a senha em claro no `build_apk.sh`. Histórico reescrito com `git filter-repo`, senha redigida e chave marcada como comprometida. Os SHAs de todos os commits mudaram e as tags foram recriadas
 - [x] **`build_apk.sh`** — export sempre sem assinatura; assinatura virou passo separado com `apksigner`, usando `KEYSTORE_PATH` (fora do repositório) e `KEYSTORE_PASSWORD` via ambiente
 
-## [v0.2.0 (2026-08-19)](https://github.com/ricardosierra/PlayTable/compare/v0.1.0...v0.2.0)
+## [v0.2.0 (2026-08-19)](https://github.com/ricasolucoes/PlayTable/compare/v0.1.0...v0.2.0)
 
 ### ✨ Novidades
 
@@ -125,7 +125,7 @@
 
 ---
 
-## [v0.1.0 (2026-08-18)](https://github.com/ricardosierra/PlayTable/releases/tag/v0.1.0)
+## [v0.1.0 (2026-08-18)](https://github.com/ricasolucoes/PlayTable/releases/tag/v0.1.0)
 
 ### ✨ Novidades
 

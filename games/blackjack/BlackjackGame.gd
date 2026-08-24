@@ -2,11 +2,6 @@ extends BaseGame
 
 ## BlackjackGame: 21 / Blackjack 3D com Cartas Físicas em Mesa de Cassino e Animação de Distribuição
 
-const CardScript = preload("res://shared/core_engine/cards/Card.gd")
-const DeckScript = preload("res://shared/core_engine/cards/Deck.gd")
-const CardHandScript = preload("res://shared/core_engine/cards/CardHand.gd")
-const BlackjackRulesScript = preload("res://games/blackjack/BlackjackRules.gd")
-
 var deck: Deck
 var player_hand: CardHand
 var dealer_hand: CardHand
@@ -15,10 +10,10 @@ var player_cards_3d: Array = []
 var dealer_cards_3d: Array = []
 
 @onready var cards_root: Node3D = $CardsRoot
-@onready var dealer_score_label = $UI/VBoxContainer/DealerScoreLabel
-@onready var player_score_label = $UI/VBoxContainer/PlayerScoreLabel
-@onready var btn_hit = $UI/Buttons/BtnHit
-@onready var btn_stand = $UI/Buttons/BtnStand
+@onready var dealer_score_label: Label = $UI/VBoxContainer/DealerScoreLabel
+@onready var player_score_label: Label = $UI/VBoxContainer/PlayerScoreLabel
+@onready var btn_hit: Button = $UI/Buttons/BtnHit
+@onready var btn_stand: Button = $UI/Buttons/BtnStand
 
 func _ready() -> void:
 	menu_scene_path = MENU_CARTAS

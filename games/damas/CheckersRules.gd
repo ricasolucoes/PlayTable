@@ -3,8 +3,6 @@ extends RefCounted
 
 ## Rules and logic for Damas.
 
-const Grid2DScript = preload("res://shared/core_engine/board/Grid2D.gd")
-
 const ROWS = 8
 const COLS = 8
 
@@ -23,10 +21,10 @@ static func create_initial_board() -> Grid2D:
 
 static func get_piece_captures(grid: Grid2D, r: int, c: int) -> Array[Dictionary]:
 	var captures: Array[Dictionary] = []
-	var piece = grid.get_cell(r, c)
+	var piece: int = grid.get_cell(r, c)
 	if piece == null or piece == 0: return captures
 	
-	var is_player = piece > 0
+	var is_player: bool = piece > 0
 	var is_king = abs(piece) == 2
 	var directions := [Vector2i(-1, -1), Vector2i(-1, 1), Vector2i(1, -1), Vector2i(1, 1)]
 	
@@ -41,7 +39,7 @@ static func get_piece_captures(grid: Grid2D, r: int, c: int) -> Array[Dictionary
 		var land_c = c + d.y * 2
 		
 		if grid.is_valid(land_r, land_c) and grid.is_valid(over_r, over_c):
-			var target_piece = grid.get_cell(over_r, over_c)
+			var target_piece: int = grid.get_cell(over_r, over_c)
 			if target_piece != 0 and (target_piece > 0) != is_player:
 				if grid.get_cell(land_r, land_c) == 0:
 					captures.append({
@@ -113,10 +111,10 @@ static func get_piece_moves(grid: Grid2D, r: int, c: int) -> Array[Dictionary]:
 	if not moves.is_empty():
 		return moves
 		
-	var piece = grid.get_cell(r, c)
+	var piece: int = grid.get_cell(r, c)
 	if piece == null or piece == 0: return []
 	
-	var is_player = piece > 0
+	var is_player: bool = piece > 0
 	var is_king = abs(piece) == 2
 	var directions: Array[Vector2i] = []
 	
@@ -145,7 +143,7 @@ static func get_all_valid_moves(grid: Grid2D, side: int) -> Array[Dictionary]:
 	var has_captures: bool = false
 	for r in range(ROWS):
 		for c in range(COLS):
-			var p = grid.get_cell(r, c)
+			var p: int = grid.get_cell(r, c)
 			if p != 0 and (p > 0) == is_player:
 				var caps := get_piece_captures(grid, r, c)
 				if not caps.is_empty():
@@ -158,7 +156,7 @@ static func get_all_valid_moves(grid: Grid2D, side: int) -> Array[Dictionary]:
 		
 	for r in range(ROWS):
 		for c in range(COLS):
-			var p = grid.get_cell(r, c)
+			var p: int = grid.get_cell(r, c)
 			if p != 0 and (p > 0) == is_player:
 				var mvs := get_piece_moves(grid, r, c)
 				for m in mvs:
@@ -169,7 +167,7 @@ static func get_all_valid_moves(grid: Grid2D, side: int) -> Array[Dictionary]:
 static func execute_move(grid: Grid2D, move: Dictionary) -> Dictionary:
 	var from_p = move["from"]
 	var to_p = move["to"]
-	var piece = grid.get_cell(from_p.x, from_p.y)
+	var piece: int = grid.get_cell(from_p.x, from_p.y)
 	
 	grid.set_cell(from_p.x, from_p.y, 0)
 	

@@ -2,9 +2,6 @@ extends GridGame
 
 ## BattleshipGame: Batalha Naval 3D com Radar Oceânico Tático e Marcadores Tridimensionais
 
-const Grid2DScript = preload("res://shared/core_engine/board/Grid2D.gd")
-const BattleshipRulesScript = preload("res://games/batalha_naval/BattleshipRules.gd")
-
 var player_grid: Grid2D
 var ai_grid: Grid2D
 var player_ships: Array = []
@@ -17,9 +14,9 @@ var ships_3d: Array = []
 @onready var board_3d: Board3D = $Board3D
 @onready var markers_root: Node3D = $MarkersRoot
 @onready var ships_root: Node3D = $ShipsRoot
-@onready var fleet_info_label = $UI/VBoxContainer/FleetInfoLabel
-@onready var btn_tab_radar = $UI/VBoxContainer/TabBar/BtnRadar
-@onready var btn_tab_fleet = $UI/VBoxContainer/TabBar/BtnFleet
+@onready var fleet_info_label: Label = $UI/VBoxContainer/FleetInfoLabel
+@onready var btn_tab_radar: Button = $UI/VBoxContainer/TabBar/BtnRadar
+@onready var btn_tab_fleet: Button = $UI/VBoxContainer/TabBar/BtnFleet
 
 func _ready() -> void:
 	env_3d = $TabletopEnvironment3D
@@ -130,7 +127,7 @@ func _update_fleet_status_labels() -> void:
 	var player_sunk := BattleshipRules.count_sunk_ships(player_ships)
 	fleet_info_label.text = "Navios Inimigos Afundados: %d/5  |  Aliados: %d/5" % [ai_sunk, player_sunk]
 
-func _on_cell_clicked(r: int, c: int):
+func _on_cell_clicked(r: int, c: int) -> void:
 	if game_over or not is_player_turn or not viewing_radar: return
 	
 	var cell_val = ai_grid.get_cell(r, c)
@@ -159,7 +156,7 @@ func _on_cell_clicked(r: int, c: int):
 	await get_tree().create_timer(0.6).timeout
 	_play_ai_turn()
 
-func _play_ai_turn():
+func _play_ai_turn() -> void:
 	var ai_target := BattleshipRules.get_ai_shot(player_grid)
 	var r := ai_target.x
 	var c := ai_target.y

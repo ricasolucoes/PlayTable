@@ -2,11 +2,6 @@ extends BaseGame
 
 ## KlondikeGame: Paciência Klondike 3D com Empilhamento Físico de Cartas, Cascatas e Fundações
 
-const CardScript = preload("res://shared/core_engine/cards/Card.gd")
-const DeckScript = preload("res://shared/core_engine/cards/Deck.gd")
-const CardPileScript = preload("res://shared/core_engine/cards/CardPile.gd")
-const KlondikeRulesScript = preload("res://games/paciencia/KlondikeRules.gd")
-
 const FOUNDATION_SUITS = [Card.Suit.SPADES, Card.Suit.HEARTS, Card.Suit.DIAMONDS, Card.Suit.CLUBS]
 const SUIT_ICONS = ["♠", "♥", "♦", "♣"]
 
@@ -20,10 +15,10 @@ var selected_card_idx: int = -1
 var moves_count: int = 0
 
 @onready var cards_root: Node3D = $CardsRoot
-@onready var moves_label = $UI/VBoxContainer/Header/MovesLabel
+@onready var moves_label: Label = $UI/VBoxContainer/Header/MovesLabel
 
-@onready var btn_stock = $UI/TopRow/StockArea/BtnStock
-@onready var btn_waste = $UI/TopRow/StockArea/BtnWaste
+@onready var btn_stock: Button = $UI/TopRow/StockArea/BtnStock
+@onready var btn_waste: Button = $UI/TopRow/StockArea/BtnWaste
 @onready var foundation_buttons = [
 	$UI/TopRow/Foundations/BtnF0,
 	$UI/TopRow/Foundations/BtnF1,
@@ -197,7 +192,7 @@ func _on_waste_pressed() -> void:
 	var top := waste.peek()
 	set_status("Selecionado: %s %s do descarte." % [top.get_display_value(), top.get_suit_symbol()])
 
-func _on_foundation_pressed(f_idx: int):
+func _on_foundation_pressed(f_idx: int) -> void:
 	if game_over: return
 	var f_pile := foundations[f_idx]
 	var req_suit = FOUNDATION_SUITS[f_idx]
@@ -229,7 +224,7 @@ func _on_foundation_pressed(f_idx: int):
 				
 	set_status("Jogada inválida para esta fundação.")
 
-func _on_tableau_col_pressed(col_idx: int):
+func _on_tableau_col_pressed(col_idx: int) -> void:
 	if game_over: return
 	var target_col := tableau[col_idx]
 	

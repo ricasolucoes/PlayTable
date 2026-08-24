@@ -3,8 +3,6 @@ extends RefCounted
 
 ## Rules and logic for Solitario.
 
-const Grid2DScript = preload("res://shared/core_engine/board/Grid2D.gd")
-
 const SIZE = 7
 
 static func is_valid_hole(r: int, c: int) -> bool:

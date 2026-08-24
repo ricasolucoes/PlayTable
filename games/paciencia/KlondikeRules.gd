@@ -3,8 +3,6 @@ extends RefCounted
 
 ## Rules and logic for Paciencia.
 
-const CardScript = preload("res://shared/core_engine/cards/Card.gd")
-
 ## `required_suit` e o naipe que a fundacao guarda. Com -1 a fundacao aceita o as
 ## de qualquer naipe -- so use assim quando a pilha ainda nao tem dono.
 static func can_place_on_foundation(card: Card, foundation_pile, required_suit: int = -1) -> bool:

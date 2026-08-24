@@ -2,8 +2,6 @@ extends BaseGame
 
 ## DominoGame: Dominó 3D com Pedras em Marfim Nobre, Rebites Dourados e Disposição na Mesa
 
-const DominoRulesScript = preload("res://games/domino/DominoRules.gd")
-
 var boneyard: Array[Dictionary] = []
 var player_hand: Array[Dictionary] = []
 var ai_hand: Array[Dictionary] = []
@@ -17,13 +15,13 @@ var consecutive_passes: int = 0
 var selected_tile_idx: int = -1
 
 @onready var table_tiles_root: Node3D = $TableTilesRoot
-@onready var ends_label = $UI/VBoxContainer/EndsLabel
-@onready var ai_info_label = $UI/VBoxContainer/AIInfoLabel
-@onready var player_hand_container = $UI/PlayerArea/HandContainer
-@onready var btn_draw = $UI/Actions/BtnDraw
-@onready var btn_pass = $UI/Actions/BtnPass
-@onready var btn_play_left = $UI/Actions/BtnPlayLeft
-@onready var btn_play_right = $UI/Actions/BtnPlayRight
+@onready var ends_label: Label = $UI/VBoxContainer/EndsLabel
+@onready var ai_info_label: Label = $UI/VBoxContainer/AIInfoLabel
+@onready var player_hand_container: HBoxContainer = $UI/PlayerArea/HandContainer
+@onready var btn_draw: Button = $UI/Actions/BtnDraw
+@onready var btn_pass: Button = $UI/Actions/BtnPass
+@onready var btn_play_left: Button = $UI/Actions/BtnPlayLeft
+@onready var btn_play_right: Button = $UI/Actions/BtnPlayRight
 
 func _ready() -> void:
 	env_3d = $TabletopEnvironment3D
@@ -145,7 +143,7 @@ func _update_ui() -> void:
 		
 	_update_action_buttons()
 
-func _update_action_buttons():
+func _update_action_buttons() -> void:
 	if game_over or not is_player_turn:
 		btn_draw.hide()
 		btn_pass.hide()
@@ -188,7 +186,7 @@ func _on_btn_play_left_pressed() -> void:
 func _on_btn_play_right_pressed() -> void:
 	_play_player_tile("right")
 
-func _play_player_tile(side: String):
+func _play_player_tile(side: String) -> void:
 	if selected_tile_idx < 0: return
 	var tile = player_hand.pop_at(selected_tile_idx)
 	selected_tile_idx = -1
@@ -231,7 +229,7 @@ func _on_btn_draw_pressed() -> void:
 		set_status("Você comprou uma pedra do monte.")
 		_update_ui()
 
-func _on_btn_pass_pressed():
+func _on_btn_pass_pressed() -> void:
 	consecutive_passes += 1
 	set_status("Você passou a vez.")
 	if consecutive_passes >= 2:
@@ -242,7 +240,7 @@ func _on_btn_pass_pressed():
 	await get_tree().create_timer(0.8).timeout
 	_play_ai_turn()
 
-func _play_ai_turn():
+func _play_ai_turn() -> void:
 	var ai_play := DominoRules.find_ai_move(ai_hand, left_end, right_end)
 	if ai_play.size() > 0:
 		var t_idx = ai_play["tile_index"]

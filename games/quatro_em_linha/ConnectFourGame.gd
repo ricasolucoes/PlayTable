@@ -21,17 +21,17 @@ var score_p1: int = 0
 var score_p2: int = 0
 var piece_instances := {}  ## Vector2i(linha, coluna) -> no da ficha
 
-@onready var pieces_layer = $BoardArea/PiecesLayer
-@onready var board_back = $BoardArea/BoardBack
-@onready var board_front = $BoardArea/BoardFront
-@onready var col_buttons_container = $BoardArea/ColButtons
-@onready var p1_panel = $VBoxContainer/ScoreBoard/P1Panel
-@onready var p2_panel = $VBoxContainer/ScoreBoard/P2Panel
-@onready var p1_score_lbl = $VBoxContainer/ScoreBoard/P1Panel/HBox/Score
-@onready var p2_score_lbl = $VBoxContainer/ScoreBoard/P2Panel/HBox/Score
-@onready var win_modal = $WinModal
-@onready var win_modal_title = $WinModal/Panel/VBox/WinTitle
-@onready var win_modal_sub = $WinModal/Panel/VBox/WinSub
+@onready var pieces_layer: Node2D = $BoardArea/PiecesLayer
+@onready var board_back: Control = $BoardArea/BoardBack
+@onready var board_front: Control = $BoardArea/BoardFront
+@onready var col_buttons_container: HBoxContainer = $BoardArea/ColButtons
+@onready var p1_panel: PanelContainer = $VBoxContainer/ScoreBoard/P1Panel
+@onready var p2_panel: PanelContainer = $VBoxContainer/ScoreBoard/P2Panel
+@onready var p1_score_lbl: Label = $VBoxContainer/ScoreBoard/P1Panel/HBox/Score
+@onready var p2_score_lbl: Label = $VBoxContainer/ScoreBoard/P2Panel/HBox/Score
+@onready var win_modal: ColorRect = $WinModal
+@onready var win_modal_title: Label = $WinModal/Panel/VBox/WinTitle
+@onready var win_modal_sub: Label = $WinModal/Panel/VBox/WinSub
 
 ## Centro vertical da linha `row` na area de desenho.
 ##
@@ -70,7 +70,7 @@ func _setup_column_buttons() -> void:
 		btn.pressed.connect(_on_col_pressed.bind(c))
 		col_buttons_container.add_child(btn)
 
-func _on_col_pressed(col: int):
+func _on_col_pressed(col: int) -> void:
 	if game_over or not is_player_turn:
 		return
 	if not ConnectFourRules.can_drop(board, col):
@@ -78,7 +78,7 @@ func _on_col_pressed(col: int):
 		
 	_make_move(col, 1)
 
-func _make_move(col: int, player_id: int):
+func _make_move(col: int, player_id: int) -> void:
 	var row := ConnectFourRules.drop_piece(board, col, player_id)
 	if row < 0:
 		return
@@ -119,7 +119,7 @@ func _make_move(col: int, player_id: int):
 				_update_turn_ui()
 	)
 
-func _do_ai_turn():
+func _do_ai_turn() -> void:
 	if game_over:
 		return
 	var ai_col := ConnectFourRules.get_best_move(board, 2)
@@ -158,7 +158,7 @@ func _handle_game_draw() -> void:
 	if AudioManager: AudioManager.play_draw()
 	reveal_result_modal(win_modal, 0.8)
 
-func _update_turn_ui():
+func _update_turn_ui() -> void:
 	if game_over:
 		return
 	if is_player_turn:

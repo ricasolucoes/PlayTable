@@ -4,12 +4,6 @@ extends BaseGame
 
 ## UnoLikeGame: Cartas Coloridas 3D com Cartas Físicas, Arremesso no Descarte e Partículas
 
-const CardScript = preload("res://shared/core_engine/cards/Card.gd")
-const DeckScript = preload("res://shared/core_engine/cards/Deck.gd")
-const CardHandScript = preload("res://shared/core_engine/cards/CardHand.gd")
-const CardPileScript = preload("res://shared/core_engine/cards/CardPile.gd")
-const UnoRulesScript = preload("res://games/unolike/UnoRules.gd")
-
 const COLOR_MAP = {
 	Card.ColorType.RED: Color(0.9, 0.25, 0.25),
 	Card.ColorType.BLUE: Color(0.2, 0.55, 0.9),
@@ -40,11 +34,11 @@ var pending_wild4: bool = false
 var discard_cards_3d: Array[Card3D] = []
 
 @onready var cards_root: Node3D = $CardsRoot
-@onready var active_color_banner = $UI/VBoxContainer/ActiveColorBanner
-@onready var ai_info_label = $UI/VBoxContainer/AIInfoLabel
-@onready var player_cards_container = $UI/PlayerArea/ScrollContainer/CardsContainer
-@onready var color_picker_modal = $UI/ColorPickerModal
-@onready var btn_draw = $UI/Actions/BtnDraw
+@onready var active_color_banner: Label = $UI/VBoxContainer/ActiveColorBanner
+@onready var ai_info_label: Label = $UI/VBoxContainer/AIInfoLabel
+@onready var player_cards_container: HBoxContainer = $UI/PlayerArea/ScrollContainer/CardsContainer
+@onready var color_picker_modal: PanelContainer = $UI/ColorPickerModal
+@onready var btn_draw: Button = $UI/Actions/BtnDraw
 
 func _ready() -> void:
 	menu_scene_path = MENU_CARTAS

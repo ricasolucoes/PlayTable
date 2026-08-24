@@ -2,9 +2,6 @@ extends GridGame
 
 ## PegSolitaireGame: Resta Um 3D com Tabuleiro Circular Entalhado e Esferas Polidas de Âmbar
 
-const Grid2DScript = preload("res://shared/core_engine/board/Grid2D.gd")
-const PegSolitaireRulesScript = preload("res://games/solitario/PegSolitaireRules.gd")
-
 var grid_data: Grid2D
 var selected_pos: Vector2i = Vector2i(-1, -1)
 var valid_targets: Array[Dictionary] = []
@@ -12,7 +9,7 @@ var marbles_3d: Dictionary = {}
 
 @onready var board_root: Node3D = $BoardRoot
 @onready var marbles_root: Node3D = $MarblesRoot
-@onready var pegs_label = $UI/VBoxContainer/PegsLabel
+@onready var pegs_label: Label = $UI/VBoxContainer/PegsLabel
 
 const CELL_SIZE: float = 0.75
 
@@ -103,7 +100,7 @@ func _update_ui() -> void:
 	var pegs_count := PegSolitaireRules.count_pegs(grid_data)
 	pegs_label.text = "Esferas Restantes: %d / 32" % pegs_count
 
-func _on_cell_clicked(r: int, c: int):
+func _on_cell_clicked(r: int, c: int) -> void:
 	if game_over: return
 	var clicked_pos := Vector2i(r, c)
 	
@@ -112,7 +109,7 @@ func _on_cell_clicked(r: int, c: int):
 			_execute_jump(selected_pos, vt)
 			return
 			
-	var val = grid_data.get_cell(r, c)
+	var val: int = grid_data.get_cell(r, c)
 	if val == 1:
 		selected_pos = clicked_pos
 		valid_targets = PegSolitaireRules.get_valid_moves_for_peg(grid_data, selected_pos)

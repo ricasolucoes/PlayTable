@@ -3,7 +3,6 @@ extends RefCounted
 
 ## Rules and logic for Quatro Em Linha.
 
-const Grid2DScript = preload("res://shared/core_engine/board/Grid2D.gd")
 const BoardCoordScript = preload("res://shared/core_engine/board/BoardCoord.gd")
 
 const ROWS = 6
@@ -45,7 +44,6 @@ static func get_winning_cells(grid: Grid2D, row: int, col: int, player_id: int) 
 		if celulas.size() >= 4:
 			return celulas
 	return [] as Array[Vector2i]
-
 
 static func is_full(grid: Grid2D) -> bool:
 	for c in range(COLS):

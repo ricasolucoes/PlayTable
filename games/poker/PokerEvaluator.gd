@@ -3,8 +3,6 @@ extends RefCounted
 
 ## Helper class for Poker.
 
-const CardScript = preload("res://shared/core_engine/cards/Card.gd")
-
 static func evaluate(cards: Array) -> Dictionary:
 	return evaluate_hand(cards)
 

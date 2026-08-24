@@ -3,8 +3,6 @@ extends RefCounted
 
 ## Rules and logic for Batalha Naval.
 
-const Grid2DScript = preload("res://shared/core_engine/board/Grid2D.gd")
-
 const GRID_SIZE = 10
 
 const SHIP_DEFS = [
@@ -94,7 +92,7 @@ static func place_all_ships_randomly(grid: Grid2D) -> Array[Dictionary]:
 	return placed_ships
 
 static func register_shot(grid: Grid2D, pos: Vector2i, fleet: Array) -> Dictionary:
-	var cell_val = grid.get_cell(pos.x, pos.y)
+	var cell_val: int = grid.get_cell(pos.x, pos.y)
 	if cell_val == 2 or cell_val == 3:
 		return {"valid": false, "is_hit": false, "sunk_ship": null, "all_sunk": false}
 		
@@ -130,7 +128,7 @@ static func get_ai_shot(arg1, arg2 = null) -> Vector2i:
 		var candidates: Array[Vector2i] = []
 		for r in range(GRID_SIZE):
 			for c in range(GRID_SIZE):
-				var v = grid.get_cell(r, c)
+				var v: int = grid.get_cell(r, c)
 				if v != 2 and v != 3:
 					candidates.append(Vector2i(r, c))
 		if candidates.is_empty():
