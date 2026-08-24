@@ -1,4 +1,4 @@
-extends Control
+extends BaseGame
 
 ## DominoGame: Dominó 3D com Pedras em Marfim Nobre, Rebites Dourados e Disposição na Mesa
 
@@ -13,13 +13,10 @@ var left_end: int = -1
 var right_end: int = -1
 
 var is_player_turn: bool = true
-var game_over: bool = false
 var consecutive_passes: int = 0
 var selected_tile_idx: int = -1
 
-@onready var env_3d: TabletopEnvironment3D = $TabletopEnvironment3D
 @onready var table_tiles_root: Node3D = $TableTilesRoot
-@onready var status_label = $UI/VBoxContainer/StatusLabel
 @onready var ends_label = $UI/VBoxContainer/EndsLabel
 @onready var ai_info_label = $UI/VBoxContainer/AIInfoLabel
 @onready var player_hand_container = $UI/PlayerArea/HandContainer
@@ -27,9 +24,11 @@ var selected_tile_idx: int = -1
 @onready var btn_pass = $UI/Actions/BtnPass
 @onready var btn_play_left = $UI/Actions/BtnPlayLeft
 @onready var btn_play_right = $UI/Actions/BtnPlayRight
-@onready var btn_restart = $UI/Actions/BtnRestart
 
 func _ready() -> void:
+	env_3d = $TabletopEnvironment3D
+	status_label = $UI/VBoxContainer/StatusLabel
+	btn_restart = $UI/Actions/BtnRestart
 	_start_new_game()
 
 func _start_new_game() -> void:
@@ -300,15 +299,5 @@ func _check_board_lock() -> void:
 		_end_game("Jogo Fechado! Empate exato de pontos (%d)!" % p_pts, false)
 
 func _end_game(msg: String, is_player_win: bool) -> void:
-	game_over = true
-	status_label.text = msg
-	btn_restart.show()
+	finish_game(msg, is_player_win)
 	_update_action_buttons()
-	if is_player_win:
-		env_3d.celebrate_win()
-
-func _on_btn_restart_pressed() -> void:
-	_start_new_game()
-
-func _on_btn_back_pressed() -> void:
-	SceneManager.goto_scene("res://core/telas/MenuTabuleiro.tscn")
