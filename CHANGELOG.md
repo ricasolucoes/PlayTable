@@ -4,6 +4,26 @@
 
 ## [Unreleased](https://github.com/ricardosierra/PlayTable/compare/v0.4.0...develop)
 
+### 🐛 Correções
+
+- [x] **Quatro em Linha desenhado de cabeça para baixo** — `_make_move` calculava `visual_row = (ROWS - 1) - row` apoiado num comentário que dizia *"logic row 0 is bottom"*, mas `drop_piece` preenche do índice `ROWS-1` para o 0: a linha `ROWS-1` é o fundo. Como no desenho o y cresce para baixo, linha lógica e linha visual já coincidiam — a inversão punha a primeira ficha de cada coluna no topo, com a pilha crescendo para baixo. A conta virou `cell_center_y()`, um método nomeado que os testes conseguem interrogar
+- [x] **Fundação vazia da Paciência aceitava qualquer ás** — `can_place_on_foundation` ganhou o parâmetro `required_suit`; com `-1` o contrato antigo segue valendo. As duas chamadas de `KlondikeGame` passavam `req_suit` e conferiam `card.suit` por fora, cada uma com sua cópia da condição
+- [x] **IA do Uno jogava com a cor fixa** — `UnoRules.pick_best_color_for_hand` existia e implementava a heurística de maioria, mas `UnoLikeGame` não a chamava: ao jogar um curinga a IA fixava azul, ou vermelho no caminho de comprar-e-jogar
+- [x] **Trocar a qualidade não descartava o que já tinha sido gerado** — `MeshBuilder3D` guarda malhas construídas com `Quality3D.radial_segments()` e `TextureFactory3D` guarda texturas, e nenhuma das chaves de cache inclui o *tier*. As três `clear_cache()` existiam exatamente para isso e ninguém as chamava: depois de `set_tier()` as peças continuavam com a geometria do nível anterior pelo resto da sessão
+- [x] **Arquivo de teste descartado pelo GUT não reprovava nada** — um `.gd` que não compila era descartado com *"Ignoring script … because it does not extend GutTest"*, um aviso no meio da saída, e a suíte seguia verde com menos testes. Aconteceu com `test_table_item_3d.gd`, que sumiu inteiro por um `:=` sobre `add_child_autofree()`. O runner agora sai com 1. No mesmo arquivo, o carimbo de reimportação passou a cobrir a lista de `class_name`: uma classe nova só entra no `global_script_class_cache.cfg` depois de um `--import`, e até lá quem herda dela morre em *"Could not find base class"*
+
+### 🔧 Técnico
+
+- [x] **Framework de jogadores e rede removido** — `IPlayerController`, `HumanPlayerController`, `AIPlayerController`, `RemotePlayerController`, `TurnManager`, `Player` e `GameAction` somavam 235 linhas e nenhum dos 16 jogos instanciava qualquer uma delas; os dois únicos usos do identificador `Player` fora do `core_engine` eram comentários. Pior que o peso morto: `test_core_systems.gd` cobria `TurnManager` e `GameAction` com dez testes, então parte da suíte verde falava de código que o aplicativo não executa. Saiu junto, com `ConnectFourBoardVisual.gd`, que ninguém referenciava
+- [x] **O Quatro em Linha tinha duas implementações completas das mesmas regras** — a cena usava `ConnectFourBoard` e `ConnectFourAI`; a suíte exercitava `ConnectFourRules`, que ninguém chamava. Ficou o `ConnectFourRules`, melhor nos dois pontos onde diferiam: clona o grid para simular em vez de escrever em `board.grid` e desfazer depois — o próprio `ConnectFourAI` trazia um *"WARNING: Simulates moves by directly mutating board.grid"* no cabeçalho — e tem a preferência pela coluna central que faltava. `ROWS` e `COLS` eram declarados em cinco arquivos e `CELL_SIZE` em três, com o raio do furo sob dois nomes para o mesmo `34.0`
+- [x] **`TableItem3D`, base de `Card3D` e `Token3D`** — os dois faziam `extends Node3D` e tinham convergido sozinhos: `_kill`, `hover` e `select` idênticos, `reject` batendo em 7 das 10 linhas, `vanish` em 9 das 14, e a sombra de contato o mesmo bloco com outro tamanho de quad. A única diferença real do `reject()` era a amplitude do tremor, agora `reject_shake`/`reject_settle` escritos uma vez. Card3D 214 → 172 linhas, Token3D 269 → 242
+- [x] **`CardCollection`, base de `CardPile`, `CardHand` e `Deck`** — as três repetiam `size()`, `is_empty()`, `clear()` e `to_dict()` com corpos idênticos, e `count()` era alias de `size()` dentro do próprio arquivo, a mesma função escrita duas vezes em três arquivos. Nenhuma chamada a `count()` existia em `games/` nem em `tests/`: saiu em vez de subir
+- [x] **`GameMenu`, base de `MenuTabuleiro` e `MenuCartas`** — os dois eram idênticos em 29 das 31 linhas, divergindo na consulta ao catálogo e no caminho gravado em `current_menu`. Cada um caiu para 12 linhas
+- [x] **O status da partida passa pelo `set_status()` do `BaseGame`** — a API nasceu na deduplicação da v0.4.0 e ninguém adotou: os 16 jogos escreviam em `status_label.text` direto, 96 vezes, por fora da guarda de nulo que o próprio `BaseGame` documenta
+- [x] **Tipagem estática em `games/` e `core/`** — 421 declarações locais passaram a usar `:=`. As 136 restantes foram revertidas uma a uma porque o Godot recusou: ou o valor vem de `Dictionary`/`Array`, que devolvem `Variant`, ou a função chamada não declara retorno. `games` foi de 0% para 69% tipado, `core` de 3% para 100%
+- [x] **`shared/pecas/Piece.gd` virou `shared/ui/Piece2D.gd`** — o nome colidia com o `class_name Piece` de `shared/core_engine/board/Piece.gd`, que é outra coisa, e `shared/pecas` era o único diretório em português dentro de `shared/`
+
+
 ## [v0.4.0 (2026-08-24)](https://github.com/ricardosierra/PlayTable/compare/v0.3.0...v0.4.0)
 
 ### ✨ Novidades
