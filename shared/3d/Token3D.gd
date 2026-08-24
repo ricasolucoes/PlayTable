@@ -1,5 +1,5 @@
 class_name Token3D
-extends Node3D
+extends TableItem3D
 
 ## Token3D: Peca de tabuleiro -- disco, esfera ou peao.
 ##
@@ -24,10 +24,16 @@ signal token_clicked(token: Token3D)
 var is_queen: bool = false
 var grid_coord: Vector2i = Vector2i(-1, -1)
 
-var _lift: float = 0.0
 var _base_scale: Vector3 = Vector3.ONE
 var _move_tween: Tween
 var _lift_tween: Tween
+
+
+func _init() -> void:
+	# A peca e menor que a carta, entao treme menos ao recusar a jogada. Era a
+	# unica diferenca entre os dois reject().
+	reject_shake = 0.045
+	reject_settle = 0.025
 
 func _ready() -> void:
 	_apply_shape_and_material()
@@ -61,16 +67,8 @@ func _apply_shape_and_material() -> void:
 	apply_material(material_name)
 
 func _setup_contact_shadow() -> void:
-	if contact_shadow == null:
-		return
-	var quad := QuadMesh.new()
-	quad.orientation = PlaneMesh.FACE_Y
-	quad.size = Vector2(token_radius * 2.0 * Tokens3D.CONTACT_SHADOW_GROW,
-		token_radius * 2.0 * Tokens3D.CONTACT_SHADOW_GROW)
-	contact_shadow.mesh = quad
-	contact_shadow.material_override = MaterialFactory3D.get_contact_shadow()
-	contact_shadow.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	contact_shadow.position = Vector3(0.0, 0.004, 0.0)
+	var lado := token_radius * 2.0 * Tokens3D.CONTACT_SHADOW_GROW
+	_apply_contact_shadow(contact_shadow, Vector2(lado, lado), 0.004)
 
 func apply_material(mat_name: String) -> void:
 	material_name = mat_name
@@ -163,28 +161,10 @@ func set_lift(amount: float, duration: float = Tokens3D.DUR_FAST) -> void:
 			Vector3(shadow_scale, 1.0, shadow_scale), d)
 		_lift_tween.tween_property(contact_shadow, "transparency", 1.0 - shadow_alpha, d)
 
-func hover(enable: bool) -> void:
-	set_lift(Tokens3D.LIFT_HOVER if enable else 0.0, Tokens3D.DUR_INSTANT)
-
-func select(enable: bool) -> void:
-	set_lift(Tokens3D.LIFT_SELECTED if enable else 0.0, Tokens3D.DUR_FAST)
-
 ## Compatibilidade: destaque agora e altura, nao escala. Uma peca que incha
 ## quebra a escala do tabuleiro; uma que levanta continua do mesmo tamanho.
 func highlight(enable: bool) -> void:
 	select(enable)
-
-## Recusa de jogada: um tremor curto e horizontal, sem tirar a peca do lugar.
-func reject() -> void:
-	var d := Quality3D.duration(Tokens3D.DUR_FAST, false)
-	if d <= 0.0:
-		return
-	var origin := position.x
-	var tw := create_tween()
-	tw.tween_property(self, "position:x", origin - 0.045, d * 0.25)
-	tw.tween_property(self, "position:x", origin + 0.045, d * 0.25)
-	tw.tween_property(self, "position:x", origin - 0.025, d * 0.25)
-	tw.tween_property(self, "position:x", origin, d * 0.25)
 
 ## Vira a peca (Reversi). Meia volta em X, trocando o material no meio.
 func flip_180(new_mat_name: String, duration: float = Tokens3D.DUR_NORMAL) -> void:
@@ -230,10 +210,7 @@ func promote_queen() -> void:
 func vanish(then_free: bool = true) -> void:
 	var d := Quality3D.duration(Tokens3D.DUR_FAST)
 	if d <= 0.0:
-		if then_free:
-			queue_free()
-		else:
-			hide()
+		_finish_vanish(then_free)
 		return
 	var tw := create_tween()
 	tw.set_parallel(true)
@@ -263,7 +240,3 @@ func _apply_shadow(scale_xz: float, alpha: float) -> void:
 		return
 	contact_shadow.scale = Vector3(scale_xz, 1.0, scale_xz)
 	contact_shadow.transparency = 1.0 - alpha
-
-func _kill(tw: Tween) -> void:
-	if tw != null and tw.is_valid():
-		tw.kill()

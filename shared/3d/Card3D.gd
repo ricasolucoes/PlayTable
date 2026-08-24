@@ -1,5 +1,5 @@
 class_name Card3D
-extends Node3D
+extends TableItem3D
 
 ## Card3D: Carta de baralho com espessura, face impressa e peso no movimento.
 ##
@@ -24,7 +24,6 @@ signal card_clicked(card: Card3D)
 
 var custom_data: Dictionary = {}
 
-var _lift: float = 0.0
 var _move_tween: Tween
 var _ready_done: bool = false
 
@@ -64,15 +63,9 @@ func _setup_collision() -> void:
 	picker_shape.shape = box
 
 func _setup_contact_shadow() -> void:
-	if contact_shadow == null:
-		return
-	var quad := QuadMesh.new()
-	quad.orientation = PlaneMesh.FACE_Y
-	quad.size = Vector2(Tokens3D.CARD_WIDTH * 1.30, Tokens3D.CARD_LENGTH * 1.22)
-	contact_shadow.mesh = quad
-	contact_shadow.material_override = MaterialFactory3D.get_contact_shadow()
-	contact_shadow.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	contact_shadow.position = Vector3(0.0, -Tokens3D.CARD_THICKNESS * 0.5 - 0.002, 0.0)
+	_apply_contact_shadow(contact_shadow,
+		Vector2(Tokens3D.CARD_WIDTH * 1.30, Tokens3D.CARD_LENGTH * 1.22),
+		-Tokens3D.CARD_THICKNESS * 0.5 - 0.002)
 
 # ---------------------------------------------------------------------------
 # Movimento
@@ -168,37 +161,6 @@ func set_lift(amount: float, duration: float = Tokens3D.DUR_FAST) -> void:
 		tw.tween_property(contact_shadow, "scale", Vector3(spread, 1.0, spread), d)
 		tw.tween_property(contact_shadow, "transparency", clampf(amount * 1.4, 0.0, 0.6), d)
 
-func hover(enable: bool) -> void:
-	set_lift(Tokens3D.LIFT_HOVER if enable else 0.0, Tokens3D.DUR_INSTANT)
-
-func select(enable: bool) -> void:
-	set_lift(Tokens3D.LIFT_SELECTED if enable else 0.0, Tokens3D.DUR_FAST)
-
-## Jogada recusada: a carta volta ao lugar com um tremor curto.
-func reject() -> void:
-	var d := Quality3D.duration(Tokens3D.DUR_FAST, false)
-	if d <= 0.0:
-		return
-	var origin := position.x
-	var tw := create_tween()
-	tw.tween_property(self, "position:x", origin - 0.05, d * 0.25)
-	tw.tween_property(self, "position:x", origin + 0.05, d * 0.25)
-	tw.tween_property(self, "position:x", origin - 0.03, d * 0.25)
-	tw.tween_property(self, "position:x", origin, d * 0.25)
-
-func vanish(then_free: bool = true) -> void:
-	var d := Quality3D.duration(Tokens3D.DUR_FAST)
-	if d <= 0.0:
-		if then_free:
-			queue_free()
-		else:
-			hide()
-		return
-	var tw := create_tween()
-	tw.tween_property(self, "scale", Vector3(0.02, 0.02, 0.02), d) \
-		.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_IN)
-	tw.tween_callback(queue_free if then_free else hide)
-
 func _on_picker_input_event(_camera: Node, event: InputEvent, _pos: Vector3, _normal: Vector3, _shape: int) -> void:
 	var pressed := false
 	if event is InputEventMouseButton:
@@ -208,7 +170,3 @@ func _on_picker_input_event(_camera: Node, event: InputEvent, _pos: Vector3, _no
 		pressed = (event as InputEventScreenTouch).pressed
 	if pressed:
 		card_clicked.emit(self)
-
-func _kill(tw: Tween) -> void:
-	if tw != null and tw.is_valid():
-		tw.kill()
