@@ -1,14 +1,29 @@
-PlayTable brengt zestien tijdloze bord- en kaartspellen samen in één snelle en elegante app, aangedreven door de Godot-engine.
+PlayTable brengt 16 tijdloze klassieke bord- en kaartspellen samen in één app — 100% gratis en volledig zonder advertenties.
 
-Alles draait volledig lokaal op je apparaat. Geen externe servers, geen accounts, geen advertenties en geen tracking. Zet je telefoon op vliegtuigmodus en speel ongestoord verder.
+Alles draait lokaal op uw toestel. Geen internetverbinding vereist, geen accounts, geen registratie en geen tracking. Schakel de vliegtuigmodus in en speel altijd en overal!
 
-Inbegrepen bordspellen:
-Boter-kaas-en-eieren, Vier op 'n rij, Dammen, Schaken, Reversi, Molenspel, Kamertje verhuren, Geheugenspel (Memory), Zeeslag, Mancala en Mens-erger-je-niet (Ludo).
+🎲 Bordspellen:
+• Schaken
+• Dammen
+• Mens-erger-je-niet (Ludo)
+• Molenspel
+• Reversi (Othello)
+• Mancala
+• Vier-op-een-rij
+• Boter-kaas-en-eieren
+• Zeeslag
+• Kamertje verhuren (Dots & Boxes)
+• Geheugenspel (Memory)
 
-Inbegrepen kaartspellen:
-Patience / Solitaire (Klondike), Blackjack (Eenentwintigen), Oorlogje, Kaartenkaping en Concentratie.
+🃏 Kaartspellen:
+• Patience (Solitaire Klondike)
+• Blackjack (21)
+• Oorlogje (War)
+• Steal the Pile
+• Concentratie
 
-Wat je NOOIT zult vinden:
-Geen reclame, geen in-app aankopen, geen betaalmuren, geen verplichte logins en nul telemetrie. Je instellingen en statistieken blijven lokaal op je apparaat.
-
-Stijlvolle 3D-beelden en soepele bediening. 100% open source onder de MIT-licentie.
+✨ Belangrijkste Voordelen:
+• 100% Gratis: Geen advertenties, geen in-app aankopen
+• 100% Offline: Speel overal zonder datagebruik
+• Heldere interface en soepele bediening
+• Volledige Privacy: Instellingen en statistieken blijven op uw toestel

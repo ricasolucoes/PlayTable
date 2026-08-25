@@ -394,25 +394,36 @@ func _refresh_all_instances() -> void:
 # Toque / clique
 # ---------------------------------------------------------------------------
 
+## Com input_devices/pointing/emulate_mouse_from_touch ligado — o padrao, e o
+## que o projeto usa — cada toque chega duas vezes: como InputEventScreenTouch
+## e de novo como InputEventMouseButton emulado. Tratar as duas familias
+## disparava cell_clicked duas vezes por toque. Com a emulacao ligada so o
+## mouse conta; o toque cru so entra quando ela esta desligada.
+var _touch_emulates_mouse: bool = ProjectSettings.get_setting(
+	"input_devices/pointing/emulate_mouse_from_touch", true)
+
+
 func _on_picker_input_event(_camera: Node, event: InputEvent, event_position: Vector3, _normal: Vector3, _shape_idx: int) -> void:
 	if event is InputEventMouseButton:
 		var mb := event as InputEventMouseButton
 		if mb.pressed and mb.button_index == MOUSE_BUTTON_LEFT:
-			var cell := world_to_cell(event_position)
-			if cell.x >= 0:
-				cell_clicked.emit(cell.x, cell.y)
+			_emit_cell_clicked(event_position)
 	elif event is InputEventScreenTouch:
 		var st := event as InputEventScreenTouch
-		if st.pressed:
-			var cell := world_to_cell(event_position)
-			if cell.x >= 0:
-				cell_clicked.emit(cell.x, cell.y)
+		if st.pressed and not _touch_emulates_mouse:
+			_emit_cell_clicked(event_position)
 	elif event is InputEventMouseMotion:
 		var cell := world_to_cell(event_position)
 		if cell != _hover_cell:
 			_hover_cell = cell
 			if cell.x >= 0:
 				cell_hovered.emit(cell.x, cell.y)
+
+
+func _emit_cell_clicked(world_point: Vector3) -> void:
+	var cell := world_to_cell(world_point)
+	if cell.x >= 0:
+		cell_clicked.emit(cell.x, cell.y)
 
 func _on_picker_mouse_exited() -> void:
 	_hover_cell = Vector2i(-1, -1)

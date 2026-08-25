@@ -1,0 +1,5 @@
+Event ID,Name,Description,Status
+event_match_completed,Partidas Jogadas,Número total de partidas jogadas em todos os modos,PUBLISHED
+event_match_won,Partidas Vencidas,Número total de vitórias,PUBLISHED
+event_item_collected,Itens Coletados,Total de itens colecionáveis e fichas adquiridas,PUBLISHED
+event_quest_finished,Missões Concluídas,Total de missões diárias e semanais completadas,PUBLISHED

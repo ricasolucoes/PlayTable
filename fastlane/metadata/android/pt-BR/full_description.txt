@@ -1,14 +1,29 @@
-O PlayTable reúne dezesseis jogos clássicos de tabuleiro e cartas em um aplicativo só, feito com a engine Godot.
+O PlayTable reúne 16 jogos clássicos de tabuleiro e cartas em um único aplicativo, 100% gratuito e sem anúncios.
 
-Tudo roda no aparelho. Não há servidor para consultar, conta para criar, SDK de propaganda nem coleta de uso. Abra o app em modo avião e todos os jogos continuam funcionando.
+Tudo roda diretamente no seu aparelho. Sem necessidade de internet, sem login, sem cadastros e sem coleta de dados. Abra o app em modo avião e jogue onde e quando quiser!
 
-Jogos de tabuleiro:
-Jogo da velha, Quatro em linha, Damas, Xadrez, Reversi, Trilha, Pontos e caixas, Jogo da memória, Batalha naval, Mancala e Ludo.
+🎲 Jogos de Tabuleiro:
+• Xadrez
+• Damas
+• Ludo
+• Trilha
+• Reversi
+• Mancala
+• Quatro em Linha
+• Jogo da Velha
+• Batalha Naval
+• Pontos e Caixas
+• Jogo da Memória
 
-Jogos de cartas:
-Paciência, Vinte e um, Guerra, Rouba-monte e Concentração.
+🃏 Jogos de Cartas:
+• Paciência (Klondike)
+• Vinte e Um (Blackjack)
+• Guerra
+• Rouba-Monte
+• Concentração
 
-O que você não vai encontrar:
-Sem anúncios, sem compras dentro do app, sem jogo trancado atrás de pagamento, sem login, sem telemetria. Configurações e estatísticas ficam no aparelho e não saem dele.
-
-A interface está em português, inglês e espanhol, com troca em tempo de execução. Código livre sob licença MIT.
+✨ Destaques:
+• 100% Gratuito: Sem anúncios e sem compras no app
+• 100% Offline: Jogue em qualquer lugar sem gastar dados
+• Visual moderno, controles suaves e resposta rápida
+• Privacidade total: Estatísticas e configurações salvas apenas no aparelho

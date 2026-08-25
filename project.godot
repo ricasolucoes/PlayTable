@@ -28,7 +28,17 @@ SaveManager="*res://core/save/SaveManager.gd"
 LocaleManager="*res://core/i18n/LocaleManager.gd"
 SceneManager="*res://core/navegacao/SceneManager.gd"
 AudioManager="*res://core/audio/AudioManager.gd"
+GameEventBus="*res://core/services/GameEventBus.gd"
+PlayerProfile="*res://core/services/PlayerProfile.gd"
+GamificationManager="*res://core/services/GamificationManager.gd"
 PlayGamesManager="*res://core/services/PlayGamesManager.gd"
+CloudSaveSync="*res://core/save/CloudSaveSync.gd"
+AchievementEngine="*res://core/services/AchievementEngine.gd"
+QuestEngine="*res://core/services/QuestEngine.gd"
+RewardSystem="*res://core/services/RewardSystem.gd"
+LeaderboardSync="*res://core/services/LeaderboardSync.gd"
+LiveOpsManager="*res://core/services/LiveOpsManager.gd"
+SecurityManager="*res://core/services/SecurityManager.gd"
 
 [internationalization]
 

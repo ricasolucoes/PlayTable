@@ -1,0 +1,31 @@
+default_platform(:android)
+
+platform :android do
+  desc "Build and publish PlayTable to Google Play Store"
+  lane :deploy do |options|
+    track = options[:track] || 'production'
+    
+    sh("../build_aab.sh")
+    
+    upload_to_play_store(
+      track: track,
+      aab: '../build/android/PlayTable.aab',
+      skip_upload_metadata: false,
+      skip_upload_images: true,
+      skip_upload_screenshots: true,
+      json_key: '/Users/sierra/Dev/keystores/play-store-api-key.json',
+      package_name: 'org.playtable.app'
+    )
+  end
+
+  desc "Sync Store Metadata only"
+  lane :sync_metadata do
+    upload_to_play_store(
+      skip_upload_aab: true,
+      skip_upload_images: true,
+      skip_upload_screenshots: true,
+      json_key: '/Users/sierra/Dev/keystores/play-store-api-key.json',
+      package_name: 'org.playtable.app'
+    )
+  end
+end

@@ -1,0 +1,17 @@
+{
+  "features": {
+    "google_play_sidekick": true,
+    "game_stats": true,
+    "new_achievements": true,
+    "daily_quests": true,
+    "weekly_quests": false,
+    "streaks": true,
+    "social_challenges": false,
+    "new_rewards": true
+  },
+  "liveops": {
+    "current_season": "season_1_launch",
+    "xp_multiplier": 1.0,
+    "motd": "Bem-vindo ao PlayTable com Google Play Games!"
+  }
+}

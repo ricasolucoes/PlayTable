@@ -1,14 +1,29 @@
-PlayTable brings together sixteen timeless board and card games in a single, lightweight application powered by the Godot engine.
+PlayTable brings together 16 timeless classic board and card games in a single app — 100% free with zero ads.
 
-Everything runs entirely on your device. No external servers to query, no accounts to create, no ad SDKs, and zero tracking. Switch your phone to airplane mode and every single game keeps running smoothly.
+Everything runs directly on your device. No internet required, no logins, no sign-ups, and zero tracking. Turn on airplane mode and enjoy all games anytime, anywhere!
 
-Board Games Included:
-Tic-Tac-Toe, Connect Four, Checkers, Chess, Reversi, Nine Men's Morris, Dots and Boxes, Memory Game, Battleship, Mancala, and Ludo.
+🎲 Board Games:
+• Chess
+• Checkers
+• Ludo
+• Nine Men's Morris
+• Reversi
+• Mancala
+• Connect Four
+• Tic-Tac-Toe
+• Battleship
+• Dots and Boxes
+• Memory Game
 
-Card Games Included:
-Solitaire (Klondike), Blackjack (Twenty-One), War, Steal the Pile, and Concentration.
+🃏 Card Games:
+• Solitaire (Klondike)
+• Blackjack (21)
+• War
+• Steal the Pile
+• Concentration
 
-What You Will NEVER Find:
-No ads, no in-app purchases, no paywalled content, no mandatory logins, and zero telemetry. Your settings and game statistics remain private on your device.
-
-Features clean 3D visuals, responsive touch controls, and runtime language switching (English, Spanish, Portuguese). 100% open-source under the MIT license.
+✨ Key Highlights:
+• 100% Free: No ads, no in-app purchases, no paywalls
+• 100% Offline: Play anywhere without wifi or mobile data
+• Clean visuals, smooth touch controls, and fast loading
+• Complete Privacy: Settings and stats stay on your device

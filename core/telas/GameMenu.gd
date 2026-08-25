@@ -27,15 +27,106 @@ func list_games() -> Array[GameDefinition]:
 	return [] as Array[GameDefinition]
 
 
+static func get_game_subtitle(game: GameDefinition) -> String:
+	match game.scene_path:
+		"res://games/quatro_em_linha/ConnectFourGame.tscn":
+			return "2 Jogadores • IA"
+		"res://games/jogo_da_velha/TicTacToeGame.tscn":
+			return "2 Jogadores • IA"
+		"res://games/damas/CheckersGame.tscn":
+			return "2 Jogadores • IA"
+		"res://games/batalha_naval/BattleshipGame.tscn":
+			return "Estratégia • IA"
+		"res://games/reversi/ReversiGame.tscn":
+			return "Estratégia • IA"
+		"res://games/mancala/MancalaGame.tscn":
+			return "Ancestral • IA"
+		"res://games/ludo/LudoGame.tscn":
+			return "2-4 Jogadores"
+		"res://games/senet/SenetGame.tscn":
+			return "Egito Antigo • IA"
+		"res://games/solitario/PegSolitaireGame.tscn":
+			return "Desafio Solo"
+		"res://games/campo_minado/MinesweeperGame.tscn":
+			return "Lógica • Solo"
+		"res://games/domino/DominoGame.tscn":
+			return "Clássico • IA"
+		"res://games/paciencia/KlondikeGame.tscn":
+			return "Klondike • Solo"
+		"res://games/memoria/MemoryGame.tscn":
+			return "Memória • Solo"
+		"res://games/blackjack/BlackjackGame.tscn":
+			return "Cassino • IA"
+		"res://games/unolike/UnoLikeGame.tscn":
+			return "Mau-Mau • IA"
+		"res://games/poker/PokerGame.tscn":
+			return "Video Poker • Solo"
+		_:
+			return "Clássico"
+
+
 func _build_game_buttons() -> void:
-	var container: VBoxContainer = $VBoxContainer/ScrollContainer/VBoxContainer
+	var scroll: ScrollContainer = get_node_or_null("VBoxContainer/ScrollContainer")
+	if scroll == null:
+		return
+	var container: Container = scroll.get_node_or_null("GridContainer")
+	if container == null:
+		container = scroll.get_node_or_null("VBoxContainer")
+	if container == null:
+		return
+
+	for child in container.get_children():
+		child.queue_free()
+
 	for game: GameDefinition in list_games():
-		var btn := Button.new()
-		btn.custom_minimum_size = Vector2(0, 80)
-		btn.add_theme_font_size_override("font_size", 24)
-		btn.text = "%s  %s" % [game.icon, game.title]
-		btn.pressed.connect(_on_game_pressed.bind(game))
-		container.add_child(btn)
+		var card := _create_game_card(game)
+		container.add_child(card)
+
+
+func _create_game_card(game: GameDefinition) -> Button:
+	var btn := Button.new()
+	btn.custom_minimum_size = Vector2(0, 150)
+	btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	btn.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	btn.focus_mode = Control.FOCUS_NONE
+
+	var vbox := VBoxContainer.new()
+	vbox.set_anchors_preset(Control.PRESET_FULL_RECT)
+	vbox.offset_left = 12.0
+	vbox.offset_top = 16.0
+	vbox.offset_right = -12.0
+	vbox.offset_bottom = -16.0
+	vbox.alignment = BoxContainer.ALIGNMENT_CENTER
+	vbox.add_theme_constant_override("separation", 6)
+	vbox.mouse_filter = Control.MOUSE_FILTER_IGNORE
+
+	var icon_label := Label.new()
+	icon_label.text = game.icon
+	icon_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	icon_label.add_theme_font_size_override("font_size", 38)
+	icon_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	vbox.add_child(icon_label)
+
+	var title_label := Label.new()
+	title_label.text = game.title
+	title_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	title_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	title_label.add_theme_font_size_override("font_size", 20)
+	title_label.add_theme_color_override("font_color", Color(0.98, 0.94, 0.86, 1.0))
+	title_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	vbox.add_child(title_label)
+
+	var tag_label := Label.new()
+	tag_label.text = get_game_subtitle(game)
+	tag_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	tag_label.add_theme_font_size_override("font_size", 13)
+	tag_label.add_theme_color_override("font_color", Color(0.82, 0.72, 0.52, 0.85))
+	tag_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	vbox.add_child(tag_label)
+
+	btn.add_child(vbox)
+	btn.pressed.connect(_on_game_pressed.bind(game))
+	return btn
 
 
 func _on_game_pressed(game: GameDefinition) -> void:

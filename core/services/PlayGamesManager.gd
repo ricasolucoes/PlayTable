@@ -52,6 +52,48 @@ func _ready() -> void:
 	_init_plugin()
 	if is_android():
 		authenticate_silently()
+	
+	if GameEventBus:
+		GameEventBus.achievement_unlocked.connect(_on_event_achievement_unlocked)
+		GameEventBus.score_updated.connect(_on_event_score_updated)
+		GameEventBus.player_leveled_up.connect(_on_event_player_leveled_up)
+		GameEventBus.match_completed.connect(_on_event_match_completed)
+		GameEventBus.quest_completed.connect(_on_event_quest_completed)
+
+func _on_event_achievement_unlocked(id: String) -> void:
+	unlock_achievement(id)
+
+func _on_event_score_updated(game_id: String, score: int) -> void:
+	submit_score(game_id, score)
+
+func _on_event_player_leveled_up(new_level: int) -> void:
+	# Progression Stat (MAXIMUM aggregation type)
+	submit_game_stat("progression_level", new_level)
+
+func _on_event_match_completed(_game_id: String, result: Dictionary) -> void:
+	submit_game_event("event_match_completed", 1)
+	if result.has("win") and result["win"] == true:
+		submit_game_event("event_match_won", 1)
+
+func _on_event_quest_completed(_quest_id: String) -> void:
+	submit_game_event("event_quest_finished", 1)
+
+## Envia um Progession Stat (ex: Nível)
+func submit_game_stat(stat_id: String, value: int) -> void:
+	if not is_available(): return
+	# Apenas um pseudo-wrapper. O método varia conforme o plugin exato (PlayGamesServices ou godot-play-games-services)
+	if _pgs_plugin.has_method("submitEvent"):
+		_pgs_plugin.submitEvent(stat_id, value)
+	elif _pgs_plugin.has_method("submit_event"):
+		_pgs_plugin.submit_event(stat_id, value)
+
+## Envia um Evento Repetitivo
+func submit_game_event(event_id: String, amount: int = 1) -> void:
+	if not is_available(): return
+	if _pgs_plugin.has_method("incrementEvent"):
+		_pgs_plugin.incrementEvent(event_id, amount)
+	elif _pgs_plugin.has_method("increment_event"):
+		_pgs_plugin.increment_event(event_id, amount)
 
 ## Verifica se o app está rodando no sistema Android
 func is_android() -> bool:

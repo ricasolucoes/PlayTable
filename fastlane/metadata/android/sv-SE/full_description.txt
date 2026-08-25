@@ -1,14 +1,29 @@
-PlayTable samlar sexton tidlösa bräd- och kortspelsklassiker i en enda snabb och smidig applikation baserad på Godot-motorn.
+PlayTable samlar 16 tidlösa klassiska bräd- och kortspel i en enda app — 100% gratis och helt utan annonser.
 
-Allt körs helt lokalt på din enhet. Inga externa servrar, inga konton krävs, ingen reklam och ingen dataspårning. Sätt på flygplansläge och spela alla spel utan avbrott.
+Allt körs direkt på din enhet. Inget internet krävs, inga inloggningar, inga registreringar och ingen datainsamling. Slå på flygplansläge och spela när som helst, var som helst!
 
-Brädspel som ingår:
-Tre i rad (Tic-Tac-Toe), Fyra i rad, Dam, Schack, Reversi (Othello), Kvarnspel (Morris), Prickar och rutor, Minnesspel, Sänka skepp, Mancala och Fia med knuff (Ludo).
+🎲 Brädspel:
+• Schack
+• Dam
+• Fia med knuff (Ludo)
+• Kvarnspel
+• Reversi
+• Kalaha (Mancala)
+• Fyra i rad
+• Tre i rad
+• Sänka skepp
+• Prickar och rutor (Dots and Boxes)
+• Minnesspel (Memory)
 
-Kortspel som ingår:
-Patiens (Solitaire Klondike), Blackjack (Tjugoett), Krig, Kortstöld och Koncentration.
+🃏 Kortspel:
+• Harpan / Patiens (Solitaire)
+• Tjugoett / Blackjack (21)
+• Krig (War)
+• Steal the Pile
+• Koncentration
 
-Vad du ALDRIG hittar:
-Ingen reklam, inga köp i appen, inga låsta funktioner, inget inloggningskrav och noll telemetri. Dina inställningar och statistik stannar tryggt på din enhet.
-
-Fin 3D-grafik och följsamma kontroller. 100% öppen källkod under MIT-licens.
+✨ Höjdpunkter:
+• 100% Gratis: Inga annonser, inga köp i appen
+• 100% Offline: Spela var du vill utan internet
+• Ren design och smidiga pekkontroller
+• Full integritet: Inställningar och statistik stannar på din enhet

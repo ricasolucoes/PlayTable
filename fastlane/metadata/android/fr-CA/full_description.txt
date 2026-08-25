@@ -1,14 +1,29 @@
-PlayTable rassemble seize grands classiques des jeux de société et de cartes dans une seule application fluide, propulsée par le moteur Godot.
+PlayTable réunit 16 jeux classiques de plateau et de cartes dans une seule application, 100% gratuite et sans publicités.
 
-Tout fonctionne localement sur votre appareil. Aucun serveur distant, aucun compte requis, aucune publicité et aucun suivi de données. Activez le mode avion et profitez de tous les jeux à tout moment.
+Tout fonctionne directement sur votre appareil. Aucune connexion internet requise, aucun compte, aucune inscription et aucune collecte de données. Activez le mode avion et jouez où et quand vous voulez !
 
-Jeux de plateau inclus :
-Morpion (Tic-Tac-Toe), Puissance 4, Dames, Échecs, Reversi (Othello), Jeu du moulin, La Pipopipette (Points et carrés), Jeu de mémoire, Bataille navale, Mancala et Ludo (Petits chevaux).
+🎲 Jeux de Plateau :
+• Échecs
+• Dames
+• Ludo (Petits Chevaux)
+• Jeu du Moulin
+• Reversi (Othello)
+• Mancala
+• Puissance 4
+• Morpion (Tic-Tac-Toe)
+• Bataille Navale
+• La Pipopipette (Points et Boîtes)
+• Jeu de Mémoire
 
-Jeux de cartes inclus :
-Solitaire (Klondike), Blackjack (21), Bataille, Vole-paquet et Concentration.
+🃏 Jeux de Cartes :
+• Solitaire (Klondike)
+• Blackjack (21)
+• Bataille (War)
+• Vole-Paquet
+• Concentration
 
-Ce que vous ne trouverez JAMAIS :
-Aucune publicité, aucun achat intégré, aucun contenu payant, aucune connexion obligatoire. Vos données et statistiques restent strictement sur votre appareil.
-
-Graphismes 3D soignés, commandes tactiles intuitives. 100% open source sous licence MIT.
+✨ Points Forts :
+• 100% Gratuit : Zéro publicité, aucun achat intégré
+• 100% Hors-ligne : Jouez partout sans utiliser vos données
+• Interface épurée et commandes tactiles fluides
+• Confidentialité totale : Vos statistiques restent sur votre appareil

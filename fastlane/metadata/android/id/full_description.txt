@@ -1,14 +1,29 @@
-PlayTable menyatukan enam belas game papan dan kartu klasik legendaris dalam satu aplikasi ringan dan cepat yang ditenagai oleh engine Godot.
+PlayTable menghadirkan 16 game papan dan kartu klasik legendaris dalam satu aplikasi — 100% gratis tanpa iklan sama sekali.
 
-Semua game berjalan sepenuhnya di perangkat Anda. Tanpa koneksi server luar, tanpa perlu login, tanpa iklan, dan tanpa pelacakan data pribadi. Aktifkan mode pesawat dan nikmati permainan kapan saja.
+Semua game berjalan langsung di perangkat Anda. Tanpa perlu koneksi internet, tanpa login, tanpa registrasi, dan tanpa pelacakan data. Aktifkan mode pesawat dan mainkan kapan saja, di mana saja!
 
-Game Papan Termasuk:
-Tic-Tac-Toe (SOS), Empat Sejajar (Connect Four), Draf/Dam, Catur, Reversi (Othello), Nine Men's Morris, Titik dan Kotak, Game Memori, Pertempuran Kapal, Mancala, dan Ludo.
+🎲 Game Papan:
+• Catur (Chess)
+• Dam (Checkers)
+• Ludo
+• Nine Men's Morris
+• Reversi (Othello)
+• Mancala (Congklak)
+• Connect Four
+• Tic-Tac-Toe (X-O)
+• Battleship (Kapal Perang)
+• Titik & Kotak (Dots and Boxes)
+• Game Memori
 
-Game Kartu Termasuk:
-Solitaire (Klondike), Blackjack (21), Perang Kartu, Curi Tumpukan, dan Konsentrasi.
+🃏 Game Kartu:
+• Solitaire (Klondike)
+• Blackjack (21)
+• Perang Kartu (War)
+• Curi Tumpukan
+• Konsentrasi
 
-Yang TIDAK Akan Pernah Anda Temukan:
-Tanpa iklan, tanpa pembelian dalam aplikasi (IAP), tanpa konten berbayar, tanpa login wajib, dan tanpa telemetri. Statistik dan pengaturan tetap tersimpan aman di perangkat Anda.
-
-Grafis 3D elegan dan kontrol sentuh yang responsif. Open source 100% berlisensi MIT.
+✨ Keunggulan Utama:
+• 100% Gratis: Tanpa iklan, tanpa pembelian dalam aplikasi
+• 100% Offline: Main di mana saja tanpa kuota internet
+• Desain bersih, kontrol sentuh responsif, dan ringan
+• Privasi Penuh: Skor dan pengaturan hanya tersimpan di perangkat Anda

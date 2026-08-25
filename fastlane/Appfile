@@ -1,0 +1,2 @@
+json_key_file("/Users/sierra/Dev/keystores/play-store-api-key.json")
+package_name("org.playtable.app")

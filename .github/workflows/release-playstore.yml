@@ -1,0 +1,138 @@
+name: Release & Google Play Store
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      track:
+        description: 'Google Play Track (production, internal, beta)'
+        required: true
+        default: 'production'
+        type: choice
+        options:
+          - production
+          - internal
+          - beta
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-publish:
+    name: Build & Publish to Google Play
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Google Play API Dependencies
+        run: |
+          pip install google-api-python-client google-auth google-auth-httplib2
+
+      - name: Extract Version Info from Tag / git
+        id: version_info
+        run: |
+          TAG_NAME="${GITHUB_REF_NAME}"
+          CLEAN_VERSION="${TAG_NAME#v}"
+          if [[ -z "$CLEAN_VERSION" || "$CLEAN_VERSION" == "$TAG_NAME" ]]; then
+            CLEAN_VERSION="0.4.0"
+          fi
+          # Calculate integer version code
+          IFS='.' read -r major minor patch <<< "$CLEAN_VERSION"
+          major="${major:-0}"
+          minor="${minor:-4}"
+          patch="${patch:-0}"
+          VERSION_CODE=$(( major * 10000 + minor * 100 + patch + 10 ))
+          echo "VERSION_NAME=${CLEAN_VERSION}" >> $GITHUB_OUTPUT
+          echo "VERSION_CODE=${VERSION_CODE}" >> $GITHUB_OUTPUT
+          echo "Building version ${CLEAN_VERSION} (code: ${VERSION_CODE})"
+
+      - name: Download Godot 4.3 Headless
+        run: |
+          wget -q https://github.com/godotengine/godot/releases/download/4.3-stable/Godot_v4.3-stable_linux.x86_64.zip
+          unzip -q Godot_v4.3-stable_linux.x86_64.zip
+          mv Godot_v4.3-stable_linux.x86_64 godot
+          chmod +x godot
+
+      - name: Export Godot PCK
+        run: |
+          mkdir -p android/build/assets
+          ./godot --headless --export-pack "Android" android/build/assets/main.pck
+
+      - name: Setup Keystore & Google Play Secrets
+        env:
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          PLAY_KEY_JSON: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
+        run: |
+          mkdir -p /tmp/keystores
+          echo "$KEYSTORE_BASE64" | base64 -d > /tmp/keystores/upload.jks
+          echo "$PLAY_KEY_JSON" > /tmp/keystores/play-service-account.json
+          chmod 600 /tmp/keystores/*
+
+      - name: Build Android App Bundle (.aab) via Gradle
+        env:
+          VERSION_CODE: ${{ steps.version_info.outputs.VERSION_CODE }}
+          VERSION_NAME: ${{ steps.version_info.outputs.VERSION_NAME }}
+        run: |
+          cd android/build
+          mkdir -p assetPackInstallTime/src/main/assets
+          ./gradlew bundleStandardRelease \
+            -Pexport_package_name="org.playtable.app" \
+            -Pexport_version_code="$VERSION_CODE" \
+            -Pexport_version_name="$VERSION_NAME" \
+            -Pexport_version_target_sdk=35 \
+            -Pexport_version_min_sdk=24
+
+      - name: Sign App Bundle with Jarsigner
+        env:
+          KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+        run: |
+          AAB_FILE="$(find android/build/build/outputs/bundle -name '*.aab' | head -n 1)"
+          mkdir -p build/android
+          cp "$AAB_FILE" build/android/PlayTable.aab
+          jarsigner -sigalg SHA256withRSA -digestalg SHA-256 \
+            -keystore /tmp/keystores/upload.jks \
+            -storepass "$KEYSTORE_PASSWORD" \
+            -keypass "$KEYSTORE_PASSWORD" \
+            build/android/PlayTable.aab "$KEY_ALIAS"
+          jarsigner -verify build/android/PlayTable.aab
+
+      - name: Publish to Google Play Store & Sync Translations
+        env:
+          TRACK: ${{ github.event.inputs.track || 'production' }}
+        run: |
+          python3 scripts/play_store_publish.py \
+            --package org.playtable.app \
+            --aab build/android/PlayTable.aab \
+            --track "$TRACK" \
+            --metadata-dir fastlane/metadata/android \
+            --key /tmp/keystores/play-service-account.json
+
+      - name: Create GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          name: PlayTable ${{ steps.version_info.outputs.VERSION_NAME }}
+          files: |
+            build/android/PlayTable.aab
+          generate_release_notes: true

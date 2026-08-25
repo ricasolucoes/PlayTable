@@ -38,6 +38,16 @@ var btn_restart: BaseButton = null
 var env_3d: TabletopEnvironment3D = null
 
 
+## O raiz de cada jogo é uma Control de tela inteira. No filtro padrão ela
+## retém o clique, e ele nunca chega ao Picker do Board3D — foi assim que as
+## Damas, o único jogo que entra por picking 3D, ficaram sem clique depois do
+## merge que apagou a grade 2D delas. Os botões da HUD continuam recebendo o
+## toque: o filtro do pai não impede os filhos. Fica no `_init` porque o Godot
+## não encadeia `_ready` entre pai e filho, e os 16 jogos têm o próprio.
+func _init() -> void:
+	mouse_filter = Control.MOUSE_FILTER_IGNORE
+
+
 # ---------------------------------------------------------------- navegação
 
 ## Ligado no `.tscn` de 13 jogos.

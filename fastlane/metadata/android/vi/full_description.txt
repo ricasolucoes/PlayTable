@@ -1,14 +1,29 @@
-PlayTable tập hợp 16 trò chơi cờ và bài kinh điển vượt thời gian trong một ứng dụng mượt mà, được xây dựng trên nền tảng Godot engine.
+PlayTable tập hợp 16 trò chơi cờ và bài kinh điển trong một ứng dụng duy nhất — hoàn toàn miễn phí 100% và không có quảng cáo.
 
-Mọi trò chơi đều chạy hoàn toàn cục bộ trên thiết bị của bạn. Không cần kết nối máy chủ, không cần đăng ký tài khoản, không có quảng cáo và không thu thập dữ liệu cá nhân. Bật chế độ máy bay và chơi mọi lúc mọi nơi.
+Mọi trò chơi đều chạy trực tiếp trên thiết bị của bạn. Không cần kết nối mạng, không cần đăng nhập, không tạo tài khoản và không thu thập dữ liệu cá nhân. Bật chế độ máy bay và chơi mọi lúc, mọi nơi!
 
-Các trò chơi cờ bao gồm:
-Cờ ca-rô (Tic-Tac-Toe), Nối 4 (Connect Four), Cờ đam (Checkers), Cờ vua (Chess), Cờ lật Reversi, Cờ Mo-ris, Chấm và ô vuông, Trò chơi trí nhớ, Bắn tàu chiến (Battleship), Mancala (Ô ăn quan) và Cờ cá ngựa (Ludo).
+🎲 Trò chơi Cờ (Board Games):
+• Cờ vua (Chess)
+• Cờ đam (Checkers)
+• Cờ cá ngựa (Ludo)
+• Cờ Nine Men's Morris
+• Cờ lật (Reversi / Othello)
+• Ô ăn quan (Mancala)
+• Cờ 4 hàng (Connect Four)
+• Cờ ca-rô / Tic-Tac-Toe
+• Bắn tàu chiến (Battleship)
+• Nối chấm tạo ô (Dots and Boxes)
+• Trò chơi rèn luyện trí nhớ
 
-Các trò chơi bài bao gồm:
-Solitaire (Xếp bài), Xì dách Blackjack (21), Chiến tranh bài (War), Cướp chồng bài và Tập trung trí nhớ.
+🃏 Trò chơi Bài (Card Games):
+• Xếp bài Solitaire (Klondike)
+• Xì dách Blackjack (21)
+• Đấu bài War
+• Cướp chồng bài (Steal the Pile)
+• Thử thách tập trung
 
-Cam kết trải nghiệm thuần túy:
-Không quảng cáo, không mua hàng trong ứng dụng, không khóa tính năng, không cần đăng nhập và không theo dõi dữ liệu. Cài đặt và điểm số lưu hoàn toàn trên máy bạn.
-
-Đồ họa 3D đẹp mắt, điều khiển chạm nhạy bén. Mã nguồn mở 100% theo giấy phép MIT.
+✨ Tính năng Nổi bật:
+• Miễn phí 100%: Không quảng cáo, không mua hàng trong ứng dụng
+• Ngoại tuyến 100%: Chơi mọi nơi không tốn dung lượng 4G/5G
+• Giao diện trực quan, điều khiển cảm ứng mượt mà
+• Bảo mật tuyệt đối: Thống kê và cài đặt chỉ lưu trên máy bạn
