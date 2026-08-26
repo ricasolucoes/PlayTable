@@ -1,6 +1,6 @@
 # PlayTable
 
-Bem-vindo ao repositório do **PlayTable** — um aplicativo unificado, gratuito, open source, internacionalizado (i18n) e 100% livre de anúncios que reúne uma coleção de **16 minijogos clássicos de tabuleiro e cartas** em uma experiência polida para dispositivos móveis e desktop (Godot 4.3 Engine).
+Bem-vindo ao repositório do **PlayTable** — um aplicativo unificado, gratuito, open source, internacionalizado (i18n) e 100% livre de anúncios que reúne uma coleção de **18 minijogos clássicos de tabuleiro e cartas** em uma experiência polida para dispositivos móveis e desktop (Godot 4.3 Engine).
 
 ---
 
@@ -11,13 +11,13 @@ Bem-vindo ao repositório do **PlayTable** — um aplicativo unificado, gratuito
 3. **Internacionalização Nativa (i18n):** Suporte nativo a múltiplos idiomas (Português, Inglês, Espanhol) com troca dinâmica em tempo de execução.
 4. **Sem Anúncios (Zero Ads):** Zero propagandas, sem banners, sem intersticiais e sem SDKs de rastreamento.
 5. **Sem Sistema de Contas/Login:** Sem telemetria predatória e sem cadastro. Configurações e estatísticas salvas 100% localmente.
-6. **Sem Compras no App (Zero IAP):** Todos os 16 jogos liberados nativamente, sem paywalls ou microtransações.
+6. **Sem Compras no App (Zero IAP):** Todos os 18 jogos liberados nativamente, sem paywalls ou microtransações.
 
 ---
 
-## 🎮 Catálogo dos 16 Jogos Implementados
+## 🎮 Catálogo dos 18 Jogos Implementados
 
-### 🎲 Jogos de Tabuleiro (11 Jogos)
+### 🎲 Jogos de Tabuleiro (13 Jogos)
 | Jogo | Complexidade | Destaques | Localização |
 | :--- | :--- | :--- | :--- |
 | **Jogo da Velha** | Muito Baixa | Grade 3x3, IA Minimax, placar e reinício | [`games/jogo_da_velha/`](games/jogo_da_velha/) |
@@ -31,6 +31,8 @@ Bem-vindo ao repositório do **PlayTable** — um aplicativo unificado, gratuito
 | **Reversi (Othello)** | Média | Tabuleiro 8x8 verde, viradas em 8 direções e matriz posicional | [`games/reversi/`](games/reversi/) |
 | **Mancala (Kalah)** | Baixa/Média | 12 covas + 2 depósitos, semeadura anti-horária, turnos extras e IA | [`games/mancala/`](games/mancala/) |
 | **Senet Egípcio** | Baixa/Média | Trilha serpenteante 3x10, varetas de lançamento (1-5) e casas sagradas | [`games/senet/`](games/senet/) |
+| **Torres de Hanói** | Baixa | 3 a 8 discos 3D, física em arco, solver automático, undo e gamificação | [`games/hanoi/`](games/hanoi/) |
+| **Jogo de Nim** | Baixa | 3 a 5 pilhas de gemas 3D, IA Teorema de Bouton, Normal e Misère | [`games/nim/`](games/nim/) |
 
 ### 🃏 Jogos de Cartas (5 Jogos)
 | Jogo | Complexidade | Destaques | Localização |

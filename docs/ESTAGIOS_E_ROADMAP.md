@@ -59,6 +59,8 @@ graph TD
 - [x] **Poker (Video Poker):** 5 cartas, seleção de HOLD e pagamentos.
 - [x] **Mancala:** Semeadura circular e captura de sementes.
 - [x] **Campo Minado:** Revelação recursiva de células vazias e contagem numérica de minas.
+- [x] **Torres de Hanói:** 3 a 8 discos 3D, movimentação em arco por tweens, solver automático e gamificação.
+- [x] **Jogo de Nim:** Estratégia matemática 3D, Teorema de Bouton (Nim-Sum), modos Normal e Misère (Marienbad), 3 a 5 pilhas de gemas e gamificação.
 
 ---
 

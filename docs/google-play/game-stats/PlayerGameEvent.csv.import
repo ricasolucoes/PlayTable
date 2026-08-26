@@ -1,0 +1,19 @@
+[remap]
+
+importer="csv_translation"
+type="Translation"
+uid="uid://bjhs3aabpk7jr"
+
+[deps]
+
+files=["res://docs/google-play/game-stats/PlayerGameEvent.Name.translation", "res://docs/google-play/game-stats/PlayerGameEvent.Description.translation", "res://docs/google-play/game-stats/PlayerGameEvent.Status.translation"]
+
+source_file="res://docs/google-play/game-stats/PlayerGameEvent.csv"
+dest_files=["res://docs/google-play/game-stats/PlayerGameEvent.Name.translation", "res://docs/google-play/game-stats/PlayerGameEvent.Description.translation", "res://docs/google-play/game-stats/PlayerGameEvent.Status.translation"]
+
+[params]
+
+compress=1
+delimiter=0
+unescape_keys=false
+unescape_translations=true

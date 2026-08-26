@@ -94,11 +94,11 @@ Este documento cataloga todos os jogos potenciais do ecossistema **Jogos de Mesa
 | **Sudoku** | Grade 9×9 (subgrades 3×3) com gerador e validador de quebra-cabeças offline. | Baixa-Média | Flutter | 📋 **Planejado** | `games/sudoku/` |
 | **Kakuro Simplificado** | Cruzadinha numérica com somas por linha e coluna sem repetir dígitos. | Média | Flutter | 💡 **Backlog** | `games/kakuro/` |
 | **Nonogram (Picross)** | Pintura lógica em grade baseada em pistas numéricas nas bordas. | Média | Flutter | 💡 **Backlog** | `games/nonogram/` |
-| **Ludo / Pachisi** | 4 peões por jogador, dado virtual, percurso em cruz e captura de peões. | Média | Godot | 💡 **Backlog** | `games/ludo/` |
-| **Gamão (Backgammon)** | Movimentação em 24 pontos triangulares, barra de captura e dados. | Alta | Godot | 💡 **Backlog** | `games/gamao/` |
+| **Ludo / Pachisi** | 4 peões por jogador, dado virtual, percurso em cruz e captura de peões. | Média | Godot | ✅ **Implementado** | [`games/ludo/`](../games/ludo/) |
+| **Gamão (Backgammon)** | Movimentação em 24 pontos triangulares, barra de captura, dados 3D, IA tática e bear-off. | Alta | Godot | ✅ **Implementado** | [`games/gamao/`](../games/gamao/) |
 | **Hex** | Tabuleiro hexagonal de conexão entre lados opostos; sem empates. | Média | Godot | 💡 **Backlog** | `games/hex/` |
-| **Nim** | Retirada matemática de peças de pilhas; IA perfeita baseada em Nim-sum. | Baixa | Flutter / Godot | 💡 **Backlog** | `games/nim/` |
-| **Torres de Hanói** | Quebra-cabeça clássico de transferência de discos entre três pinos. | Muito Baixa | Godot / Flutter | 💡 **Backlog** | `games/hanoi/` |
+| **Nim** | Retirada matemática de peças de pilhas; IA perfeita baseada em Nim-sum (Normal e Misère). | Baixa | Godot | ✅ **Implementado** | [`games/nim/`](../games/nim/) |
+| **Torres de Hanói** | Quebra-cabeça clássico de transferência de discos entre três pinos com solver automático 3D. | Baixa | Godot | ✅ **Implementado** | [`games/hanoi/`](../games/hanoi/) |
 | **Mahjong Solitaire** | Remoção de pares de peças livres idênticas em pilhas 3D/2D. | Média | Godot | 💡 **Backlog** | `games/mahjong/` |
 | **Caça-Palavras** | Grade de letras com gerador de listas temáticas em português. | Baixa | Flutter | 💡 **Backlog** | `games/caca_palavras/` |
 | **Jogo de Palavras em Tabuleiro** | Formação de palavras cruzadas em grade (estilo Scrabble offline). | Alta | Flutter | 💡 **Backlog** | `games/palavras_tabuleiro/` |
