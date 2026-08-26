@@ -1,0 +1,333 @@
+[gd_scene load_steps=3 format=3 uid="uid://hanoigameuid01"]
+
+[ext_resource type="Script" path="res://games/hanoi/HanoiGame.gd" id="1_script"]
+[ext_resource type="PackedScene" uid="uid://tabletopenv3duid" path="res://shared/3d/TabletopEnvironment3D.tscn" id="2_env"]
+
+[node name="HanoiGame" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_script")
+
+[node name="TabletopEnvironment3D" parent="." instance=ExtResource("2_env")]
+
+[node name="BoardRoot" type="Node3D" parent="."]
+
+[node name="PegsRoot" type="Node3D" parent="."]
+
+[node name="HalosRoot" type="Node3D" parent="."]
+
+[node name="DisksRoot" type="Node3D" parent="."]
+
+[node name="UI" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="UI"]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_left = 20.0
+offset_top = 32.0
+offset_right = -20.0
+offset_bottom = 250.0
+grow_horizontal = 2
+theme_override_constants/separation = 8
+
+[node name="TopBar" type="HBoxContainer" parent="UI/VBoxContainer"]
+layout_mode = 2
+
+[node name="BtnBack" type="Button" parent="UI/VBoxContainer/TopBar"]
+custom_minimum_size = Vector2(95, 48)
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "‹ Voltar"
+
+[node name="Title" type="Label" parent="UI/VBoxContainer/TopBar"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.8)
+theme_override_constants/shadow_offset_x = 2
+theme_override_constants/shadow_offset_y = 2
+theme_override_font_sizes/font_size = 26
+text = "Torres de Hanói"
+horizontal_alignment = 1
+
+[node name="DifficultyBar" type="ScrollContainer" parent="UI/VBoxContainer"]
+custom_minimum_size = Vector2(0, 48)
+layout_mode = 2
+horizontal_scroll_mode = 1
+vertical_scroll_mode = 0
+
+[node name="Buttons" type="HBoxContainer" parent="UI/VBoxContainer/DifficultyBar"]
+layout_mode = 2
+size_flags_horizontal = 3
+alignment = 1
+theme_override_constants/separation = 6
+
+[node name="InfoCards" type="HBoxContainer" parent="UI/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 8
+alignment = 1
+
+[node name="MovesCard" type="PanelContainer" parent="UI/VBoxContainer/InfoCards"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="VBox" type="VBoxContainer" parent="UI/VBoxContainer/InfoCards/MovesCard"]
+layout_mode = 2
+alignment = 1
+
+[node name="MovesTitle" type="Label" parent="UI/VBoxContainer/InfoCards/MovesCard/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+theme_override_colors/font_color = Color(0.8, 0.8, 0.8, 1)
+text = "Jogadas"
+horizontal_alignment = 1
+
+[node name="MovesValue" type="Label" parent="UI/VBoxContainer/InfoCards/MovesCard/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "0"
+horizontal_alignment = 1
+
+[node name="MinMovesCard" type="PanelContainer" parent="UI/VBoxContainer/InfoCards"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="VBox" type="VBoxContainer" parent="UI/VBoxContainer/InfoCards/MinMovesCard"]
+layout_mode = 2
+alignment = 1
+
+[node name="MinMovesTitle" type="Label" parent="UI/VBoxContainer/InfoCards/MinMovesCard/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+theme_override_colors/font_color = Color(0.8, 0.8, 0.8, 1)
+text = "Mínimo"
+horizontal_alignment = 1
+
+[node name="MinMovesValue" type="Label" parent="UI/VBoxContainer/InfoCards/MinMovesCard/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "7"
+horizontal_alignment = 1
+
+[node name="TimeCard" type="PanelContainer" parent="UI/VBoxContainer/InfoCards"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="VBox" type="VBoxContainer" parent="UI/VBoxContainer/InfoCards/TimeCard"]
+layout_mode = 2
+alignment = 1
+
+[node name="TimeTitle" type="Label" parent="UI/VBoxContainer/InfoCards/TimeCard/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+theme_override_colors/font_color = Color(0.8, 0.8, 0.8, 1)
+text = "Tempo"
+horizontal_alignment = 1
+
+[node name="TimeValue" type="Label" parent="UI/VBoxContainer/InfoCards/TimeCard/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "00:00"
+horizontal_alignment = 1
+
+[node name="StarsCard" type="PanelContainer" parent="UI/VBoxContainer/InfoCards"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="VBox" type="VBoxContainer" parent="UI/VBoxContainer/InfoCards/StarsCard"]
+layout_mode = 2
+alignment = 1
+
+[node name="StarsTitle" type="Label" parent="UI/VBoxContainer/InfoCards/StarsCard/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+theme_override_colors/font_color = Color(0.8, 0.8, 0.8, 1)
+text = "Precisão"
+horizontal_alignment = 1
+
+[node name="StarsValue" type="Label" parent="UI/VBoxContainer/InfoCards/StarsCard/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "⭐⭐⭐"
+horizontal_alignment = 1
+
+[node name="StatusLabel" type="Label" parent="UI/VBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.8)
+theme_override_font_sizes/font_size = 18
+text = "Toque no pino de origem para erguer o disco!"
+horizontal_alignment = 1
+autowrap_mode = 2
+
+[node name="PegTouchArea" type="HBoxContainer" parent="UI"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -340.0
+offset_top = 80.0
+offset_right = 340.0
+offset_bottom = 200.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 16
+alignment = 1
+
+[node name="BtnPegA" type="Button" parent="UI/PegTouchArea"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 18
+text = "Pino A
+(Origem)"
+
+[node name="BtnPegB" type="Button" parent="UI/PegTouchArea"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 18
+text = "Pino B
+(Auxiliar)"
+
+[node name="BtnPegC" type="Button" parent="UI/PegTouchArea"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 18
+text = "Pino C
+(Destino)"
+
+[node name="Actions" type="HBoxContainer" parent="UI"]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 16.0
+offset_top = -84.0
+offset_right = -16.0
+offset_bottom = -24.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_constants/separation = 8
+alignment = 1
+
+[node name="BtnUndo" type="Button" parent="UI/Actions"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 16
+text = "↶ Desfazer"
+
+[node name="BtnHint" type="Button" parent="UI/Actions"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 16
+text = "💡 Dica"
+
+[node name="BtnAutoSolve" type="Button" parent="UI/Actions"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 16
+text = "🤖 Auto"
+
+[node name="BtnRestart" type="Button" parent="UI/Actions"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 16
+text = "🔄 Reiniciar"
+
+[node name="WinModal" type="ColorRect" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.75)
+
+[node name="Panel" type="PanelContainer" parent="WinModal"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -260.0
+offset_top = -220.0
+offset_right = 260.0
+offset_bottom = 220.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBox" type="VBoxContainer" parent="WinModal/Panel"]
+layout_mode = 2
+theme_override_constants/separation = 16
+alignment = 1
+
+[node name="WinTitle" type="Label" parent="WinModal/Panel/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.2, 1)
+theme_override_font_sizes/font_size = 28
+text = "🏆 Desafio Concluído!"
+horizontal_alignment = 1
+
+[node name="WinStars" type="Label" parent="WinModal/Panel/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 36
+text = "⭐⭐⭐"
+horizontal_alignment = 1
+
+[node name="WinDetails" type="Label" parent="WinModal/Panel/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "Jogadas: 7 (Mínimo: 7)
+Tempo: 00:15"
+horizontal_alignment = 1
+
+[node name="WinXP" type="Label" parent="WinModal/Panel/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.2, 1, 0.4, 1)
+theme_override_font_sizes/font_size = 20
+text = "+450 XP Ganho!"
+horizontal_alignment = 1
+
+[node name="BtnNextLevel" type="Button" parent="WinModal/Panel/VBox"]
+custom_minimum_size = Vector2(0, 48)
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "▶ Próximo Nível"
+
+[node name="BtnPlayAgain" type="Button" parent="WinModal/Panel/VBox"]
+custom_minimum_size = Vector2(0, 48)
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "🔄 Jogar Novamente"
+
+[node name="BtnMenu" type="Button" parent="WinModal/Panel/VBox"]
+custom_minimum_size = Vector2(0, 48)
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "🏠 Menu Principal"
+
+[connection signal="pressed" from="UI/VBoxContainer/TopBar/BtnBack" to="." method="_on_btn_back_pressed"]
+[connection signal="pressed" from="UI/PegTouchArea/BtnPegA" to="." method="_on_peg_pressed" binds=[0]]
+[connection signal="pressed" from="UI/PegTouchArea/BtnPegB" to="." method="_on_peg_pressed" binds=[1]]
+[connection signal="pressed" from="UI/PegTouchArea/BtnPegC" to="." method="_on_peg_pressed" binds=[2]]
+[connection signal="pressed" from="UI/Actions/BtnUndo" to="." method="_on_btn_undo_pressed"]
+[connection signal="pressed" from="UI/Actions/BtnHint" to="." method="_on_btn_hint_pressed"]
+[connection signal="pressed" from="UI/Actions/BtnAutoSolve" to="." method="_on_btn_auto_solve_pressed"]
+[connection signal="pressed" from="UI/Actions/BtnRestart" to="." method="_on_btn_restart_pressed"]
+[connection signal="pressed" from="WinModal/Panel/VBox/BtnNextLevel" to="." method="_on_btn_next_level_pressed"]
+[connection signal="pressed" from="WinModal/Panel/VBox/BtnPlayAgain" to="." method="_on_btn_restart_pressed"]
+[connection signal="pressed" from="WinModal/Panel/VBox/BtnMenu" to="." method="_on_btn_back_pressed"]
