@@ -1,0 +1,290 @@
+[gd_scene load_steps=3 format=3 uid="uid://backgammongameuid01"]
+
+[ext_resource type="Script" path="res://games/gamao/BackgammonGame.gd" id="1_script"]
+[ext_resource type="PackedScene" uid="uid://tabletopenv3duid" path="res://shared/3d/TabletopEnvironment3D.tscn" id="2_env"]
+
+[node name="BackgammonGame" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_script")
+
+[node name="TabletopEnvironment3D" parent="." instance=ExtResource("2_env")]
+
+[node name="BoardRoot" type="Node3D" parent="TabletopEnvironment3D"]
+
+[node name="UI" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="TopBar" type="VBoxContainer" parent="UI"]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_left = 16.0
+offset_top = 28.0
+offset_right = -16.0
+offset_bottom = 130.0
+grow_horizontal = 2
+theme_override_constants/separation = 6
+
+[node name="HeaderHBox" type="HBoxContainer" parent="UI/TopBar"]
+layout_mode = 2
+
+[node name="BtnBack" type="Button" parent="UI/TopBar/HeaderHBox"]
+custom_minimum_size = Vector2(90, 44)
+layout_mode = 2
+text = "‹ Voltar"
+
+[node name="TitleLabel" type="Label" parent="UI/TopBar/HeaderHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.8)
+theme_override_constants/shadow_offset_x = 2
+theme_override_constants/shadow_offset_y = 2
+theme_override_font_sizes/font_size = 24
+text = "Gamão 3D (Backgammon)"
+horizontal_alignment = 1
+
+[node name="StatsHBox" type="HBoxContainer" parent="UI/TopBar"]
+layout_mode = 2
+alignment = 1
+theme_override_constants/separation = 10
+
+[node name="WhitePipCard" type="PanelContainer" parent="UI/TopBar/StatsHBox"]
+custom_minimum_size = Vector2(100, 36)
+layout_mode = 2
+
+[node name="HBox" type="HBoxContainer" parent="UI/TopBar/StatsHBox/WhitePipCard"]
+layout_mode = 2
+alignment = 1
+theme_override_constants/separation = 4
+
+[node name="PipIcon" type="Label" parent="UI/TopBar/StatsHBox/WhitePipCard/HBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+text = "⚪ Pip:"
+
+[node name="PipVal" type="Label" parent="UI/TopBar/StatsHBox/WhitePipCard/HBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+text = "167"
+
+[node name="BlackPipCard" type="PanelContainer" parent="UI/TopBar/StatsHBox"]
+custom_minimum_size = Vector2(100, 36)
+layout_mode = 2
+
+[node name="HBox" type="HBoxContainer" parent="UI/TopBar/StatsHBox/BlackPipCard"]
+layout_mode = 2
+alignment = 1
+theme_override_constants/separation = 4
+
+[node name="PipIcon" type="Label" parent="UI/TopBar/StatsHBox/BlackPipCard/HBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+text = "⚫ Pip:"
+
+[node name="PipVal" type="Label" parent="UI/TopBar/StatsHBox/BlackPipCard/HBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+text = "167"
+
+[node name="TurnsCard" type="PanelContainer" parent="UI/TopBar/StatsHBox"]
+custom_minimum_size = Vector2(75, 36)
+layout_mode = 2
+
+[node name="TurnsVal" type="Label" parent="UI/TopBar/StatsHBox/TurnsCard"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+text = "T: 0"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="ModeCard" type="PanelContainer" parent="UI/TopBar/StatsHBox"]
+custom_minimum_size = Vector2(85, 36)
+layout_mode = 2
+
+[node name="ModeVal" type="Label" parent="UI/TopBar/StatsHBox/ModeCard"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+text = "vs IA"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="VBoxContainer" type="VBoxContainer" parent="UI"]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_left = 20.0
+offset_top = 138.0
+offset_right = -20.0
+offset_bottom = 180.0
+grow_horizontal = 2
+
+[node name="StatusLabel" type="Label" parent="UI/VBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.92, 0.6, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.8)
+theme_override_font_sizes/font_size = 16
+text = "Sua Vez! Role os dados para começar."
+horizontal_alignment = 1
+autowrap_mode = 2
+
+[node name="TouchGrid" type="Control" parent="UI"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 20.0
+offset_top = 190.0
+offset_right = -20.0
+offset_bottom = -160.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 1
+
+[node name="DiceControls" type="HBoxContainer" parent="UI"]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 16.0
+offset_top = -148.0
+offset_right = -16.0
+offset_bottom = -92.0
+grow_horizontal = 2
+grow_vertical = 0
+alignment = 1
+theme_override_constants/separation = 12
+
+[node name="DiceHBox" type="HBoxContainer" parent="UI/DiceControls"]
+layout_mode = 2
+alignment = 1
+theme_override_constants/separation = 8
+
+[node name="BtnRoll" type="Button" parent="UI/DiceControls"]
+custom_minimum_size = Vector2(140, 48)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.95, 0.4, 1)
+text = "🎲 Rolar Dados"
+
+[node name="BtnEndTurn" type="Button" parent="UI/DiceControls"]
+visible = false
+custom_minimum_size = Vector2(130, 48)
+layout_mode = 2
+text = "Passar Vez ›"
+
+[node name="Actions" type="HBoxContainer" parent="UI"]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 16.0
+offset_top = -82.0
+offset_right = -16.0
+offset_bottom = -24.0
+grow_horizontal = 2
+grow_vertical = 0
+alignment = 1
+theme_override_constants/separation = 8
+
+[node name="BtnUndo" type="Button" parent="UI/Actions"]
+custom_minimum_size = Vector2(85, 48)
+layout_mode = 2
+disabled = true
+text = "↩ Desfazer"
+
+[node name="BtnModeToggle" type="Button" parent="UI/Actions"]
+custom_minimum_size = Vector2(95, 48)
+layout_mode = 2
+text = "🤖 vs IA"
+
+[node name="BtnDiffToggle" type="Button" parent="UI/Actions"]
+custom_minimum_size = Vector2(90, 48)
+layout_mode = 2
+text = "IA: Mestre"
+
+[node name="BtnRestart" type="Button" parent="UI/Actions"]
+custom_minimum_size = Vector2(95, 48)
+layout_mode = 2
+text = "🔄 Reiniciar"
+
+[node name="ResultModal" type="Control" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Dimmer" type="ColorRect" parent="ResultModal"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.65)
+
+[node name="Panel" type="PanelContainer" parent="ResultModal"]
+custom_minimum_size = Vector2(360, 320)
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -180.0
+offset_top = -160.0
+offset_right = 180.0
+offset_bottom = 160.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBox" type="VBoxContainer" parent="ResultModal/Panel"]
+layout_mode = 2
+theme_override_constants/separation = 12
+alignment = 1
+
+[node name="ResultTitle" type="Label" parent="ResultModal/Panel/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.2, 1)
+theme_override_font_sizes/font_size = 24
+text = "🏆 Vitória!"
+horizontal_alignment = 1
+
+[node name="ResultStars" type="Label" parent="ResultModal/Panel/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 28
+text = "⭐⭐⭐"
+horizontal_alignment = 1
+
+[node name="ResultDetails" type="Label" parent="ResultModal/Panel/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 15
+text = "Vitória Simples\nTurnos: 24 • Tempo: 04:12"
+horizontal_alignment = 1
+
+[node name="ResultXP" type="Label" parent="ResultModal/Panel/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.3, 0.9, 0.4, 1)
+theme_override_font_sizes/font_size = 18
+text = "+60 XP"
+horizontal_alignment = 1
+
+[node name="BtnRematch" type="Button" parent="ResultModal/Panel/VBox"]
+custom_minimum_size = Vector2(180, 48)
+layout_mode = 2
+size_flags_horizontal = 4
+text = "🔄 Jogar Novamente"
