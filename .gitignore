@@ -94,3 +94,9 @@ id_ed25519
 !.env*.sample
 !.env*.template
 !.env*.dist
+
+# Python virtualenv (ferramentas de asset)
+venv/
+
+# Saída do Graphify
+graphify-out/
