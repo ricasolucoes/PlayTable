@@ -39,6 +39,9 @@ RewardSystem="*res://core/services/RewardSystem.gd"
 LeaderboardSync="*res://core/services/LeaderboardSync.gd"
 LiveOpsManager="*res://core/services/LiveOpsManager.gd"
 SecurityManager="*res://core/services/SecurityManager.gd"
+MasteryEngine="*res://core/services/MasteryEngine.gd"
+LeagueSystem="*res://core/services/LeagueSystem.gd"
+CollectionSystem="*res://core/services/CollectionSystem.gd"
 
 [internationalization]
 
