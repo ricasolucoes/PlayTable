@@ -63,11 +63,39 @@ func update_daily_streak() -> void:
 	if last_played_date == "":
 		current_streak = 1
 	elif last_played_date != today:
-		# Lógica ultra simplificada de streak (pode ser expandida no GamificationManager)
-		current_streak += 1
+		# Lógica avançada de streak
+		var time_diff = _days_between(last_played_date, today)
+		
+		if time_diff == 1:
+			current_streak += 1
+		elif time_diff > 1:
+			# Checar Streak Freeze
+			var streak_freezes = get_stat("streak_freezes", 0)
+			if time_diff == 2 and streak_freezes > 0:
+				increment_stat("streak_freezes", -1)
+				current_streak += 1 # O Freeze manteve a streak viva
+			else:
+				# Quebrou a streak. Checar bônus de retorno (Comeback)
+				if time_diff >= 14:
+					if GameEventBus:
+						GameEventBus.achievement_unlocked.emit("ACH_COMEBACK")
+						GameEventBus.xp_gained.emit(1000, "comeback_bonus")
+				current_streak = 1
+				if GameEventBus:
+					GameEventBus.daily_streak_updated.emit(0) # Notifica quebra
 	
+	if last_played_date != today and GameEventBus:
+		GameEventBus.daily_streak_updated.emit(current_streak)
+		
 	last_played_date = today
 	save_profile()
+
+func _days_between(date1_str: String, date2_str: String) -> int:
+	# Parse ISO date YYYY-MM-DD simplificado (apenas para este escopo offline local)
+	# Na prática em Godot 4.3, Time.get_unix_time_from_datetime_string pode ser usado
+	var unix1 = Time.get_unix_time_from_datetime_string(date1_str + "T00:00:00")
+	var unix2 = Time.get_unix_time_from_datetime_string(date2_str + "T00:00:00")
+	return clampi(int((unix2 - unix1) / 86400), 0, 9999)
 
 func add_xp(amount: int) -> void:
 	total_xp += amount
@@ -92,11 +120,11 @@ func _on_achievement_unlocked(id: String) -> void:
 		unlocked_achievements.append(id)
 		save_profile()
 
-func get_stat(key: String, default_value: int = 0) -> int:
+func get_stat(key: String, default_value: Variant = 0) -> Variant:
 	return stats.get(key, default_value)
 
 func increment_stat(key: String, amount: int = 1) -> void:
-	stats[key] = get_stat(key) + amount
+	stats[key] = int(get_stat(key, 0)) + amount
 	save_profile()
 
 func get_active_quests() -> Dictionary:

@@ -17,12 +17,24 @@ func _on_match_completed(game_id: String, result: Dictionary) -> void:
 	
 	if result.has("win") and result["win"] == true:
 		xp_reward = 50
-		if GameEventBus:
+		if LiveOpsManager:
+			xp_reward *= LiveOpsManager.get_xp_multiplier()
+			
+		if SecurityManager and not SecurityManager.validate_xp_gain(xp_reward):
+			xp_reward = 0
+			
+		if xp_reward > 0 and GameEventBus:
 			GameEventBus.emit_xp_gained(xp_reward, "match_win")
 		PlayerProfile.increment_stat("total_wins")
 	else:
 		xp_reward = 10
-		if GameEventBus:
+		if LiveOpsManager:
+			xp_reward *= LiveOpsManager.get_xp_multiplier()
+			
+		if SecurityManager and not SecurityManager.validate_xp_gain(xp_reward):
+			xp_reward = 0
+			
+		if xp_reward > 0 and GameEventBus:
 			GameEventBus.emit_xp_gained(xp_reward, "match_loss")
 	
 	PlayerProfile.increment_stat("total_matches")
