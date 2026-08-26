@@ -20,6 +20,9 @@ static func get_board_games() -> Array[GameDefinition]:
 		GameDefinition.create("Resta Um", "🔘", "res://games/solitario/PegSolitaireGame.tscn", &"board", "GAME_DESC_PEG_SOLITAIRE"),
 		GameDefinition.create("Campo Minado", "💣", "res://games/campo_minado/MinesweeperGame.tscn", &"board", "GAME_DESC_MINESWEEPER"),
 		GameDefinition.create("Dominó", "🁣", "res://games/domino/DominoGame.tscn", &"board", "GAME_DESC_DOMINO"),
+		GameDefinition.create("Torres de Hanói", "🗼", "res://games/hanoi/HanoiGame.tscn", &"board", "GAME_DESC_HANOI"),
+		GameDefinition.create("Jogo de Nim", "🪙", "res://games/nim/NimGame.tscn", &"board", "GAME_DESC_NIM"),
+		GameDefinition.create("Gamão", "🎲", "res://games/gamao/BackgammonGame.tscn", &"board", "GAME_DESC_BACKGAMMON"),
 	]
 
 ## Returns all card game definitions.

@@ -18,6 +18,9 @@ const JOGOS_DE_TABULEIRO := [
 	"res://games/reversi/ReversiGame.tscn",
 	"res://games/mancala/MancalaGame.tscn",
 	"res://games/senet/SenetGame.tscn",
+	"res://games/hanoi/HanoiGame.tscn",
+	"res://games/nim/NimGame.tscn",
+	"res://games/gamao/BackgammonGame.tscn",
 ]
 
 const JOGOS_DE_CARTAS := [
@@ -62,10 +65,10 @@ func test_os_quatro_autoloads_estao_vivos() -> void:
 
 # ------------------------------------------------------------------- Catalogo
 
-func test_catalogo_lista_16_jogos() -> void:
-	assert_eq(GameCatalog.get_board_games().size(), 11, "11 jogos de tabuleiro")
+func test_catalogo_lista_todos_os_jogos() -> void:
+	assert_eq(GameCatalog.get_board_games().size(), 14, "14 jogos de tabuleiro")
 	assert_eq(GameCatalog.get_card_games().size(), 5, "5 jogos de cartas")
-	assert_eq(GameCatalog.get_all_games().size(), 16, "16 no total")
+	assert_eq(GameCatalog.get_all_games().size(), 19, "19 no total")
 
 
 func test_catalogo_bate_com_os_arquivos_esperados() -> void:
@@ -94,18 +97,19 @@ func test_cada_entrada_do_catalogo_tem_titulo_icone_e_descricao() -> void:
 
 ## ACHADO (documentado no CHANGELOG, nao corrigido aqui): o catalogo aponta
 ## para chaves GAME_DESC_* que NAO existem em core/i18n/translations.csv, e o
-## CSV tem 16 chaves GAME_* com o nome de cada jogo que NINGUEM usa — os menus
+## CSV tem chaves GAME_* com o nome de cada jogo que NINGUEM usa — os menus
 ## montam o botao com game.title, que e texto fixo em portugues. Ou seja, os
 ## nomes dos jogos nunca sao traduzidos e as descricoes nunca aparecem.
 ## Escolher qual dos dois lados muda e decisao do dono; o teste abaixo tranca
 ## o que hoje esta certo: existe uma chave de nome traduzida para cada jogo.
 
-func test_o_csv_tem_um_nome_traduzido_para_cada_um_dos_16_jogos() -> void:
+func test_o_csv_tem_um_nome_traduzido_para_cada_um_dos_jogos() -> void:
 	var chaves := [
 		"GAME_CONNECT4", "GAME_TICTACTOE", "GAME_REVERSI", "GAME_BATTLESHIP",
 		"GAME_CHECKERS", "GAME_MANCALA", "GAME_SOLITAIRE", "GAME_MINESWEEPER",
 		"GAME_DOMINO", "GAME_LUDO", "GAME_SENET", "GAME_MEMORY",
 		"GAME_KLONDIKE", "GAME_BLACKJACK", "GAME_UNOLIKE", "GAME_POKER",
+		"GAME_HANOI", "GAME_NIM", "GAME_GAMAO",
 	]
 	assert_eq(chaves.size(), GameCatalog.get_all_games().size(), "uma chave por jogo")
 	var antes := LocaleManager.current_locale
@@ -193,7 +197,7 @@ func test_cada_jogo_volta_para_o_menu_da_sua_categoria() -> void:
 		esperado[definicao.scene_path] = BaseGame.MENU_TABULEIRO
 	for definicao in GameCatalog.get_card_games():
 		esperado[definicao.scene_path] = BaseGame.MENU_CARTAS
-	assert_eq(esperado.size(), 16, "os 16 jogos do catalogo")
+	assert_eq(esperado.size(), 19, "os 19 jogos do catalogo")
 
 	for caminho in esperado:
 		var jogo: Node = add_child_autofree((load(caminho) as PackedScene).instantiate())

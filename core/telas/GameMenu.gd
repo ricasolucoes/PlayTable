@@ -51,6 +51,12 @@ static func get_game_subtitle(game: GameDefinition) -> String:
 			return "Lógica • Solo"
 		"res://games/domino/DominoGame.tscn":
 			return "Clássico • IA"
+		"res://games/hanoi/HanoiGame.tscn":
+			return "Lógica • Solo"
+		"res://games/nim/NimGame.tscn":
+			return "Estratégia • IA"
+		"res://games/gamao/BackgammonGame.tscn":
+			return "Estratégia • IA • 2J"
 		"res://games/paciencia/KlondikeGame.tscn":
 			return "Klondike • Solo"
 		"res://games/memoria/MemoryGame.tscn":
