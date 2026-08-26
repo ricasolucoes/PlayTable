@@ -6,7 +6,7 @@
 #   tests/run_gut.sh -gtest=res://tests/gdscript/unit/test_tic_tac_toe.gd
 #   GODOT=/caminho/para/godot tests/run_gut.sh
 #
-# O projeto usa Godot 4.6 desde a v0.3.0 e o GUT 9.7.x exige 4.4 ou mais novo.
+# O projeto usa Godot 4.7 desde a v0.5.0 e o GUT 9.7.x exige 4.4 ou mais novo.
 # O Godot.app que fica na raiz do repositorio (ignorado pelo git) pode ser uma
 # copia antiga: por isso a versao e conferida antes de rodar.
 set -euo pipefail

@@ -7,7 +7,7 @@
 # livre de codigo que nao roda no aplicativo.
 #
 # A versao esta amarrada a engine: o GUT 9.7.x exige Godot 4.4+ e o 9.3.x so
-# roda ate a 4.3. O projeto migrou para a 4.6 na v0.3.0, entao 9.7.1.
+# roda ate a 4.3. O projeto migrou para a 4.7 na v0.5.0, entao 9.7.1.
 # Trocar a engine de volta para a 4.3 exige GUT_VERSION=v9.3.0.
 set -euo pipefail
 

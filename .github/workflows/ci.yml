@@ -11,7 +11,7 @@ concurrency:
 
 env:
   # Precisa acompanhar a engine usada nos builds de release (ver CHANGELOG v0.3.0).
-  GODOT_VERSION: "4.6.3-stable"
+  GODOT_VERSION: "4.7.2-stable"
   # Versao do GUT fixada em tests/install_gut.sh; repetida aqui so para a chave de cache.
   GUT_VERSION: "v9.7.1"
 

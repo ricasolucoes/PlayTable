@@ -16,7 +16,7 @@ config/icon="res://icon.png"
 config/use_custom_user_dir=true
 config/custom_user_dir_name="user_data"
 run/main_scene="res://core/telas/MainMenu.tscn"
-config/features=PackedStringArray("4.3", "Mobile")
+config/features=PackedStringArray("4.7", "Mobile")
 
 [gui]
 
