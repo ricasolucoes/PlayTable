@@ -36,8 +36,8 @@ if [ -z "$GODOT_BIN" ]; then
     fi
 fi
 
-VERSION_CODE="${EXPORT_VERSION_CODE:-8}"
-VERSION_NAME="${EXPORT_VERSION_NAME:-0.4.0}"
+VERSION_CODE="${EXPORT_VERSION_CODE:-10}"
+VERSION_NAME="${EXPORT_VERSION_NAME:-0.5.0}"
 
 echo "=> PlayTable :: Exportando assets do Godot ($VERSION_NAME - code $VERSION_CODE)..."
 TEMP_ZIP="/tmp/playtable_assets_$$.zip"
@@ -56,7 +56,7 @@ cd "$PROJECT_DIR/android/build"
     -Pexport_package_name="org.playtable.app" \
     -Pexport_version_code="$VERSION_CODE" \
     -Pexport_version_name="$VERSION_NAME" \
-    -Pexport_version_target_sdk=35 \
+    -Pexport_version_target_sdk=36 \
     -Pexport_version_min_sdk=24
 
 mkdir -p "$OUT_DIR"

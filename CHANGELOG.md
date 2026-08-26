@@ -2,7 +2,25 @@
 
 ---
 
-## [Unreleased](https://github.com/ricasolucoes/PlayTable/compare/v0.4.0...develop)
+## [Unreleased](https://github.com/ricasolucoes/PlayTable/compare/v0.5.0...develop)
+
+---
+
+## [v0.5.0 (2026-08-26)](https://github.com/ricasolucoes/PlayTable/compare/v0.4.0...v0.5.0)
+
+### ✨ Novidades
+
+- [x] **Gamão 3D / Backgammon (`games/gamao/`)** — Implementação completa do clássico jogo de tabuleiro e estratégia de Gamão em 3D imersivo. Tabuleiro clássico entalhado em nogueira e mogno nobre com feltro verde aveludado, 24 pontas triangulares em bordo e mogno, 30 peças chanfradas em marfim e obsidiana, barra central e bandejas laterais de bear-off, física e rolagem de dados 3D, e movimentação fluida em arco parabólico via Tweens.
+- [x] **Regras Oficiais e IA Tática de Gamão** — Regras completas de captura de blots para a barra, reentrada obrigatória, bloqueio de pontos (2+ peças), recolhimento final (Bear-off), cálculo de Pip Count em tempo real e IA com 3 níveis de dificuldade (Fácil, Médio, Mestre) e modos vs IA / 2 Jogadores Local.
+- [x] **Gamificação e Conexão de Eventos** — Integração com `GameEventBus` (`match_completed`, `xp_gained`), `PlayerProfile` (vitórias, partidas, streak diário), recompensas multiplicadas por Gammon (2x) e Backgammon (3x), modal de resultado e suporte a Desfazer (Undo) no turno.
+- [x] **Jogo de Nim 3D (`games/nim/`)** — Implementação do lendário jogo de estratégia matemática e raciocínio combinatório em 3D. Tabuleiro em nogueira e mogno nobre com canaletas aveludadas, moedas/gemas chanfradas em PBR com física e animação em arco até a cesta de descarte.
+- [x] **IA Inteligente com Teorema de Bouton (Nim-Sum)** — Algoritmo de Nim-Sum com 3 níveis de dificuldade (Fácil, Médio, Mestre) com suporte a estratégias perfeitas nos modos Normal Play e Misère (Marienbad).
+- [x] **Modo 2 Jogadores Local e Presets Clássicos** — Suporte a partidas de Pass-and-Play local, alternância de regras Normal e Misère, e presets `[1, 2, 3]`, `[3, 4, 5]`, `[1, 3, 5, 7]` (Marienbad) e `[1, 2, 3, 4, 5]`.
+- [x] **Gamificação e Conquistas de Nim** — Concessão de XP, integração com `PlayerProfile` e conquistas (`ACH_NIM_FIRST_WIN`, `ACH_NIM_MISERE_MASTER`, `ACH_NIM_PYRAMID_SOLVER`).
+- [x] **Torres de Hanói 3D (`games/hanoi/`)** — Implementação completa do clássico jogo de lógica e estratégia matemática em 3D imersivo. Apresenta base e pinos nobres em mogno, nogueira e ouro polido, discos com pedras preciosas (Rubi, Âmbar, Ouro, Esmeralda, Turquesa, Safira, Ametista, Obsidiana), movimentação parabólica suave em arco por Tweens, amortecimento elástico e som de encaixe sem bugs.
+- [x] **Seletor de Dificuldade de 3 a 8 Discos** — Configuração instantânea da quantidade de discos com cálculo automático do número mínimo ótimo de movimentos (\(2^n - 1\)).
+- [x] **Recursos de Acessibilidade e Apoio** — Sistema ilimitado de Desfazer (Undo), Dicas (Hints) e Solver Automático demonstrativo com animação passo a passo da solução ótima recursiva.
+- [x] **Integração com Gamificação & Maestria** — Avaliação por estrelas (1 a 3 estrelas), disparo de eventos `GameEventBus`, concessão de XP e conquistas (`ACH_HANOI_3_PERFECT`, `ACH_HANOI_5_SOLVED`, `ACH_HANOI_MASTER`) e integração com `PlayerProfile` e `MasteryEngine`.
 
 ### 🐛 Correções
 
@@ -33,6 +51,8 @@
 - [x] **O status da partida passa pelo `set_status()` do `BaseGame`** — a API nasceu na deduplicação da v0.4.0 e ninguém adotou: os 16 jogos escreviam em `status_label.text` direto, 96 vezes, por fora da guarda de nulo que o próprio `BaseGame` documenta
 - [x] **Tipagem estática em `games/` e `core/`** — 421 declarações locais passaram a usar `:=`. As 136 restantes foram revertidas uma a uma porque o Godot recusou: ou o valor vem de `Dictionary`/`Array`, que devolvem `Variant`, ou a função chamada não declara retorno. `games` foi de 0% para 69% tipado, `core` de 3% para 100%
 - [x] **`shared/pecas/Piece.gd` virou `shared/ui/Piece2D.gd`** — o nome colidia com o `class_name Piece` de `shared/core_engine/board/Piece.gd`, que é outra coisa, e `shared/pecas` era o único diretório em português dentro de `shared/`
+
+- [x] **Engine migrada para o Godot 4.7.2** — `config/features` saiu de `4.3`, que ja nao correspondia ao editor em uso (o `Godot.app` da raiz e 4.6 e a CI fixava `4.6.3-stable`), e passou a declarar `4.7`. O pin da CI foi para `4.7.2-stable` e o template de build Android foi reinstalado a partir da `android_source.zip` da versao nova, que sobe `compileSdk` e `targetSdk` para 36 e exige JDK 17. A suite inteira roda na engine nova sem uma linha alterada: 404 testes, 398 passando, 6 pending de layout que ja existiam
 
 
 ## [v0.4.0 (2026-08-24)](https://github.com/ricasolucoes/PlayTable/compare/v0.3.0...v0.4.0)
