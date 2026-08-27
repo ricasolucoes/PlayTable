@@ -46,6 +46,11 @@ func _ready() -> void:
 	status_label = $UI/VBoxContainer/StatusLabel
 	btn_restart = $UI/Actions/BtnRestart
 	env_3d.set_felt_color(Color(0.12, 0.14, 0.22)) # Feltro Grafite Escuro
+	# Sem informar a area util e o tamanho do conteudo, a camera enquadrava as
+	# 6x6 unidades padrao para um monte de descarte de uma carta so: a carta da
+	# mesa saia do tamanho de uma unha.
+	env_3d.set_safe_area(230.0, 250.0)
+	env_3d.frame_content(Vector2(2.4, 2.4), Vector3(0.0, 0.0, -0.3))
 	player_hand = CardHand.new()
 	ai_hand = CardHand.new()
 	discard_pile = CardPile.new()
@@ -127,17 +132,45 @@ func _update_ui() -> void:
 		var card := player_hand.get_card(i)
 		var btn := Button.new()
 		btn.custom_minimum_size = Vector2(72, 95)
-		btn.add_theme_font_size_override("font_size", 18)
-		
-		var card_col = COLOR_MAP.get(card.color_type, Color.WHITE)
-		btn.self_modulate = card_col
-		btn.text = card.get_display_value()
-		
+		btn.add_theme_font_size_override("font_size", 26)
+		btn.focus_mode = Control.FOCUS_NONE
+
+		var card_col: Color = COLOR_MAP.get(card.color_type, Color(0.20, 0.20, 0.24))
 		var can_play := UnoRules.can_play_card(card, top_card, active_color)
-		btn.disabled = not is_player_turn or not can_play or game_over or waiting_color_pick
-		
+		var live := is_player_turn and can_play and not game_over and not waiting_color_pick
+
+		# `self_modulate` multiplicava a cor da carta pelo fundo escuro do tema:
+		# vermelho e verde viravam quase preto e a mao inteira parecia uma
+		# fileira de botoes apagados. A carta agora tem estilo proprio.
+		for state in ["normal", "hover", "pressed", "focus", "disabled"]:
+			btn.add_theme_stylebox_override(state, _card_style(card_col, live))
+		btn.add_theme_color_override("font_color", _ink_for(card_col))
+		btn.add_theme_color_override("font_disabled_color", _ink_for(card_col))
+		btn.text = card.get_display_value()
+
+		btn.disabled = not live
 		btn.pressed.connect(_on_player_card_clicked.bind(i))
 		player_cards_container.add_child(btn)
+
+
+## Estilo da carta na mao: a cor e o fundo, nao um filtro por cima do tema.
+func _card_style(card_col: Color, live: bool) -> StyleBoxFlat:
+	var style := StyleBoxFlat.new()
+	style.bg_color = card_col if live else card_col.darkened(0.35)
+	style.border_color = Color(1, 1, 1, 0.92) if live else Color(1, 1, 1, 0.30)
+	style.set_border_width_all(3 if live else 2)
+	style.set_corner_radius_all(12)
+	style.content_margin_left = 6
+	style.content_margin_right = 6
+	style.content_margin_top = 6
+	style.content_margin_bottom = 6
+	return style
+
+
+## Tinta que le sobre a cor da carta. O amarelo pede texto escuro; os outros nao.
+func _ink_for(card_col: Color) -> Color:
+	return Color(0.10, 0.09, 0.08) if card_col.get_luminance() > 0.55 \
+		else Color(0.99, 0.99, 1.0)
 
 func _on_player_card_clicked(idx: int) -> void:
 	if not is_player_turn or game_over or waiting_color_pick: return
