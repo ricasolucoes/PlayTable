@@ -4,6 +4,22 @@
 
 ## [Unreleased](https://github.com/ricasolucoes/PlayTable/compare/v0.6.0...develop)
 
+### 🎨 Melhorias
+
+- [x] **Cartão de perfil do menu virou cartão-botão** — como cartão mais botão separados, em 3:4 (720x960) os dois somavam ~220 px e empurravam o rodapé para fora da tela. Tocar no progresso leva ao progresso, que é para onde o dedo ia mesmo
+- [x] **Matriz de conquistas gerada do catálogo** (`tools/gen_achievement_matrix.py`) — a versão escrita à mão tinha derivado do código: prometia uma conquista de Xadrez, jogo que o PlayTable não tem, e não trazia nada de Gamão, Torre de Hanói, Nim nem Resta Um. A coluna "Mapeada" mostra quantos ids do Play Console ainda faltam
+- [x] **Checklist do Play Console reescrito** — separa o que já está no repositório do que só a conta do Google resolve, e diz a ordem que funciona: sem `app_id` o SDK nem inicializa, e sem login nada é enviado (fica na fila e sobe depois)
+
+### 🐛 Correções
+
+- [x] **Data malformada no perfil derrubava a conta da sequência** — a data vem de um arquivo em `user://`, que é editável; data inválida fazia o `Time` reclamar no console a cada abertura e a conta saía assim mesmo. O calendário agora valida e conhece ano bissexto
+
+### 🔧 Técnico
+
+- [x] **Oito testes na sequência diária** — é o motor de retorno do jogo e não tinha um teste sequer. Cobrem as cinco transições que importam: dia seguinte soma; várias partidas no mesmo dia contam como um; um dia perdido sem congelamento zera; com congelamento a sequência sobrevive e o congelamento é consumido; dois dias perdidos não são cobertos por um só; e voltar depois de duas semanas marca o retorno mas recomeça a contagem
+- [x] **Suíte em 479 testes**, 474 passando e 5 pendentes (o livro-razão de layout M1/M3/M4/M6)
+
+
 ---
 
 ## [v0.6.0 (2026-08-27)](https://github.com/ricasolucoes/PlayTable/compare/v0.5.0...v0.6.0)
