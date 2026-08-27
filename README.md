@@ -1,6 +1,6 @@
 # PlayTable
 
-Bem-vindo ao repositório do **PlayTable** — um aplicativo unificado, gratuito, open source, internacionalizado (i18n) e 100% livre de anúncios que reúne uma coleção de **18 minijogos clássicos de tabuleiro e cartas** em uma experiência polida para dispositivos móveis e desktop (Godot 4.3 Engine).
+Bem-vindo ao repositório do **PlayTable** — um aplicativo unificado, gratuito, open source, internacionalizado (i18n) e 100% livre de anúncios que reúne uma coleção de **18 minijogos clássicos de tabuleiro e cartas** em uma experiência polida para dispositivos móveis e desktop (Godot 4.7.2 Engine).
 
 ---
 
@@ -73,10 +73,12 @@ A suíte roda o GDScript real, headless, sem abrir janela:
 ```bash
 tests/run_gut.sh                                   # suíte completa
 tests/run_gut.sh -gselect=reversi                  # só um arquivo
-GODOT=/caminho/para/godot-4.6 tests/run_gut.sh     # apontando a engine
+GODOT_BIN=/caminho/para/godot tests/run_gut.sh     # apontando a engine
 ```
 
-O script busca um Godot 4.4+ no `PATH`, no repositório e em `/Applications`,
+O script exige a engine de `.godot-version` (hoje 4.7.2-stable), exata: quem
+resolve é `scripts/godot_bin.sh`, o mesmo que os scripts de build usam. Ele
+procura no `PATH`, em `~/Dev/godot-<versao>` e em `/Applications`,
 instala o [GUT](https://github.com/bitwes/Gut) em `addons/gut` na primeira
 execução (o addon não é versionado) e reimporta os recursos quando a engine
 ou a versão do GUT mudam. O mesmo comando roda no GitHub Actions a cada push
@@ -86,7 +88,7 @@ e pull request — veja `.github/workflows/ci.yml`.
 
 ## 🛠️ Tecnologias e Compilação
 
-- **Engine Principal:** Godot 4.6 (Mobile/Desktop) com suporte a exportação Android (`build_apk.sh`), iOS, Web e Desktop.
+- **Engine Principal:** Godot 4.7.2 (Mobile/Desktop) com suporte a exportação Android (`build_apk.sh`), iOS, Web e Desktop.
 - **Configuração de Export:** Versionada em `export_presets.cfg` (preset `Android`, arquiteturas `arm64-v8a` + `armeabi-v7a`).
   O preset é propositalmente **não assinado** (`package/signed=false`) e não contém keystore, alias nem senha —
   isso permite builds reproduzíveis por terceiros (F-Droid). A assinatura é feita à parte pelo `build_apk.sh`,

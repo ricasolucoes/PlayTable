@@ -9,7 +9,7 @@ Para o **PlayTable** manter os benefícios algorítmicos do Level Up, os seguint
 
 ## 2. Inicialização (Cold Start)
 - O carregamento da configuração via `LiveOpsManager` em `_ready()` lê arquivos JSON locais, durando < 2ms.
-- A requisição silenciosa de login do `PlayGamesManager` não trava a Main Thread do Godot 4.3.
+- A requisição silenciosa de login do `PlayGamesManager` não trava a Main Thread do Godot.
 - **Meta**: App acessível na Scene Principal em < 1.5s.
 
 ## 3. Crash e ANR
