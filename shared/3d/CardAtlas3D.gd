@@ -47,18 +47,35 @@ static func ensure_built(context: Node) -> void:
 	painter.cell = cell
 	painter.size = Vector2(viewport.size)
 	viewport.add_child(painter)
-	context.get_tree().root.add_child(viewport)
+
+	# `call_deferred` e obrigatorio, nao precaucao.
+	#
+	# Quem chama isto e o `_ready` de uma Card3D. Quando o jogo distribui as
+	# cartas ja no proprio `_ready` -- Blackjack e Paciencia fazem isso -- a
+	# arvore inteira ainda esta no meio do `add_child` da cena do jogo, e a raiz
+	# recusa: "Parent node is busy setting up children, add_child() failed".
+	# O SubViewport nunca entrava na arvore, `get_texture()` devolvia preto e o
+	# baralho inteiro saia com as cartas pretas. Adiando um quadro, a raiz ja
+	# terminou e o atlas e pintado de verdade.
+	var tree := context.get_tree()
+	tree.root.add_child.call_deferred(viewport)
+	while not viewport.is_inside_tree():
+		if not is_instance_valid(context) or not is_instance_valid(viewport):
+			_building = false
+			return
+		await tree.process_frame
 
 	# Dois quadros: um para o SubViewport desenhar, outro para a textura ficar
 	# disponivel para leitura.
 	await RenderingServer.frame_post_draw
 	await RenderingServer.frame_post_draw
 
-	var img := viewport.get_texture().get_image()
-	img.generate_mipmaps()
-	_atlas = ImageTexture.create_from_image(img)
+	if is_instance_valid(viewport):
+		var img := viewport.get_texture().get_image()
+		img.generate_mipmaps()
+		_atlas = ImageTexture.create_from_image(img)
+		viewport.queue_free()
 
-	viewport.queue_free()
 	_building = false
 
 static func _cell_size() -> Vector2i:
