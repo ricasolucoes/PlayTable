@@ -238,8 +238,15 @@ func _check_game_end_or_ai_turn() -> void:
 		CheckersAI.pensar_em_tarefa.bind(grid_data.clone(), -1, ai_level, saida))
 
 	await get_tree().create_timer(0.6).timeout
+	# A arvore fica guardada antes do laco: quando o jogador sai da cena com a
+	# busca em andamento, `get_tree()` passa a devolver `null` no quadro
+	# seguinte, e `await null.process_frame` estoura. A tarefa nao segura
+	# referencia para a cena, entao esperar por ela aqui e seguro.
+	var arvore := get_tree()
 	while not WorkerThreadPool.is_task_completed(tarefa):
-		await get_tree().process_frame
+		if arvore == null:
+			break
+		await arvore.process_frame
 	WorkerThreadPool.wait_for_task_completion(tarefa)
 
 	if not is_inside_tree() or game_over:
