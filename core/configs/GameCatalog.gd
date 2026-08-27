@@ -6,34 +6,67 @@
 class_name GameCatalog
 extends RefCounted
 
+## Modos de partida, encurtados para o catálogo caber numa linha por jogo.
+##
+## Cada jogo é marcado pelo que o seu código realmente faz hoje, não pelo que a
+## caixa promete: só o Nim e o Gamão têm o botão que passa o aparelho para outra
+## pessoa (`is_vs_ai = not is_vs_ai`); no Quatro em Linha, no Jogo da Velha e nas
+## Damas o `vs_ai` nasce ligado e não há como desligá-lo. Os subtítulos antigos
+## anunciavam "2 Jogadores" nos três, e o filtro herdaria a mentira.
+const SOLO := GameDefinition.Mode.SOLO
+const IA := GameDefinition.Mode.AI
+const DUPLA := GameDefinition.Mode.VERSUS
+
+
 ## Returns all board game definitions.
 static func get_board_games() -> Array[GameDefinition]:
 	return [
-		GameDefinition.create("Quatro em Linha", "🔴", "res://games/quatro_em_linha/ConnectFourGame.tscn", &"board", "GAME_DESC_CONNECT_FOUR"),
-		GameDefinition.create("Jogo da Velha", "❌", "res://games/jogo_da_velha/TicTacToeGame.tscn", &"board", "GAME_DESC_TIC_TAC_TOE"),
-		GameDefinition.create("Damas", "⬛", "res://games/damas/CheckersGame.tscn", &"board", "GAME_DESC_CHECKERS"),
-		GameDefinition.create("Batalha Naval", "🚢", "res://games/batalha_naval/BattleshipGame.tscn", &"board", "GAME_DESC_BATTLESHIP"),
-		GameDefinition.create("Reversi", "⚫", "res://games/reversi/ReversiGame.tscn", &"board", "GAME_DESC_REVERSI"),
-		GameDefinition.create("Mancala", "💎", "res://games/mancala/MancalaGame.tscn", &"board", "GAME_DESC_MANCALA"),
-		GameDefinition.create("Ludo", "🎲", "res://games/ludo/LudoGame.tscn", &"board", "GAME_DESC_LUDO"),
-		GameDefinition.create("Senet", "𓁹", "res://games/senet/SenetGame.tscn", &"board", "GAME_DESC_SENET"),
-		GameDefinition.create("Resta Um", "🔘", "res://games/solitario/PegSolitaireGame.tscn", &"board", "GAME_DESC_PEG_SOLITAIRE"),
-		GameDefinition.create("Campo Minado", "💣", "res://games/campo_minado/MinesweeperGame.tscn", &"board", "GAME_DESC_MINESWEEPER"),
-		GameDefinition.create("Dominó", "🁣", "res://games/domino/DominoGame.tscn", &"board", "GAME_DESC_DOMINO"),
-		GameDefinition.create("Torres de Hanói", "🗼", "res://games/hanoi/HanoiGame.tscn", &"board", "GAME_DESC_HANOI"),
-		GameDefinition.create("Jogo de Nim", "🪙", "res://games/nim/NimGame.tscn", &"board", "GAME_DESC_NIM"),
-		GameDefinition.create("Gamão", "🎲", "res://games/gamao/BackgammonGame.tscn", &"board", "GAME_DESC_BACKGAMMON"),
+		GameDefinition.create("Quatro em Linha", "🔴", "res://games/quatro_em_linha/ConnectFourGame.tscn", &"board", "GAME_DESC_CONNECT_FOUR")
+			.tagged("GENRE_STRATEGY", IA),
+		GameDefinition.create("Jogo da Velha", "❌", "res://games/jogo_da_velha/TicTacToeGame.tscn", &"board", "GAME_DESC_TIC_TAC_TOE")
+			.tagged("GENRE_CLASSIC", IA),
+		GameDefinition.create("Damas", "⬛", "res://games/damas/CheckersGame.tscn", &"board", "GAME_DESC_CHECKERS")
+			.tagged("GENRE_CLASSIC", IA),
+		GameDefinition.create("Batalha Naval", "🚢", "res://games/batalha_naval/BattleshipGame.tscn", &"board", "GAME_DESC_BATTLESHIP")
+			.tagged("GENRE_STRATEGY", IA),
+		GameDefinition.create("Reversi", "⚫", "res://games/reversi/ReversiGame.tscn", &"board", "GAME_DESC_REVERSI")
+			.tagged("GENRE_STRATEGY", IA),
+		GameDefinition.create("Mancala", "💎", "res://games/mancala/MancalaGame.tscn", &"board", "GAME_DESC_MANCALA")
+			.tagged("GENRE_ANCESTRAL", IA),
+		GameDefinition.create("Ludo", "🎲", "res://games/ludo/LudoGame.tscn", &"board", "GAME_DESC_LUDO")
+			.tagged("GENRE_RACE", IA),
+		GameDefinition.create("Senet", "𓁹", "res://games/senet/SenetGame.tscn", &"board", "GAME_DESC_SENET")
+			.tagged("GENRE_EGYPT", IA),
+		GameDefinition.create("Resta Um", "🔘", "res://games/solitario/PegSolitaireGame.tscn", &"board", "GAME_DESC_PEG_SOLITAIRE")
+			.tagged("GENRE_PUZZLE", SOLO),
+		GameDefinition.create("Campo Minado", "💣", "res://games/campo_minado/MinesweeperGame.tscn", &"board", "GAME_DESC_MINESWEEPER")
+			.tagged("GENRE_LOGIC", SOLO),
+		GameDefinition.create("Dominó", "🁣", "res://games/domino/DominoGame.tscn", &"board", "GAME_DESC_DOMINO")
+			.tagged("GENRE_CLASSIC", IA),
+		GameDefinition.create("Torres de Hanói", "🗼", "res://games/hanoi/HanoiGame.tscn", &"board", "GAME_DESC_HANOI")
+			.tagged("GENRE_LOGIC", SOLO),
+		GameDefinition.create("Jogo de Nim", "🪙", "res://games/nim/NimGame.tscn", &"board", "GAME_DESC_NIM")
+			.tagged("GENRE_STRATEGY", IA | DUPLA),
+		GameDefinition.create("Gamão", "🎲", "res://games/gamao/BackgammonGame.tscn", &"board", "GAME_DESC_BACKGAMMON")
+			.tagged("GENRE_STRATEGY", IA | DUPLA),
 	]
+
 
 ## Returns all card game definitions.
 static func get_card_games() -> Array[GameDefinition]:
 	return [
-		GameDefinition.create("Paciência (Klondike)", "🃏", "res://games/paciencia/KlondikeGame.tscn", &"cards", "GAME_DESC_KLONDIKE"),
-		GameDefinition.create("Jogo da Memória", "🧠", "res://games/memoria/MemoryGame.tscn", &"cards", "GAME_DESC_MEMORY"),
-		GameDefinition.create("21 (Blackjack)", "🂡", "res://games/blackjack/BlackjackGame.tscn", &"cards", "GAME_DESC_BLACKJACK"),
-		GameDefinition.create("Jogo de Cores & Cartas", "🌈", "res://games/unolike/UnoLikeGame.tscn", &"cards", "GAME_DESC_UNO_LIKE"),
-		GameDefinition.create("Poker Dice / Cartas", "♠", "res://games/poker/PokerGame.tscn", &"cards", "GAME_DESC_POKER"),
+		GameDefinition.create("Paciência (Klondike)", "🃏", "res://games/paciencia/KlondikeGame.tscn", &"cards", "GAME_DESC_KLONDIKE")
+			.tagged("GENRE_PATIENCE", SOLO),
+		GameDefinition.create("Jogo da Memória", "🧠", "res://games/memoria/MemoryGame.tscn", &"cards", "GAME_DESC_MEMORY")
+			.tagged("GENRE_MEMORY", SOLO),
+		GameDefinition.create("21 (Blackjack)", "🂡", "res://games/blackjack/BlackjackGame.tscn", &"cards", "GAME_DESC_BLACKJACK")
+			.tagged("GENRE_CASINO", IA),
+		GameDefinition.create("Jogo de Cores & Cartas", "🌈", "res://games/unolike/UnoLikeGame.tscn", &"cards", "GAME_DESC_UNO_LIKE")
+			.tagged("GENRE_SHEDDING", IA),
+		GameDefinition.create("Poker Dice / Cartas", "♠", "res://games/poker/PokerGame.tscn", &"cards", "GAME_DESC_POKER")
+			.tagged("GENRE_VIDEO_POKER", SOLO),
 	]
+
 
 ## Returns all games across all categories.
 static func get_all_games() -> Array[GameDefinition]:
@@ -41,6 +74,7 @@ static func get_all_games() -> Array[GameDefinition]:
 	all.append_array(get_board_games())
 	all.append_array(get_card_games())
 	return all
+
 
 ## Identificador do jogo no barramento de eventos e no perfil, tirado da pasta
 ## da cena (`res://games/gamao/BackgammonGame.tscn` -> `gamao`). O mesmo

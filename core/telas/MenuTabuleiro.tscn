@@ -28,34 +28,48 @@ offset_right = -24.0
 offset_bottom = -36.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_constants/separation = 24
+theme_override_constants/separation = 20
 
 [node name="TopBar" type="HBoxContainer" parent="VBoxContainer"]
 layout_mode = 2
 theme_override_constants/separation = 16
 
 [node name="BtnVoltar" type="Button" parent="VBoxContainer/TopBar"]
-custom_minimum_size = Vector2(110, 54)
+custom_minimum_size = Vector2(140, 88)
 layout_mode = 2
+theme_override_font_sizes/font_size = 27
 text = "BTN_BACK"
 
 [node name="Title" type="Label" parent="VBoxContainer/TopBar"]
 layout_mode = 2
+size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 32
 text = "MENU_BOARD_GAMES"
 vertical_alignment = 1
+clip_text = true
+
+[node name="BtnFiltro" type="Button" parent="VBoxContainer/TopBar"]
+custom_minimum_size = Vector2(150, 88)
+layout_mode = 2
+theme_override_font_sizes/font_size = 27
+text = "BTN_FILTERS"
+
+[node name="Resumo" type="Label" parent="VBoxContainer"]
+visible = false
+layout_mode = 2
+theme_override_colors/font_color = Color(0.82, 0.72, 0.52, 1)
+theme_override_font_sizes/font_size = 26
+text = ""
 
 [node name="ScrollContainer" type="ScrollContainer" parent="VBoxContainer"]
 layout_mode = 2
 size_flags_vertical = 3
 horizontal_scroll_mode = 0
 
-[node name="GridContainer" type="GridContainer" parent="VBoxContainer/ScrollContainer"]
+[node name="Lista" type="VBoxContainer" parent="VBoxContainer/ScrollContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
-theme_override_constants/h_separation = 16
-theme_override_constants/v_separation = 16
-columns = 2
+theme_override_constants/separation = 20
 
 [connection signal="pressed" from="VBoxContainer/TopBar/BtnVoltar" to="." method="_on_btn_voltar_pressed"]
