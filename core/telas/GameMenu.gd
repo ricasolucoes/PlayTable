@@ -89,36 +89,66 @@ func _build_game_buttons() -> void:
 		container.add_child(card)
 
 
+static func get_game_intro_path(game: GameDefinition) -> String:
+	if game.scene_path.begins_with("res://games/"):
+		var parts := game.scene_path.split("/")
+		if parts.size() >= 4:
+			var folder := parts[3]
+			var intro := "res://games/%s/intro.jpg" % folder
+			if ResourceLoader.exists(intro):
+				return intro
+	return ""
+
+
 func _create_game_card(game: GameDefinition) -> Button:
 	var btn := Button.new()
-	btn.custom_minimum_size = Vector2(0, 150)
+	btn.custom_minimum_size = Vector2(0, 238)
 	btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	btn.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	btn.focus_mode = Control.FOCUS_NONE
+	btn.clip_contents = true
+	btn.add_theme_stylebox_override("normal", _card_style(game, false, false))
+	btn.add_theme_stylebox_override("hover", _card_style(game, true, false))
+	btn.add_theme_stylebox_override("pressed", _card_style(game, false, true))
+	btn.add_theme_stylebox_override("focus", _card_style(game, true, false))
 
 	var vbox := VBoxContainer.new()
 	vbox.set_anchors_preset(Control.PRESET_FULL_RECT)
-	vbox.offset_left = 12.0
-	vbox.offset_top = 16.0
-	vbox.offset_right = -12.0
-	vbox.offset_bottom = -16.0
+	vbox.offset_left = 14.0
+	vbox.offset_top = 14.0
+	vbox.offset_right = -14.0
+	vbox.offset_bottom = -12.0
 	vbox.alignment = BoxContainer.ALIGNMENT_CENTER
-	vbox.add_theme_constant_override("separation", 6)
+	vbox.add_theme_constant_override("separation", 8)
 	vbox.mouse_filter = Control.MOUSE_FILTER_IGNORE
 
-	var icon_label := Label.new()
-	icon_label.text = game.icon
-	icon_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	icon_label.add_theme_font_size_override("font_size", 38)
-	icon_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	vbox.add_child(icon_label)
+	var intro_path := get_game_intro_path(game)
+	if intro_path != "":
+		var tex_rect := TextureRect.new()
+		tex_rect.texture = load(intro_path)
+		tex_rect.custom_minimum_size = Vector2(0, 145)
+		tex_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		tex_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+		tex_rect.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
+		tex_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		vbox.add_child(tex_rect)
+	else:
+		var icon_label := Label.new()
+		icon_label.text = game.icon
+		icon_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		icon_label.add_theme_font_size_override("font_size", 38)
+		icon_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		vbox.add_child(icon_label)
 
 	var title_label := Label.new()
 	title_label.text = game.title
 	title_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	title_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	title_label.add_theme_font_size_override("font_size", 20)
-	title_label.add_theme_color_override("font_color", Color(0.98, 0.94, 0.86, 1.0))
+	title_label.add_theme_color_override("font_color", Color(0.98, 0.98, 1.0, 1.0))
+	title_label.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.55))
+	title_label.add_theme_constant_override("shadow_offset_x", 1)
+	title_label.add_theme_constant_override("shadow_offset_y", 2)
 	title_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	vbox.add_child(title_label)
 
@@ -135,14 +165,45 @@ func _create_game_card(game: GameDefinition) -> Button:
 	return btn
 
 
+func _card_style(game: GameDefinition, highlighted: bool, pressed: bool) -> StyleBoxFlat:
+	var accent := _game_accent(game)
+	var style := StyleBoxFlat.new()
+	style.bg_color = Color(accent, 0.88 if not pressed else 0.98)
+	style.border_color = Color(accent.lightened(0.28 if highlighted else 0.08), 0.98)
+	style.set_border_width_all(2 if not highlighted else 3)
+	style.set_corner_radius_all(24)
+	style.shadow_color = Color(accent, 0.32 if highlighted else 0.22)
+	style.shadow_size = 14 if highlighted else 9
+	style.shadow_offset = Vector2(0, 5 if not pressed else 2)
+	style.content_margin_left = 14
+	style.content_margin_right = 14
+	style.content_margin_top = 14
+	style.content_margin_bottom = 12
+	return style
+
+
+func _game_accent(game: GameDefinition) -> Color:
+	match game.scene_path:
+		"res://games/quatro_em_linha/ConnectFourGame.tscn": return Color("#1f66b8")
+		"res://games/jogo_da_velha/TicTacToeGame.tscn": return Color("#203b66")
+		"res://games/reversi/ReversiGame.tscn": return Color("#25864f")
+		"res://games/batalha_naval/BattleshipGame.tscn": return Color("#183149")
+		"res://games/damas/CheckersGame.tscn": return Color("#552d32")
+		"res://games/mancala/MancalaGame.tscn": return Color("#8d4d22")
+		_: return Color("#263b56")
+
+
+
 func _on_game_pressed(game: GameDefinition) -> void:
 	play_click()
 	if game.is_implemented and ResourceLoader.exists(game.scene_path):
 		SceneManager.goto_scene(game.scene_path)
 	else:
 		SaveManager.set_setting("generic_game_title", game.title)
+		SaveManager.set_setting("generic_game_intro", get_game_intro_path(game))
 		SaveManager.set_setting("current_menu", menu_scene_path)
 		SceneManager.goto_scene(GENERIC_GAME)
+
 
 
 ## Ligado no `.tscn` dos dois menus.
