@@ -16,8 +16,6 @@ const CARD_PITCH := 0.52
 const ZONE_SIZE := Vector2(3.15, 1.45)
 
 @onready var cards_root: Node3D = $CardsRoot
-@onready var dealer_score_label: Label = $UI/VBoxContainer/DealerScoreLabel
-@onready var player_score_label: Label = $UI/VBoxContainer/PlayerScoreLabel
 @onready var btn_hit: Button = $UI/Buttons/BtnHit
 @onready var btn_stand: Button = $UI/Buttons/BtnStand
 
@@ -128,15 +126,14 @@ func _relayout_hand(is_player: bool, animate_from: int = -1) -> void:
 
 func _update_labels(show_dealer: bool) -> void:
 	var p_score := BlackjackRules.calculate_hand_value(player_hand.get_all())
-	player_score_label.text = "Sua Mão: %d pontos" % p_score
-	
+	# A carta virada da mesa continua virada no placar: "14+" e nao um numero
+	# fechado, senao a barra entrega o que a mesa esta escondendo.
+	var mesa := ""
 	if show_dealer or game_over:
-		var d_score := BlackjackRules.calculate_hand_value(dealer_hand.get_all())
-		dealer_score_label.text = "Mão da Mesa (Dealer): %d pontos" % d_score
+		mesa = str(BlackjackRules.calculate_hand_value(dealer_hand.get_all()))
 	else:
-		var visible_cards := dealer_hand.get_all().slice(1)
-		var partial_score := BlackjackRules.calculate_hand_value(visible_cards)
-		dealer_score_label.text = "Mão da Mesa: %d + [Oculta]" % partial_score
+		mesa = "%d+" % BlackjackRules.calculate_hand_value(dealer_hand.get_all().slice(1))
+	set_duel_score(p_score, mesa, "sua mão", "mesa")
 
 func _on_btn_hit_pressed() -> void:
 	if game_over: return

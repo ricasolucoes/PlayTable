@@ -14,7 +14,6 @@ var ai_level: int = DifficultyManager.DEFAULT_LEVEL
 
 @onready var board_3d: Board3D = $Board3D
 @onready var pieces_root: Node3D = $PiecesRoot
-@onready var score_label: Label = $UI/VBoxContainer/ScoreLabel
 @onready var level_label: Label = $UI/VBoxContainer/LevelLabel
 
 func _ready() -> void:
@@ -90,7 +89,7 @@ func _update_score() -> void:
 			var val: int = grid_data.get_cell(r, c)
 			if val > 0: player_count += 1
 			elif val < 0: ai_count += 1
-	score_label.text = "Você: %d  |  IA: %d" % [player_count, ai_count]
+	set_duel_score(player_count, ai_count)
 
 func _on_cell_clicked(r: int, c: int) -> void:
 	if game_over or not is_player_turn: return

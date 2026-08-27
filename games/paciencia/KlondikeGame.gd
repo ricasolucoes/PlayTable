@@ -15,7 +15,6 @@ var selected_card_idx: int = -1
 var moves_count: int = 0
 
 @onready var cards_root: Node3D = $CardsRoot
-@onready var moves_label: Label = $UI/VBoxContainer/Header/MovesLabel
 
 @onready var btn_stock: Button = $UI/TopRow/StockArea/BtnStock
 @onready var btn_waste: Button = $UI/TopRow/StockArea/BtnWaste
@@ -151,7 +150,7 @@ func _sync_3d_table() -> void:
 			cards_root.add_child(c_3d)
 
 func _update_ui() -> void:
-	moves_label.text = "Movimentos: %d" % moves_count
+	set_counter(moves_count, "movimentos")
 	btn_stock.text = "Monte\n(%d)" % stock.size()
 	
 	if waste.is_empty():

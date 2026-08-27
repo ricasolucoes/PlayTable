@@ -18,8 +18,6 @@ var is_checking: bool = false
 var _started_at: float = 0.0
 
 @onready var grid_container: GridContainer = $VBoxContainer/CenterContainer/Grid
-@onready var pairs_label: Label = $VBoxContainer/ScoreBoard/PairsPanel/HBox/Value
-@onready var moves_label: Label = $VBoxContainer/ScoreBoard/MovesPanel/HBox/Value
 @onready var win_modal: ColorRect = $WinModal
 @onready var win_modal_title: Label = $WinModal/Panel/VBox/WinTitle
 @onready var win_modal_sub: Label = $WinModal/Panel/VBox/WinSub
@@ -146,7 +144,9 @@ func _handle_game_won() -> void:
 	reveal_result_modal(win_modal)
 
 func _update_ui() -> void:
-	pairs_label.text = str(pairs_found) + " / " + str(TOTAL_PAIRS)
-	moves_label.text = str(moves_count)
+	set_counters([
+		{"value": "%d/%d" % [pairs_found, TOTAL_PAIRS], "label": "pares"},
+		{"value": moves_count, "label": "jogadas"},
+	])
 	if pairs_found == 0 and moves_count == 0:
 		set_status("Toque em uma carta para começar")

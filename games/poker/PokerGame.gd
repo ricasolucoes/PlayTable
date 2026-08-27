@@ -15,8 +15,6 @@ var current_bet: int = 5
 var game_phase: String = "bet" # "bet", "hold", "result"
 
 @onready var cards_root: Node3D = $CardsRoot
-@onready var chips_label: Label = $UI/VBoxContainer/Header/ChipsLabel
-@onready var bet_label: Label = $UI/VBoxContainer/Header/BetLabel
 @onready var payout_table_label: Label = $UI/VBoxContainer/PayoutTableContainer/PayoutLabel
 @onready var btn_action: Button = $UI/Controls/BtnAction
 @onready var btn_bet_minus: Button = $UI/Controls/BtnBetMinus
@@ -80,8 +78,7 @@ func _reset_to_bet_phase() -> void:
 	_update_chips_ui()
 
 func _update_chips_ui() -> void:
-	chips_label.text = "💰 Fichas: %d" % chips
-	bet_label.text = "Aposta: %d" % current_bet
+	set_counters([{"value": chips, "label": "fichas"}, {"value": current_bet, "label": "aposta"}])
 
 func _on_btn_action_pressed() -> void:
 	if game_phase == "bet":

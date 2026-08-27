@@ -9,7 +9,6 @@ var marbles_3d: Dictionary = {}
 
 @onready var board_root: Node3D = $BoardRoot
 @onready var marbles_root: Node3D = $MarblesRoot
-@onready var pegs_label: Label = $UI/VBoxContainer/PegsLabel
 @onready var touch_layer: Control = $UI/TouchLayer
 
 const CELL_SIZE: float = 0.75
@@ -135,7 +134,7 @@ func _sync_marbles_3d() -> void:
 
 func _update_ui() -> void:
 	var pegs_count := PegSolitaireRules.count_pegs(grid_data)
-	pegs_label.text = "Esferas Restantes: %d / 32" % pegs_count
+	set_counter(pegs_count, "esferas")
 
 # ---------------------------------------------------------------------------
 # Toque e arrasto

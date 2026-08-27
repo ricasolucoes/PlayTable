@@ -18,10 +18,6 @@ var piece_nodes: Array[Node2D] = []
 var ai_level: int = DifficultyManager.DEFAULT_LEVEL
 
 @onready var grid_container: GridContainer = $BoardContainer/Grid
-@onready var x_panel: PanelContainer = $VBoxContainer/ScoreBoard/P1Panel
-@onready var o_panel: PanelContainer = $VBoxContainer/ScoreBoard/P2Panel
-@onready var x_score_lbl: Label = $VBoxContainer/ScoreBoard/P1Panel/HBox/Score
-@onready var o_score_lbl: Label = $VBoxContainer/ScoreBoard/P2Panel/HBox/Score
 @onready var win_modal: ColorRect = $WinModal
 @onready var win_modal_title: Label = $WinModal/Panel/VBox/WinTitle
 @onready var win_modal_sub: Label = $WinModal/Panel/VBox/WinSub
@@ -155,13 +151,13 @@ func _handle_game_won(winner_id: int, combo: Array[int]) -> void:
 		
 	if winner_id == 1:
 		score_x += 1
-		x_score_lbl.text = str(score_x)
+		set_duel_score(score_x, score_o)
 		win_modal_title.text = "🏆 Vitória do X!"
 		win_modal_sub.text = "Você alinhou 3 peças com sucesso!"
 		if AudioManager: AudioManager.play_win()
 	else:
 		score_o += 1
-		o_score_lbl.text = str(score_o)
+		set_duel_score(score_x, score_o)
 		win_modal_title.text = "Vitória do O!"
 		win_modal_sub.text = "A IA completou a trinca de ouro."
 		if AudioManager: AudioManager.play_draw()
@@ -184,14 +180,12 @@ func _handle_game_draw() -> void:
 
 func _update_turn_ui() -> void:
 	if game_over: return
+	set_duel_score(score_x, score_o)
+	set_active_side(is_player_turn)
 	if is_player_turn:
 		set_status("Sua Vez (Cruz X Carmesim)")
-		x_panel.modulate = Color(1.0, 1.0, 1.0, 1.0)
-		o_panel.modulate = Color(0.6, 0.6, 0.6, 0.7)
 	else:
 		set_status("Vez do Computador (Anel O Dourado)...")
-		x_panel.modulate = Color(0.6, 0.6, 0.6, 0.7)
-		o_panel.modulate = Color(1.0, 1.0, 1.0, 1.0)
 
 func _start_new_game() -> void:
 	win_modal.visible = false
