@@ -1,12 +1,8 @@
-[gd_scene load_steps=3 format=3 uid="uid://dice3duid"]
+[gd_scene load_steps=2 format=3 uid="uid://dice3duid"]
 
 [ext_resource type="Script" path="res://shared/3d/Dice3D.gd" id="1_script"]
-
-[sub_resource type="BoxMesh" id="BoxMesh_dice"]
-size = Vector3(0.55, 0.55, 0.55)
 
 [node name="Dice3D" type="Node3D"]
 script = ExtResource("1_script")
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="."]
-mesh = SubResource("BoxMesh_dice")
