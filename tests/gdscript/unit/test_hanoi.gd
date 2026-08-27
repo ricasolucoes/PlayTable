@@ -4,6 +4,22 @@ extends GutTest
 
 const Rules = preload("res://games/hanoi/HanoiRules.gd")
 
+## A Torre de Hanoi nao tem adversario: o numero de discos e a unica alavanca
+## de dificuldade que ela tem, entao e ela que a escada do DifficultyManager
+## move. Estes testes fixam o degrau mais baixo -- a torre de 3 discos -- para
+## nao dependerem do progresso de quem estiver jogando na maquina, e devolvem o
+## degrau anterior no fim.
+var _degrau_anterior: int = DifficultyManager.DEFAULT_LEVEL
+
+
+func before_each() -> void:
+	_degrau_anterior = DifficultyManager.get_level("hanoi")
+	DifficultyManager.set_level("hanoi", DifficultyManager.MIN_LEVEL)
+
+
+func after_each() -> void:
+	DifficultyManager.set_level("hanoi", _degrau_anterior)
+
 
 func test_inicializacao_de_pinos_com_3_a_8_discos() -> void:
 	for count in range(3, 9):
@@ -173,4 +189,36 @@ func test_cena_troca_de_dificuldade() -> void:
 	assert_eq(jogo.disk_count, 5, "5 discos configurados")
 	assert_eq(jogo.pegs[0].size(), 5, "5 discos no pino 0")
 	assert_eq(jogo.disk_nodes.size(), 5, "5 malhas 3D criadas")
+
+
+## O botao de discos empurra a escada, e e a escada que grava. Antes o numero
+## escolhido morria ao fechar a cena: `disk_count` voltava para 3 -- o mais
+## facil -- toda vez que o jogo era reaberto, enquanto a escada subia em
+## paralelo mexendo so no XP.
+func test_a_escolha_de_discos_sobrevive_a_reabrir_a_cena() -> void:
+	var jogo: Node = add_child_autofree(GameScene.instantiate())
+	jogo._on_difficulty_selected(7)
+	assert_eq(jogo.disk_count, 7, "7 discos configurados")
+
+	var outra: Node = add_child_autofree(GameScene.instantiate())
+	assert_eq(outra.disk_count, 7, "a cena reaberta lembra os 7 discos")
+	assert_eq(outra.pegs[0].size(), 7, "e monta a torre de 7")
+
+
+## As duas pontas da escada tem de bater com as duas pontas que as regras
+## aceitam, senao um degrau vira uma torre que `HanoiRules` recusa.
+func test_a_escada_cobre_as_duas_pontas_do_numero_de_discos() -> void:
+	var GameScript = load("res://games/hanoi/HanoiGame.gd")
+	assert_eq(GameScript.discos_do_degrau(DifficultyManager.MIN_LEVEL), Rules.MIN_DISKS,
+		"o degrau de baixo e a torre menor")
+	assert_eq(GameScript.discos_do_degrau(DifficultyManager.MAX_LEVEL), Rules.MAX_DISKS,
+		"o degrau do topo e a torre maior")
+
+	var antes := 0
+	for nivel in range(DifficultyManager.MIN_LEVEL, DifficultyManager.MAX_LEVEL + 1):
+		var discos: int = GameScript.discos_do_degrau(nivel)
+		assert_true(discos >= antes, "o numero de discos nunca cai ao subir o degrau")
+		assert_true(discos >= Rules.MIN_DISKS and discos <= Rules.MAX_DISKS,
+			"degrau %d cabe nas pontas que as regras aceitam" % nivel)
+		antes = discos
 

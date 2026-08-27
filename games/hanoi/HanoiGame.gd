@@ -12,6 +12,11 @@ const DISK_HEIGHT: float = 0.18
 const BASE_Y: float = 0.12
 const LIFT_Y: float = 2.4
 
+## Quantos discos a torre tem. Sai do degrau da escada do DifficultyManager, e
+## nao de um campo proprio: antes o jogo voltava sempre para 3 discos -- o mais
+## facil -- ao reabrir a cena, enquanto a escada subia em paralelo mexendo so
+## no XP. Torre de Hanoi nao tem adversario; o numero de discos e a unica
+## alavanca de dificuldade que ela tem, entao e ela que a escada move.
 var disk_count: int = 3
 var pegs: Array[Array] = []
 var disk_nodes: Dictionary = {}
@@ -35,10 +40,7 @@ var auto_step_index: int = 0
 @onready var disks_root: Node3D = $DisksRoot
 @onready var halos_root: Node3D = $HalosRoot
 
-@onready var title_label: Label = $UI/VBoxContainer/TopBar/Title
-@onready var moves_label: Label = $UI/VBoxContainer/InfoCards/MovesCard/VBox/MovesValue
 @onready var min_moves_label: Label = $UI/VBoxContainer/InfoCards/MinMovesCard/VBox/MinMovesValue
-@onready var time_label: Label = $UI/VBoxContainer/InfoCards/TimeCard/VBox/TimeValue
 @onready var stars_label: Label = $UI/VBoxContainer/InfoCards/StarsCard/VBox/StarsValue
 
 @onready var btn_undo: Button = $UI/Actions/BtnUndo
@@ -68,8 +70,12 @@ func _ready() -> void:
 
 func _process(delta: float) -> void:
 	if is_timer_running and not game_over:
+		# O relogio anda em segundos inteiros: repintar a barra a cada quadro
+		# reescreveria o mesmo "02:31" sessenta vezes por segundo.
+		var antes := int(elapsed_time)
 		elapsed_time += delta
-		_update_time_display()
+		if int(elapsed_time) != antes:
+			_update_time_display()
 
 
 # ---------------------------------------------------------------------------
@@ -167,11 +173,31 @@ func _setup_difficulty_buttons() -> void:
 		diff_buttons_container.add_child(btn)
 
 
+## Quantos discos cada degrau da escada vale. Degrau 1 e a torre de 3, degrau
+## 10 e a de 8 -- as duas pontas que `HanoiRules` aceita.
+static func discos_do_degrau(level: int) -> int:
+	var lvl := clampi(level, DifficultyManager.MIN_LEVEL, DifficultyManager.MAX_LEVEL)
+	var faixa := DifficultyManager.MAX_LEVEL - DifficultyManager.MIN_LEVEL
+	var passo := Rules.MAX_DISKS - Rules.MIN_DISKS
+	return Rules.MIN_DISKS + int(floor(float(lvl - DifficultyManager.MIN_LEVEL) * passo / faixa))
+
+
+## O degrau mais baixo que vale este numero de discos. E o inverso de
+## `discos_do_degrau()`, para o botao poder empurrar a escada.
+static func degrau_dos_discos(discos: int) -> int:
+	for nivel in range(DifficultyManager.MIN_LEVEL, DifficultyManager.MAX_LEVEL + 1):
+		if discos_do_degrau(nivel) >= discos:
+			return nivel
+	return DifficultyManager.MAX_LEVEL
+
+
+## O botao de discos empurra a escada, e a escada e quem grava. Antes o numero
+## escolhido morria ao fechar a cena.
 func _on_difficulty_selected(new_disk_count: int) -> void:
 	play_click()
 	if is_animating or is_auto_solving:
 		_cancel_auto_solver()
-	disk_count = new_disk_count
+	DifficultyManager.set_level(game_id, degrau_dos_discos(new_disk_count))
 	_start_new_game()
 
 
@@ -195,6 +221,7 @@ func _start_new_game() -> void:
 	win_modal.visible = false
 	_hide_all_halos()
 	
+	disk_count = discos_do_degrau(DifficultyManager.get_level(game_id))
 	pegs = Rules.create_initial_pegs(disk_count)
 	_build_3d_disks()
 	_update_ui_stats()
@@ -648,15 +675,23 @@ func _get_peg_name(peg_idx: int) -> String:
 
 func _update_ui_stats() -> void:
 	var optimal: int = Rules.get_optimal_moves(disk_count)
-	moves_label.text = str(move_count)
 	min_moves_label.text = str(optimal)
 	var stars: int = Rules.calculate_stars(move_count, disk_count)
 	stars_label.text = _get_stars_string(stars)
-	title_label.text = "Torres de Hanói (%d Discos)" % disk_count
+	_pintar_placar()
 
 
 func _update_time_display() -> void:
-	time_label.text = _format_time(elapsed_time)
+	_pintar_placar()
+
+
+## Jogadas e cronometro na barra de cima. O minimo e as estrelas ficam nos
+## cartoes: sao a nota da partida, nao o placar dela.
+func _pintar_placar() -> void:
+	set_counters([
+		{"value": move_count, "label": "jogadas"},
+		{"value": _format_time(elapsed_time), "label": "tempo"},
+	])
 
 
 func _format_time(seconds: float) -> String:

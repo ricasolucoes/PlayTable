@@ -36,30 +36,11 @@ layout_mode = 1
 anchors_preset = 10
 anchor_right = 1.0
 offset_left = 20.0
-offset_top = 32.0
+offset_top = 134.0
 offset_right = -20.0
 offset_bottom = 250.0
 grow_horizontal = 2
 theme_override_constants/separation = 8
-
-[node name="TopBar" type="HBoxContainer" parent="UI/VBoxContainer"]
-layout_mode = 2
-
-[node name="BtnBack" type="Button" parent="UI/VBoxContainer/TopBar"]
-custom_minimum_size = Vector2(95, 48)
-layout_mode = 2
-theme_override_font_sizes/font_size = 18
-text = "‹ Voltar"
-
-[node name="Title" type="Label" parent="UI/VBoxContainer/TopBar"]
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.8)
-theme_override_constants/shadow_offset_x = 2
-theme_override_constants/shadow_offset_y = 2
-theme_override_font_sizes/font_size = 26
-text = "Torres de Hanói"
-horizontal_alignment = 1
 
 [node name="DifficultyBar" type="ScrollContainer" parent="UI/VBoxContainer"]
 custom_minimum_size = Vector2(0, 48)
@@ -77,27 +58,6 @@ theme_override_constants/separation = 6
 layout_mode = 2
 theme_override_constants/separation = 8
 alignment = 1
-
-[node name="MovesCard" type="PanelContainer" parent="UI/VBoxContainer/InfoCards"]
-layout_mode = 2
-size_flags_horizontal = 3
-
-[node name="VBox" type="VBoxContainer" parent="UI/VBoxContainer/InfoCards/MovesCard"]
-layout_mode = 2
-alignment = 1
-
-[node name="MovesTitle" type="Label" parent="UI/VBoxContainer/InfoCards/MovesCard/VBox"]
-layout_mode = 2
-theme_override_font_sizes/font_size = 13
-theme_override_colors/font_color = Color(0.8, 0.8, 0.8, 1)
-text = "Jogadas"
-horizontal_alignment = 1
-
-[node name="MovesValue" type="Label" parent="UI/VBoxContainer/InfoCards/MovesCard/VBox"]
-layout_mode = 2
-theme_override_font_sizes/font_size = 18
-text = "0"
-horizontal_alignment = 1
 
 [node name="MinMovesCard" type="PanelContainer" parent="UI/VBoxContainer/InfoCards"]
 layout_mode = 2
@@ -118,27 +78,6 @@ horizontal_alignment = 1
 layout_mode = 2
 theme_override_font_sizes/font_size = 18
 text = "7"
-horizontal_alignment = 1
-
-[node name="TimeCard" type="PanelContainer" parent="UI/VBoxContainer/InfoCards"]
-layout_mode = 2
-size_flags_horizontal = 3
-
-[node name="VBox" type="VBoxContainer" parent="UI/VBoxContainer/InfoCards/TimeCard"]
-layout_mode = 2
-alignment = 1
-
-[node name="TimeTitle" type="Label" parent="UI/VBoxContainer/InfoCards/TimeCard/VBox"]
-layout_mode = 2
-theme_override_font_sizes/font_size = 13
-theme_override_colors/font_color = Color(0.8, 0.8, 0.8, 1)
-text = "Tempo"
-horizontal_alignment = 1
-
-[node name="TimeValue" type="Label" parent="UI/VBoxContainer/InfoCards/TimeCard/VBox"]
-layout_mode = 2
-theme_override_font_sizes/font_size = 18
-text = "00:00"
 horizontal_alignment = 1
 
 [node name="StarsCard" type="PanelContainer" parent="UI/VBoxContainer/InfoCards"]
@@ -320,7 +259,6 @@ layout_mode = 2
 theme_override_font_sizes/font_size = 18
 text = "🏠 Menu Principal"
 
-[connection signal="pressed" from="UI/VBoxContainer/TopBar/BtnBack" to="." method="_on_btn_back_pressed"]
 [connection signal="pressed" from="UI/PegTouchArea/BtnPegA" to="." method="_on_peg_pressed" binds=[0]]
 [connection signal="pressed" from="UI/PegTouchArea/BtnPegB" to="." method="_on_peg_pressed" binds=[1]]
 [connection signal="pressed" from="UI/PegTouchArea/BtnPegC" to="." method="_on_peg_pressed" binds=[2]]
