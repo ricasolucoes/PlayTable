@@ -23,20 +23,12 @@ anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 offset_left = 24.0
-offset_top = 36.0
+offset_top = 134.0
 offset_right = -24.0
 offset_bottom = -36.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_constants/separation = 40
-
-[node name="TopBar" type="HBoxContainer" parent="VBoxContainer"]
-layout_mode = 2
-
-[node name="BtnBack" type="Button" parent="VBoxContainer/TopBar"]
-custom_minimum_size = Vector2(110, 54)
-layout_mode = 2
-text = "BTN_BACK"
 
 [node name="CenterCard" type="PanelContainer" parent="VBoxContainer"]
 layout_mode = 2
@@ -60,4 +52,3 @@ theme_override_font_sizes/font_size = 20
 text = "Em breve..."
 horizontal_alignment = 1
 
-[connection signal="pressed" from="VBoxContainer/TopBar/BtnBack" to="." method="_on_btn_back_pressed"]

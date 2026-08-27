@@ -37,6 +37,9 @@ var btn_restart: BaseButton = null
 ## Mesa 3D, quando o jogo tem uma. `finish_game()` comemora nela.
 var env_3d: TabletopEnvironment3D = null
 
+## A barra de cima, montada aqui para os 19 jogos. Nenhuma cena a carrega.
+var top_bar: GameTopBar = null
+
 ## Identificador do jogo no barramento de eventos, tirado da pasta da cena
 ## (`res://games/gamao/BackgammonGame.tscn` -> `gamao`).
 var game_id: String = ""
@@ -68,6 +71,20 @@ func _enter_tree() -> void:
 		var toast := RewardToast.new()
 		toast.name = "RewardToast"
 		add_child(toast)
+	_montar_barra()
+
+
+## Põe a barra de cima na cena. Entra por último para desenhar sobre a mesa 3D
+## e sobre a HUD do jogo, e é medida por `measure_hud_bands()` como qualquer
+## bloco ancorado no topo -- mexer na altura dela reenquadra o tabuleiro sozinho.
+func _montar_barra() -> void:
+	if get_node_or_null("TopBar") != null:
+		return
+	top_bar = GameTopBar.new()
+	top_bar.name = "TopBar"
+	top_bar.game_title = GameCatalog.bar_title(game_id)
+	top_bar.back_pressed.connect(go_back_to_menu)
+	add_child(top_bar)
 
 
 func _derive_game_id() -> String:
@@ -205,6 +222,8 @@ func _on_restart_pressed() -> void:
 func restart_game() -> void:
 	play_click()
 	_result_reported = false
+	if top_bar != null:
+		top_bar.mark_win(false)
 	_start_new_game()
 	begin_match()
 
@@ -222,6 +241,8 @@ func finish_game(message: String, player_won: bool = false, extra: Dictionary = 
 	game_over = true
 	set_status(message)
 	report_match_result(player_won, extra)
+	if top_bar != null:
+		top_bar.mark_win(player_won)
 	if btn_restart != null:
 		btn_restart.show()
 	if player_won and env_3d != null:
@@ -279,6 +300,19 @@ func _close_difficulty(player_won: bool, draw: bool) -> Dictionary:
 	}
 
 
+## Sufixo com o degrau atual, para a HUD dizer em que dificuldade a partida
+## esta acontecendo.
+##
+## O numero existia, andava a cada partida e mexia no XP de 0,6x a 2,0x sem o
+## jogador nunca ver: so as Damas e o Jogo da Velha o mostravam. Cada jogo
+## pendura isto no rotulo estavel que ja tem -- placar, contador de pecas,
+## faixa de turno -- em vez de ganhar um rotulo novo na cena.
+func difficulty_suffix() -> String:
+	if DifficultyManager == null:
+		return ""
+	return "  •  %s" % DifficultyManager.label_for(game_id)
+
+
 ## Revela o modal de resultado com o fade que os jogos 2D repetiam.
 func reveal_result_modal(modal: Control, delay: float = 0.6) -> void:
 	await get_tree().create_timer(delay).timeout
@@ -288,6 +322,33 @@ func reveal_result_modal(modal: Control, delay: float = 0.6) -> void:
 	modal.modulate.a = 0.0
 	var fade := create_tween()
 	fade.tween_property(modal, "modulate:a", 1.0, 0.3)
+
+
+# ---------------------------------------------------------------- placar
+
+## Placar de dois lados na barra: o seu número em ouro, o do adversário em
+## claro. É a forma de doze dos dezenove jogos -- peças, discos, pontos, pip.
+func set_duel_score(mine: Variant, theirs: Variant, mine_label: String = GameTopBar.ROTULO_VOCE, theirs_label: String = GameTopBar.ROTULO_IA) -> void:
+	if top_bar != null:
+		top_bar.set_duel_score(mine, theirs, mine_label, theirs_label)
+
+
+## Placar de jogo solo: uma ou duas células rotuladas -- jogadas, tempo, minas.
+func set_counters(cells: Array) -> void:
+	if top_bar != null:
+		top_bar.set_counters(cells)
+
+
+## Atalho para o jogo que só tem um número a mostrar.
+func set_counter(value: Variant, label: String) -> void:
+	if top_bar != null:
+		top_bar.set_counter(value, label)
+
+
+## De quem é a vez: no duelo, o lado que espera fica meio apagado.
+func set_active_side(mine: bool) -> void:
+	if top_bar != null:
+		top_bar.set_active_side(mine)
 
 
 # ------------------------------------------------------------------ auxiliares

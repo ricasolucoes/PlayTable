@@ -112,3 +112,15 @@ static func all_game_ids() -> Array[String]:
 	for def in get_all_games():
 		ids.append(game_id_of(def))
 	return ids
+
+
+## Nome do jogo na barra de cima.
+##
+## O catálogo é a única fonte do nome: até agora a tela dizia "Damas 3D" e o
+## catálogo dizia "Damas", duas verdades para a mesma coisa. Nenhum título
+## precisa encurtar -- o mais comprido, "Jogo de Cores & Cartas", cabe nos 720 px
+## do viewport lógico ao lado do voltar e do placar, e o que passar disso o
+## próprio rótulo corta com reticências.
+static func bar_title(game_id: String) -> String:
+	var def := find_by_id(game_id)
+	return def.title if def != null else ""
