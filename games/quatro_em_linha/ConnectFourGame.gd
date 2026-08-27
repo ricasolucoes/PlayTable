@@ -17,6 +17,9 @@ const PIECE_RADIUS = ConnectFourLayout.HOLE_RADIUS
 var board: Grid2D = null
 var is_player_turn: bool = true
 var vs_ai: bool = true
+
+## Degrau de 1 a 10 do DifficultyManager. Vira orcamento de busca da IA.
+var ai_level: int = DifficultyManager.DEFAULT_LEVEL
 var score_p1: int = 0
 var score_p2: int = 0
 var piece_instances := {}  ## Vector2i(linha, coluna) -> no da ficha
@@ -28,10 +31,6 @@ var _started_at: float = 0.0
 @onready var board_back: Control = $BoardArea/BoardBack
 @onready var board_front: Control = $BoardArea/BoardFront
 @onready var col_buttons_container: HBoxContainer = $BoardArea/ColButtons
-@onready var p1_panel: PanelContainer = $VBoxContainer/ScoreBoard/P1Panel
-@onready var p2_panel: PanelContainer = $VBoxContainer/ScoreBoard/P2Panel
-@onready var p1_score_lbl: Label = $VBoxContainer/ScoreBoard/P1Panel/HBox/Score
-@onready var p2_score_lbl: Label = $VBoxContainer/ScoreBoard/P2Panel/HBox/Score
 @onready var win_modal: ColorRect = $WinModal
 @onready var win_modal_title: Label = $WinModal/Panel/VBox/WinTitle
 @onready var win_modal_sub: Label = $WinModal/Panel/VBox/WinSub
@@ -51,6 +50,7 @@ func cell_center_y(row: int) -> float:
 func _ready() -> void:
 	status_label = $VBoxContainer/StatusCard/StatusLabel
 	board = Grid2D.new(ROWS, COLS, 0)
+	ai_level = DifficultyManager.get_level(game_id)
 	
 	_setup_board_visuals()
 	_setup_column_buttons()
@@ -122,10 +122,34 @@ func _make_move(col: int, player_id: int) -> void:
 				_update_turn_ui()
 	)
 
+## Pensa fora da linha principal, durante a pausa de encenacao que ja existia.
+##
+## No degrau 10 a busca chega a meio segundo no computador e mais num telefone.
+## A tarefa recebe uma copia plana do tabuleiro, nunca a cena: a cena pode ser
+## fechada com a busca ainda rodando.
 func _do_ai_turn() -> void:
 	if game_over:
 		return
-	var ai_col := ConnectFourRules.get_best_move(board, 2)
+
+	var plano := ConnectFourAI.achatar(board)
+	var saida: Array = []
+	var tarefa := WorkerThreadPool.add_task(
+		ConnectFourAI.pensar_em_tarefa.bind(plano[0], plano[1], 2, ai_level, saida))
+	# A arvore fica guardada antes do laco: quando o jogador sai da cena com a
+	# busca em andamento, `get_tree()` passa a devolver `null` no quadro
+	# seguinte, e `await null.process_frame` estoura. A tarefa nao segura
+	# referencia para a cena, entao esperar por ela aqui e seguro.
+	var arvore := get_tree()
+	while not WorkerThreadPool.is_task_completed(tarefa):
+		if arvore == null:
+			break
+		await arvore.process_frame
+	WorkerThreadPool.wait_for_task_completion(tarefa)
+
+	if not is_inside_tree() or game_over:
+		return
+
+	var ai_col: int = int(saida[0]) if not saida.is_empty() else -1
 	if ai_col != -1:
 		_make_move(ai_col, 2)
 	else:
@@ -146,13 +170,13 @@ func _handle_game_won(winner_id: int, win_cells: Array[Vector2i]) -> void:
 
 	if winner_id == 1:
 		score_p1 += 1
-		p1_score_lbl.text = str(score_p1)
+		set_duel_score(score_p1, score_p2)
 		win_modal_title.text = "🏆 Vitória!"
 		win_modal_sub.text = "Você conectou 4 fichas vermelhas!"
 		if AudioManager: AudioManager.play_win()
 	else:
 		score_p2 += 1
-		p2_score_lbl.text = str(score_p2)
+		set_duel_score(score_p1, score_p2)
 		win_modal_title.text = "Computador Venceu!"
 		win_modal_sub.text = "A inteligência artificial completou a linha."
 		if AudioManager: AudioManager.play_draw()
@@ -178,14 +202,12 @@ func _handle_game_draw() -> void:
 func _update_turn_ui() -> void:
 	if game_over:
 		return
+	set_duel_score(score_p1, score_p2)
+	set_active_side(is_player_turn)
 	if is_player_turn:
-		set_status("Sua Vez (Fichas Vermelhas)")
-		p1_panel.modulate = Color(1.0, 1.0, 1.0, 1.0)
-		p2_panel.modulate = Color(0.6, 0.6, 0.6, 0.7)
+		set_status("Sua Vez (Fichas Vermelhas)%s" % difficulty_suffix())
 	else:
 		set_status("Vez da IA (Fichas Douradas)...")
-		p1_panel.modulate = Color(0.6, 0.6, 0.6, 0.7)
-		p2_panel.modulate = Color(1.0, 1.0, 1.0, 1.0)
 
 func _start_new_game() -> void:
 	win_modal.visible = false
@@ -195,6 +217,7 @@ func _start_new_game() -> void:
 	piece_instances.clear()
 	game_over = false
 	is_player_turn = true
+	ai_level = DifficultyManager.get_level(game_id)
 	_started_at = Time.get_ticks_msec() / 1000.0
 	begin_match()
 	_update_turn_ui()

@@ -148,14 +148,16 @@ func test_get_best_move_so_escolhe_coluna_jogavel() -> void:
 
 
 func test_partida_completa_da_ia_contra_ela_mesma_termina() -> void:
-	# Guarda contra deadlock: substitui test_e2e_connect_four_simulation.
+	# Guarda contra deadlock: substitui test_e2e_connect_four_simulation. Num
+	# degrau baixo de proposito -- aqui o que se mede e que a partida fecha,
+	# nao a forca da busca, e o degrau do topo custaria minutos.
 	for _partida in range(10):
 		var g := _grid()
 		var vez := 1
 		var jogadas := 0
 		var vencedor := 0
 		while jogadas < ROWS * COLS:
-			var col: int = RulesScript.get_best_move(g, vez)
+			var col: int = RulesScript.get_move(g, vez, 4)
 			if col == -1:
 				break
 			var row: int = RulesScript.drop_piece(g, col, vez)
@@ -209,3 +211,91 @@ func test_a_pilha_cresce_do_fundo_para_o_topo() -> void:
 	var segunda := RulesScript.drop_piece(grid, 3, 2)
 	assert_gt(jogo.cell_center_y(primeira), jogo.cell_center_y(segunda),
 		"a segunda ficha da coluna e desenhada acima da primeira")
+
+
+# ------------------------------------------------------------- ConnectFourAI
+#
+# A IA antiga enxergava zero lances a frente: vencer agora, bloquear a vitoria
+# de agora, e senao a primeira coluna livre de uma ordem fixa. Os testes abaixo
+# cobrem o que ela nao conseguia fazer.
+
+const AIScript = preload("res://games/quatro_em_linha/ConnectFourAI.gd")
+
+
+func _planos(g: Grid2D) -> Array:
+	return AIScript.achatar(g)
+
+
+## Colocar uma peca entrega a casa de cima. A IA antiga nunca via isso porque
+## nao olhava nem um lance a frente -- ela seguia a ordem fixa
+## `[3, 2, 4, 1, 5, 0, 6]` e entregava a coluna alegremente.
+##
+## Posicao (linha 4 e a penultima):
+##
+##     . 1 1 1 . . .
+##     . 2 2 1 . . .
+##
+## As vermelhas (1) tem tres na linha 4; as casas que fecham sao (4,0) e (4,4).
+## As duas colunas estao vazias, entao a peca cai na linha 5 -- e quem jogar
+## nelas levanta o chao ate a casa que ganha. As colunas 0 e 4 sao as duas
+## unicas jogadas que perdem na hora.
+func test_a_ia_nao_joga_debaixo_da_vitoria_do_oponente() -> void:
+	var g := _grid()
+	RulesScript.drop_piece(g, 1, 2)
+	RulesScript.drop_piece(g, 1, 1)
+	RulesScript.drop_piece(g, 2, 2)
+	RulesScript.drop_piece(g, 2, 1)
+	RulesScript.drop_piece(g, 3, 1)
+	RulesScript.drop_piece(g, 3, 1)
+
+	for _tentativa in range(6):
+		var escolha: int = RulesScript.get_move(g, 2, 10)
+		assert_ne(escolha, 0, "jogar na coluna 0 entrega (4,0) as vermelhas")
+		assert_ne(escolha, 4, "jogar na coluna 4 entrega (4,4) as vermelhas")
+
+
+func test_a_ia_fecha_a_vitoria_antes_de_qualquer_outra_coisa() -> void:
+	var g := _grid()
+	for c in range(3):
+		RulesScript.drop_piece(g, c, 2)
+	assert_eq(RulesScript.get_move(g, 2, 10), 3, "fecha em 3")
+
+
+func test_a_ia_bloqueia_quando_nao_tem_vitoria() -> void:
+	var g := _grid()
+	for c in range(3):
+		RulesScript.drop_piece(g, c, 1)
+	assert_eq(RulesScript.get_move(g, 2, 10), 3, "bloqueia em 3")
+
+
+## Abrir na lateral entrega o jogo: com jogo perfeito dos dois lados, a coluna
+## do meio e a unica abertura que ganha. O sorteio entre jogadas de mesma nota
+## abria fora do meio em metade das partidas ate o desempate por centralidade.
+func test_o_degrau_do_topo_sempre_abre_no_meio() -> void:
+	for _tentativa in range(8):
+		assert_eq(RulesScript.get_move(_grid(), 2, 10), 3, "abertura no meio")
+
+
+func test_a_escada_de_perfis_e_monotonica() -> void:
+	var nos_antes := 0
+	var erro_antes := 1.1
+	for perfil in AIScript.PERFIS:
+		assert_gt(int(perfil["nos"]), nos_antes, "o orcamento cresce a cada degrau")
+		assert_true(float(perfil["erro"]) <= erro_antes, "a chance de erro nunca sobe")
+		nos_antes = int(perfil["nos"])
+		erro_antes = float(perfil["erro"])
+	assert_eq(float(AIScript.PERFIS[AIScript.PERFIS.size() - 1]["erro"]), 0.0,
+		"o degrau do topo nao erra de proposito")
+
+
+## A geracao da busca e as regras da cena tem de concordar: se elas divergem, a
+## IA busca sobre um jogo diferente do que a cena joga.
+func test_a_busca_e_as_regras_concordam_sobre_a_queda_da_peca() -> void:
+	var g := _grid()
+	var plano := _planos(g)
+	var cells: PackedByteArray = plano[0]
+	var alturas: PackedInt32Array = plano[1]
+	for c in [3, 3, 3, 0, 6, 1]:
+		var pela_cena: int = RulesScript.drop_piece(g, c, 1)
+		var pela_busca: int = AIScript.aplicar(cells, alturas, c, 1)
+		assert_eq(pela_busca, pela_cena, "a peca para na mesma linha na coluna %d" % c)

@@ -25,7 +25,7 @@ anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 offset_left = 24.0
-offset_top = 36.0
+offset_top = 134.0
 offset_right = -24.0
 offset_bottom = -36.0
 grow_horizontal = 2
@@ -33,76 +33,14 @@ grow_vertical = 2
 theme_override_constants/separation = 18
 
 [node name="TopBar" type="HBoxContainer" parent="VBoxContainer"]
+alignment = 2
 layout_mode = 2
 theme_override_constants/separation = 16
-
-[node name="BtnBack" type="Button" parent="VBoxContainer/TopBar"]
-custom_minimum_size = Vector2(110, 54)
-layout_mode = 2
-text = "‹ Voltar"
-
-[node name="Title" type="Label" parent="VBoxContainer/TopBar"]
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_font_sizes/font_size = 32
-text = "Quatro em Linha"
-horizontal_alignment = 1
 
 [node name="BtnRestart" type="Button" parent="VBoxContainer/TopBar"]
 custom_minimum_size = Vector2(110, 54)
 layout_mode = 2
 text = "Reiniciar"
-
-[node name="ScoreBoard" type="HBoxContainer" parent="VBoxContainer"]
-layout_mode = 2
-theme_override_constants/separation = 16
-alignment = 1
-
-[node name="P1Panel" type="PanelContainer" parent="VBoxContainer/ScoreBoard"]
-layout_mode = 2
-size_flags_horizontal = 3
-
-[node name="HBox" type="HBoxContainer" parent="VBoxContainer/ScoreBoard/P1Panel"]
-layout_mode = 2
-alignment = 1
-
-[node name="Dot" type="ColorRect" parent="VBoxContainer/ScoreBoard/P1Panel/HBox"]
-custom_minimum_size = Vector2(20, 20)
-layout_mode = 2
-size_flags_vertical = 4
-color = Color(0.9, 0.15, 0.15, 1)
-
-[node name="Label" type="Label" parent="VBoxContainer/ScoreBoard/P1Panel/HBox"]
-layout_mode = 2
-text = " Você (Vermelho): "
-
-[node name="Score" type="Label" parent="VBoxContainer/ScoreBoard/P1Panel/HBox"]
-layout_mode = 2
-theme_override_font_sizes/font_size = 24
-text = "0"
-
-[node name="P2Panel" type="PanelContainer" parent="VBoxContainer/ScoreBoard"]
-layout_mode = 2
-size_flags_horizontal = 3
-
-[node name="HBox" type="HBoxContainer" parent="VBoxContainer/ScoreBoard/P2Panel"]
-layout_mode = 2
-alignment = 1
-
-[node name="Dot" type="ColorRect" parent="VBoxContainer/ScoreBoard/P2Panel/HBox"]
-custom_minimum_size = Vector2(20, 20)
-layout_mode = 2
-size_flags_vertical = 4
-color = Color(0.95, 0.75, 0.12, 1)
-
-[node name="Label" type="Label" parent="VBoxContainer/ScoreBoard/P2Panel/HBox"]
-layout_mode = 2
-text = " IA (Dourado): "
-
-[node name="Score" type="Label" parent="VBoxContainer/ScoreBoard/P2Panel/HBox"]
-layout_mode = 2
-theme_override_font_sizes/font_size = 24
-text = "0"
 
 [node name="StatusCard" type="PanelContainer" parent="VBoxContainer"]
 layout_mode = 2
@@ -211,6 +149,5 @@ layout_mode = 2
 theme_override_font_sizes/font_size = 24
 text = "Jogar Novamente"
 
-[connection signal="pressed" from="VBoxContainer/TopBar/BtnBack" to="." method="_on_back_pressed"]
 [connection signal="pressed" from="VBoxContainer/TopBar/BtnRestart" to="." method="_on_restart_pressed"]
 [connection signal="pressed" from="WinModal/Panel/VBox/BtnPlayAgain" to="." method="_on_restart_pressed"]

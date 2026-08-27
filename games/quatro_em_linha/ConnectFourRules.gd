@@ -58,30 +58,18 @@ static func get_valid_cols(grid: Grid2D) -> Array[int]:
 			list.append(c)
 	return list
 
+## A jogada da IA no degrau pedido. Quem pensa e a `ConnectFourAI`: negamax com
+## poda alfa-beta e orcamento de nos por degrau.
+##
+## O que morava aqui enxergava zero lances a frente -- vencer agora, bloquear a
+## vitoria de agora, e senao a primeira coluna livre de uma ordem fixa. Perdia
+## para a armadilha dupla, que e a linha padrao de vitoria do jogo, e como nao
+## havia sorteio nenhum a partida era sempre a mesma.
+static func get_move(grid: Grid2D, ai_player_id: int, level: int = 10) -> int:
+	return ConnectFourAI.choose_move(grid, ai_player_id, level)
+
+
+## A jogada mais forte que a IA sabe jogar. Atalho para `get_move()` no degrau
+## do topo, onde nao ha chance de erro nem ruido na nota.
 static func get_best_move(grid: Grid2D, ai_player_id: int) -> int:
-	var opponent_id := 1 if ai_player_id == 2 else 2
-	var valid_moves := get_valid_cols(grid)
-	if valid_moves.is_empty(): return -1
-	
-	# 1. Ganhar na rodada
-	for c in valid_moves:
-		var sim_grid := grid.clone()
-		var r := drop_piece(sim_grid, c, ai_player_id)
-		if r >= 0 and check_win(sim_grid, r, c, ai_player_id):
-			return c
-			
-	# 2. Bloquear oponente de ganhar
-	for c in valid_moves:
-		var sim_grid := grid.clone()
-		var r := drop_piece(sim_grid, c, opponent_id)
-		if r >= 0 and check_win(sim_grid, r, c, opponent_id):
-			return c
-			
-	# 3. Preferência pela coluna central (3) e adjacentes (2, 4)
-	var preferred_order := [3, 2, 4, 1, 5, 0, 6]
-	for c in preferred_order:
-		if c in valid_moves:
-			return c
-			
-	valid_moves.shuffle()
-	return valid_moves[0]
+	return get_move(grid, ai_player_id, ConnectFourAI.PERFIS.size())
