@@ -188,3 +188,115 @@ func test_partida_completa_da_cena_nao_trava() -> void:
 			vez = 1 - vez
 		assert_true(passes >= 2 or maos[0].is_empty() or maos[1].is_empty() or jogadas >= 27,
 			"a partida terminou por batida ou por jogo fechado")
+
+
+# ------------------------------------------------------------------ DominoAI
+#
+# A IA antiga era `playable[0]` -- a primeira pedra jogavel na ordem em que ela
+# caiu na mao -- e sempre a ponta esquerda quando a pedra batia com ela. E
+# exatamente o `moves[0]` que o cabecalho da CheckersAI documenta ter
+# substituido nas Damas.
+
+const AIScript = preload("res://games/domino/DominoAI.gd")
+
+
+## Quem fica com a mao cara perde por pontos quando o outro bate. Entre duas
+## pedras que encaixam igual, a cara sai primeiro.
+func test_a_ia_descarta_a_pedra_mais_cara_primeiro() -> void:
+	# As duas encaixam na ponta 3 e deixam a mesa igualmente aberta; [3|6] vale
+	# 9 pontos e [3|0] vale 3.
+	var mao := [{"a": 3, "b": 0}, {"a": 3, "b": 6}]
+	var escolhida := 0
+	for _tentativa in range(8):
+		var m: Dictionary = AIScript.escolher(mao, 3, 5, AIScript.nova_memoria(), 10)
+		if int(m["tile_index"]) == 1:
+			escolhida += 1
+	assert_gt(escolhida, 5, "a pedra de 9 pontos sai antes da de 3")
+
+
+## Toda vez que o adversario compra ou passa, ele diz que nao tem as duas
+## pontas da mesa. Deixar as pontas nesses numeros e travar o jogo com a mao
+## mais leve -- a vitoria por pontos que o jogo fechado paga.
+func test_a_ia_usa_o_que_o_passe_do_adversario_denunciou() -> void:
+	var memoria: Dictionary = AIScript.nova_memoria()
+	AIScript.registrar_falta(memoria, 2, 4)
+	assert_true(memoria["vazios"].has(2), "ele nao tem o 2")
+	assert_true(memoria["vazios"].has(4), "nem o 4")
+
+	# Pontas 2 e 4. [2|4] deixa as pontas em 4 e 2 -- os dois numeros que ele
+	# nao tem. [2|5] deixa 5 e 4, e o 5 ele pode ter.
+	var mao := [{"a": 2, "b": 5}, {"a": 2, "b": 4}]
+	var travou := 0
+	for _tentativa in range(8):
+		var m: Dictionary = AIScript.escolher(mao, 2, 4, memoria, 10)
+		if int(m["tile_index"]) == 1:
+			travou += 1
+	assert_gt(travou, 5, "a IA fecha nas pontas que o adversario denunciou nao ter")
+
+
+## Uma pedra que cabe nas duas pontas sao duas jogadas diferentes. A IA antiga
+## so olhava uma delas -- a esquerda -- mesmo quando a direita valia mais.
+func test_a_ia_considera_as_duas_pontas_da_mesma_pedra() -> void:
+	var memoria: Dictionary = AIScript.nova_memoria()
+	AIScript.registrar_falta(memoria, 1, 6)
+
+	# [1|6] encaixa nas duas pontas. Pela esquerda deixa (6, 6); pela direita
+	# deixa (1, 1). As duas travam, entao o que importa e a IA ter enxergado as
+	# duas jogadas em vez de so a primeira.
+	var mao := [{"a": 1, "b": 6}]
+	var lados: Dictionary = {}
+	for _tentativa in range(12):
+		var m: Dictionary = AIScript.escolher(mao, 1, 6, memoria, 10)
+		lados[str(m["side"])] = true
+	assert_eq(lados.size(), 2, "as duas pontas entram no sorteio quando empatam")
+
+
+## Bucha so encaixa num numero: quanto mais o jogo anda, mais dificil colocar.
+func test_a_bucha_sai_antes_da_pedra_comum_de_mesmo_peso() -> void:
+	# [3|3] vale 6 pontos; [2|4] tambem vale 6 e encaixa na mesma ponta.
+	var mao := [{"a": 2, "b": 4}, {"a": 3, "b": 3}]
+	var buchou := 0
+	for _tentativa in range(8):
+		var m: Dictionary = AIScript.escolher(mao, 3, 2, AIScript.nova_memoria(), 10)
+		if int(m["tile_index"]) == 1:
+			buchou += 1
+	assert_gt(buchou, 5, "entre duas de 6 pontos, a bucha sai primeiro")
+
+
+func test_a_ia_sem_jogada_devolve_vazio() -> void:
+	assert_eq(AIScript.escolher([{"a": 0, "b": 1}], 5, 3, AIScript.nova_memoria(), 10), {},
+		"nada jogavel")
+	assert_eq(AIScript.escolher([], 5, 3, AIScript.nova_memoria(), 10), {}, "mao vazia")
+
+
+func test_a_escada_de_perfis_e_monotonica() -> void:
+	var erro_antes := 1.1
+	for perfil in AIScript.PERFIS:
+		assert_true(float(perfil["erro"]) <= erro_antes, "a chance de erro nunca sobe")
+		erro_antes = float(perfil["erro"])
+	assert_eq(float(AIScript.PERFIS[AIScript.PERFIS.size() - 1]["erro"]), 0.0,
+		"o degrau do topo nao sorteia a pedra")
+
+
+# ------------------------------------------------------------- regra da compra
+#
+# O jogador so podia passar com o monte vazio -- `_update_action_buttons` ja
+# cobrava isso. A IA comprava UMA pedra e passava a vez mesmo quando a pedra
+# comprada encaixava. A regra valia para um lado so.
+
+func test_a_ia_compra_ate_poder_jogar_como_o_jogador_ja_fazia() -> void:
+	var jogo = add_child_autofree(GameScene.instantiate())
+	jogo.game_over = false
+	jogo.board_chain.assign([{"a": 6, "b": 6}])
+	jogo.left_end = 6
+	jogo.right_end = 6
+	jogo.ai_hand.assign([{"a": 0, "b": 1}])          # nao encaixa em 6
+	jogo.player_hand.assign([{"a": 2, "b": 3}])
+	jogo.boneyard.assign([{"a": 4, "b": 5}, {"a": 6, "b": 2}])   # a ultima encaixa
+	jogo.consecutive_passes = 0
+
+	jogo._play_ai_turn()
+
+	assert_eq(jogo.consecutive_passes, 0, "a IA jogou, entao nao houve passe")
+	assert_true(jogo.left_end == 2 or jogo.right_end == 2,
+		"a pedra comprada que encaixava foi jogada, nao guardada")

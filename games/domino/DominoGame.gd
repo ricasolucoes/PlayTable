@@ -25,6 +25,14 @@ var is_player_turn: bool = true
 var consecutive_passes: int = 0
 var selected_tile_idx: int = -1
 
+## Degrau de 1 a 10 do DifficultyManager. Vira a chance de a IA largar a
+## avaliacao e sortear a pedra.
+var ai_level: int = DifficultyManager.DEFAULT_LEVEL
+
+## O que a IA aprendeu do jogador: cada vez que ele compra ou passa, ele diz
+## que nao tem as duas pontas da mesa.
+var ai_memoria: Dictionary = {}
+
 @onready var table_tiles_root: Node3D = $TableTilesRoot
 @onready var ends_label: Label = $UI/VBoxContainer/EndsLabel
 @onready var ai_info_label: Label = $UI/VBoxContainer/AIInfoLabel
@@ -45,6 +53,8 @@ func _start_new_game() -> void:
 	game_over = false
 	consecutive_passes = 0
 	selected_tile_idx = -1
+	ai_level = DifficultyManager.get_level(game_id)
+	ai_memoria = DominoAI.nova_memoria()
 	btn_restart.hide()
 	btn_play_left.hide()
 	btn_play_right.hide()
@@ -209,7 +219,9 @@ func _end_marker(tile_pos: Vector3, end_mark: int, span: float) -> MeshInstance3
 	return halo
 
 func _update_ui() -> void:
-	ai_info_label.text = "IA: %d pedras  |  Dorme (Monte): %d pedras" % [ai_hand.size(), boneyard.size()]
+	set_duel_score(player_hand.size(), ai_hand.size(), "suas", "da ia")
+	ai_info_label.text = "Dorme (Monte): %d pedras%s" % [
+		boneyard.size(), difficulty_suffix()]
 	ends_label.text = "Pontas: [ %d ] <---------> [ %d ]" % [left_end, right_end]
 	
 	# Mão do Jogador: pedras desenhadas, nao botoes com o texto "6/---/4".
@@ -318,12 +330,16 @@ func _play_player_tile(side: String) -> void:
 
 func _on_btn_draw_pressed() -> void:
 	if boneyard.size() > 0:
+		# O botao so aparece quando o jogador nao tem jogada: comprar denuncia
+		# que ele nao tem nenhuma das duas pontas.
+		DominoAI.registrar_falta(ai_memoria, left_end, right_end)
 		var drawn = boneyard.pop_back()
 		player_hand.append(drawn)
 		set_status("Você comprou uma pedra do monte.")
 		_update_ui()
 
 func _on_btn_pass_pressed() -> void:
+	DominoAI.registrar_falta(ai_memoria, left_end, right_end)
 	consecutive_passes += 1
 	set_status("Você passou a vez.")
 	if consecutive_passes >= 2:
@@ -334,8 +350,20 @@ func _on_btn_pass_pressed() -> void:
 	await get_tree().create_timer(0.8).timeout
 	_play_ai_turn()
 
+## O turno da IA.
+##
+## A compra segue a mesma regra que o jogador ja seguia: quem nao tem jogada
+## compra ate ter uma, e so passa com o monte vazio. Antes a IA comprava UMA
+## pedra e passava a vez mesmo quando a pedra comprada encaixava, enquanto o
+## jogador podia comprar quantas quisesse sem gastar turno -- a regra valia
+## para um lado so.
 func _play_ai_turn() -> void:
-	var ai_play := DominoRules.find_ai_move(ai_hand, left_end, right_end)
+	while not DominoRules.has_any_valid_move(ai_hand, left_end, right_end) \
+			and boneyard.size() > 0:
+		ai_hand.append(boneyard.pop_back())
+		set_status("IA comprou do monte...")
+
+	var ai_play := DominoAI.escolher(ai_hand, left_end, right_end, ai_memoria, ai_level)
 	if ai_play.size() > 0:
 		var t_idx = ai_play["tile_index"]
 		var side = ai_play["side"]
@@ -366,16 +394,12 @@ func _play_ai_turn() -> void:
 			_end_game("A IA bateu e venceu a partida!", false)
 			return
 	else:
-		if boneyard.size() > 0:
-			var drawn = boneyard.pop_back()
-			ai_hand.append(drawn)
-			set_status("IA comprou do monte e passou a vez. Sua vez!")
-		else:
-			consecutive_passes += 1
-			set_status("IA passou a vez. Sua vez!")
-			if consecutive_passes >= 2:
-				_check_board_lock()
-				return
+		# Chegou aqui com o monte vazio e sem jogada: so resta passar.
+		consecutive_passes += 1
+		set_status("IA passou a vez. Sua vez!")
+		if consecutive_passes >= 2:
+			_check_board_lock()
+			return
 				
 	is_player_turn = true
 	_update_ui()

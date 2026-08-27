@@ -26,14 +26,17 @@ static func has_any_playable(hand: Array, left_end: int, right_end: int) -> bool
 static func has_any_valid_move(hand: Array, left_end: int, right_end: int) -> bool:
 	return has_any_playable(hand, left_end, right_end)
 
-static func find_ai_move(hand: Array, left_end: int, right_end: int) -> Dictionary:
-	var playable := get_playable_indices(hand, left_end, right_end)
-	if playable.is_empty():
-		return {}
-	var idx := playable[0]
-	var tile = hand[idx]
-	var side := "left" if (left_end == -1 or tile["a"] == left_end or tile["b"] == left_end) else "right"
-	return {"tile_index": idx, "side": side}
+## A jogada mais forte que a IA sabe jogar. Quem escolhe e a `DominoAI`.
+##
+## O que morava aqui devolvia `playable[0]` -- a primeira pedra jogavel na
+## ordem em que ela caiu na mao -- e sempre a ponta esquerda quando a pedra
+## batia com ela, mesmo que a direita valesse muito mais. Nada de peso da
+## pedra, nada de flexibilidade, nada do que os passes do adversario
+## denunciavam.
+static func find_ai_move(hand: Array, left_end: int, right_end: int,
+		memoria: Dictionary = {}, level: int = 10) -> Dictionary:
+	var mem := memoria if memoria.has("vazios") else DominoAI.nova_memoria()
+	return DominoAI.escolher(hand, left_end, right_end, mem, level)
 
 static func get_playable_indices(hand: Array, left_end: int, right_end: int) -> Array[int]:
 	var list: Array[int] = []
