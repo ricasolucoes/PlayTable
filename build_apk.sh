@@ -36,8 +36,8 @@ if [ -z "$GODOT_BIN" ]; then
     fi
 fi
 
-VERSION_CODE="${EXPORT_VERSION_CODE:-10}"
-VERSION_NAME="${EXPORT_VERSION_NAME:-0.5.0}"
+VERSION_CODE="${EXPORT_VERSION_CODE:-11}"
+VERSION_NAME="${EXPORT_VERSION_NAME:-0.6.0}"
 
 echo "=> PlayTable :: Exportando assets do Godot ($VERSION_NAME - code $VERSION_CODE)..."
 TEMP_ZIP="/tmp/playtable_assets_$$.zip"

@@ -2,7 +2,49 @@
 
 ---
 
-## [Unreleased](https://github.com/ricasolucoes/PlayTable/compare/v0.5.0...develop)
+## [Unreleased](https://github.com/ricasolucoes/PlayTable/compare/v0.6.0...develop)
+
+---
+
+## [v0.6.0 (2026-08-27)](https://github.com/ricasolucoes/PlayTable/compare/v0.5.0...v0.6.0)
+
+### ✨ Novidades
+
+- [x] **Motor de gamificação completo** — 50 conquistas em JSON cobrindo os 19 jogos reais, missões diárias e semanais que trocam de lote quando a janela vira (antes eram sorteadas uma vez e ficavam `completed` para sempre), ligas com ELO, maestria por jogo e coleção. `PlayerProfile` v2 guarda `lifetime_xp` monotônico com o nível derivado, e migra o perfil v1 sem ninguém perder progresso
+- [x] **Os 19 jogos publicam a partida** — `BaseGame.finish_game()` anuncia o resultado no `GameEventBus` e nenhum jogo precisa conhecer conquista, missão ou XP
+- [x] **Tela de perfil com cinco abas** — Resumo, Missões, Conquistas (as 55 agrupadas por categoria, com progresso: "37/50 vitórias" motiva, cadeado fechado não), Maestria e Coleção. No menu principal, um cartão com nível, barra de XP, sequência e *uma* linha de "falta pouco". O motor calculava tudo isso e gravava em disco sem que uma linha de interface lesse qualquer número
+- [x] **Escada de dificuldade de 1 a 10, uma por jogo (`DifficultyManager`)** — venceu sobe um degrau, perdeu desce um, empatou fica. O degrau serve à IA (quanto pensar) e à gamificação (`xp_scale`: vencer no degrau 10 paga o dobro, no degrau 1 paga 60%), senão o caminho mais rápido para o XP era ficar de propósito no fácil
+- [x] **Damas com IA que anda na escada** — a busca passou a ser cortada por orçamento de nós, não por profundidade, e o degrau 10 cabe num telefone. A IA devolve o turno inteiro com a cadeia de capturas já escolhida, em vez de a cena continuar a cadeia sozinha pegando a primeira da lista
+- [x] **Jogo da Velha com dez degraus e minimax que varia** — do degrau 8 em diante a IA abre a partida, e entre jogadas de mesma nota o minimax sorteia. Antes o jogador abria sempre e, contra minimax perfeito, não podia perder: a escada travava no topo para sempre e a partida ficava decorada depois de vista uma vez
+- [x] **Integração real com o Google Play Games** — plugin Android próprio escrito contra o PGS v2 (login automático, conquistas, placares, eventos e Saved Games com conflito manual), `APP_ID` no manifesto e permissão de internet no export. Antes era uma fachada de 240 linhas em volta de um plugin que não existia no repositório, e todo método saía na primeira linha em silêncio
+- [x] **Batalha Naval com os dois mapas na mesa** — batalha naval é um jogo de comparar dois mapas, e um deles vivia escondido atrás de um botão. O navio afundado sobe do fundo no lugar exato das casas e estoura a partir do contorno do casco
+- [x] **Biblioteca de sprites nomeados e `AssetCatalog`** — recorte dos spritesheets em arquivos com nome semântico (`card_back_blue`, `checker_red`, `dice_blue`, `coin_gold`), substituindo o acesso por índice das fatias cruas
+- [x] **Cartões do menu com a arte de introdução de cada jogo**
+
+### 🎨 Melhorias
+
+- [x] **O tabuleiro passa a ocupar a tela** — o enquadramento é medido na borda de perto do conteúdo, não no plano do foco (em perspectiva a borda próxima projeta mais larga, e a folga de 12% existia só para esconder isso: caiu para 4%). Quando a largura manda, a câmera inclina mais até o teto do tema — 74° no tabuleiro, 56° na mesa de carteado, para a face da carta não achatar
+- [x] **Os 19 jogos enquadram a mesa pela HUD real** — `BaseGame.fit_table()` mede as faixas de HUD que a cena tem em tempo de execução; mexer no cabeçalho reenquadra sozinho. Antes cada jogo escrevia a área útil à mão, em pixels
+- [x] **Captura obrigatória também para o jogador, nas Damas** — a regra sempre valeu em `get_all_valid_moves`, mas a tela não cobrava: dava para passear com outra peça enquanto a IA era obrigada a comer
+- [x] **Blackjack, Poker e Paciência com a mesa perto e as cartas legíveis**
+- [x] **Mão do Uno deixa de ser uma fileira de botões apagados**
+- [x] **Verso das cartas do Jogo da Memória usando o sprite do catálogo**
+
+### 🐛 Correções
+
+- [x] **Dado saía como um cubo branco** — e, depois de os pontos irem para o lugar certo, ainda ficavam invisíveis
+- [x] **As pedras do Dominó não apareciam**, nem na mesa nem na mão
+- [x] **Baralho saía todo preto no Blackjack e na Paciência**
+- [x] **A camada de toque do Gamão ficava embaixo das pontas**
+- [x] **Resta Um** — a esfera pega no furo mais próximo, e passou a aceitar arrastar
+- [x] **Carta colorida do Uno** — se é UNO, a carta tem de ser de UNO
+
+### 🔧 Técnico
+
+- [x] **Testes** — 429 no total: os 31 do motor de gamificação (incluindo a nuvem e a política de ids do Play Games), os 9 da escada de dificuldade, os do toque nos dois mapas da Batalha Naval e a comparação casa a casa entre as duas gerações de captura das Damas (a busca repete a regra direto no vetor de casas porque o Dicionário de `CheckersRules` é lixo puro num nó de busca)
+- [x] **Ferramentas de bancada das Damas** — `tools/_bench_damas.gd` mede o custo por jogada em cada degrau (212 ms de média e 441 ms no pior nó, num Mac) e `tools/_forca_damas.gd` joga um degrau contra o outro. Foi ele que mostrou o degrau 7 perdendo do 5
+- [x] **Captura de tela** — sai na resolução lógica do aparelho e chama métodos na cena antes do disparo
+- [x] **`android/build/` fora do import do Godot**, e binários de tradução reimportados com o Godot 4.7.2
 
 ---
 
