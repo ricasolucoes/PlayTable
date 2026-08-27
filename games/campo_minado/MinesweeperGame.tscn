@@ -33,53 +33,22 @@ layout_mode = 1
 anchors_preset = 10
 anchor_right = 1.0
 offset_left = 24.0
-offset_top = 40.0
+offset_top = 134.0
 offset_right = -24.0
 offset_bottom = 180.0
 grow_horizontal = 2
 theme_override_constants/separation = 10
-
-[node name="TopBar" type="HBoxContainer" parent="UI/VBoxContainer"]
-layout_mode = 2
-
-[node name="BtnBack" type="Button" parent="UI/VBoxContainer/TopBar"]
-custom_minimum_size = Vector2(100, 50)
-layout_mode = 2
-theme_override_font_sizes/font_size = 20
-text = "⬅ Voltar"
-
-[node name="Title" type="Label" parent="UI/VBoxContainer/TopBar"]
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.8)
-theme_override_constants/shadow_offset_x = 2
-theme_override_constants/shadow_offset_y = 2
-theme_override_font_sizes/font_size = 30
-text = "Campo Minado 3D"
-horizontal_alignment = 1
 
 [node name="Header" type="HBoxContainer" parent="UI/VBoxContainer"]
 layout_mode = 2
 alignment = 1
 theme_override_constants/separation = 30
 
-[node name="MinesLabel" type="Label" parent="UI/VBoxContainer/Header"]
-layout_mode = 2
-theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.8)
-theme_override_font_sizes/font_size = 22
-text = "💣 10"
-
 [node name="BtnSmiley" type="Button" parent="UI/VBoxContainer/Header"]
 custom_minimum_size = Vector2(60, 48)
 layout_mode = 2
 theme_override_font_sizes/font_size = 24
 text = "🙂"
-
-[node name="TimerLabel" type="Label" parent="UI/VBoxContainer/Header"]
-layout_mode = 2
-theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.8)
-theme_override_font_sizes/font_size = 22
-text = "⏱️ 000"
 
 [node name="StatusLabel" type="Label" parent="UI/VBoxContainer"]
 layout_mode = 2
@@ -106,6 +75,5 @@ layout_mode = 2
 theme_override_font_sizes/font_size = 20
 text = "Modo: ⛏️ Revelar"
 
-[connection signal="pressed" from="UI/VBoxContainer/TopBar/BtnBack" to="." method="_on_btn_back_pressed"]
 [connection signal="pressed" from="UI/VBoxContainer/Header/BtnSmiley" to="." method="_on_btn_smiley_pressed"]
 [connection signal="pressed" from="UI/Controls/BtnMode" to="." method="_on_btn_mode_pressed"]

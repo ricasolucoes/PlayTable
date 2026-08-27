@@ -8,6 +8,24 @@ const COLS = 9
 const MINES_COUNT = 10
 const TOTAL_MINES = 10
 
+## Quantas minas cada degrau da escada do DifficultyManager espalha no 9x9.
+##
+## O Campo Minado nao tem adversario: o numero de minas e a unica alavanca de
+## dificuldade que ele tem. Ate aqui o tabuleiro era fixo em 10 minas e a
+## escada andava do mesmo jeito -- vencer sete vezes no mesmo 9x9 levava ao
+## degrau 10 e passava a pagar o dobro de XP pelo mesmo jogo. Agora o degrau
+## muda o jogo.
+##
+## As pontas: 6 minas em 81 casas e um passeio; 22 e a densidade do nivel
+## "expert" classico (99 em 480 casas), que num 9x9 quase sempre exige chute.
+const MINAS_POR_DEGRAU := [6, 8, 10, 12, 13, 15, 16, 18, 20, 22]
+
+
+## Quantas minas o degrau vale.
+static func minas_do_degrau(level: int) -> int:
+	var lvl := clampi(level, 1, MINAS_POR_DEGRAU.size())
+	return int(MINAS_POR_DEGRAU[lvl - 1])
+
 static func count_flagged(grid: Grid2D) -> int:
 	var count: int = 0
 	for r in range(ROWS):

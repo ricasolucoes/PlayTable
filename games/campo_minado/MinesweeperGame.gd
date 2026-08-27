@@ -12,10 +12,12 @@ var timer_active: bool = false
 var tiles_3d: Dictionary = {}
 var flags_3d: Dictionary = {}
 
+## Quantas minas esta partida tem. Sai do degrau da escada do DifficultyManager
+## -- e a unica alavanca de dificuldade que o Campo Minado tem.
+var total_minas: int = MinesweeperRules.TOTAL_MINES
+
 @onready var board_3d: Board3D = $Board3D
 @onready var flags_root: Node3D = $FlagsRoot
-@onready var mines_label: Label = $UI/VBoxContainer/Header/MinesLabel
-@onready var timer_label: Label = $UI/VBoxContainer/Header/TimerLabel
 @onready var btn_mode: Button = $UI/Controls/BtnMode
 @onready var btn_smiley: Button = $UI/VBoxContainer/Header/BtnSmiley
 
@@ -44,18 +46,23 @@ func _ready() -> void:
 
 func _process(delta: float) -> void:
 	if timer_active and not game_over and not game_won:
+		var antes := int(elapsed_time)
 		elapsed_time += delta
-		timer_label.text = "⏱️ %03d" % int(elapsed_time)
+		# O cronometro anda em segundos inteiros: repintar a barra a cada quadro
+		# refaria os rotulos sessenta vezes por segundo para nada.
+		if int(elapsed_time) != antes:
+			_pintar_placar()
 
 func _start_new_game() -> void:
+	total_minas = MinesweeperRules.minas_do_degrau(DifficultyManager.get_level(game_id))
 	first_click = true
 	game_over = false
 	game_won = false
 	elapsed_time = 0.0
 	timer_active = false
-	timer_label.text = "⏱️ 000"
+	_pintar_placar()
 	btn_smiley.text = "🙂"
-	set_status("Toque em uma tecla mecânica para iniciar!")
+	set_status("Toque em uma tecla mecânica para iniciar!%s" % difficulty_suffix())
 	
 	for f in flags_root.get_children(): f.queue_free()
 	flags_3d.clear()
@@ -68,8 +75,19 @@ func _start_new_game() -> void:
 	_update_header_mines()
 
 func _update_header_mines() -> void:
-	var flagged := MinesweeperRules.count_flagged(grid_data)
-	mines_label.text = "💣 %02d" % max(0, MinesweeperRules.TOTAL_MINES - flagged)
+	_pintar_placar()
+
+
+## As minas que faltam marcar e o cronometro, na barra de cima. Eram "💣 10" e
+## "⏱️ 000" numa faixa propria: emoji que nenhum idioma le e numero de 22 px.
+func _pintar_placar() -> void:
+	var faltam := total_minas
+	if grid_data != null:
+		faltam = maxi(0, total_minas - MinesweeperRules.count_flagged(grid_data))
+	set_counters([
+		{"value": "%02d" % faltam, "label": "minas"},
+		{"value": "%03d" % int(elapsed_time), "label": "tempo"},
+	])
 
 func _on_cell_clicked(r: int, c: int) -> void:
 	if game_over or game_won: return
@@ -87,7 +105,7 @@ func _on_cell_clicked(r: int, c: int) -> void:
 	
 	if first_click:
 		first_click = false
-		MinesweeperRules.generate_mines(grid_data, r, c)
+		MinesweeperRules.generate_mines(grid_data, r, c, total_minas)
 		timer_active = true
 		set_status("Campo desarmado!")
 		
