@@ -15,9 +15,16 @@ func _initialize() -> void:
 	var w: int = int(argv[3]) if argv.size() > 3 else 720
 	var h: int = int(argv[4]) if argv.size() > 4 else 1280
 
+	# Sem forcar o modo de esticamento a janela nasce com o
+	# `window/size/window_width_override` do projeto (360x640) e a captura sai
+	# na metade da resolucao logica -- com a HUD ocupando o dobro da fracao de
+	# tela que ocupa no aparelho, o que faz o enquadramento da camera parecer
+	# muito mais afastado do que e.
 	var win := root
+	win.content_scale_mode = Window.CONTENT_SCALE_MODE_CANVAS_ITEMS
+	win.content_scale_aspect = Window.CONTENT_SCALE_ASPECT_EXPAND
+	win.content_scale_size = Vector2i(w, h)
 	win.size = Vector2i(w, h)
-	win.content_scale_size = Vector2i(720, 1280)
 
 	var ps: PackedScene = load(scene_path)
 	if ps == null:
