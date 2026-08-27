@@ -162,7 +162,7 @@ func _on_item_collected(_item_id: String, amount: int) -> void:
 
 
 func _on_mastery_leveled(game_id: String, _new_level: int) -> void:
-	_progredir("mastery_xp", 500, game_id)
+	_progredir("mastery_xp", 1, game_id)
 
 
 func _categoria_de(game_id: String) -> String:

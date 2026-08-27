@@ -81,7 +81,7 @@ func proximo_marco() -> Dictionary:
 		candidatos.append({
 			"tipo": "level",
 			"texto_key": "NUDGE_LEVEL",
-			"args": [PlayerProfile.level + 1, prog.y - prog.x],
+			"args": [prog.y - prog.x, PlayerProfile.level + 1],
 			"frac": float(prog.x) / float(prog.y),
 		})
 
@@ -92,7 +92,7 @@ func proximo_marco() -> Dictionary:
 			candidatos.append({
 				"tipo": "league",
 				"texto_key": "NUDGE_LEAGUE",
-				"args": [tr("LEAGUE_" + str(proxima["id"]).to_upper()), lp.y - lp.x],
+				"args": [lp.y - lp.x, tr("LEAGUE_" + str(proxima["id"]).to_upper())],
 				"frac": float(lp.x) / float(lp.y),
 			})
 
@@ -101,7 +101,7 @@ func proximo_marco() -> Dictionary:
 			candidatos.append({
 				"tipo": "achievement",
 				"texto_key": "NUDGE_ACHIEVEMENT",
-				"args": [tr(str(a["id"]) + "_NAME"), int(a["target"]) - int(a["progress"])],
+				"args": [int(a["target"]) - int(a["progress"]), tr(str(a["id"]) + "_NAME")],
 				"frac": float(a["frac"]),
 			})
 
@@ -112,7 +112,7 @@ func proximo_marco() -> Dictionary:
 			candidatos.append({
 				"tipo": "quest",
 				"texto_key": "NUDGE_QUEST",
-				"args": [tr(str(q["name_key"])), int(q["target"]) - int(q["progress"])],
+				"args": [int(q["target"]) - int(q["progress"]), tr(str(q["name_key"]))],
 				"frac": float(q["progress"]) / float(maxi(1, int(q["target"]))),
 			})
 

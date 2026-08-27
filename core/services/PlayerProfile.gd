@@ -185,10 +185,18 @@ func record_match(game_id: String, won: bool) -> void:
 	_mark_dirty()
 
 
+## Quantos jogos do catalogo ja foram jogados.
+##
+## Conta contra o catalogo, nao contra as chaves gravadas: `per_game` pode ter
+## id que nao e jogo nenhum -- "playtable" e o que `BaseGame._derive_game_id()`
+## devolve quando a cena nao mora em `res://games/`, e e o que a suite de
+## testes produz ao instanciar `BaseGame` direto. Sem o filtro a tela mostrava
+## "20 / 19 jogos experimentados" e a conquista de jogar todos os 19 fechava
+## sozinha.
 func games_played_count() -> int:
 	var n := 0
-	for id in per_game.keys():
-		if int(per_game[id].get("matches", 0)) > 0:
+	for id in GameCatalog.all_game_ids():
+		if int(per_game.get(id, {}).get("matches", 0)) > 0:
 			n += 1
 	return n
 

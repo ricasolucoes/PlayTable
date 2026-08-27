@@ -68,7 +68,7 @@
     {
       "id": "d_mastery_100",
       "type": "mastery_xp",
-      "target": 100,
+      "target": 1,
       "xp": 400
     }
   ],
@@ -101,7 +101,7 @@
     {
       "id": "w_mastery_800",
       "type": "mastery_xp",
-      "target": 800,
+      "target": 2,
       "xp": 2600
     },
     {

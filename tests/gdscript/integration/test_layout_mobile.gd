@@ -70,6 +70,7 @@ const MENUS := [
 	"res://core/telas/MainMenu.tscn",
 	"res://core/telas/MenuTabuleiro.tscn",
 	"res://core/telas/MenuCartas.tscn",
+	"res://core/telas/PerfilScreen.tscn",
 ]
 
 ## Os cinco jogos que montam o tabuleiro com Board3D.setup_board(): sao os que a

@@ -16,16 +16,10 @@ const HOLD := 1.7
 const SLIDE := 0.28
 const WIDTH := 420.0
 
-## Nome legivel de cada conquista. O id cru ("ACH_FIRST_BLOOD") nao diz nada a
-## quem esta jogando.
-const ACHIEVEMENT_NAMES := {
-	"ACH_FIRST_BLOOD": "ACH_FIRST_BLOOD_NAME",
-	"ACH_VETERAN": "ACH_VETERAN_NAME",
-	"ACH_MASTER": "ACH_MASTER_NAME",
-	"ACH_LEVEL_10": "ACH_LEVEL_10_NAME",
-	"ACH_ITEM_COLLECTOR": "ACH_ITEM_COLLECTOR_NAME",
-	"ACH_COMEBACK": "ACH_COMEBACK_NAME",
-}
+## Teto da fila. Uma vitoria boa dispara XP, nivel, missao, maestria, liga e
+## tres conquistas -- oito cartoes de 2 s cada sao 16 s de aviso sobre um
+## tabuleiro que o jogador quer ver. Passando disto, os ultimos viram um so.
+const FILA_MAX := 4
 
 var _queue: Array[Dictionary] = []
 var _showing := false
@@ -119,10 +113,49 @@ func _on_level_up(new_level: int) -> void:
 	_push("🎖️", tr("TOAST_LEVEL_UP") % new_level, tr("TOAST_LEVEL_UP_DESC"))
 
 
+## Todas as 55 conquistas tem chave de traducao `<ID>_NAME`; a lista fixa que
+## morava aqui cobria seis e as outras apareciam como id cru na tela.
 func _on_achievement(id: String) -> void:
-	var key: String = ACHIEVEMENT_NAMES.get(id, "")
-	var name_ := tr(key) if key != "" else id
-	_push("🏆", tr("TOAST_ACHIEVEMENT"), name_)
+	var chave := id + "_NAME"
+	var nome := tr(chave)
+	_push("🏆", tr("TOAST_ACHIEVEMENT"), id if nome == chave else nome)
+
+
+func _on_quest(quest_id: String) -> void:
+	# O id carrega escopo e janela ("daily:2026-08-27:d_win_3"); o nome esta na
+	# ultima parte.
+	var modelo := quest_id.get_slice(":", 2)
+	var chave := "QUEST_" + modelo.to_upper()
+	var nome := tr(chave)
+	_push("📋", tr("TOAST_QUEST"), quest_id if nome == chave else nome)
+
+
+func _on_mastery(game_id: String, novo_nivel: int) -> void:
+	var def := GameCatalog.find_by_id(game_id)
+	var nome := def.title if def != null else game_id
+	_push("📈", tr("TOAST_MASTERY") % [novo_nivel, nome], "")
+
+
+func _on_league(league_id: String, promovido: bool) -> void:
+	var nome := tr("LEAGUE_" + league_id.to_upper())
+	if promovido:
+		_push("🏅", tr("TOAST_LEAGUE_UP") % nome, "")
+	else:
+		_push("🏅", tr("TOAST_LEAGUE_DOWN") % nome, "")
+
+
+func _on_reward(reward_id: String, kind: String) -> void:
+	if kind == "streak_freeze":
+		return  # o congelamento so interessa no dia em que for usado
+	var chave := "ITEM_" + reward_id.to_upper()
+	var nome := tr(chave)
+	if nome == chave:
+		return  # recompensa sem nome visivel nao vira aviso
+	_push("🎨", tr("TOAST_ITEM"), nome)
+
+
+func _on_streak_freeze(dias: int) -> void:
+	_push("❄", tr("TOAST_STREAK_FREEZE"), tr("TOAST_STREAK_FREEZE_DESC") % dias)
 
 
 func _on_streak(days: int) -> void:
@@ -136,6 +169,9 @@ func _on_streak(days: int) -> void:
 ## Os avisos entram numa fila em vez de se atropelarem: uma vitoria pode
 ## disparar XP, subida de nivel e conquista no mesmo quadro.
 func _push(icon: String, title: String, detail: String) -> void:
+	if _queue.size() >= FILA_MAX:
+		_queue[FILA_MAX - 1] = {"icon": icon, "title": title, "detail": detail}
+		return
 	_queue.append({"icon": icon, "title": title, "detail": detail})
 	if not _showing:
 		_drain()
