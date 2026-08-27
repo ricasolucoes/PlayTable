@@ -192,3 +192,106 @@ func test_numero_da_casa_e_a_volta_da_linha_e_coluna() -> void:
 			assert_false(sq in vistos, "casa %d aparece uma vez so" % sq)
 			vistos.append(sq)
 	assert_eq(vistos.size(), 30, "as 30 casas cobertas")
+
+
+# ------------------------------------------------------------------- SenetAI
+#
+# A IA antiga era `ai_moves.pick_random()`: afogava a propria peca na Casa da
+# Agua de graca, deixava peca sozinha ao alcance do adversario e trocava de
+# lugar com quem estava atras quando podia trocar com quem estava na frente.
+
+const AIScript = preload("res://games/senet/SenetAI.gd")
+
+const EU := 2
+const ELE := 1
+
+
+func _tabuleiro(pecas: Dictionary) -> PackedByteArray:
+	var cells := PackedByteArray()
+	cells.resize(32)
+	for sq in pecas:
+		cells[int(sq)] = int(pecas[sq])
+	return cells
+
+
+## Retirar peca do tabuleiro e o unico progresso que a partida nao desfaz.
+func test_a_ia_retira_a_peca_quando_pode() -> void:
+	# Com lance 3, a peca da casa 28 sai (28 + 3 = 31); a da casa 10 so anda.
+	var cells := _tabuleiro({28: EU, 10: EU})
+	for _tentativa in range(6):
+		var m: Dictionary = AIScript.choose_move(cells, EU, 3, 0, 0, 10)
+		assert_eq(int(m["to"]), AIScript.SAIDA, "sai do tabuleiro em vez de so andar")
+
+
+## A Casa da Agua (27) afoga: a peca volta para o Renascimento e perde todo o
+## caminho andado. A IA de sorteio caia nela sempre que ela era legal.
+func test_a_ia_evita_a_casa_da_agua() -> void:
+	# Com lance 2, a peca da casa 25 cai na Agua (27); a da 10 anda em paz.
+	var cells := _tabuleiro({25: EU, 10: EU})
+	for _tentativa in range(8):
+		var m: Dictionary = AIScript.choose_move(cells, EU, 2, 0, 0, 10)
+		assert_ne(int(m["to"]), AIScript.AGUA, "a IA nao se afoga de graca")
+
+
+## Quem cai sobre o adversario troca de lugar com ele: o adversario recua para
+## onde a peca estava. Trocar com quem esta na frente e o que vale.
+func test_a_ia_troca_de_lugar_com_o_adversario_quando_isso_o_atrasa() -> void:
+	# Com lance 4: a peca da 6 troca com o adversario da 10; a da 20 vai para a
+	# 24, que esta vazia. A troca manda o adversario de 10 para 6.
+	var cells := _tabuleiro({6: EU, 20: EU, 10: ELE})
+	var trocou := 0
+	for _tentativa in range(8):
+		var m: Dictionary = AIScript.choose_move(cells, EU, 4, 0, 0, 10)
+		if int(m["to"]) == 10:
+			trocou += 1
+	assert_gt(trocou, 4, "a troca que atrasa o adversario e a jogada preferida")
+
+
+## Peca com vizinha da mesma cor nao pode ser trocada de lugar: e a unica
+## defesa que o Senet tem, e a avaliacao precisa enxerga-la.
+func test_a_avaliacao_prefere_peca_protegida() -> void:
+	var protegida := _tabuleiro({10: EU, 11: EU})
+	var solta := _tabuleiro({10: EU, 14: EU})
+	assert_gt(AIScript.evaluate(protegida, EU, 0, 0), AIScript.evaluate(solta, EU, 0, 0),
+		"duas pecas encostadas valem mais que duas soltas")
+
+
+func test_a_avaliacao_conta_as_pecas_ja_retiradas() -> void:
+	var cells := _tabuleiro({10: EU, 12: ELE})
+	assert_gt(AIScript.evaluate(cells, EU, 3, 0), AIScript.evaluate(cells, EU, 0, 0),
+		"tres pecas fora valem mais que nenhuma")
+	assert_lt(AIScript.evaluate(cells, EU, 0, 3), AIScript.evaluate(cells, EU, 0, 0),
+		"tres pecas do adversario fora valem contra")
+
+
+## A geracao da IA e a da cena tem de concordar, senao a IA escolhe entre
+## jogadas que a cena nao aceita.
+func test_a_geracao_da_ia_bate_com_a_da_cena() -> void:
+	var jogo := _jogo()
+	_limpa(jogo)
+	jogo.board[5] = EU
+	jogo.board[9] = ELE
+	jogo.board[10] = ELE
+	jogo.board[20] = EU
+
+	for lance in range(1, 6):
+		var da_cena: Array = jogo._get_valid_moves(EU, lance)
+		var da_ia: Array = AIScript.gerar(AIScript.achatar(jogo.board), EU, lance)
+		assert_eq(da_ia.size(), da_cena.size(), "mesma quantidade de jogadas com lance %d" % lance)
+		for m in da_ia:
+			var achou := false
+			for c in da_cena:
+				if int(c["from"]) == int(m["from"]) and int(c["to"]) == int(m["to"]):
+					achou = true
+					break
+			assert_true(achou, "a IA so gera jogada que a cena aceita: %s" % m)
+
+
+func test_a_escada_de_perfis_e_monotonica() -> void:
+	var erro_antes := 1.1
+	for perfil in AIScript.PERFIS:
+		assert_true(float(perfil["erro"]) <= erro_antes, "a chance de erro nunca sobe")
+		erro_antes = float(perfil["erro"])
+	assert_eq(float(AIScript.PERFIS[AIScript.PERFIS.size() - 1]["erro"]), 0.0,
+		"o degrau do topo nao sorteia a jogada")
+	assert_gt(float(AIScript.PERFIS[0]["erro"]), 0.5, "o degrau de baixo sorteia quase sempre")

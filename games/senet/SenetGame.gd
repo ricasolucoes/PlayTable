@@ -21,9 +21,13 @@ var is_player_turn: bool = true
 var valid_moves: Array = []
 var pieces_3d: Dictionary = {}
 
+## Degrau de 1 a 10 do DifficultyManager. Vira a chance de a IA largar a
+## avaliacao e sortear a jogada.
+var ai_level: int = DifficultyManager.DEFAULT_LEVEL
+
 @onready var board_3d: Board3D = $Board3D
 @onready var pieces_root: Node3D = $PiecesRoot
-@onready var score_label: Label = $UI/VBoxContainer/ScoreLabel
+@onready var level_label: Label = $UI/VBoxContainer/LevelLabel
 @onready var btn_cast_sticks: Button = $UI/SticksArea/BtnCastSticks
 @onready var sticks_label: Label = $UI/SticksArea/SticksLabel
 
@@ -31,6 +35,7 @@ func _ready() -> void:
 	env_3d = $TabletopEnvironment3D
 	status_label = $UI/VBoxContainer/StatusLabel
 	btn_restart = $UI/Actions/BtnRestart
+	ai_level = DifficultyManager.get_level(game_id)
 	board_3d.setup_board(3, 10, 0.65, "wood_checkered")
 	# O toque entra pelo proprio tabuleiro: a casa tocada e a casa desenhada.
 	board_3d.cell_clicked.connect(_on_cell_clicked)
@@ -66,6 +71,7 @@ func _start_new_game() -> void:
 	player_borne_off = 0
 	ai_borne_off = 0
 	valid_moves.clear()
+	ai_level = DifficultyManager.get_level(game_id)
 	btn_restart.hide()
 	
 	board.clear()
@@ -98,7 +104,8 @@ func _sync_pieces_3d() -> void:
 			pieces_root.add_child(piece)
 			pieces_3d[sq] = piece
 			
-	score_label.text = "Você (Ouro): %d/5  |  IA (Obsidiana): %d/5 retiradas" % [player_borne_off, ai_borne_off]
+	set_duel_score("%d/5" % player_borne_off, "%d/5" % ai_borne_off)
+	level_label.text = DifficultyManager.label_for(game_id)
 
 func _on_btn_cast_sticks_pressed() -> void:
 	if not can_throw or game_over: return
@@ -222,14 +229,14 @@ func _handle_end_of_turn() -> void:
 			_on_btn_cast_sticks_pressed()
 
 func _play_ai_move() -> void:
-	var ai_moves := _get_valid_moves(2, current_throw)
-	if ai_moves.is_empty():
+	var chosen := SenetAI.choose_move(SenetAI.achatar(board), 2, current_throw,
+		ai_borne_off, player_borne_off, ai_level)
+	if chosen.is_empty():
 		set_status("IA sem movimentos possíveis!")
 		await get_tree().create_timer(0.8).timeout
 		_handle_end_of_turn()
 		return
-		
-	var chosen = ai_moves.pick_random()
+
 	_execute_move(2, chosen["from"], chosen["to"])
 
 func _end_game(winner: int) -> void:
