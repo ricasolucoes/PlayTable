@@ -197,3 +197,119 @@ func test_fim_de_partida_anuncia_quem_venceu() -> void:
 	var empate := _cena_com_placar(4, 4)
 	empate._end_game()
 	assert_string_contains(empate.status_label.text, "Empate", "empate anunciado")
+
+
+# ---------------------------------------------------------------- ReversiAI
+#
+# Os dois defeitos que a busca antiga tinha, cada um com o seu teste. Eles se
+# somavam e cegavam a IA justamente no fim da partida, que e onde o Reversi se
+# decide -- e nenhum teste os pegava porque nada exercitava o minimax.
+
+const AIScript = preload("res://games/reversi/ReversiAI.gd")
+
+
+func _plano(g: Grid2D) -> PackedByteArray:
+	return AIScript.achatar(g)
+
+
+## O no terminal era lido para duas variaveis declaradas `bool`: 60 e 4 viravam
+## `true` e `true`, e a comparacao dava empate. A busca nao distinguia vencer
+## de 60 a 4 de perder de 4 a 60 -- as duas valiam zero.
+func test_o_fim_de_partida_distingue_vitoria_de_derrota() -> void:
+	var vencendo := _vazio()
+	for i in range(64):
+		vencendo.cells[i] = BRANCO
+	for idx in [0, 1, 8, 9]:
+		vencendo.cells[idx] = PRETO
+
+	var nota_ganhando: int = AIScript.evaluate(_plano(vencendo), BRANCO)
+	var nota_perdendo: int = AIScript.evaluate(_plano(vencendo), PRETO)
+
+	assert_gt(nota_ganhando, AIScript.VITORIA - 1, "60 a 4 a favor e vitoria, nao empate")
+	assert_lt(nota_perdendo, -AIScript.VITORIA + 1, "4 a 60 contra e derrota, nao empate")
+	assert_ne(nota_ganhando, nota_perdendo, "os dois lados nao podem valer o mesmo")
+
+
+## Vencer por muito vale mais que vencer por pouco: sem isso a IA larga a
+## partida ganha no lance em que ela ja esta ganha por uma peca.
+func test_vencer_por_muito_vale_mais_que_vencer_por_pouco() -> void:
+	var folgado := _vazio()
+	var apertado := _vazio()
+	for i in range(64):
+		folgado.cells[i] = BRANCO
+		apertado.cells[i] = BRANCO
+	for idx in range(4):
+		folgado.cells[idx] = PRETO
+	for idx in range(31):
+		apertado.cells[idx] = PRETO
+
+	assert_gt(AIScript.evaluate(_plano(folgado), BRANCO),
+		AIScript.evaluate(_plano(apertado), BRANCO), "60 a 4 vale mais que 33 a 31")
+
+
+## Passar a vez e rotina no Reversi. A busca antiga, no no do adversario,
+## consultava quem estava sem jogada de novo no lugar do outro lado -- entao
+## um lado travado virava fim de jogo com o tabuleiro cheio de jogadas.
+func test_um_lado_sem_jogada_nao_e_fim_de_partida() -> void:
+	var g := _vazio()
+	g.set_cell(0, 1, PRETO)
+	for c in range(2, 8):
+		g.set_cell(0, c, BRANCO)
+	var cells := _plano(g)
+
+	assert_true(AIScript.gerar(cells, PRETO).is_empty(), "as pretas nao tem jogada")
+	assert_false(AIScript.gerar(cells, BRANCO).is_empty(), "as brancas tem")
+
+	var nota: int = AIScript.evaluate(cells, PRETO)
+	assert_lt(absi(nota), AIScript.VITORIA,
+		"sem jogada de um lado so, a partida continua -- a nota nao e terminal")
+
+
+## A geracao da busca e a das regras tem de concordar casa a casa: se elas
+## divergem, a IA busca sobre um jogo diferente do que a cena joga.
+func test_as_duas_geracoes_de_jogada_concordam() -> void:
+	var g: Grid2D = RulesScript.create_initial_board()
+	var vez := PRETO
+	for _lance in range(24):
+		var cells := _plano(g)
+		var da_busca: PackedInt32Array = AIScript.gerar(cells, vez)
+		var das_regras: Array[Vector2i] = RulesScript.get_valid_moves(g, vez)
+
+		assert_eq(da_busca.size(), das_regras.size(), "mesma quantidade de jogadas")
+		for idx in da_busca:
+			var pos := Vector2i(idx / 8, idx % 8)
+			assert_true(pos in das_regras, "a busca so gera jogada que as regras aceitam")
+			var viradas: PackedInt32Array = AIScript.viradas_de(cells, idx, vez)
+			var pelas_regras: Array[Vector2i] = RulesScript.get_flipped_pieces(g, pos, vez)
+			assert_eq(viradas.size(), pelas_regras.size(),
+				"mesma quantidade de pecas viradas em %s" % pos)
+
+		if da_busca.is_empty():
+			vez = 3 - vez
+			continue
+		var escolha := Vector2i(da_busca[0] / 8, da_busca[0] % 8)
+		RulesScript.apply_move(g, escolha, vez, RulesScript.get_flipped_pieces(g, escolha, vez))
+		vez = 3 - vez
+
+
+## A escada tem de subir por construcao: degrau que pensa mais nunca pode
+## pensar menos que o de baixo, nem errar mais.
+func test_a_escada_de_perfis_e_monotonica() -> void:
+	var nos_antes := 0
+	var erro_antes := 1.1
+	for perfil in AIScript.PERFIS:
+		assert_gt(int(perfil["nos"]), nos_antes, "o orcamento cresce a cada degrau")
+		assert_true(float(perfil["erro"]) <= erro_antes, "a chance de erro nunca sobe")
+		nos_antes = int(perfil["nos"])
+		erro_antes = float(perfil["erro"])
+	assert_eq(float(AIScript.PERFIS[AIScript.PERFIS.size() - 1]["erro"]), 0.0,
+		"o degrau do topo nao erra de proposito")
+
+
+func test_a_ia_pega_o_canto_livre_no_degrau_do_topo() -> void:
+	var g := _vazio()
+	for c in range(1, 4):
+		g.set_cell(0, c, PRETO)
+	g.set_cell(0, 4, BRANCO)
+	g.set_cell(7, 7, BRANCO)
+	assert_eq(AIScript.choose_move(g, BRANCO, 10), Vector2i(0, 0), "canto antes de tudo")

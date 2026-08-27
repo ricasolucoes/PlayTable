@@ -6,14 +6,18 @@ var grid_data: Grid2D
 var is_player_turn: bool = true
 var pieces_3d: Dictionary = {}
 
+## Degrau de 1 a 10 do DifficultyManager. Vira orcamento de busca da IA.
+var ai_level: int = DifficultyManager.DEFAULT_LEVEL
+
 @onready var board_3d: Board3D = $Board3D
 @onready var pieces_root: Node3D = $PiecesRoot
-@onready var score_label: Label = $UI/VBoxContainer/ScoreLabel
+@onready var level_label: Label = $UI/VBoxContainer/LevelLabel
 
 func _ready() -> void:
 	env_3d = $TabletopEnvironment3D
 	status_label = $UI/VBoxContainer/StatusLabel
 	btn_restart = $UI/VBoxContainer/BtnRestart
+	ai_level = DifficultyManager.get_level(game_id)
 	board_3d.setup_board(8, 8, 0.75, "reversi_green")
 	# O toque entra pelo proprio tabuleiro: a casa tocada e a casa desenhada.
 	board_3d.cell_clicked.connect(_on_cell_clicked)
@@ -24,7 +28,8 @@ func _start_new_game() -> void:
 	game_over = false
 	is_player_turn = true
 	btn_restart.hide()
-	
+
+	ai_level = DifficultyManager.get_level(game_id)
 	grid_data = ReversiRules.create_initial_board()
 	_sync_pieces_3d()
 	set_status("Sua Vez! (Pretas / Obsidiana)")
@@ -49,8 +54,8 @@ func _sync_pieces_3d() -> void:
 				
 				if val == 1: black_count += 1
 				else: white_count += 1
-				
-	score_label.text = "Você (Pretas): %d  |  IA (Brancas): %d" % [black_count, white_count]
+
+	_pintar_placar(black_count, white_count)
 	_highlight_valid_moves()
 
 func _highlight_valid_moves() -> void:
@@ -98,7 +103,15 @@ func _update_scores() -> void:
 			var v: int = grid_data.get_cell(r, c)
 			if v == 1: black_count += 1
 			elif v == 2: white_count += 1
-	score_label.text = "Você (Pretas): %d  |  IA (Brancas): %d" % [black_count, white_count]
+	_pintar_placar(black_count, white_count)
+
+
+## Os discos vao para a barra de cima, iguais aos dos outros dezoito jogos. O
+## degrau fica na tela: o numero da dificuldade existia e mexia no XP sem o
+## jogador nunca ver em que degrau estava jogando.
+func _pintar_placar(pretas: int, brancas: int) -> void:
+	set_duel_score(pretas, brancas)
+	level_label.text = DifficultyManager.label_for(game_id)
 
 func _after_player_move() -> void:
 	var ai_moves := ReversiRules.get_valid_moves(grid_data, 2)
@@ -118,8 +131,35 @@ func _after_player_move() -> void:
 		set_status("IA sem jogadas! Sua vez novamente.")
 		_highlight_valid_moves()
 
+## Pensa fora da linha principal, durante a pausa de encenacao que ja existia.
+##
+## No degrau 10 a busca chega a meio segundo no computador e mais num telefone.
+## A tarefa recebe uma copia plana do tabuleiro, nunca a cena: a cena pode ser
+## fechada com a busca ainda rodando.
+func _pensar_jogada_ia() -> Vector2i:
+	var saida: Array = []
+	var tarefa := WorkerThreadPool.add_task(
+		ReversiAI.pensar_em_tarefa.bind(ReversiAI.achatar(grid_data), 2, ai_level, saida))
+	# A arvore fica guardada antes do laco: quando o jogador sai da cena com a
+	# busca em andamento, `get_tree()` passa a devolver `null` no quadro
+	# seguinte, e `await null.process_frame` estoura. A tarefa nao segura
+	# referencia para a cena, entao esperar por ela aqui e seguro.
+	var arvore := get_tree()
+	while not WorkerThreadPool.is_task_completed(tarefa):
+		if arvore == null:
+			break
+		await arvore.process_frame
+	WorkerThreadPool.wait_for_task_completion(tarefa)
+	if saida.is_empty() or int(saida[0]) < 0:
+		return Vector2i(-1, -1)
+	var idx := int(saida[0])
+	return Vector2i(idx / ReversiRules.COLS, idx % ReversiRules.COLS)
+
+
 func _play_ai_turn() -> void:
-	var ai_move := ReversiRules.get_best_move(grid_data, 2)
+	var ai_move: Vector2i = await _pensar_jogada_ia()
+	if not is_inside_tree() or game_over:
+		return
 	if ai_move != Vector2i(-1, -1):
 		var flipped := ReversiRules.get_flipped_pieces(grid_data, ai_move, 2)
 		grid_data.set_cell(ai_move.x, ai_move.y, 2)

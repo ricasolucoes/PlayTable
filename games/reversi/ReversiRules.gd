@@ -1,21 +1,11 @@
 class_name ReversiRules
 extends RefCounted
 
-## Rules and logic for Reversi.
+## Regras do Reversi. Quem escolhe a jogada da IA e a `ReversiAI`; a tabela
+## posicional mora la, junto com a busca que a usa.
 
 const ROWS = 8
 const COLS = 8
-
-const POSITIONAL_WEIGHTS = [
-	[ 100, -20,  10,   5,   5,  10, -20, 100],
-	[ -20, -50,  -2,  -2,  -2,  -2, -50, -20],
-	[  10,  -2,   5,   1,   1,   5,  -2,  10],
-	[   5,  -2,   1,   0,   0,   1,  -2,   5],
-	[   5,  -2,   1,   0,   0,   1,  -2,   5],
-	[  10,  -2,   5,   1,   1,   5,  -2,  10],
-	[ -20, -50,  -2,  -2,  -2,  -2, -50, -20],
-	[ 100, -20,  10,   5,   5,  10, -20, 100]
-]
 
 static func create_initial_board() -> Grid2D:
 	var grid := Grid2D.new(ROWS, COLS, 0)
@@ -89,82 +79,20 @@ static func count_scores(grid: Grid2D) -> Dictionary:
 	var white := grid.count_matching(2)
 	return {"black": black, "white": white}
 
+## A jogada da IA no degrau pedido. Quem pensa e a `ReversiAI`: negamax com
+## poda alfa-beta, orcamento de nos por degrau e avaliacao que muda de fase
+## junto com a partida.
+##
+## O minimax que morava aqui tinha profundidade fixa 3 e dois defeitos que se
+## somavam: o no terminal lia a contagem de pecas para variaveis declaradas
+## `bool` (60 e 4 viravam `true` e `true`, e a busca chamava de empate), e no
+## no do adversario quem ficava sem jogada era consultado de novo no lugar do
+## outro lado, entao passar a vez -- que no Reversi e rotina -- virava fim de
+## jogo. Nos ultimos lances, que e onde o Reversi se decide na contagem, a
+## busca dava zero para tudo.
+static func get_move(grid: Grid2D, ai_piece: int, level: int = 10) -> Vector2i:
+	return ReversiAI.choose_move(grid, ai_piece, level)
+
+
 static func get_best_ai_move(grid: Grid2D, ai_piece: int) -> Vector2i:
-	var moves := find_all_valid_moves(grid, ai_piece)
-	if moves.is_empty(): return Vector2i(-1, -1)
-	
-	var best_pos := Vector2i(-1, -1)
-	var best_score := -999999
-	
-	for pos in moves:
-		var flips = moves[pos]
-		var cloned_grid := grid.clone()
-		apply_move(cloned_grid, pos, ai_piece, flips)
-		
-		# Depth 3 is a good balance for GDScript performance
-		var score := minimax(cloned_grid, 3, -999999, 999999, false, ai_piece)
-		
-		if score > best_score:
-			best_score = score
-			best_pos = pos
-			
-	if best_pos == Vector2i(-1, -1):
-		# Fallback if all moves somehow returned the lowest score
-		return moves.keys()[0]
-	return best_pos
-
-static func minimax(grid: Grid2D, depth: int, alpha: int, beta: int, maximizing: bool, ai_piece: int) -> int:
-	if depth == 0:
-		return evaluate_board(grid, ai_piece)
-		
-	var current_piece := ai_piece if maximizing else (2 if ai_piece == 1 else 1)
-	var moves := find_all_valid_moves(grid, current_piece)
-	
-	if moves.is_empty():
-		# If neither side has moves, game over
-		var opponent := 2 if ai_piece == 1 else 1
-		var opp_moves := find_all_valid_moves(grid, opponent)
-		if opp_moves.is_empty():
-			var scores := count_scores(grid)
-			var ai_score: bool = scores["black"] if ai_piece == 1 else scores["white"]
-			var opp_score: bool = scores["white"] if ai_piece == 1 else scores["black"]
-			if ai_score > opp_score: return 99999
-			elif ai_score < opp_score: return -99999
-			else: return 0
-		# Pass turn
-		return minimax(grid, depth - 1, alpha, beta, not maximizing, ai_piece)
-		
-	if maximizing:
-		var max_eval := -999999
-		for pos in moves:
-			var flips = moves[pos]
-			var cloned := grid.clone()
-			apply_move(cloned, pos, current_piece, flips)
-			var ev := minimax(cloned, depth - 1, alpha, beta, false, ai_piece)
-			max_eval = max(max_eval, ev)
-			alpha = max(alpha, ev)
-			if beta <= alpha: break
-		return max_eval
-	else:
-		var min_eval := 999999
-		for pos in moves:
-			var flips = moves[pos]
-			var cloned := grid.clone()
-			apply_move(cloned, pos, current_piece, flips)
-			var ev := minimax(cloned, depth - 1, alpha, beta, true, ai_piece)
-			min_eval = min(min_eval, ev)
-			beta = min(beta, ev)
-			if beta <= alpha: break
-		return min_eval
-
-static func evaluate_board(grid: Grid2D, ai_piece: int) -> int:
-	var score: int = 0
-	var opponent := 2 if ai_piece == 1 else 1
-	for r in range(ROWS):
-		for c in range(COLS):
-			var cell: int = grid.get_cell(r, c)
-			if cell == ai_piece:
-				score += POSITIONAL_WEIGHTS[r][c]
-			elif cell == opponent:
-				score -= POSITIONAL_WEIGHTS[r][c]
-	return score
+	return ReversiAI.choose_move(grid, ai_piece, ReversiAI.PERFIS.size())
