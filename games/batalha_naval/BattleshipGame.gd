@@ -1,114 +1,159 @@
 extends BaseGame
 
-## BattleshipGame: Batalha Naval 3D com Radar Oceânico Tático e Marcadores Tridimensionais
+## BattleshipGame: Batalha Naval 3D com os dois mapas na mesa ao mesmo tempo.
+##
+## Antes havia UM tabuleiro e duas abas -- "Radar" e "Frota Aliada" -- que
+## redesenhavam o mesmo tabuleiro com conteudo diferente. Batalha naval e um
+## jogo de comparar dois mapas: escondendo um deles atras de um botao, o jogador
+## nunca via o tiro que levou junto do tiro que deu. Agora os dois mapas ficam
+## na mesa, o de ataque grande em cima e a frota aliada menor embaixo.
+
+## Tamanho da casa em cada mapa. O de ataque recebe o toque, entao precisa de
+## casa grande; o da frota so e consultado.
+const RADAR_CELL := 0.58
+const FLEET_CELL := 0.33
+const GRID := 10
+
+## Folga entre os dois mapas.
+const BOARD_GAP := 0.55
+
+## Altura do casco sobre a casa.
+const HULL_HEIGHT := 0.22
 
 var player_grid: Grid2D
 var ai_grid: Grid2D
 var player_ships: Array = []
 var ai_ships: Array = []
 var is_player_turn: bool = true
-var viewing_radar: bool = true # true = Radar de Ataque (AI Grid), false = Frota Aliada (Player Grid)
-var markers_3d: Dictionary = {}
-var ships_3d: Array = []
 
-## Altura do casco sobre a casa.
-const HULL_HEIGHT := 0.22
-
-@onready var board_3d: Board3D = $Board3D
-@onready var markers_root: Node3D = $MarkersRoot
-@onready var ships_root: Node3D = $ShipsRoot
+@onready var radar_board: Board3D = $RadarBoard
+@onready var fleet_board: Board3D = $FleetBoard
 @onready var fleet_info_label: Label = $UI/VBoxContainer/FleetInfoLabel
-@onready var btn_tab_radar: Button = $UI/VBoxContainer/TabBar/BtnRadar
-@onready var btn_tab_fleet: Button = $UI/VBoxContainer/TabBar/BtnFleet
+
+## Pinos e cascos de cada mapa, para limpar entre partidas.
+var _radar_marks: Node3D
+var _radar_wrecks: Node3D
+var _fleet_marks: Node3D
+var _fleet_hulls: Node3D
+var _player_hull_nodes: Dictionary = {}   # indice do navio -> MeshInstance3D
+
 
 func _ready() -> void:
 	env_3d = $TabletopEnvironment3D
 	status_label = $UI/VBoxContainer/StatusLabel
 	btn_restart = $UI/VBoxContainer/BtnRestart
 	env_3d.apply_theme(GameTheme3D.steel_blue())
-	board_3d.setup_board(10, 10, 0.65, "ocean_radar")
-	# A HUD ocupa os 220 px de cima; a camera enquadra a faixa que sobra.
-	env_3d.set_safe_area(240.0, 60.0)
-	env_3d.frame_content(board_3d.content_size())
+
+	radar_board.setup_board(GRID, GRID, RADAR_CELL, "ocean_radar")
+	fleet_board.setup_board(GRID, GRID, FLEET_CELL, "ocean_radar")
+	_place_boards()
+
+	_radar_marks = _child_root(radar_board, "Marks")
+	_radar_wrecks = _child_root(radar_board, "Wrecks")
+	_fleet_marks = _child_root(fleet_board, "Marks")
+	_fleet_hulls = _child_root(fleet_board, "Hulls")
+
 	# O toque entra pelo proprio tabuleiro: a casa tocada e a casa desenhada.
-	# Havia uma grade 2D de botoes de 32 px (17 dp num telefone comum) alinhada
-	# a mao sobre uma camera fixa que nao coincidia com ela.
-	board_3d.cell_clicked.connect(_on_cell_clicked)
+	radar_board.cell_clicked.connect(_on_radar_cell_clicked)
+	fleet_board.cell_clicked.connect(_on_fleet_cell_clicked)
+
 	_start_new_game()
+
+
+## Empilha os dois mapas na mesa e enquadra os dois juntos.
+##
+## A camera do PlayTable so precisa saber o retangulo que tem de caber; quando a
+## largura manda -- e em retrato manda sempre -- ela mesma inclina mais para
+## aproveitar a altura que sobraria. E o que faz os dois mapas caberem sem que
+## nenhum deles vire um selo.
+func _place_boards() -> void:
+	var radar_size := radar_board.content_size()
+	var fleet_size := fleet_board.content_size()
+	var total_depth: float = radar_size.y + BOARD_GAP + fleet_size.y
+
+	var z0: float = -total_depth * 0.5
+	radar_board.position = Vector3(0.0, 0.0, z0 + radar_size.y * 0.5)
+	fleet_board.position = Vector3(0.0, 0.0, z0 + radar_size.y + BOARD_GAP + fleet_size.y * 0.5)
+
+	_board_caption(radar_board, "FROTA INIMIGA", Color(1.0, 0.47, 0.38), radar_size)
+	_board_caption(fleet_board, "SUA FROTA", Color(0.52, 0.86, 1.0), fleet_size)
+
+	# A HUD ocupa os 230 px de cima; a camera enquadra a faixa que sobra.
+	env_3d.set_safe_area(230.0, 95.0)
+	env_3d.frame_content(Vector2(maxf(radar_size.x, fleet_size.x) + 0.45, total_depth + 0.45))
+
+
+func _board_caption(board: Board3D, text: String, color: Color, board_size: Vector2) -> void:
+	var lbl := Label3D.new()
+	lbl.text = text
+	lbl.font_size = 64
+	# O rotulo do mapa menor nao pode encolher junto com o mapa: ele e lido na
+	# mesma tela, a mesma distancia. Por isso o tamanho e fixo em unidades de
+	# mundo, e nao proporcional ao tabuleiro.
+	lbl.pixel_size = 0.0042
+	lbl.modulate = color
+	lbl.outline_size = 12
+	lbl.outline_modulate = Color(0, 0, 0, 0.8)
+	lbl.billboard = BaseMaterial3D.BILLBOARD_DISABLED
+	lbl.shaded = false
+	lbl.rotation_degrees = Vector3(-90.0, 0.0, 0.0)
+	lbl.position = Vector3(0.0, 0.02, -board_size.y * 0.5 - 0.26)
+	board.add_child(lbl)
+
+
+func _child_root(parent: Node3D, name_: String) -> Node3D:
+	var node := Node3D.new()
+	node.name = name_
+	parent.add_child(node)
+	return node
+
+
 func _start_new_game() -> void:
 	game_over = false
 	is_player_turn = true
-	viewing_radar = true
 	btn_restart.hide()
-	
-	player_grid = Grid2D.new(10, 10, 0)
-	ai_grid = Grid2D.new(10, 10, 0)
-	
+
+	player_grid = Grid2D.new(GRID, GRID, 0)
+	ai_grid = Grid2D.new(GRID, GRID, 0)
 	player_ships = BattleshipRules.place_all_ships_random(player_grid)
 	ai_ships = BattleshipRules.place_all_ships_random(ai_grid)
-	
-	_update_view_mode()
-	set_status("Sua Vez! Selecione uma coordenada no Radar.")
 
-func _update_view_mode() -> void:
-	for m in markers_root.get_children(): m.queue_free()
-	for s in ships_root.get_children(): s.queue_free()
-	markers_3d.clear()
-	ships_3d.clear()
-	
-	for r in range(10):
-		for c in range(10):
-			board_3d.reset_cell_material(r, c)
-			
-	if viewing_radar:
-		btn_tab_radar.self_modulate = Color(0.3, 0.7, 1.0)
-		btn_tab_fleet.self_modulate = Color(0.6, 0.6, 0.6)
-		_render_radar_view()
-	else:
-		btn_tab_radar.self_modulate = Color(0.6, 0.6, 0.6)
-		btn_tab_fleet.self_modulate = Color(0.3, 0.7, 1.0)
-		_render_fleet_view()
-		
-	_update_fleet_status_labels()
+	for root in [_radar_marks, _radar_wrecks, _fleet_marks, _fleet_hulls]:
+		for c in root.get_children():
+			c.queue_free()
+	_player_hull_nodes.clear()
 
-func _render_radar_view() -> void:
-	# Exibe tiros no grid da IA (2 = Erro, 3 = Acerto)
-	for r in range(10):
-		for c in range(10):
-			var val = ai_grid.get_cell(r, c)
-			if val == 2: # Erro / Água
-				_spawn_peg_3d(r, c, false)
-			elif val == 3: # Acerto / Fogo
-				_spawn_peg_3d(r, c, true)
+	for r in range(GRID):
+		for c in range(GRID):
+			radar_board.reset_cell_material(r, c)
+			fleet_board.reset_cell_material(r, c)
 
-func _render_fleet_view() -> void:
-	# Exibe navios do jogador e tiros recebidos
+	# A frota aliada fica a vista o tempo todo: e o mapa que o jogador consulta.
 	for i in player_ships.size():
-		_render_ship_3d(player_ships[i], i)
+		_render_player_hull(player_ships[i], i)
 
-	for r in range(10):
-		for c in range(10):
-			var val: int = player_grid.get_cell(r, c)
-			if val == 2:
-				_spawn_peg_3d(r, c, false, false)
-			elif val == 3:
-				_spawn_peg_3d(r, c, true, false)
+	_update_fleet_status_labels()
+	set_status("Sua Vez! Toque numa casa da frota inimiga.")
+
+
+# ---------------------------------------------------------------------------
+# Desenho
+# ---------------------------------------------------------------------------
+
 ## Crava o pino na coordenada. Ele cai de cima e assenta com um recuo curto;
-## o de acerto ainda pulsa uma vez. Ao trocar de aba, os pinos ja conhecidos
-## aparecem no lugar, sem cair de novo.
-func _spawn_peg_3d(r: int, c: int, is_hit: bool, animate: bool = true) -> void:
+## o de acerto ainda pulsa uma vez.
+func _spawn_peg(board: Board3D, root: Node3D, r: int, c: int, is_hit: bool) -> void:
+	var scale_ref: float = board.cell_size / RADAR_CELL
 	var peg := MeshInstance3D.new()
-	peg.mesh = MeshBuilder3D.create_peg_pin(0.35, 0.1)
-	var target := board_3d.get_cell_position_3d(r, c, 0.18)
+	peg.mesh = MeshBuilder3D.create_peg_pin(0.35 * scale_ref, 0.1 * scale_ref)
+	var target := board.get_cell_position_3d(r, c, 0.18 * scale_ref)
 	peg.position = target
 	if is_hit:
 		peg.material_override = MaterialFactory3D.get_glow(Color(1.0, 0.25, 0.1), 2.5)
 	else:
 		peg.material_override = MaterialFactory3D.get_silver()
-	markers_root.add_child(peg)
-	markers_3d[Vector2i(r, c)] = peg
-	if not animate:
-		return
+	root.add_child(peg)
+
 	var d := Quality3D.duration(Tokens3D.DUR_NORMAL)
 	if d <= 0.0:
 		return
@@ -124,128 +169,182 @@ func _spawn_peg_3d(r: int, c: int, is_hit: bool, animate: bool = true) -> void:
 		var pulso := Quality3D.duration(Tokens3D.DUR_FAST)
 		tw.chain().tween_property(peg, "scale", Vector3(1.3, 1.3, 1.3), pulso * 0.5)
 		tw.chain().tween_property(peg, "scale", Vector3.ONE, pulso * 0.5)
-## Desenha um navio da frota a partir das casas que ele ocupa.
-##
-## A versao anterior lia ship["is_vertical"], ["start_row"] e ["start_col"],
-## chaves que BattleshipRules nunca gravou — o navio e {name, size, cells, hits,
-## sunk}. A aba Frota morria no primeiro navio com "Invalid access" e casco
-## nenhum era desenhado. Por cima disso, o casco era Color(0.2, 0.25, 0.32)
-## sobre casas Color(0.10, 0.20, 0.34): mesma luminancia. Agora e claro, e os
-## navios emergem um a um ao abrir a aba.
-func _render_ship_3d(ship: Dictionary, index: int = 0) -> void:
+
+
+## Geometria do casco a partir das casas que o navio ocupa.
+## Devolve `{size, center}` em coordenadas locais do tabuleiro.
+func _hull_geometry(board: Board3D, ship: Dictionary) -> Dictionary:
 	var cells: Array = ship["cells"]
-	if cells.is_empty():
-		return
 	var primeira: Vector2i = cells[0]
 	var ultima: Vector2i = cells[cells.size() - 1]
-	var length: int = cells.size()
 	var is_vert: bool = primeira.x != ultima.x
+	var cell := board.cell_size
+	var ao_longo: float = float(cells.size()) * cell * 0.92
+	var atraves: float = cell * 0.62
+	var a := board.get_cell_position_3d(primeira.x, primeira.y, 0.0)
+	var b := board.get_cell_position_3d(ultima.x, ultima.y, 0.0)
+	var center := (a + b) * 0.5
+	var height: float = HULL_HEIGHT * (cell / RADAR_CELL)
+	center.y = Tokens3D.TILE_THICKNESS + height * 0.5
+	return {
+		"size": Vector3(atraves if is_vert else ao_longo, height, ao_longo if is_vert else atraves),
+		"center": center,
+	}
 
-	var cell := board_3d.cell_size
-	var ao_longo := length * cell * 0.92
-	var atraves := cell * 0.62
+
+func _render_player_hull(ship: Dictionary, index: int) -> void:
+	if (ship["cells"] as Array).is_empty():
+		return
+	var geo := _hull_geometry(fleet_board, ship)
 	var box := BoxMesh.new()
-	box.size = Vector3(atraves if is_vert else ao_longo, HULL_HEIGHT, ao_longo if is_vert else atraves)
-	var ship_mesh := MeshInstance3D.new()
-	ship_mesh.mesh = box
-	ship_mesh.material_override = MaterialFactory3D.get_plastic(Color(0.86, 0.88, 0.84), true)
-
-	var a := board_3d.get_cell_position_3d(primeira.x, primeira.y, 0.0)
-	var b := board_3d.get_cell_position_3d(ultima.x, ultima.y, 0.0)
-	var target := (a + b) * 0.5
-	target.y = Tokens3D.TILE_THICKNESS + HULL_HEIGHT * 0.5
-	ship_mesh.position = target
-	ships_root.add_child(ship_mesh)
-	ships_3d.append(ship_mesh)
+	box.size = geo["size"]
+	var hull := MeshInstance3D.new()
+	hull.mesh = box
+	hull.material_override = MaterialFactory3D.get_plastic(Color(0.86, 0.88, 0.84), true)
+	hull.position = geo["center"]
+	_fleet_hulls.add_child(hull)
+	_player_hull_nodes[index] = hull
 
 	var d := Quality3D.duration(Tokens3D.DUR_SLOW)
 	if d <= 0.0:
 		return
-	ship_mesh.position = target - Vector3(0.0, 0.5, 0.0)
-	var tw := ship_mesh.create_tween()
-	tw.tween_interval(index * 0.06)
-	tw.tween_property(ship_mesh, "position", target, d) \
+	hull.position = geo["center"] - Vector3(0.0, 0.5, 0.0)
+	var tw := hull.create_tween()
+	tw.tween_interval(float(index) * 0.06)
+	tw.tween_property(hull, "position", geo["center"], d) \
 		.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+
+
+## O navio inimigo afundado aparece inteiro no mapa de ataque.
+##
+## Ate aqui o jogador so ficava com os pinos vermelhos espalhados e nunca via o
+## que tinha derrubado. O casco sobe do fundo no lugar exato das casas, ja em
+## tom de destroco, e estoura em volta.
+func _reveal_enemy_wreck(ship: Dictionary) -> void:
+	if (ship["cells"] as Array).is_empty():
+		return
+	var geo := _hull_geometry(radar_board, ship)
+	var size: Vector3 = geo["size"]
+	var center: Vector3 = geo["center"]
+
+	var box := BoxMesh.new()
+	box.size = size
+	var wreck := MeshInstance3D.new()
+	wreck.mesh = box
+	wreck.material_override = MaterialFactory3D.get_plastic(Color(0.30, 0.26, 0.24), false)
+	wreck.position = center
+	_radar_wrecks.add_child(wreck)
+
+	_explode_around(_radar_wrecks, center, size)
+
+	var d := Quality3D.duration(Tokens3D.DUR_SLOW)
+	if d <= 0.0:
+		return
+	wreck.position = center - Vector3(0.0, 0.45, 0.0)
+	wreck.create_tween().tween_property(wreck, "position", center, d) \
+		.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+
+
+## O navio aliado afundado queima no lugar onde estava.
+func _burn_player_hull(ship: Dictionary) -> void:
+	var index := player_ships.find(ship)
+	var geo := _hull_geometry(fleet_board, ship)
+	if _player_hull_nodes.has(index):
+		var hull: MeshInstance3D = _player_hull_nodes[index]
+		if is_instance_valid(hull):
+			hull.material_override = MaterialFactory3D.get_plastic(Color(0.28, 0.24, 0.22), false)
+	_explode_around(_fleet_hulls, geo["center"], geo["size"])
+
+
+func _explode_around(parent: Node3D, center: Vector3, size: Vector3) -> void:
+	# Meias-medidas: o estouro parte do contorno do casco, nao de um ponto no
+	# meio dele -- e o que faz o fogo abrir EM VOLTA do navio.
+	Explosion3D.burst(parent, center, size * 0.5)
+	if env_3d:
+		env_3d.focus_on(parent.to_global(center))
+
+
 func _update_fleet_status_labels() -> void:
 	var ai_sunk := BattleshipRules.count_sunk_ships(ai_ships)
 	var player_sunk := BattleshipRules.count_sunk_ships(player_ships)
-	fleet_info_label.text = "Navios Inimigos Afundados: %d/5  |  Aliados: %d/5" % [ai_sunk, player_sunk]
+	fleet_info_label.text = "Inimigos afundados: %d/5   ·   Seus: %d/5" % [ai_sunk, player_sunk]
 
-func _on_cell_clicked(r: int, c: int) -> void:
-	if game_over or not is_player_turn:
+
+# ---------------------------------------------------------------------------
+# Turnos
+# ---------------------------------------------------------------------------
+
+func _on_fleet_cell_clicked(_r: int, _c: int) -> void:
+	if game_over:
 		return
-	if not viewing_radar:
-		set_status("Esta é a sua frota. Volte ao Radar para atacar.")
+	set_status("Esse é o seu mapa. Atire no de cima, da frota inimiga.")
+
+
+func _on_radar_cell_clicked(r: int, c: int) -> void:
+	if game_over or not is_player_turn:
 		return
 	var cell_val: int = ai_grid.get_cell(r, c)
 	if cell_val == 2 or cell_val == 3:
 		set_status("Você já atirou nessa coordenada. Escolha outra.")
 		return
 
-	var is_hit = (cell_val == 1)
+	var is_hit: bool = cell_val == 1
 	ai_grid.set_cell(r, c, 3 if is_hit else 2)
-	_spawn_peg_3d(r, c, is_hit)
+	_spawn_peg(radar_board, _radar_marks, r, c, is_hit)
 	if AudioManager:
 		AudioManager.play_piece_place()
-	
+
 	if is_hit:
 		var sunk_ship := BattleshipRules.check_ship_sunk(ai_ships, ai_grid, r, c)
 		if sunk_ship.size() > 0:
 			set_status("💥 Você afundou o %s inimigo!" % sunk_ship["name"])
+			_reveal_enemy_wreck(sunk_ship)
 		else:
 			set_status("🎯 Fogo certeiro!")
 	else:
 		set_status("🌊 Água!")
-		
+
 	_update_fleet_status_labels()
-	
+
 	if BattleshipRules.check_all_sunk(ai_ships):
 		_end_game(true)
 		return
-		
+
 	is_player_turn = false
 	await get_tree().create_timer(0.6).timeout
 	_play_ai_turn()
+
 
 func _play_ai_turn() -> void:
 	var ai_target := BattleshipRules.get_ai_shot(player_grid)
 	var r := ai_target.x
 	var c := ai_target.y
-	
-	var is_hit = (player_grid.get_cell(r, c) == 1)
+
+	var is_hit: bool = int(player_grid.get_cell(r, c)) == 1
 	player_grid.set_cell(r, c, 3 if is_hit else 2)
-	
-	if not viewing_radar:
-		_spawn_peg_3d(r, c, is_hit)
-		
+	_spawn_peg(fleet_board, _fleet_marks, r, c, is_hit)
+
 	if is_hit:
 		var sunk := BattleshipRules.check_ship_sunk(player_ships, player_grid, r, c)
 		if sunk.size() > 0:
 			set_status("⚠️ Inimigo afundou seu %s!" % sunk["name"])
+			_burn_player_hull(sunk)
 		else:
 			set_status("⚠️ Inimigo acertou sua frota!")
 	else:
 		set_status("Inimigo atirou na água. Sua vez!")
-		
+
 	_update_fleet_status_labels()
-	
+
 	if BattleshipRules.check_all_sunk(player_ships):
 		_end_game(false)
 		return
-		
+
 	is_player_turn = true
+
 
 func _end_game(is_player_win: bool) -> void:
 	if is_player_win:
 		finish_game("🏆 Vitória! Toda a frota inimiga foi destruída!", true)
 	else:
 		finish_game("Derrota! Sua frota foi aniquilada.")
-
-func _on_btn_radar_pressed() -> void:
-	viewing_radar = true
-	_update_view_mode()
-
-func _on_btn_fleet_pressed() -> void:
-	viewing_radar = false
-	_update_view_mode()
-

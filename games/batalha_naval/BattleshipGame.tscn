@@ -15,11 +15,9 @@ script = ExtResource("1_script")
 
 [node name="TabletopEnvironment3D" parent="." instance=ExtResource("2_env")]
 
-[node name="Board3D" parent="." instance=ExtResource("3_board")]
+[node name="RadarBoard" parent="." instance=ExtResource("3_board")]
 
-[node name="MarkersRoot" type="Node3D" parent="."]
-
-[node name="ShipsRoot" type="Node3D" parent="."]
+[node name="FleetBoard" parent="." instance=ExtResource("3_board")]
 
 [node name="UI" type="Control" parent="."]
 layout_mode = 1
@@ -37,7 +35,7 @@ anchor_right = 1.0
 offset_left = 24.0
 offset_top = 40.0
 offset_right = -24.0
-offset_bottom = 220.0
+offset_bottom = 210.0
 grow_horizontal = 2
 theme_override_constants/separation = 10
 
@@ -60,35 +58,18 @@ theme_override_font_sizes/font_size = 30
 text = "Batalha Naval 3D"
 horizontal_alignment = 1
 
-[node name="TabBar" type="HBoxContainer" parent="UI/VBoxContainer"]
-layout_mode = 2
-alignment = 1
-theme_override_constants/separation = 20
-
-[node name="BtnRadar" type="Button" parent="UI/VBoxContainer/TabBar"]
-custom_minimum_size = Vector2(160, 48)
-layout_mode = 2
-theme_override_font_sizes/font_size = 20
-text = "🎯 Radar (Ataque)"
-
-[node name="BtnFleet" type="Button" parent="UI/VBoxContainer/TabBar"]
-custom_minimum_size = Vector2(160, 48)
-layout_mode = 2
-theme_override_font_sizes/font_size = 20
-text = "🛡️ Frota Aliada"
-
 [node name="FleetInfoLabel" type="Label" parent="UI/VBoxContainer"]
 layout_mode = 2
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.8)
 theme_override_font_sizes/font_size = 18
-text = "Navios Inimigos Afundados: 0/5 | Aliados: 0/5"
+text = "Inimigos afundados: 0/5   ·   Seus: 0/5"
 horizontal_alignment = 1
 
 [node name="StatusLabel" type="Label" parent="UI/VBoxContainer"]
 layout_mode = 2
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.8)
 theme_override_font_sizes/font_size = 20
-text = "Sua Vez! Selecione uma coordenada no Radar."
+text = "Sua Vez! Toque numa casa da frota inimiga."
 horizontal_alignment = 1
 
 [node name="BtnRestart" type="Button" parent="UI/VBoxContainer"]
@@ -100,6 +81,4 @@ theme_override_font_sizes/font_size = 20
 text = "🔄 Nova Partida"
 
 [connection signal="pressed" from="UI/VBoxContainer/TopBar/BtnBack" to="." method="_on_btn_back_pressed"]
-[connection signal="pressed" from="UI/VBoxContainer/TabBar/BtnRadar" to="." method="_on_btn_radar_pressed"]
-[connection signal="pressed" from="UI/VBoxContainer/TabBar/BtnFleet" to="." method="_on_btn_fleet_pressed"]
 [connection signal="pressed" from="UI/VBoxContainer/BtnRestart" to="." method="_on_btn_restart_pressed"]
