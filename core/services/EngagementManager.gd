@@ -119,7 +119,20 @@ func proximo_marco() -> Dictionary:
 	if candidatos.is_empty():
 		return {}
 	candidatos.sort_custom(func(a, b): return a["frac"] > b["frac"])
-	return candidatos[0]
+	return _singularizar(candidatos[0])
+
+
+## "Faltam 1 para Vitrine Cheia" é o que o jogador lê justamente no momento em
+## que o marco está mais perto -- ou seja, na hora em que a frase mais importa.
+## Os quatro recados têm forma singular própria; o primeiro argumento de todos é
+## a quantidade que falta.
+func _singularizar(marco: Dictionary) -> Dictionary:
+	var args: Array = marco["args"]
+	if args.is_empty() or int(args[0]) != 1:
+		return marco
+	marco["texto_key"] = str(marco["texto_key"]) + "_ONE"
+	marco["args"] = args.slice(1)
+	return marco
 
 
 ## Resumo do perfil para cabecalho de menu e tela de perfil.

@@ -142,7 +142,9 @@ func _trocar_aba(aba: String) -> void:
 	# selecionada para dentro do quadro, tocar na ultima visivel deixava a aba
 	# ativa fora da tela.
 	if _tira_abas != null and _botoes_aba.has(aba):
-		_tira_abas.ensure_control_visible(_botoes_aba[aba])
+		# Adiado porque na primeira troca (vinda do `_ready`) a tira ainda não
+		# foi medida, e rolar antes do layout deixa a aba ativa cortada.
+		_tira_abas.ensure_control_visible.call_deferred(_botoes_aba[aba])
 	if AudioManager and _conteudo.get_child_count() > 0:
 		AudioManager.play_click()
 
@@ -188,7 +190,15 @@ func _atualizar_cabecalho() -> void:
 	_cabecalho.add_child(UIKit.barra(r["xp"], r["xp_next"]))
 
 	var rodape := UIKit.hbox(10)
-	var streak_txt := tr("PROFILE_STREAK") % r["streak"] if int(r["streak"]) > 0 else tr("PROFILE_STREAK_NONE")
+	# O plural do português não sai de um "%d dias" só: todo jogador novo vê o
+	# contador em 1 no primeiro dia, e "1 dias seguidos" é a primeira coisa que
+	# ele lê na tela de perfil.
+	var streak := int(r["streak"])
+	var streak_txt := tr("PROFILE_STREAK_NONE")
+	if streak == 1:
+		streak_txt = tr("PROFILE_STREAK_ONE")
+	elif streak > 1:
+		streak_txt = tr("PROFILE_STREAK") % streak
 	rodape.add_child(UIKit.expandir(UIKit.rotulo("🔥 " + streak_txt, UIKit.FONTE_MIUDA, UIKit.TEXTO)))
 	if int(r["freezes"]) > 0:
 		rodape.add_child(UIKit.rotulo("❄ %d" % r["freezes"], UIKit.FONTE_MIUDA, UIKit.TEXTO_FRACO))
