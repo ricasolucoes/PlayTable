@@ -28,7 +28,13 @@ const POINT_INNER_Z: float = 0.35
 var game_state: Dictionary = {}
 var current_player: int = Rules.PLAYER_WHITE # 1: Brancas (Você/P1), 2: Pretas (IA/P2)
 var is_vs_ai: bool = true
-var ai_difficulty: String = "hard" # easy, medium, hard
+## Degrau de 1 a 10 do DifficultyManager, o mesmo dos outros jogos.
+##
+## Antes eram tres botoes -- Facil, Medio, Mestre -- num campo proprio que
+## nascia sempre em "Mestre" e sumia ao fechar a cena, enquanto a escada do
+## jogo andava em paralelo mexendo so no XP. Agora o botao anda na escada, e a
+## escada e quem manda na IA.
+var ai_level: int = DifficultyManager.DEFAULT_LEVEL
 var dice_roll_result: Dictionary = {}
 var available_moves: Array[int] = []
 var turn_history: Array[Dictionary] = [] # Snapshot do início do turno para botão Desfazer
@@ -50,10 +56,7 @@ var checker_nodes: Array[Node3D] = []
 var point_highlight_meshes: Dictionary = {} # pt -> MeshInstance3D
 
 # Referências de Nós UI
-@onready var title_label: Label = $UI/TopBar/HeaderHBox/TitleLabel
 @onready var status_bar_label: Label = $UI/VBoxContainer/StatusLabel
-@onready var pip_white_label: Label = $UI/TopBar/StatsHBox/WhitePipCard/HBox/PipVal
-@onready var pip_black_label: Label = $UI/TopBar/StatsHBox/BlackPipCard/HBox/PipVal
 @onready var turns_label: Label = $UI/TopBar/StatsHBox/TurnsCard/TurnsVal
 @onready var mode_label: Label = $UI/TopBar/StatsHBox/ModeCard/ModeVal
 
@@ -526,6 +529,8 @@ func _start_new_game() -> void:
 	turn_count = 0
 	elapsed_time = 0.0
 	is_timer_running = true
+	ai_level = DifficultyManager.get_level(game_id)
+	_pintar_degrau()
 
 	game_state = Rules.create_initial_state()
 	_sync_all_checkers_3d()
@@ -845,7 +850,7 @@ func _play_ai_turn() -> void:
 		dice_nodes[1].roll(dice_roll_result["d2"], 0.8)
 		await dice_nodes[1].roll_finished
 
-	var ai_sequence := Rules.get_best_ai_turn(game_state, Rules.PLAYER_BLACK, available_moves, ai_difficulty)
+	var ai_sequence := Rules.get_ai_turn(game_state, Rules.PLAYER_BLACK, available_moves, ai_level)
 
 	if ai_sequence.is_empty():
 		set_status("A IA não tem jogadas legais.")
@@ -933,24 +938,34 @@ func _on_btn_mode_toggle_pressed() -> void:
 	_start_new_game()
 
 
+## Degraus em que o botao para. Um por faixa de `DifficultyManager.tier_name()`:
+## o botao passeia pelas cinco faixas em vez de por tres nomes proprios.
+const DEGRAUS_DO_BOTAO := [2, 4, 6, 8, 10]
+
+
+## O botao empurra a escada para a proxima faixa. Quem grava e o
+## DifficultyManager, entao a escolha sobrevive a fechar a cena -- coisa que o
+## campo `ai_difficulty` nunca fez.
 func _on_btn_diff_toggle_pressed() -> void:
 	if AudioManager:
 		AudioManager.play_click()
-	match ai_difficulty:
-		"easy":
-			ai_difficulty = "medium"
-		"medium":
-			ai_difficulty = "hard"
-		"hard":
-			ai_difficulty = "easy"
 
-	var diff_name := "Fácil"
-	if ai_difficulty == "medium":
-		diff_name = "Médio"
-	elif ai_difficulty == "hard":
-		diff_name = "Mestre"
+	var proximo: int = DEGRAUS_DO_BOTAO[0]
+	for degrau in DEGRAUS_DO_BOTAO:
+		if degrau > ai_level:
+			proximo = degrau
+			break
 
-	btn_diff_toggle.text = "IA: %s" % diff_name
+	DifficultyManager.set_level(game_id, proximo)
+	ai_level = DifficultyManager.get_level(game_id)
+	_pintar_degrau()
+
+
+func _pintar_degrau() -> void:
+	if btn_diff_toggle != null:
+		btn_diff_toggle.text = "IA: %s" % tr(DifficultyManager.tier_name(ai_level))
+	if mode_label != null and is_vs_ai:
+		mode_label.text = "vs IA • %s" % DifficultyManager.label_for(game_id)
 
 
 func _on_btn_rematch_pressed() -> void:
@@ -963,8 +978,9 @@ func _on_btn_rematch_pressed() -> void:
 func _update_ui_stats() -> void:
 	var white_pip := Rules.calculate_pip_count(game_state, Rules.PLAYER_WHITE)
 	var black_pip := Rules.calculate_pip_count(game_state, Rules.PLAYER_BLACK)
-	pip_white_label.text = "%d" % white_pip
-	pip_black_label.text = "%d" % black_pip
+	# O pip vai para a barra de cima: eram dois cartoes de 12 e 14 px, metade do
+	# piso de 14 sp, para o numero que decide a partida inteira.
+	set_duel_score(white_pip, black_pip)
 	turns_label.text = "%d" % turn_count
 
 

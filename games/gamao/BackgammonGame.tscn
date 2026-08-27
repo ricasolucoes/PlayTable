@@ -30,72 +30,16 @@ layout_mode = 1
 anchors_preset = 10
 anchor_right = 1.0
 offset_left = 16.0
-offset_top = 28.0
+offset_top = 134.0
 offset_right = -16.0
-offset_bottom = 130.0
+offset_bottom = 176.0
 grow_horizontal = 2
 theme_override_constants/separation = 6
-
-[node name="HeaderHBox" type="HBoxContainer" parent="UI/TopBar"]
-layout_mode = 2
-
-[node name="BtnBack" type="Button" parent="UI/TopBar/HeaderHBox"]
-custom_minimum_size = Vector2(90, 44)
-layout_mode = 2
-text = "‹ Voltar"
-
-[node name="TitleLabel" type="Label" parent="UI/TopBar/HeaderHBox"]
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.8)
-theme_override_constants/shadow_offset_x = 2
-theme_override_constants/shadow_offset_y = 2
-theme_override_font_sizes/font_size = 24
-text = "Gamão 3D (Backgammon)"
-horizontal_alignment = 1
 
 [node name="StatsHBox" type="HBoxContainer" parent="UI/TopBar"]
 layout_mode = 2
 alignment = 1
 theme_override_constants/separation = 10
-
-[node name="WhitePipCard" type="PanelContainer" parent="UI/TopBar/StatsHBox"]
-custom_minimum_size = Vector2(100, 36)
-layout_mode = 2
-
-[node name="HBox" type="HBoxContainer" parent="UI/TopBar/StatsHBox/WhitePipCard"]
-layout_mode = 2
-alignment = 1
-theme_override_constants/separation = 4
-
-[node name="PipIcon" type="Label" parent="UI/TopBar/StatsHBox/WhitePipCard/HBox"]
-layout_mode = 2
-theme_override_font_sizes/font_size = 12
-text = "⚪ Pip:"
-
-[node name="PipVal" type="Label" parent="UI/TopBar/StatsHBox/WhitePipCard/HBox"]
-layout_mode = 2
-theme_override_font_sizes/font_size = 14
-text = "167"
-
-[node name="BlackPipCard" type="PanelContainer" parent="UI/TopBar/StatsHBox"]
-custom_minimum_size = Vector2(100, 36)
-layout_mode = 2
-
-[node name="HBox" type="HBoxContainer" parent="UI/TopBar/StatsHBox/BlackPipCard"]
-layout_mode = 2
-alignment = 1
-theme_override_constants/separation = 4
-
-[node name="PipIcon" type="Label" parent="UI/TopBar/StatsHBox/BlackPipCard/HBox"]
-layout_mode = 2
-theme_override_font_sizes/font_size = 12
-text = "⚫ Pip:"
-
-[node name="PipVal" type="Label" parent="UI/TopBar/StatsHBox/BlackPipCard/HBox"]
-layout_mode = 2
-theme_override_font_sizes/font_size = 14
-text = "167"
 
 [node name="TurnsCard" type="PanelContainer" parent="UI/TopBar/StatsHBox"]
 custom_minimum_size = Vector2(75, 36)
@@ -124,9 +68,9 @@ layout_mode = 1
 anchors_preset = 10
 anchor_right = 1.0
 offset_left = 20.0
-offset_top = 138.0
+offset_top = 192.0
 offset_right = -20.0
-offset_bottom = 180.0
+offset_bottom = 238.0
 grow_horizontal = 2
 
 [node name="StatusLabel" type="Label" parent="UI/VBoxContainer"]

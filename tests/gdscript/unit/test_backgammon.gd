@@ -225,3 +225,68 @@ func test_partida_completa_ia_vs_ia_termina() -> void:
 
 		assert_true(Rules.is_game_over(state), "partida terminou em menos de 600 turnos")
 		assert_ne(Rules.get_winner(state), Rules.PLAYER_NONE, "houve vencedor definido")
+
+
+# ------------------------------------------------- escada de dificuldade
+#
+# O Gamao andava por tres botoes -- Facil, Medio, Mestre -- num campo proprio
+# que nascia sempre em "Mestre" e sumia ao fechar a cena, enquanto a escada do
+# DifficultyManager andava em paralelo mexendo so no XP. Agora e uma escada so.
+
+func test_a_escada_de_perfis_e_monotonica() -> void:
+	var erro_antes := 1.1
+	var janela_antes := 99
+	for perfil in Rules.PERFIS:
+		assert_true(float(perfil["erro"]) <= erro_antes, "a chance de erro nunca sobe")
+		assert_true(int(perfil["janela"]) <= janela_antes,
+			"o sorteio entre as melhores nunca alarga ao subir o degrau")
+		erro_antes = float(perfil["erro"])
+		janela_antes = int(perfil["janela"])
+	assert_eq(float(Rules.PERFIS[Rules.PERFIS.size() - 1]["erro"]), 0.0,
+		"o degrau do topo nao sorteia a sequencia")
+	assert_eq(int(Rules.PERFIS[Rules.PERFIS.size() - 1]["janela"]), 1,
+		"o degrau do topo joga sempre a melhor sequencia")
+	assert_eq(Rules.PERFIS.size(), DifficultyManager.MAX_LEVEL,
+		"um perfil por degrau da escada")
+
+
+func test_o_degrau_do_topo_joga_a_sequencia_de_maior_nota() -> void:
+	var estado: Dictionary = Rules.create_initial_state()
+	var dados: Array = [3, 1]
+	var sequencias: Array = Rules.find_all_turn_sequences(estado, Rules.PLAYER_BLACK, dados)
+	assert_false(sequencias.is_empty(), "ha jogada na abertura")
+
+	var melhor := -999999.0
+	for seq in sequencias:
+		if seq.size() != 2:
+			continue
+		var sim: Dictionary = Rules.clone_state(estado)
+		for mv in seq:
+			Rules.apply_move_inplace(sim, Rules.PLAYER_BLACK, mv["from"], mv["die"])
+		melhor = maxf(melhor, Rules.evaluate_board(sim, Rules.PLAYER_BLACK))
+
+	for _tentativa in range(5):
+		var escolhida: Array = Rules.get_ai_turn(estado, Rules.PLAYER_BLACK, dados, 10)
+		var sim: Dictionary = Rules.clone_state(estado)
+		for mv in escolhida:
+			Rules.apply_move_inplace(sim, Rules.PLAYER_BLACK, mv["from"], mv["die"])
+		assert_almost_eq(Rules.evaluate_board(sim, Rules.PLAYER_BLACK), melhor, 0.001,
+			"o degrau 10 joga a sequencia de maior nota")
+
+
+func test_todo_degrau_devolve_sequencia_legal() -> void:
+	var estado: Dictionary = Rules.create_initial_state()
+	var dados: Array = [5, 2]
+	for nivel in range(1, DifficultyManager.MAX_LEVEL + 1):
+		var seq: Array = Rules.get_ai_turn(estado, Rules.PLAYER_BLACK, dados, nivel)
+		assert_false(seq.is_empty(), "degrau %d devolve jogada" % nivel)
+		var sim: Dictionary = Rules.clone_state(estado)
+		for mv in seq:
+			var legais: Array = Rules.get_all_legal_single_moves(sim, Rules.PLAYER_BLACK, [mv["die"]])
+			var achou := false
+			for l in legais:
+				if int(l["from"]) == int(mv["from"]) and int(l["die"]) == int(mv["die"]):
+					achou = true
+					break
+			assert_true(achou, "degrau %d so joga movimento legal" % nivel)
+			Rules.apply_move_inplace(sim, Rules.PLAYER_BLACK, mv["from"], mv["die"])

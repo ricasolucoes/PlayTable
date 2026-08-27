@@ -523,8 +523,48 @@ static func _search_sequences(curr_state: Dictionary, player: int, remaining_dic
 			_search_sequences(next_state, player, next_dice, next_seq, out_results)
 
 
+## Perfil de cada degrau da escada do DifficultyManager.
+##
+## `erro` e a chance de largar a avaliacao e sortear entre as sequencias
+## legais; `janela` e quantas das melhores entram no sorteio (1 = sempre a
+## melhor). O Gamão andava por tres botoes -- Facil, Medio, Mestre -- que nao
+## conversavam com a escada e voltavam para "Mestre" toda vez que a cena
+## reabria.
+const PERFIS := [
+	{"erro": 0.85, "janela": 6},   # 1
+	{"erro": 0.68, "janela": 5},   # 2
+	{"erro": 0.52, "janela": 5},   # 3
+	{"erro": 0.40, "janela": 4},   # 4
+	{"erro": 0.28, "janela": 3},   # 5
+	{"erro": 0.18, "janela": 3},   # 6
+	{"erro": 0.10, "janela": 2},   # 7
+	{"erro": 0.05, "janela": 2},   # 8
+	{"erro": 0.01, "janela": 1},   # 9
+	{"erro": 0.0, "janela": 1},    # 10
+]
+
+
+## A melhor sequencia de jogadas da IA no degrau pedido.
+static func get_ai_turn(state: Dictionary, player: int, available_dice: Array,
+		level: int = 10) -> Array[Dictionary]:
+	var perfil: Dictionary = PERFIS[clampi(level, 1, PERFIS.size()) - 1]
+	return _melhor_turno(state, player, available_dice, float(perfil["erro"]),
+		int(perfil["janela"]))
+
+
 ## Obtém a melhor sequência de jogadas para a IA baseada na dificuldade.
 static func get_best_ai_turn(state: Dictionary, player: int, available_dice: Array, difficulty: String = "hard") -> Array[Dictionary]:
+	match difficulty:
+		"easy":
+			return _melhor_turno(state, player, available_dice, 0.45, 5)
+		"medium":
+			return _melhor_turno(state, player, available_dice, 0.0, 3)
+		_:
+			return _melhor_turno(state, player, available_dice, 0.0, 1)
+
+
+static func _melhor_turno(state: Dictionary, player: int, available_dice: Array,
+		erro: float, janela: int) -> Array[Dictionary]:
 	var sequences := find_all_turn_sequences(state, player, available_dice)
 	if sequences.is_empty():
 		return []
@@ -543,7 +583,7 @@ static func get_best_ai_turn(state: Dictionary, player: int, available_dice: Arr
 	if max_sequences.is_empty():
 		return []
 
-	if difficulty == "easy" and randf() < 0.45:
+	if erro > 0.0 and randf() < erro:
 		var chosen_seq: Array = max_sequences[randi() % max_sequences.size()]
 		var typed_seq: Array[Dictionary] = []
 		for item in chosen_seq:
@@ -566,8 +606,8 @@ static func get_best_ai_turn(state: Dictionary, player: int, available_dice: Arr
 	# Ordena por score decrescente
 	scored_sequences.sort_custom(func(a, b): return a["score"] > b["score"])
 
-	if difficulty == "medium" and scored_sequences.size() > 1:
-		var pick_idx: int = randi() % mini(3, scored_sequences.size())
+	if janela > 1 and scored_sequences.size() > 1:
+		var pick_idx: int = randi() % mini(janela, scored_sequences.size())
 		var chosen_seq: Array = scored_sequences[pick_idx]["seq"]
 		var typed_seq: Array[Dictionary] = []
 		for item in chosen_seq:
