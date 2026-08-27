@@ -164,48 +164,106 @@ func test_frota_inteira_afundada_encerra_a_partida() -> void:
 	assert_eq(RulesScript.count_sunk_ships(frota), 5, "5 navios abatidos")
 
 
-func test_ia_sobre_grade_nunca_repete_tiro() -> void:
+# ---------------------------------------------------------------- BattleshipAI
+#
+# A IA de caca existia, era testada, e a cena nunca a chamava: `get_ai_shot()`
+# tinha duas sobrecargas num parametro sem tipo, e `BattleshipGame` passava a
+# grade -- o caminho que sorteia casa. Os testes abaixo exercitam o caminho que
+# a cena de fato usa, e o ultimo deles falharia com a IA de sorteio.
+
+const AIScript = preload("res://games/batalha_naval/BattleshipAI.gd")
+
+
+func _duelo_completo(level: int) -> int:
 	var g: Grid2D = RulesScript.create_empty_grid()
 	var frota: Array = RulesScript.place_all_ships_randomly(g)
+	var memoria: Dictionary = AIScript.nova_memoria()
+	var tiros := 0
+
+	while not RulesScript.check_all_sunk(frota) and tiros < 100:
+		var pos: Vector2i = AIScript.escolher_tiro(memoria, level)
+		assert_true(pos.x >= 0, "a IA sempre acha casa livre enquanto ha frota")
+		var r: Dictionary = RulesScript.register_shot(g, pos, frota)
+		assert_true(r["valid"], "a IA nunca repete tiro")
+		var afundadas: Array = r["sunk_ship"]["cells"] if r["sunk_ship"] != null else []
+		AIScript.registrar(memoria, pos, r["is_hit"], afundadas)
+		tiros += 1
+
+	assert_true(RulesScript.check_all_sunk(frota), "frota afundada em no maximo 100 tiros")
+	return tiros
+
+
+func test_a_ia_nunca_repete_tiro_ate_varrer_o_tabuleiro() -> void:
+	var memoria: Dictionary = AIScript.nova_memoria()
+	var vistos: Dictionary = {}
 	for _tiro in range(100):
-		var pos: Vector2i = RulesScript.get_ai_shot(g)
-		var antes = g.get_cell(pos.x, pos.y)
-		assert_true(antes == 0 or antes == 1, "IA so mira casa nao atirada")
-		RulesScript.register_shot(g, pos, frota)
-	assert_eq(g.count_matching(0) + g.count_matching(1), 0, "as 100 casas foram atacadas")
+		var pos: Vector2i = AIScript.escolher_tiro(memoria, 10)
+		assert_false(vistos.has(pos), "casa %s atacada duas vezes" % pos)
+		vistos[pos] = true
+		AIScript.registrar(memoria, pos, false)
+	assert_eq(vistos.size(), 100, "as 100 casas foram atacadas")
+	assert_eq(AIScript.escolher_tiro(memoria, 10), Vector2i(-1, -1), "sem casa livre, sem tiro")
 
 
-func test_ia_com_pilha_de_caca_prioriza_o_alvo() -> void:
-	var pilha: Array = [Vector2i(4, 4)]
-	assert_eq(RulesScript.get_ai_shot(pilha, [] as Array), Vector2i(4, 4), "atira no alvo da pilha")
+## O mapa de densidade e o que substitui a pilha de caca: depois de um acerto,
+## as casas vizinhas do navio ferido passam a valer muito mais que o resto.
+func test_o_acerto_puxa_a_densidade_para_os_vizinhos() -> void:
+	var memoria: Dictionary = AIScript.nova_memoria()
+	AIScript.registrar(memoria, Vector2i(4, 4), true)
+
+	var mapa: PackedInt32Array = AIScript.densidade(memoria)
+	var vizinha: int = mapa[4 * 10 + 5]
+	var longe: int = mapa[0 * 10 + 0]
+	assert_gt(vizinha, longe, "a casa ao lado do acerto vale mais que um canto qualquer")
+
+	var alvo: Vector2i = AIScript.escolher_tiro(memoria, 10)
+	var perto := absi(alvo.x - 4) + absi(alvo.y - 4)
+	assert_eq(perto, 1, "o proximo tiro encosta no acerto")
 
 
-func test_ia_ignora_alvos_ja_atirados_e_fora_do_tabuleiro() -> void:
-	var pilha: Array = [Vector2i(9, 9), Vector2i(-1, 5), Vector2i(3, 3)]
-	var disparados: Array = [Vector2i(3, 3)]
-	var pos: Vector2i = RulesScript.get_ai_shot(pilha, disparados)
-	assert_ne(pos, Vector2i(3, 3), "nao repete o tiro")
-	assert_ne(pos, Vector2i(-1, 5), "nao mira fora do tabuleiro")
+## Tiro na agua elimina as posicoes que passariam por ali.
+func test_o_tiro_na_agua_zera_a_densidade_da_casa() -> void:
+	var memoria: Dictionary = AIScript.nova_memoria()
+	AIScript.registrar(memoria, Vector2i(3, 3), false)
+	var mapa: PackedInt32Array = AIScript.densidade(memoria)
+	assert_eq(mapa[3 * 10 + 3], 0, "casa ja atacada nao entra no mapa")
 
 
-func test_ia_sem_pilha_usa_paridade_de_tabuleiro_de_xadrez() -> void:
-	for _tiro in range(30):
-		var pos: Vector2i = RulesScript.get_ai_shot([] as Array, [] as Array)
-		assert_eq((pos.x + pos.y) % 2, 0, "casa de paridade par")
+## Navio afundado sai da conta: a densidade para de procurar um navio que nao
+## esta mais em jogo, e os acertos dele deixam de ser perseguidos.
+func test_navio_afundado_sai_da_conta() -> void:
+	var memoria: Dictionary = AIScript.nova_memoria()
+	var celulas := [Vector2i(0, 0), Vector2i(0, 1)]
+	AIScript.registrar(memoria, Vector2i(0, 0), true)
+	AIScript.registrar(memoria, Vector2i(0, 1), true, celulas)
+
+	assert_false(memoria["restantes"].has(2), "o Destroyer saiu da frota restante")
+	assert_eq(memoria["feridos"].size(), 0, "nao ha mais navio ferido para perseguir")
 
 
-func test_partida_completa_da_ia_afunda_a_frota() -> void:
-	# Guarda contra deadlock: substitui test_e2e_battleship_simulation.
-	for _partida in range(5):
-		var g: Grid2D = RulesScript.create_empty_grid()
-		var frota: Array = RulesScript.place_all_ships_randomly(g)
-		var disparados: Array = []
-		var tiros := 0
-		while not RulesScript.check_all_sunk(frota) and tiros < 100:
-			var pos: Vector2i = RulesScript.get_ai_shot([] as Array, disparados)
-			disparados.append(pos)
-			var r: Dictionary = RulesScript.register_shot(g, pos, frota)
-			assert_true(r["valid"], "a IA nunca repete tiro")
-			tiros += 1
-		assert_true(RulesScript.check_all_sunk(frota), "frota afundada em no maximo 100 tiros")
-		assert_true(tiros >= CASAS_DE_NAVIO, "precisou de ao menos 17 tiros")
+## O degrau baixo tem de ser pior: no 1 a IA nem persegue o proprio acerto.
+func test_o_degrau_de_baixo_ignora_o_proprio_acerto() -> void:
+	assert_false(bool(AIScript.PERFIS[0]["cacar"]), "degrau 1 nao persegue")
+	assert_true(bool(AIScript.PERFIS[AIScript.PERFIS.size() - 1]["cacar"]), "degrau 10 persegue")
+	var erro_antes := 1.1
+	for perfil in AIScript.PERFIS:
+		assert_true(float(perfil["erro"]) <= erro_antes, "a chance de erro nunca sobe")
+		erro_antes = float(perfil["erro"])
+	assert_eq(float(AIScript.PERFIS[AIScript.PERFIS.size() - 1]["erro"]), 0.0,
+		"o degrau do topo nao atira ao acaso")
+
+
+## O teste que a IA morta nao passaria.
+##
+## Sorteando casa entre as nao atacadas, afundar 17 casas de navio custa perto
+## de 96 tiros -- praticamente varrer o tabuleiro inteiro. Com o mapa de
+## densidade custa uns 45. A media abaixo separa as duas com folga.
+func test_a_ia_do_topo_afunda_a_frota_sem_varrer_o_tabuleiro() -> void:
+	var total := 0
+	var partidas := 6
+	for _p in range(partidas):
+		total += _duelo_completo(10)
+	var media := float(total) / float(partidas)
+	assert_lt(media, 65.0,
+		"caca de verdade afunda a frota em ~45 tiros; sorteando casa sao ~96 (media: %.1f)" % media)
+	assert_gt(media, float(CASAS_DE_NAVIO) - 1.0, "e precisa de ao menos 17 tiros")

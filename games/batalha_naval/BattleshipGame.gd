@@ -26,9 +26,17 @@ var player_ships: Array = []
 var ai_ships: Array = []
 var is_player_turn: bool = true
 
+## Degrau de 1 a 10 do DifficultyManager. Vira a chance de a IA largar o mapa
+## de densidade e sortear casa.
+var ai_level: int = DifficultyManager.DEFAULT_LEVEL
+
+## O que a IA sabe da frota do jogador -- so o que os proprios tiros contaram.
+## Ela nunca le `player_grid`.
+var ai_memoria: Dictionary = {}
+
 @onready var radar_board: Board3D = $RadarBoard
 @onready var fleet_board: Board3D = $FleetBoard
-@onready var fleet_info_label: Label = $UI/VBoxContainer/FleetInfoLabel
+@onready var level_label: Label = $UI/VBoxContainer/LevelLabel
 
 ## Pinos e cascos de cada mapa, para limpar entre partidas.
 var _radar_marks: Node3D
@@ -43,6 +51,7 @@ func _ready() -> void:
 	status_label = $UI/VBoxContainer/StatusLabel
 	btn_restart = $UI/VBoxContainer/BtnRestart
 	env_3d.apply_theme(GameTheme3D.steel_blue())
+	ai_level = DifficultyManager.get_level(game_id)
 
 	radar_board.setup_board(GRID, GRID, RADAR_CELL, "ocean_radar")
 	fleet_board.setup_board(GRID, GRID, FLEET_CELL, "ocean_radar")
@@ -116,6 +125,8 @@ func _start_new_game() -> void:
 	ai_grid = Grid2D.new(GRID, GRID, 0)
 	player_ships = BattleshipRules.place_all_ships_random(player_grid)
 	ai_ships = BattleshipRules.place_all_ships_random(ai_grid)
+	ai_level = DifficultyManager.get_level(game_id)
+	ai_memoria = BattleshipAI.nova_memoria()
 
 	for root in [_radar_marks, _radar_wrecks, _fleet_marks, _fleet_hulls]:
 		for c in root.get_children():
@@ -266,7 +277,8 @@ func _explode_around(parent: Node3D, center: Vector3, size: Vector3) -> void:
 func _update_fleet_status_labels() -> void:
 	var ai_sunk := BattleshipRules.count_sunk_ships(ai_ships)
 	var player_sunk := BattleshipRules.count_sunk_ships(player_ships)
-	fleet_info_label.text = "Inimigos afundados: %d/5   ·   Seus: %d/5" % [ai_sunk, player_sunk]
+	set_duel_score("%d/5" % ai_sunk, "%d/5" % player_sunk, "afundou", "perdeu")
+	level_label.text = DifficultyManager.label_for(game_id)
 
 
 # ---------------------------------------------------------------------------
@@ -315,7 +327,10 @@ func _on_radar_cell_clicked(r: int, c: int) -> void:
 
 
 func _play_ai_turn() -> void:
-	var ai_target := BattleshipRules.get_ai_shot(player_grid)
+	var ai_target := BattleshipAI.escolher_tiro(ai_memoria, ai_level)
+	if ai_target.x < 0:
+		is_player_turn = true
+		return
 	var r := ai_target.x
 	var c := ai_target.y
 
@@ -323,15 +338,20 @@ func _play_ai_turn() -> void:
 	player_grid.set_cell(r, c, 3 if is_hit else 2)
 	_spawn_peg(fleet_board, _fleet_marks, r, c, is_hit)
 
+	# A IA so fica sabendo o que o tiro revelou -- acerto, erro e, quando
+	# afunda, as casas do navio. E dai que sai o mapa do proximo tiro.
+	var afundadas: Array = []
 	if is_hit:
 		var sunk := BattleshipRules.check_ship_sunk(player_ships, player_grid, r, c)
 		if sunk.size() > 0:
+			afundadas = sunk["cells"]
 			set_status("⚠️ Inimigo afundou seu %s!" % sunk["name"])
 			_burn_player_hull(sunk)
 		else:
 			set_status("⚠️ Inimigo acertou sua frota!")
 	else:
 		set_status("Inimigo atirou na água. Sua vez!")
+	BattleshipAI.registrar(ai_memoria, ai_target, is_hit, afundadas)
 
 	_update_fleet_status_labels()
 

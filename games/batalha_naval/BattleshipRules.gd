@@ -122,49 +122,9 @@ static func register_shot(grid: Grid2D, pos: Vector2i, fleet: Array) -> Dictiona
 		"all_sunk": all_sunk
 	}
 
-static func get_ai_shot(arg1, arg2 = null) -> Vector2i:
-	if arg1 is Grid2D:
-		var grid: Grid2D = arg1
-		var candidates: Array[Vector2i] = []
-		for r in range(GRID_SIZE):
-			for c in range(GRID_SIZE):
-				var v: int = grid.get_cell(r, c)
-				if v != 2 and v != 3:
-					candidates.append(Vector2i(r, c))
-		if candidates.is_empty():
-			return Vector2i(0, 0)
-		candidates.shuffle()
-		return candidates[0]
-
-	var ai_hit_stack: Array = arg1 if arg1 is Array else []
-	var shots_fired: Array = arg2 if arg2 is Array else []
-	var shot_pos := Vector2i(-1, -1)
-	
-	# 1. Alvos prioritários na pilha de caça (Hunt & Target)
-	while not ai_hit_stack.is_empty():
-		var candidate = ai_hit_stack.pop_back()
-		if candidate.x >= 0 and candidate.x < GRID_SIZE and candidate.y >= 0 and candidate.y < GRID_SIZE:
-			if not (candidate in shots_fired):
-				shot_pos = candidate
-				break
-				
-	# 2. Padrão de paridade (tabuleiro de xadrez)
-	if shot_pos == Vector2i(-1, -1):
-		var candidates: Array[Vector2i] = []
-		for r in range(GRID_SIZE):
-			for c in range(GRID_SIZE):
-				var p := Vector2i(r, c)
-				if not (p in shots_fired):
-					if (r + c) % 2 == 0:
-						candidates.append(p)
-		if candidates.is_empty():
-			for r in range(GRID_SIZE):
-				for c in range(GRID_SIZE):
-					var p := Vector2i(r, c)
-					if not (p in shots_fired):
-						candidates.append(p)
-		if not candidates.is_empty():
-			candidates.shuffle()
-			shot_pos = candidates[0]
-			
-	return shot_pos
+## A escolha do tiro da IA mora em `BattleshipAI`, com memoria explicita.
+##
+## Aqui havia um `get_ai_shot(arg1, arg2 = null)` com duas sobrecargas num
+## parametro sem tipo: passando a grade, sorteava casa; passando pilha de caca
+## e disparados, fazia caca com paridade. A cena passava a grade -- entao a IA
+## boa era testada e nunca jogava. Sem tipo no parametro, nada denunciava isso.
