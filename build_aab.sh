@@ -27,8 +27,16 @@ mkdir -p "$PROJECT_DIR/android/build/assets"
 
 echo "=> Compilando AAB via Gradle..."
 mkdir -p "$PROJECT_DIR/android/build/assetPackInstallTime/src/main/assets"
+# --- Integracao Play Games -------------------------------------------------
+# android/build/ e gerado e esta no .gitignore: reinstalar o modelo de
+# compilacao apaga o plugin, o manifesto e o games_ids.xml. O instalador
+# reaplica tudo a partir de android/pgs/, que e versionado. E idempotente.
+"$PROJECT_DIR/android/pgs/install.sh"
+PGS_DEPS="$(tr '\n' '|' < "$PROJECT_DIR/android/pgs/gradle_deps.txt" | sed 's/|$//')"
+
 cd "$PROJECT_DIR/android/build"
 ./gradlew bundleStandardRelease \
+    -Pplugins_remote_binaries="$PGS_DEPS" \
     -Pexport_package_name="org.playtable.app" \
     -Pexport_version_code="$VERSION_CODE" \
     -Pexport_version_name="$VERSION_NAME" \

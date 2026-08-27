@@ -1,0 +1,16 @@
+<!-- Trecho injetado em android/build/src/main/AndroidManifest.xml por install.sh.
+     Nao e um manifesto valido sozinho: e o pedaco que falta no template do Godot. -->
+
+<!-- PGS v2 recusa inicializar sem o APP_ID. Era isto que faltava para a
+     integracao anterior sequer comecar: sem esta meta-data o SDK lanca
+     excecao na primeira chamada. O valor sai de core/configs/play_games_ids.json. -->
+<meta-data android:name="com.google.android.gms.games.APP_ID"
+    android:value="@string/game_services_project_id" />
+
+<meta-data android:name="com.google.android.gms.version"
+    android:value="@integer/google_play_services_version" />
+
+<!-- Registro do plugin no Godot 4 (formato v2: o nome da meta-data leva o
+     nome do plugin, e o valor leva a classe). -->
+<meta-data android:name="org.godotengine.plugin.v2.PlayTablePGS"
+    android:value="org.playtable.pgs.PlayTablePGS" />
