@@ -21,9 +21,13 @@ fi
 VERSION_CODE="${EXPORT_VERSION_CODE:-11}"
 VERSION_NAME="${EXPORT_VERSION_NAME:-0.6.0}"
 
+# Mesma resolucao do build_apk.sh: versao conferida contra .godot-version e
+# contra a engine do modelo Android, senao o AAB publicado crasha no boot.
+GODOT_BIN="$("$PROJECT_DIR/scripts/godot_bin.sh")"
+
 echo "=> PlayTable :: Exportando PCK do Godot ($VERSION_NAME - code $VERSION_CODE)..."
 mkdir -p "$PROJECT_DIR/android/build/assets"
-"$PROJECT_DIR/Godot.app/Contents/MacOS/Godot" --headless --path "$PROJECT_DIR" --export-pack "Android" "$PROJECT_DIR/android/build/assets/main.pck"
+"$GODOT_BIN" --headless --path "$PROJECT_DIR" --export-pack "Android" "$PROJECT_DIR/android/build/assets/main.pck"
 
 echo "=> Compilando AAB via Gradle..."
 mkdir -p "$PROJECT_DIR/android/build/assetPackInstallTime/src/main/assets"

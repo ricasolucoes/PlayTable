@@ -65,12 +65,33 @@ jobs:
           echo "VERSION_CODE=${VERSION_CODE}" >> $GITHUB_OUTPUT
           echo "Building version ${CLEAN_VERSION} (code: ${VERSION_CODE})"
 
-      - name: Download Godot 4.3 Headless
+      # A versao vem de .godot-version, nunca escrita a mao aqui. Este job
+      # baixava a 4.3 e exportava o pacote de dados com ela, enquanto o modelo
+      # de build do Android carrega a 4.7.2: o AAB publicado na loja instalava
+      # e morria de SIGSEGV no primeiro quadro renderizado.
+      - name: Download Godot headless (versao de .godot-version)
         run: |
-          wget -q https://github.com/godotengine/godot/releases/download/4.3-stable/Godot_v4.3-stable_linux.x86_64.zip
-          unzip -q Godot_v4.3-stable_linux.x86_64.zip
-          mv Godot_v4.3-stable_linux.x86_64 godot
+          set -euo pipefail
+          GODOT_VERSION="$(tr -d '[:space:]' < .godot-version)"
+          echo "GODOT_VERSION=$GODOT_VERSION" >> "$GITHUB_ENV"
+          url="https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}/Godot_v${GODOT_VERSION}_linux.x86_64.zip"
+          wget -q -O godot.zip "$url"
+          unzip -q godot.zip
+          mv "Godot_v${GODOT_VERSION}_linux.x86_64" godot
           chmod +x godot
+          ./godot --version
+
+      - name: Conferir que a engine bate com o modelo de build do Android
+        run: |
+          set -euo pipefail
+          CARIMBO=android/build/.build_version
+          [ -f "$CARIMBO" ] || { echo "sem $CARIMBO, nada a conferir"; exit 0; }
+          QUERO="${GODOT_VERSION%%-*}"
+          TEM="$(tr -d '[:space:]' < "$CARIMBO")"
+          case "$TEM" in
+            "$QUERO".*) echo "modelo Android: $TEM" ;;
+            *) echo "::error::modelo Android e $TEM mas a engine e $GODOT_VERSION" >&2; exit 1 ;;
+          esac
 
       - name: Export Godot PCK
         run: |

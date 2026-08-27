@@ -24,17 +24,11 @@ if [ -z "${KEYSTORE_PASSWORD:-}" ] && [ -f "$KEYSTORE_PW_FILE" ]; then
 fi
 
 # --- Godot Binary ---
-GODOT_BIN="${GODOT_BIN:-}"
-if [ -z "$GODOT_BIN" ]; then
-    if [ -x "$PROJECT_DIR/Godot.app/Contents/MacOS/Godot" ]; then
-        GODOT_BIN="$PROJECT_DIR/Godot.app/Contents/MacOS/Godot"
-    elif command -v godot &>/dev/null; then
-        GODOT_BIN="godot"
-    else
-        echo "ERROR: Godot binary not found."
-        exit 1
-    fi
-fi
+# Resolvido e conferido por scripts/godot_bin.sh: a versao tem de bater com
+# .godot-version E com a engine do modelo de build do Android. Exportar o
+# pacote de dados com outra versao gera um APK que instala e morre de SIGSEGV
+# no primeiro quadro, sem erro nenhum durante a compilacao.
+GODOT_BIN="$("$PROJECT_DIR/scripts/godot_bin.sh")"
 
 VERSION_CODE="${EXPORT_VERSION_CODE:-11}"
 VERSION_NAME="${EXPORT_VERSION_NAME:-0.6.0}"

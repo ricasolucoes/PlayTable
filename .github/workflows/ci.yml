@@ -10,7 +10,9 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  # Precisa acompanhar a engine usada nos builds de release (ver CHANGELOG v0.3.0).
+  # Fonte unica: .godot-version, o mesmo arquivo que scripts/godot_bin.sh le
+  # nos builds locais. Repetir a versao aqui foi o que deixou a CI e o APK
+  # andarem em engines diferentes.
   GODOT_VERSION: "4.7.2-stable"
   # Versao do GUT fixada em tests/install_gut.sh; repetida aqui so para a chave de cache.
   GUT_VERSION: "v9.7.1"
@@ -23,6 +25,16 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+
+      - name: Conferir que .godot-version bate com a engine deste job
+        run: |
+          set -euo pipefail
+          QUERO="$(tr -d '[:space:]' < .godot-version)"
+          if [ "$QUERO" != "$GODOT_VERSION" ]; then
+            echo "::error::.godot-version pede $QUERO mas o job usa $GODOT_VERSION" >&2
+            exit 1
+          fi
+          echo "engine: $QUERO"
 
       - name: Dependencias do Godot headless
         # O binario oficial de Linux e o mesmo com e sem --headless: ele ainda
