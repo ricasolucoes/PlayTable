@@ -9,6 +9,12 @@ var dealer_hand: CardHand
 var player_cards_3d: Array = []
 var dealer_cards_3d: Array = []
 
+## Onde cada lado da mesa fica, e quanto as cartas se sobrepoem na fileira.
+const DEALER_Z := -1.30
+const PLAYER_Z := 1.30
+const CARD_PITCH := 0.52
+const ZONE_SIZE := Vector2(3.15, 1.45)
+
 @onready var cards_root: Node3D = $CardsRoot
 @onready var dealer_score_label: Label = $UI/VBoxContainer/DealerScoreLabel
 @onready var player_score_label: Label = $UI/VBoxContainer/PlayerScoreLabel
@@ -21,16 +27,33 @@ func _ready() -> void:
 	status_label = $UI/VBoxContainer/Status
 	btn_restart = $UI/Buttons/BtnRestart
 	env_3d.set_felt_color(Color(0.06, 0.32, 0.18)) # Verde cassino clássico
+	# A HUD come 210 px em cima e os botoes 120 embaixo; a mesa ocupa o resto.
+	# Sem isto a camera usava o enquadramento padrao de 6x6 unidades e as cartas
+	# -- que juntas nao passam de 3,5 -- ficavam do tamanho de um selo.
+	env_3d.set_safe_area(210.0, 120.0)
+	env_3d.frame_content(Vector2(ZONE_SIZE.x + 0.30,
+		(PLAYER_Z - DEALER_Z) + ZONE_SIZE.y + 0.45))
+	_build_table_zones()
 	player_hand = CardHand.new()
 	dealer_hand = CardHand.new()
 	_start_new_game()
+
+
+## Marca no feltro de quem e cada fileira. Duas fileiras de cartas iguais no
+## meio do verde nao dizem qual e a mao de quem.
+func _build_table_zones() -> void:
+	cards_root.add_child(TableZone3D.create(ZONE_SIZE, Vector3(0.0, 0.0, DEALER_Z),
+		"MESA · CARTEADOR", Color(0.96, 0.80, 0.36), true))
+	cards_root.add_child(TableZone3D.create(ZONE_SIZE, Vector3(0.0, 0.0, PLAYER_Z),
+		"SUA MÃO", Color(0.52, 0.86, 1.0)))
 
 func _start_new_game() -> void:
 	game_over = false
 	player_hand.clear()
 	dealer_hand.clear()
-	
-	for c in cards_root.get_children(): c.queue_free()
+
+	for c in player_cards_3d: c.queue_free()
+	for c in dealer_cards_3d: c.queue_free()
 	player_cards_3d.clear()
 	dealer_cards_3d.clear()
 	
@@ -69,23 +92,41 @@ func _spawn_card_3d(card: Card, is_player: bool, index: int, face_up: bool) -> C
 	var suit_sym := card.get_suit_symbol()
 	c_3d.setup(disp_val, suit_sym, face_up)
 	
-	var shoe_pos := Vector3(2.6, 0.4, -1.8)
-	c_3d.position = shoe_pos
+	# A carta sai do sabot, no canto da mesa, e viaja ate o lugar dela.
+	c_3d.position = Vector3(2.6, 0.4, -2.2)
 	cards_root.add_child(c_3d)
-	
-	var target_z := 0.8 if is_player else -0.8
-	var spacing_x := 0.85
-	var start_x := -1.2 + (index * spacing_x)
-	var target_pos := Vector3(start_x, 0.05 + (index * 0.005), target_z)
-	
-	c_3d.deal_to(target_pos, 0.0, 0.45)
-	
+
 	if is_player:
 		player_cards_3d.append(c_3d)
 	else:
 		dealer_cards_3d.append(c_3d)
-		
+
+	_relayout_hand(is_player, index)
 	return c_3d
+
+
+## Recentra a fileira de um lado da mesa.
+##
+## A versao anterior punha a primeira carta sempre em x = -1.2 e ia somando: com
+## duas cartas a mao ficava torta a esquerda, e com cinco vazava a zona pela
+## direita. Aqui a fileira e sempre centrada na zona, seja qual for o tamanho.
+func _relayout_hand(is_player: bool, animate_from: int = -1) -> void:
+	var cards: Array = player_cards_3d if is_player else dealer_cards_3d
+	if cards.is_empty():
+		return
+	var z: float = PLAYER_Z if is_player else DEALER_Z
+	# Com muitas cartas a fileira aperta em vez de sair da zona.
+	var pitch: float = minf(CARD_PITCH, (ZONE_SIZE.x - Tokens3D.CARD_WIDTH - 0.2)
+		/ maxf(float(cards.size() - 1), 1.0))
+	var start_x: float = -pitch * float(cards.size() - 1) * 0.5
+
+	for i in cards.size():
+		var card: Card3D = cards[i]
+		var target := Vector3(start_x + float(i) * pitch, 0.05 + float(i) * 0.004, z)
+		if i == animate_from:
+			card.deal_to(target, 0.0, 0.45)
+		else:
+			card.move_to(target)
 
 func _update_labels(show_dealer: bool) -> void:
 	var p_score := BlackjackRules.calculate_hand_value(player_hand.get_all())
