@@ -65,6 +65,10 @@ var point_highlight_meshes: Dictionary = {} # pt -> MeshInstance3D
 @onready var btn_diff_toggle: Button = $UI/Actions/BtnDiffToggle
 @onready var touch_buttons_container: Control = $UI/TouchGrid
 
+## Alvo de toque de cada posicao (1..24, barra, saida), posicionado projetando
+## o proprio ponto do tabuleiro na tela.
+var touch_targets: Dictionary = {}
+
 # Modal de Resultado
 @onready var result_modal: Control = $ResultModal
 @onready var result_title: Label = $ResultModal/Panel/VBox/ResultTitle
@@ -336,56 +340,178 @@ func _setup_ui_events() -> void:
 	btn_rematch.pressed.connect(_on_btn_rematch_pressed)
 
 
+## Monta a camada de toque sobre o tabuleiro.
+##
+## Antes isto era uma fileira de 12 botoes em cima e outra embaixo, esticadas
+## pela largura da tela em HBoxContainer. O tabuleiro e 3D em perspectiva: as
+## duas fileiras planas nao coincidiam com ponta nenhuma -- ficavam uma dentro
+## da HUD marrom e a outra abaixo do tabuleiro, no feltro vazio. Tocar uma peca
+## nao fazia nada, e era por isso que nao dava para mover.
+##
+## Agora cada alvo e posicionado projetando o proprio ponto do tabuleiro na
+## tela pela camera, e se reposiciona sozinho quando o enquadramento muda.
 func _setup_touch_overlays() -> void:
 	for c in touch_buttons_container.get_children():
 		c.queue_free()
+	touch_targets.clear()
 
-	# Cria botões touch interativos transparentes para cada ponto
-	# 12 no topo (13..24) e 12 no fundo (12..1)
-	var top_hbox := HBoxContainer.new()
-	top_hbox.custom_minimum_size = Vector2(0, 160)
-	top_hbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	top_hbox.mouse_filter = Control.MOUSE_FILTER_PASS
+	touch_buttons_container.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 
-	var bottom_hbox := HBoxContainer.new()
-	bottom_hbox.custom_minimum_size = Vector2(0, 160)
-	bottom_hbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	bottom_hbox.mouse_filter = Control.MOUSE_FILTER_PASS
+	for pt in range(1, 25):
+		touch_targets[pt] = _create_touch_button(pt, "%d" % pt)
+	touch_targets[Rules.BAR_POS] = _create_touch_button(Rules.BAR_POS, "BARRA")
+	touch_targets[Rules.BEAR_OFF_POS] = _create_touch_button(Rules.BEAR_OFF_POS, "SAÍDA")
 
-	# Organiza layout de botões
-	var vbox := VBoxContainer.new()
-	vbox.set_anchors_preset(Control.PRESET_FULL_RECT)
-	vbox.add_child(top_hbox)
-
-	var spacer := Control.new()
-	spacer.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	vbox.add_child(spacer)
-
-	vbox.add_child(bottom_hbox)
-	touch_buttons_container.add_child(vbox)
-
-	# Botões do Topo: 13 a 24
-	for pt in range(13, 25):
-		var btn := _create_touch_button(pt)
-		top_hbox.add_child(btn)
-
-	# Botões do Fundo: 12 a 1 (invertido para espelhar a mesa)
-	for pt in range(12, 0, -1):
-		var btn := _create_touch_button(pt)
-		bottom_hbox.add_child(btn)
+	if env_3d:
+		env_3d.framing_changed.connect(func(_size: Vector2): _refresh_touch_overlays())
+	var vp := get_viewport()
+	if vp:
+		vp.size_changed.connect(_refresh_touch_overlays)
+	_refresh_touch_overlays.call_deferred()
 
 
-func _create_touch_button(pt: int) -> Button:
+func _create_touch_button(pt: int, label: String) -> Button:
 	var btn := Button.new()
-	btn.flat = true
-	btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	btn.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	btn.focus_mode = Control.FOCUS_NONE
-	btn.text = "%d" % pt
-	btn.add_theme_font_size_override("font_size", 12)
-	btn.add_theme_color_override("font_color", Color(1, 1, 1, 0.45))
+	btn.text = label
+	btn.add_theme_font_size_override("font_size", 13)
+	btn.mouse_filter = Control.MOUSE_FILTER_STOP
 	btn.pressed.connect(func(): _on_position_touched(pt))
+	touch_buttons_container.add_child(btn)
 	return btn
+
+
+## Retangulo de tela que o ponto `pt` ocupa, projetando o contorno dele.
+##
+## Projeta os oito cantos da caixa que envolve a ponta -- e nao so o centro --
+## porque em perspectiva a mesma ponta e larga na borda da mesa e estreita na
+## ponta do triangulo. A altura entra na conta para a pilha de pecas empilhadas
+## tambem ficar dentro do alvo.
+func _touch_rect(cam: Camera3D, pt: int) -> Rect2:
+	var x := 0.0
+	var hw := POINT_PITCH_X * 0.5
+	var z0 := 0.0
+	var z1 := 0.0
+
+	if pt == Rules.BAR_POS:
+		hw = BAR_WIDTH * 0.62
+		z0 = -1.2
+		z1 = 1.2
+	elif pt == Rules.BEAR_OFF_POS:
+		x = BOARD_WIDTH * 0.5 - 0.35
+		hw = 0.42
+		z0 = 0.35
+		z1 = 2.25
+	else:
+		x = _get_point_x_coord(pt)
+		var is_top := pt >= 13
+		z0 = -POINT_OUTER_Z if is_top else POINT_INNER_Z
+		z1 = -POINT_INNER_Z if is_top else POINT_OUTER_Z
+
+	var min_p := Vector2(INF, INF)
+	var max_p := Vector2(-INF, -INF)
+	for sx in [-hw, hw]:
+		for sz in [z0, z1]:
+			for sy in [0.0, 0.36]:
+				var mundo: Vector3 = board_root.to_global(Vector3(x + sx, sy, sz))
+				var tela := cam.unproject_position(mundo)
+				min_p = min_p.min(tela)
+				max_p = max_p.max(tela)
+
+	# Alvo minimo de 44 px: e o menor toque confortavel num telefone, e as
+	# pontas do fundo projetam mais estreitas que isso.
+	var rect := Rect2(min_p, max_p - min_p)
+	var falta := Vector2(maxf(44.0 - rect.size.x, 0.0), maxf(44.0 - rect.size.y, 0.0))
+	rect.position -= falta * 0.5
+	rect.size += falta
+	return rect
+
+
+func _refresh_touch_overlays() -> void:
+	if env_3d == null or board_root == null or not is_inside_tree():
+		return
+	var cam := env_3d.camera
+	if cam == null:
+		return
+	var origem := touch_buttons_container.global_position
+	for pt in touch_targets:
+		var btn: Button = touch_targets[pt]
+		if not is_instance_valid(btn):
+			continue
+		var rect := _touch_rect(cam, pt)
+		btn.position = rect.position - origem
+		btn.size = rect.size
+	_sync_touch_visuals()
+
+
+## Deixa a camada de toque contar a mesma historia que os halos do tabuleiro:
+## o que da para escolher, o que esta escolhido e para onde da para ir.
+func _sync_touch_visuals() -> void:
+	var destinos := {}
+	for dest in valid_destinations:
+		destinos[int(dest["to"])] = true
+
+	var na_barra := has_rolled_dice \
+		and Rules.has_checkers_on_bar(game_state, current_player)
+	var board: Array = game_state.get("board", [])
+
+	for pt in touch_targets:
+		var btn: Button = touch_targets[pt]
+		if not is_instance_valid(btn):
+			continue
+		var estado := "idle"
+		if pt == selected_pos:
+			estado = "selected"
+		elif destinos.has(pt):
+			estado = "target"
+		elif has_rolled_dice and _has_own_checker(board, pt) \
+				and (not na_barra or pt == Rules.BAR_POS):
+			estado = "ready"
+
+		btn.visible = pt != Rules.BEAR_OFF_POS or estado != "idle"
+		for nome in ["normal", "hover", "pressed", "focus", "disabled"]:
+			btn.add_theme_stylebox_override(nome, _touch_style(estado))
+		btn.add_theme_color_override("font_color", _touch_ink(estado))
+
+
+func _has_own_checker(board: Array, pt: int) -> bool:
+	if pt == Rules.BAR_POS:
+		return Rules.has_checkers_on_bar(game_state, current_player)
+	if pt == Rules.BEAR_OFF_POS or pt < 1 or pt >= board.size():
+		return false
+	var val: int = int(board[pt])
+	return val > 0 if current_player == Rules.PLAYER_WHITE else val < 0
+
+
+func _touch_style(estado: String) -> StyleBoxFlat:
+	var style := StyleBoxFlat.new()
+	style.set_corner_radius_all(10)
+	match estado:
+		"selected":
+			style.bg_color = Color(0.96, 0.78, 0.26, 0.30)
+			style.border_color = Color(1.0, 0.86, 0.36, 0.95)
+			style.set_border_width_all(3)
+		"target":
+			style.bg_color = Color(0.30, 0.85, 0.45, 0.26)
+			style.border_color = Color(0.44, 0.95, 0.58, 0.90)
+			style.set_border_width_all(3)
+		"ready":
+			style.bg_color = Color(1.0, 1.0, 1.0, 0.06)
+			style.border_color = Color(1.0, 1.0, 1.0, 0.34)
+			style.set_border_width_all(2)
+		_:
+			style.bg_color = Color(0, 0, 0, 0.0)
+			style.border_color = Color(1, 1, 1, 0.10)
+			style.set_border_width_all(1)
+	return style
+
+
+func _touch_ink(estado: String) -> Color:
+	match estado:
+		"selected": return Color(1.0, 0.90, 0.48)
+		"target": return Color(0.62, 1.0, 0.74)
+		"ready": return Color(1, 1, 1, 0.72)
+		_: return Color(1, 1, 1, 0.28)
 
 
 func _start_new_game() -> void:
@@ -510,6 +636,7 @@ func _on_btn_roll_dice_pressed() -> void:
 
 	is_animating = false
 	_render_dice_ui()
+	_sync_touch_visuals()
 
 	# Verifica se há qualquer jogada legal possível
 	var legal_moves := Rules.get_all_legal_single_moves(game_state, current_player, available_moves)
@@ -603,6 +730,8 @@ func _select_position(pt: int) -> void:
 		if point_highlight_meshes.has(target_pt):
 			point_highlight_meshes[target_pt].visible = true
 
+	_sync_touch_visuals()
+
 	if pt == Rules.BAR_POS:
 		set_status("Barra selecionada. Escolha a casa de reentrada.")
 	else:
@@ -612,6 +741,7 @@ func _select_position(pt: int) -> void:
 func _clear_all_highlights() -> void:
 	for halo in point_highlight_meshes.values():
 		halo.visible = false
+	_sync_touch_visuals()
 
 
 # ---------------------------------------------------------------------------
@@ -680,6 +810,7 @@ func _finish_turn() -> void:
 	current_player = 3 - current_player # Alterna 1 <-> 2
 
 	_update_ui_stats()
+	_sync_touch_visuals()
 
 	if is_vs_ai and current_player == Rules.PLAYER_BLACK:
 		btn_roll_dice.disabled = true
