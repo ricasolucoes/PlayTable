@@ -9,14 +9,19 @@ var is_player_turn: bool = true
 var continuing_capture_pos: Vector2i = Vector2i(-1, -1)
 var pieces_3d: Dictionary = {}
 
+## Degrau de 1 a 10 do DifficultyManager. Vira profundidade de busca da IA.
+var ai_level: int = DifficultyManager.DEFAULT_LEVEL
+
 @onready var board_3d: Board3D = $Board3D
 @onready var pieces_root: Node3D = $PiecesRoot
 @onready var score_label: Label = $UI/VBoxContainer/ScoreLabel
+@onready var level_label: Label = $UI/VBoxContainer/LevelLabel
 
 func _ready() -> void:
 	env_3d = $TabletopEnvironment3D
 	status_label = $UI/VBoxContainer/StatusLabel
 	btn_restart = $UI/VBoxContainer/BtnRestart
+	ai_level = DifficultyManager.get_level(game_id)
 	env_3d.apply_theme(_build_theme())
 	board_3d.setup_board(CheckersRules.ROWS, CheckersRules.COLS, 0.75, "wood_checkered")
 	# O tabuleiro se anuncia para a camera: nao existe distancia escrita a mao.
@@ -40,9 +45,16 @@ func _start_new_game() -> void:
 	valid_moves.clear()
 	btn_restart.hide()
 	
+	ai_level = DifficultyManager.get_level(game_id)
+	_update_level_label()
 	grid_data = CheckersRules.create_initial_board()
 	_sync_pieces_3d()
 	set_status("Sua Vez! (Marfim)")
+
+
+func _update_level_label() -> void:
+	if level_label:
+		level_label.text = DifficultyManager.label_for(game_id)
 
 func _sync_pieces_3d() -> void:
 	for p in pieces_root.get_children(): p.queue_free()
@@ -95,6 +107,14 @@ func _on_cell_clicked(r: int, c: int) -> void:
 		
 	var val: int = grid_data.get_cell(r, c)
 	if val > 0: # Peça do jogador
+		# Captura e obrigatoria -- e sempre foi, em `get_all_valid_moves`. Só a
+		# tela nao cobrava: dava para deixar a captura de lado e passear com
+		# outra peca enquanto a IA, que joga pelas regras, era obrigada a comer.
+		# Era metade do motivo de ganhar das Damas sem pensar.
+		if not _piece_is_playable(clicked_pos):
+			set_status("Captura obrigatória: jogue a peça que come.")
+			_highlight_forced_captures()
+			return
 		selected_pos = clicked_pos
 		valid_moves = CheckersRules.get_valid_moves_for_piece(grid_data, selected_pos)
 		
@@ -104,6 +124,29 @@ func _on_cell_clicked(r: int, c: int) -> void:
 		_clear_selection()
 		selected_pos = Vector2i(-1, -1)
 		valid_moves.clear()
+
+## As pecas que o jogador pode mover agora. Havendo captura em qualquer peca,
+## so as que capturam entram na lista.
+func _playable_origins() -> Array[Vector2i]:
+	var origens: Array[Vector2i] = []
+	for m in CheckersRules.get_all_valid_moves(grid_data, 1):
+		if not origens.has(m["from"]):
+			origens.append(m["from"])
+	return origens
+
+
+func _piece_is_playable(pos: Vector2i) -> bool:
+	return _playable_origins().has(pos)
+
+
+## Aponta quem tem de comer, para a recusa nao ser um "nao" sem explicacao.
+func _highlight_forced_captures() -> void:
+	board_3d.clear_states()
+	_lower_all_pieces()
+	var destinos: Array = []
+	destinos.assign(_playable_origins())
+	board_3d.set_cells_state(destinos, Board3D.CellState.VALID)
+
 
 ## Marca a origem, levanta a peca e aponta cada destino possivel. O destaque
 ## usa tom E anel: quem nao distingue as cores ainda ve a marca.
@@ -146,8 +189,13 @@ func _execute_player_move(from_pos: Vector2i, move_dict: Dictionary) -> void:
 			cap_piece.vanish()
 			pieces_3d.erase(captured_pos)
 
-	var became_queen := CheckersRules.apply_move(grid_data, from_pos, to_pos, captured_pos)
-	if became_queen and piece_3d:
+	# `apply_move` devolve um Dicionario, e todo Dicionario cheio e verdadeiro:
+	# lido como bandeira, ele coroava TODA peca a cada lance -- a coroa nascia
+	# na primeira jogada de cada peca e a animacao rodava de novo a cada passo.
+	# A coroacao de verdade e a peca simples que virou dama neste lance.
+	var era_dama := _is_queen(from_pos)
+	CheckersRules.apply_move(grid_data, from_pos, to_pos, captured_pos)
+	if piece_3d and not era_dama and _is_queen(to_pos):
 		piece_3d.promote_queen()
 		
 	for row in range(CheckersRules.ROWS):
@@ -181,62 +229,69 @@ func _check_game_end_or_ai_turn() -> void:
 		
 	is_player_turn = false
 	set_status("Vez da IA (Obsidiana)...")
-	await get_tree().create_timer(0.6).timeout
-	
-	_play_ai_turn()
 
-func _play_ai_turn() -> void:
-	var ai_move := CheckersRules.get_best_ai_move(grid_data)
-	if ai_move.is_empty():
+	# A busca roda fora da linha principal e comeca junto com a pausa de
+	# encenacao: no degrau 10 ela leva perto de meio segundo aqui e mais num
+	# telefone, e travar a tela por isso e defeito. Como ela corre durante a
+	# pausa que ja existia, na pratica a IA continua respondendo no mesmo tempo.
+	var saida: Array = []
+	var tarefa := WorkerThreadPool.add_task(
+		CheckersAI.pensar_em_tarefa.bind(grid_data.clone(), -1, ai_level, saida))
+
+	await get_tree().create_timer(0.6).timeout
+	while not WorkerThreadPool.is_task_completed(tarefa):
+		await get_tree().process_frame
+	WorkerThreadPool.wait_for_task_completion(tarefa)
+
+	if not is_inside_tree() or game_over:
+		return
+	_play_ai_turn(saida[0] if not saida.is_empty() else {})
+
+## Encena o turno que a busca escolheu, salto a salto.
+##
+## `turno` traz a cadeia de capturas inteira. Antes a cena continuava a cadeia
+## sozinha pegando `further[0]`, a primeira da lista, e desmanchava a linha que
+## a busca tinha calculado.
+func _play_ai_turn(turno: Dictionary) -> void:
+	if turno.is_empty():
 		_end_game(1)
 		return
-		
-	var from_pos = ai_move["from"]
-	var to_pos = ai_move["to"]
-	var captured_pos = ai_move["captured"]
-	
-	var piece_3d = pieces_3d.get(from_pos)
-	if piece_3d:
-		pieces_3d.erase(from_pos)
-		pieces_3d[to_pos] = piece_3d
-		piece_3d.select(false)
-		piece_3d.jump_to(_cell_pos(to_pos.x, to_pos.y),
-			Tokens3D.ARC_LONG if captured_pos != Vector2i(-1, -1) else Tokens3D.ARC_SHORT)
-		
-	if captured_pos != Vector2i(-1, -1):
-		var cap_piece = pieces_3d.get(captured_pos)
-		if cap_piece:
-			cap_piece.vanish()
-			pieces_3d.erase(captured_pos)
 
-	var became_queen := CheckersRules.apply_move(grid_data, from_pos, to_pos, captured_pos)
-	if became_queen and piece_3d:
-		piece_3d.promote_queen()
-		
-	# Capturas sucessivas da IA
-	if captured_pos != Vector2i(-1, -1):
-		var further := CheckersRules.get_captures_for_piece(grid_data, to_pos)
-		while further.size() > 0:
+	var origem: Vector2i = turno["from"]
+	var pos: Vector2i = origem
+	var piece_3d = pieces_3d.get(origem)
+	if piece_3d:
+		piece_3d.select(false)
+
+	for i in range(turno["hops"].size()):
+		if i > 0:
 			await get_tree().create_timer(0.4).timeout
-			var next_m := further[0]
-			var next_to = next_m["to"]
-			var next_cap = next_m["captured"]
-			
-			pieces_3d.erase(to_pos)
-			pieces_3d[next_to] = piece_3d
-			piece_3d.jump_to(_cell_pos(next_to.x, next_to.y), Tokens3D.ARC_LONG)
-			
-			var next_cap_piece = pieces_3d.get(next_cap)
-			if next_cap_piece:
-				next_cap_piece.vanish()
-				pieces_3d.erase(next_cap)
-				
-			CheckersRules.apply_move(grid_data, to_pos, next_to, next_cap)
-			to_pos = next_to
-			further = CheckersRules.get_captures_for_piece(grid_data, to_pos)
-			
+			if not is_inside_tree():
+				return
+		var hop: Dictionary = turno["hops"][i]
+		var destino: Vector2i = hop["to"]
+		var comida: Vector2i = hop["captured"]
+
+		if piece_3d:
+			pieces_3d.erase(pos)
+			pieces_3d[destino] = piece_3d
+			piece_3d.jump_to(_cell_pos(destino.x, destino.y),
+				Tokens3D.ARC_LONG if comida != Vector2i(-1, -1) else Tokens3D.ARC_SHORT)
+
+		if comida != Vector2i(-1, -1):
+			var cap_piece = pieces_3d.get(comida)
+			if cap_piece:
+				cap_piece.vanish()
+				pieces_3d.erase(comida)
+
+		var era_dama := _is_queen(pos)
+		CheckersRules.apply_move(grid_data, pos, destino, comida)
+		if piece_3d and not era_dama and _is_queen(destino):
+			piece_3d.promote_queen()
+		pos = destino
+
 	_update_score()
-	board_3d.set_cells_state([from_pos, to_pos], Board3D.CellState.LAST_MOVE)
+	board_3d.set_cells_state([origem, pos], Board3D.CellState.LAST_MOVE)
 	var winner := CheckersRules.check_game_over(grid_data)
 	if winner != 0:
 		_end_game(winner)
@@ -245,8 +300,23 @@ func _play_ai_turn() -> void:
 	is_player_turn = true
 	set_status("Sua Vez! (Marfim)")
 
+
+func _is_queen(pos: Vector2i) -> bool:
+	return absi(int(grid_data.get_cell(pos.x, pos.y))) == 2
+
+
 func _end_game(winner: int) -> void:
+	var antes := DifficultyManager.get_level(game_id)
 	if winner == 1:
 		finish_game("🏆 Você Venceu!", true)
 	else:
 		finish_game("IA Venceu!")
+
+	# `finish_game` publica a partida e o BaseGame move o degrau. O aviso vem
+	# depois porque so ai o degrau novo existe.
+	var depois := DifficultyManager.get_level(game_id)
+	ai_level = depois
+	_update_level_label()
+	var aviso := DifficultyManager.change_notice(depois, depois - antes)
+	if aviso != "":
+		set_status("%s\n%s" % [status_label.text, aviso])

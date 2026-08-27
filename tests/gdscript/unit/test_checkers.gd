@@ -247,3 +247,182 @@ func test_partida_completa_termina() -> void:
 		assert_true(jogadas > 0, "a partida andou")
 		assert_true(jogadas < 400, "a partida terminou sem estourar o limite")
 		assert_ne(RulesScript.check_game_over(g), 0, "houve um vencedor")
+
+
+## `CheckersAI._expandir` nao chama `CheckersRules.get_piece_captures`: repete a
+## deteccao de captura direto no vetor de casas, porque aquela devolve um
+## Dicionario de tres chaves por captura e num no de busca isso e lixo puro.
+## Duas copias da mesma regra so ficam de pe com um teste que as compare.
+##
+## Toda cadeia de capturas comeca por uma das capturas simples da peca, entao os
+## primeiros saltos que a IA gera para uma peca tem de dar exatamente o conjunto
+## que as regras enxergam dali.
+func test_a_ia_gera_as_mesmas_capturas_que_as_regras() -> void:
+	seed(20260827)
+	var AIScript := preload("res://games/damas/CheckersAI.gd")
+	var pecas := [BRANCA, DAMA_BRANCA, PRETA, DAMA_PRETA]
+
+	for _sorteio in range(200):
+		var g := _vazio()
+		for _p in range(12):
+			var r := randi() % 8
+			var c := randi() % 8
+			if (r + c) % 2 == 0:
+				continue
+			g.set_cell(r, c, pecas[randi() % pecas.size()])
+
+		for lado in [1, -1]:
+			# O que a IA enxerga: primeiro salto de cada cadeia, por peca.
+			var da_ia := {}
+			for turno in AIScript.generate_turns(g, lado):
+				if turno["captures"].is_empty():
+					continue
+				var primeiro: Dictionary = turno["hops"][0]
+				var origem: Vector2i = turno["from"]
+				if not da_ia.has(origem):
+					da_ia[origem] = {}
+				da_ia[origem]["%s>%s" % [primeiro["to"], primeiro["captured"]]] = true
+
+			# O que as regras enxergam, peca a peca.
+			var das_regras := {}
+			for r in range(8):
+				for c in range(8):
+					var p: int = g.get_cell(r, c)
+					if p == 0 or (p > 0) != (lado > 0):
+						continue
+					for cap in RulesScript.get_piece_captures(g, r, c):
+						var origem := Vector2i(r, c)
+						if not das_regras.has(origem):
+							das_regras[origem] = {}
+						das_regras[origem]["%s>%s" % [cap["to"], cap["captures"][0]]] = true
+
+			assert_eq(da_ia, das_regras,
+				"lado %d: as duas geracoes de captura discordam em\n%s" % [lado, g.cells])
+
+
+# ------------------------------------------------------------------ IA (busca)
+
+const AIScript = preload("res://games/damas/CheckersAI.gd")
+
+## Degrau sem erro nem ruido: as escolhas abaixo tem de sair sempre iguais.
+const CERTEIRO := 10
+
+
+func _tabuleiro(pecas: Dictionary) -> Grid2D:
+	var g := _vazio()
+	for pos in pecas:
+		g.set_cell(pos.x, pos.y, pecas[pos])
+	return g
+
+
+func test_as_constantes_de_tamanho_batem_com_as_regras() -> void:
+	# `CheckersAI` repete ROWS/COLS em vez de apontar para `CheckersRules`:
+	# constante de uma classe apontando para a outra fecharia ciclo de parse.
+	assert_eq(AIScript.ROWS, RulesScript.ROWS, "mesmas linhas")
+	assert_eq(AIScript.COLS, RulesScript.COLS, "mesmas colunas")
+
+
+## A cadeia de capturas e UMA jogada, nao tres. Enquanto a busca so enxergava um
+## salto de cada vez ela nunca via o fim da sequencia.
+func test_a_cadeia_de_capturas_sai_como_uma_jogada_so() -> void:
+	var g := _tabuleiro({
+		Vector2i(1, 2): PRETA,
+		Vector2i(2, 3): BRANCA, Vector2i(4, 5): BRANCA,
+	})
+	var turnos: Array[Dictionary] = AIScript.generate_turns(g, -1)
+	assert_eq(turnos.size(), 1, "uma jogada possivel")
+	assert_eq(turnos[0]["captures"].size(), 2, "as duas capturas na mesma jogada")
+	assert_eq(turnos[0]["to"], Vector2i(5, 6), "termina na ponta da cadeia")
+	assert_eq(turnos[0]["hops"].size(), 2, "dois saltos para a cena animar")
+
+
+## Diante de duas capturas obrigatorias, a IA escolhe a que come mais.
+func test_a_ia_escolhe_a_captura_maior() -> void:
+	var g := _tabuleiro({
+		Vector2i(1, 2): PRETA,
+		Vector2i(2, 3): BRANCA, Vector2i(4, 5): BRANCA,   # cadeia de duas
+		Vector2i(2, 1): BRANCA,                            # captura de uma so
+	})
+	var turno: Dictionary = AIScript.choose_turn(g, -1, CERTEIRO)
+	assert_eq(turno["captures"].size(), 2, "comeu duas, nao uma")
+
+
+## Sem isto a IA entrega peca de graca -- era metade do "esta facil demais".
+func test_a_ia_nao_entrega_peca_quando_tem_casa_segura() -> void:
+	var g := _tabuleiro({
+		Vector2i(3, 4): PRETA,
+		Vector2i(5, 6): BRANCA,   # come em (4,5) e aterrissa em (3,4)
+		Vector2i(7, 0): BRANCA,
+	})
+	var turno: Dictionary = AIScript.choose_turn(g, -1, CERTEIRO)
+	assert_eq(turno["to"], Vector2i(4, 3), "foi para a casa que ninguem alcanca")
+
+
+## A coroacao no meio da cadeia tem de estar na jogada: e ela que decide se a
+## peca segue comendo para tras.
+func test_a_peca_que_coroa_no_caminho_ja_sai_dama() -> void:
+	var g := _tabuleiro({Vector2i(5, 2): PRETA, Vector2i(6, 3): BRANCA})
+	var turnos: Array[Dictionary] = AIScript.generate_turns(g, -1)
+	assert_eq(turnos.size(), 1)
+	assert_eq(turnos[0]["to"], Vector2i(7, 4), "chegou na ultima fileira")
+	assert_eq(turnos[0]["piece_after"], DAMA_PRETA, "a jogada ja sai coroada")
+
+
+## Contrato entre a busca e a cena: a cena anima `hops` um a um chamando
+## `CheckersRules.apply_move`, e o tabuleiro que sobra tem de ser exatamente o
+## que a busca calculou. Se as duas contas divergirem, a IA joga uma partida e a
+## tela mostra outra.
+func test_a_cena_reproduz_a_jogada_que_a_busca_calculou() -> void:
+	seed(20260827)
+	for _partida in range(20):
+		var g: Grid2D = RulesScript.create_initial_board()
+		var lado := -1
+		for _jogada in range(40):
+			if RulesScript.check_game_over(g) != 0:
+				break
+			var turno: Dictionary = AIScript.choose_turn(g, lado, 3)
+			if turno.is_empty():
+				break
+
+			# Caminho da busca.
+			var pela_busca := g.clone()
+			AIScript.aplicar(pela_busca, turno)
+
+			# Caminho da cena: salto a salto.
+			var pela_cena := g.clone()
+			var pos: Vector2i = turno["from"]
+			for hop in turno["hops"]:
+				RulesScript.apply_move(pela_cena, pos, hop["to"], hop["captured"])
+				pos = hop["to"]
+
+			assert_eq(pela_cena.cells, pela_busca.cells,
+				"busca e cena discordam depois de %s" % str(turno["hops"]))
+			g = pela_busca
+			lado = -lado
+
+
+## A escada tem de subir de verdade: degrau alto ganha de degrau baixo. Sem esta
+## trava, mexer no orcamento de nos volta a inverter a ordem sem ninguem notar
+## -- foi o que aconteceu com o degrau 7, que perdia do 5.
+func test_o_degrau_alto_ganha_do_degrau_baixo() -> void:
+	seed(20260827)
+	var vitorias := 0
+	for i in range(4):
+		# Alterna quem sai na frente: sair primeiro pesa nas damas.
+		var forte := -1 if i % 2 == 0 else 1
+		var g: Grid2D = RulesScript.create_initial_board()
+		var lado := -1
+		var fim := 0
+		for _jogada in range(220):
+			fim = RulesScript.check_game_over(g)
+			if fim != 0:
+				break
+			var turno: Dictionary = AIScript.choose_turn(g, lado, 5 if lado == forte else 1)
+			if turno.is_empty():
+				fim = -lado
+				break
+			AIScript.aplicar(g, turno)
+			lado = -lado
+		if fim == forte:
+			vitorias += 1
+	assert_true(vitorias >= 3, "degrau 5 venceu so %d de 4 partidas contra o degrau 1" % vitorias)

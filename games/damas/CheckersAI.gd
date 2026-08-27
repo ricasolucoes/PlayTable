@@ -64,26 +64,36 @@ const VITORIA := 1000000
 
 # ----------------------------------------------------------------- degraus
 
-## Perfil de cada degrau: ate onde busca, com que chance joga qualquer coisa e
-## quanto ruido soma a nota (empata jogadas parecidas e evita partida decorada).
+## Perfil de cada degrau: quanto pode pensar, ate onde pode ir, com que chance
+## joga abaixo da propria forca e quanto ruido soma a nota.
+##
+## **Quem manda e o orcamento de nos, nao a profundidade.** Na primeira versao
+## era o contrario -- profundidade fixa e orcamento crescendo devagar -- e o
+## degrau 7 perdia do 5: ele pedia profundidade 6, gastava o orcamento inteiro
+## no aprofundamento e caia de volta na ultima profundidade que tinha fechado,
+## a mesma do degrau 5. Degrau que pensa mais tem de jogar melhor, sempre; com
+## o orcamento dobrando a cada degrau isso vale por construcao.
+##
+## `depth` e so um teto de seguranca: quem para a busca e o orcamento.
 const PERFIS := [
-	{"depth": 1, "erro": 0.75, "ruido": 45},   # 1
-	{"depth": 2, "erro": 0.50, "ruido": 32},   # 2
-	{"depth": 2, "erro": 0.34, "ruido": 24},   # 3
-	{"depth": 3, "erro": 0.22, "ruido": 18},   # 4
-	{"depth": 4, "erro": 0.14, "ruido": 12},   # 5
-	{"depth": 5, "erro": 0.08, "ruido": 8},    # 6
-	{"depth": 6, "erro": 0.04, "ruido": 5},    # 7
-	{"depth": 7, "erro": 0.015, "ruido": 0},   # 8
-	{"depth": 8, "erro": 0.0, "ruido": 0},     # 9
-	{"depth": 10, "erro": 0.0, "ruido": 0},    # 10
+	{"depth": 1, "nos": 200, "erro": 0.75, "ruido": 45},      # 1
+	{"depth": 2, "nos": 400, "erro": 0.50, "ruido": 32},      # 2
+	{"depth": 3, "nos": 800, "erro": 0.34, "ruido": 24},      # 3
+	{"depth": 4, "nos": 1500, "erro": 0.22, "ruido": 18},     # 4
+	{"depth": 6, "nos": 2600, "erro": 0.14, "ruido": 12},     # 5
+	{"depth": 8, "nos": 4200, "erro": 0.08, "ruido": 8},      # 6
+	{"depth": 10, "nos": 6500, "erro": 0.04, "ruido": 5},     # 7
+	{"depth": 12, "nos": 9500, "erro": 0.015, "ruido": 0},    # 8
+	{"depth": 14, "nos": 13000, "erro": 0.0, "ruido": 0},     # 9
+	{"depth": 16, "nos": 17000, "erro": 0.0, "ruido": 0},     # 10
 ]
 
-## Teto de nos por jogada. A busca e cortada por orcamento, nao por relogio:
-## o resultado tem de ser o mesmo no aparelho rapido e no lento, senao o teste
-## passa aqui e a IA joga diferente no celular.
-const NOS_BASE := 1200
-const NOS_POR_DEGRAU := 1500
+## Diagonais, ja prontas. Montar o Array dentro da funcao custava uma alocacao
+## por peca por no -- com milhares de nos por jogada, era o maior custo isolado
+## da busca.
+const DIR_TODAS: Array[Vector2i] = [Vector2i(-1, -1), Vector2i(-1, 1), Vector2i(1, -1), Vector2i(1, 1)]
+const DIR_CIMA: Array[Vector2i] = [Vector2i(-1, -1), Vector2i(-1, 1)]
+const DIR_BAIXO: Array[Vector2i] = [Vector2i(1, -1), Vector2i(1, 1)]
 
 
 # =============================================================== jogadas
@@ -104,7 +114,7 @@ static func generate_turns(grid: Grid2D, side: int) -> Array[Dictionary]:
 			var p: int = grid.cells[r * COLS + c]
 			if p == 0 or (p > 0) != meu:
 				continue
-			_expandir(grid, Vector2i(r, c), Vector2i(r, c), [], [], saltos)
+			_expandir(grid, Vector2i(r, c), r, c, [], [], saltos)
 
 	# Captura e obrigatoria: havendo salto, passeio nem entra na lista.
 	if not saltos.is_empty():
@@ -134,53 +144,69 @@ static func generate_turns(grid: Grid2D, side: int) -> Array[Dictionary]:
 	return passeios
 
 
-## Desdobra a cadeia de capturas a partir de `pos`, escrevendo e desfazendo no
-## proprio tabuleiro. Cada salto tira uma peca do jogo, entao a recursao tem
+## Desdobra a cadeia de capturas a partir de (`r`, `c`), escrevendo e desfazendo
+## no proprio tabuleiro. Cada salto tira uma peca do jogo, entao a recursao tem
 ## fundo garantido -- no maximo 12 saltos.
-static func _expandir(grid: Grid2D, origem: Vector2i, pos: Vector2i,
+##
+## A deteccao de captura e feita aqui, direto no vetor de casas, em vez de
+## passar por `CheckersRules.get_piece_captures()`: aquela devolve um Dicionario
+## de tres chaves por captura, e num no de busca isso e lixo puro. A regra e a
+## mesma -- salta por cima de peca adversaria para casa vazia -- e
+## `test_checkers.gd` compara as duas geracoes casa a casa.
+static func _expandir(grid: Grid2D, origem: Vector2i, r: int, c: int,
 		hops: Array, comidas: Array, saida: Array) -> void:
-	var caps: Array[Dictionary] = CheckersRules.get_piece_captures(grid, pos.x, pos.y)
+	var cells := grid.cells
+	var peca: int = cells[r * COLS + c]
+	var meu := peca > 0
+	var dirs: Array[Vector2i] = DIR_TODAS if absi(peca) == 2 else (DIR_CIMA if meu else DIR_BAIXO)
+	var achou := false
 
-	if caps.is_empty():
-		if not hops.is_empty():
-			var lista: Array[Vector2i] = []
-			lista.assign(comidas)
-			saida.append({
-				"from": origem,
-				"to": pos,
-				"captures": lista,
-				"hops": hops.duplicate(true),
-				"piece_after": grid.cells[pos.x * COLS + pos.y],
-			})
-		return
+	for d in dirs:
+		var lr := r + d.x * 2
+		var lc := c + d.y * 2
+		if lr < 0 or lr >= ROWS or lc < 0 or lc >= COLS:
+			continue
+		var i_meio := (r + d.x) * COLS + (c + d.y)
+		var alvo: int = cells[i_meio]
+		if alvo == 0 or (alvo > 0) == meu:
+			continue
+		var i_destino := lr * COLS + lc
+		if cells[i_destino] != 0:
+			continue
 
-	var peca: int = grid.cells[pos.x * COLS + pos.y]
-	for cap in caps:
-		var comida: Vector2i = cap["captures"][0]
-		var destino: Vector2i = cap["to"]
-		var vitima: int = grid.cells[comida.x * COLS + comida.y]
+		achou = true
+		var i_origem := r * COLS + c
+		cells[i_origem] = 0
+		cells[i_meio] = 0
+		cells[i_destino] = _coroar(peca, lr)
 
-		grid.cells[pos.x * COLS + pos.y] = 0
-		grid.cells[comida.x * COLS + comida.y] = 0
-		grid.cells[destino.x * COLS + destino.y] = _coroar(peca, destino.x)
-
-		hops.append({"to": destino, "captured": comida})
-		comidas.append(comida)
-		_expandir(grid, origem, destino, hops, comidas, saida)
+		hops.append({"to": Vector2i(lr, lc), "captured": Vector2i(r + d.x, c + d.y)})
+		comidas.append(Vector2i(r + d.x, c + d.y))
+		_expandir(grid, origem, lr, lc, hops, comidas, saida)
 		comidas.pop_back()
 		hops.pop_back()
 
-		grid.cells[destino.x * COLS + destino.y] = 0
-		grid.cells[comida.x * COLS + comida.y] = vitima
-		grid.cells[pos.x * COLS + pos.y] = peca
+		cells[i_destino] = 0
+		cells[i_meio] = alvo
+		cells[i_origem] = peca
+
+	# Ponta da cadeia: nao ha mais o que comer, o turno fecha aqui.
+	if not achou and not hops.is_empty():
+		var lista: Array[Vector2i] = []
+		lista.assign(comidas)
+		saida.append({
+			"from": origem,
+			"to": Vector2i(r, c),
+			"captures": lista,
+			"hops": hops.duplicate(true),
+			"piece_after": peca,
+		})
 
 
-static func _direcoes(peca: int) -> Array:
+static func _direcoes(peca: int) -> Array[Vector2i]:
 	if absi(peca) == 2:
-		return [Vector2i(-1, -1), Vector2i(-1, 1), Vector2i(1, -1), Vector2i(1, 1)]
-	if peca > 0:
-		return [Vector2i(-1, -1), Vector2i(-1, 1)]
-	return [Vector2i(1, -1), Vector2i(1, 1)]
+		return DIR_TODAS
+	return DIR_CIMA if peca > 0 else DIR_BAIXO
 
 
 ## A mesma coroacao que `CheckersRules.execute_move` aplica: a peca que chega na
@@ -308,7 +334,7 @@ static func choose_turn(grid: Grid2D, side: int, level: int) -> Dictionary:
 
 	var estado := {
 		"nos": 0,
-		"teto": NOS_BASE + NOS_POR_DEGRAU * clampi(level, 1, PERFIS.size()),
+		"teto": int(perfil["nos"]),
 		"estourou": false,
 		"ruido": int(perfil["ruido"]),
 	}
@@ -325,9 +351,20 @@ static func choose_turn(grid: Grid2D, side: int, level: int) -> Dictionary:
 	return melhor
 
 
+## Ponte para o WorkerThreadPool: escreve a jogada em `saida`.
+##
+## A busca sai da linha principal porque no degrau 10 ela chega a meio segundo
+## no computador -- num telefone, mais. Meio segundo de tela travada e defeito.
+## A funcao e estatica de proposito: a tarefa nao pode segurar referencia para
+## a cena, que pode ser fechada com a busca ainda rodando.
+static func pensar_em_tarefa(copia: Grid2D, side: int, level: int, saida: Array) -> void:
+	saida.append(choose_turn(copia, side, level))
+
+
 static func _raiz(grid: Grid2D, side: int, turnos: Array[Dictionary],
 		profundidade: int, estado: Dictionary) -> Dictionary:
-	_ordenar(turnos)
+	if profundidade == 1:
+		_ordenar(turnos)
 	var melhor: Dictionary = turnos[0]
 	var melhor_nota := -VITORIA * 2
 	var alfa := -VITORIA * 2
@@ -346,6 +383,12 @@ static func _raiz(grid: Grid2D, side: int, turnos: Array[Dictionary],
 			melhor = turno
 			alfa = maxi(alfa, nota)
 
+	# A melhor da rodada abre a proxima: a poda fecha muito mais ramo quando a
+	# jogada boa e a primeira que ela ve, e o aprofundamento paga por isso.
+	var i := turnos.find(melhor)
+	if i > 0:
+		turnos.remove_at(i)
+		turnos.insert(0, melhor)
 	return melhor
 
 
@@ -394,7 +437,12 @@ static func _buscar(grid: Grid2D, side: int, profundidade: int, alfa: int, beta:
 ## Captura grande primeiro, coroacao depois: quanto antes a poda encontrar a
 ## jogada boa, menos ramo ela precisa abrir.
 static func _ordenar(turnos: Array[Dictionary]) -> void:
-	turnos.sort_custom(func(x, y):
-		var px: int = x["captures"].size() * 4 + (2 if absi(x["piece_after"]) == 2 else 0)
-		var py: int = y["captures"].size() * 4 + (2 if absi(y["piece_after"]) == 2 else 0)
-		return px > py)
+	if turnos.size() < 2 or turnos[0]["captures"].is_empty():
+		return   # sem captura nao ha o que ordenar, e ordenar custa por no
+	turnos.sort_custom(_antes)
+
+
+static func _antes(x: Dictionary, y: Dictionary) -> bool:
+	var px: int = x["captures"].size() * 4 + (2 if absi(x["piece_after"]) == 2 else 0)
+	var py: int = y["captures"].size() * 4 + (2 if absi(y["piece_after"]) == 2 else 0)
+	return px > py
