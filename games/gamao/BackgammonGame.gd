@@ -265,8 +265,9 @@ func _build_dice_3d() -> void:
 	for i in range(2):
 		var dice_scene: PackedScene = preload("res://shared/3d/Dice3D.tscn")
 		var dice: Dice3D = dice_scene.instantiate()
-		dice.dice_size = 0.50
-		dice.position = Vector3(-1.6 + float(i) * 0.9, 0.28, 0.0)
+		# Um pouco maiores do que a peca: e neles que o jogador le a jogada.
+		dice.dice_size = 0.58
+		dice.position = Vector3(-1.62 + float(i) * 0.95, 0.32, 0.0)
 		board_root.add_child(dice)
 		dice_nodes.append(dice)
 

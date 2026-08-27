@@ -19,10 +19,10 @@ extends RefCounted
 const PIP_INSET := 0.26
 
 ## Raio do ponto em fracao do lado menor da face.
-const PIP_RADIUS := 0.115
+const PIP_RADIUS := 0.125
 
 ## Quanto o ponto afunda na face, em fracao do proprio raio.
-const PIP_SINK := 0.45
+const PIP_SINK := 0.30
 
 ## Arranjo dos pontos de cada valor, em coordenadas de face -1..1.
 const FACE_LAYOUT := {
@@ -57,6 +57,16 @@ const DICE_FACES := {
 
 ## Pontos das seis faces de um dado de lado `size`.
 static func dice_pips(size: float, color: Color = Color(0.09, 0.09, 0.11)) -> MultiMeshInstance3D:
+	return _build(dice_pip_transforms(size), color)
+
+
+## Onde fica cada ponto do dado, antes de virar no.
+##
+## Separado do `_build` de proposito: a partir do momento que os pontos entram
+## num MultiMesh eles moram no servidor de renderizacao, e ler de volta com
+## `get_instance_transform` no mesmo quadro devolve identidade. Quem confere o
+## arranjo -- os testes -- confere aqui.
+static func dice_pip_transforms(size: float) -> Array[Transform3D]:
 	var half := size * 0.5
 	var radius: float = size * PIP_RADIUS
 	var spread: float = half * (1.0 - PIP_INSET * 2.0)
@@ -72,7 +82,7 @@ static func dice_pips(size: float, color: Color = Color(0.09, 0.09, 0.11)) -> Mu
 			transforms.append(Transform3D(basis.scaled(Vector3(radius, radius, radius)),
 				center + offset))
 
-	return _build(transforms, color)
+	return transforms
 
 
 ## Pontos da face de cima de uma pedra de domino deitada no plano XZ.
@@ -81,6 +91,12 @@ static func dice_pips(size: float, color: Color = Color(0.09, 0.09, 0.11)) -> Mu
 ## comprimento): a metade `value_a` fica em -Z e a `value_b` em +Z.
 static func domino_pips(value_a: int, value_b: int, length: float, width: float,
 		thickness: float, color: Color = Color(0.12, 0.10, 0.10)) -> MultiMeshInstance3D:
+	return _build(domino_pip_transforms(value_a, value_b, length, width, thickness), color)
+
+
+## Onde fica cada ponto da pedra. Ver a nota em `dice_pip_transforms`.
+static func domino_pip_transforms(value_a: int, value_b: int, length: float,
+		width: float, thickness: float) -> Array[Transform3D]:
 	var radius: float = width * PIP_RADIUS * 1.5
 	var half_len := length * 0.25       # centro de cada metade
 	var spread_x: float = width * 0.5 * (1.0 - PIP_INSET * 2.0)
@@ -97,7 +113,7 @@ static func domino_pips(value_a: int, value_b: int, length: float, width: float,
 			var pos := Vector3(slot.x * spread_x, y, center_z + slot.y * spread_z)
 			transforms.append(Transform3D(Basis().scaled(Vector3(radius, radius, radius)), pos))
 
-	return _build(transforms, color)
+	return transforms
 
 
 ## Vinco central da pedra: a linha gravada que separa as duas metades.
@@ -118,11 +134,16 @@ static func domino_divider(length: float, width: float, thickness: float) -> Mes
 # ---------------------------------------------------------------------------
 
 ## Base ortonormal cujo Y aponta para fora da face: X e Z varrem a face.
+##
+## O Z tem de ser X cross Y, nao Y cross X. Com a ordem invertida a base sai com
+## determinante -1 -- espelhada -- e a malha do ponto renderiza com a face
+## virada para dentro: o backface culling comia os 21 pontos e o dado
+## continuava um cubo branco liso, com o MultiMesh no lugar certo e tudo.
 static func _face_basis(normal: Vector3) -> Basis:
 	var up := normal
 	var reference := Vector3.BACK if absf(up.dot(Vector3.BACK)) < 0.9 else Vector3.RIGHT
 	var right := reference.cross(up).normalized()
-	var forward := up.cross(right).normalized()
+	var forward := right.cross(up).normalized()
 	return Basis(right, up, forward)
 
 
