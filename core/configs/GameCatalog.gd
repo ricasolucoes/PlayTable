@@ -41,3 +41,40 @@ static func get_all_games() -> Array[GameDefinition]:
 	all.append_array(get_board_games())
 	all.append_array(get_card_games())
 	return all
+
+## Identificador do jogo no barramento de eventos e no perfil, tirado da pasta
+## da cena (`res://games/gamao/BackgammonGame.tscn` -> `gamao`). O mesmo
+## calculo que `BaseGame._derive_game_id()` faz, para os dois lados falarem o
+## mesmo id sem uma tabela de tradução no meio.
+static func game_id_of(def: GameDefinition) -> String:
+	return id_from_scene_path(def.scene_path)
+
+
+static func id_from_scene_path(scene_path: String) -> String:
+	if scene_path.begins_with("res://games/"):
+		var parts := scene_path.split("/")
+		if parts.size() >= 4:
+			return parts[3]
+	return "playtable"
+
+
+## Categoria do jogo (`board` ou `cards`) a partir do id. Vazio quando o id não
+## corresponde a nenhum jogo do catálogo.
+static func categoria(game_id: String) -> StringName:
+	var def := find_by_id(game_id)
+	return def.category if def != null else &""
+
+
+static func find_by_id(game_id: String) -> GameDefinition:
+	for def in get_all_games():
+		if game_id_of(def) == game_id:
+			return def
+	return null
+
+
+## Ids de todos os jogos, na ordem em que aparecem nos menus.
+static func all_game_ids() -> Array[String]:
+	var ids: Array[String] = []
+	for def in get_all_games():
+		ids.append(game_id_of(def))
+	return ids

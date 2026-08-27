@@ -1,46 +1,69 @@
 extends Node
 
-## Gerenciador Simples de Anti-Cheat Local.
+## Guarda de integridade do progresso local.
 ##
-## Impede abusos rudimentares baseados em modificação de memória (GameGuardian)
-## e limites absurdos de injeção de eventos no GameEventBus.
+## O PlayTable e offline e single-player: nao ha o que roubar de outro jogador.
+## O que se protege e o placar global do Play Games, que aceita o que o
+## aparelho mandar -- um save adulterado viraria recorde mundial.
+##
+## O limitador e por *orcamento numa janela deslizante*, nao por numero de
+## chamadas. A versao anterior barrava a partir da quarta concessao dentro de
+## um segundo, e uma vitoria legitima concede facil cinco vezes no mesmo quadro
+## (partida + missao diaria + tres conquistas em cascata): o jogador perdia o
+## XP que tinha acabado de merecer. Contar XP em vez de chamadas separa a
+## cascata legitima da injecao.
 
-var _last_xp_gain_time: int = 0
-var _xp_gain_burst_count: int = 0
+## Nenhuma concessao isolada passa disto. A maior do jogo e a Platina (20000).
+const MAX_XP_PER_TRANSACTION := 25000
 
-const MAX_XP_BURST_PER_SEC = 3
-const MAX_XP_PER_TRANSACTION = 5000
+## Teto de XP numa janela. Uma sessao intensa honesta rende alguns milhares.
+const MAX_XP_PER_WINDOW := 60000
+const WINDOW_MS := 60000
+
+var _window_start_ms: int = 0
+var _window_total: int = 0
+var _blocked_count: int = 0
+
 
 func _ready() -> void:
-	# Como este Manager fica no nível mais alto, interceptamos eventos perigosos,
-	# mas como estamos validando no lado cliente de um jogo offline, 
-	# a proteção foca em integridade de design.
-	pass
+	_window_start_ms = Time.get_ticks_msec()
 
-## Chamado pelo GamificationManager ANTES de conceder XP
-func validate_xp_gain(amount: int) -> bool:
-	if amount > MAX_XP_PER_TRANSACTION:
-		push_warning("Security: XP injection attempt blocked (too high).")
+
+## Chamado pelo RewardSystem antes de qualquer concessao de XP.
+func validate_xp_gain(amount: int, source: String = "") -> bool:
+	if amount <= 0:
 		return false
-		
-	var current_time = Time.get_ticks_msec()
-	if current_time - _last_xp_gain_time < 1000: # menos de 1 segundo
-		_xp_gain_burst_count += 1
-		if _xp_gain_burst_count > MAX_XP_BURST_PER_SEC:
-			push_warning("Security: XP rate limit exceeded.")
-			return false
-	else:
-		_xp_gain_burst_count = 1
-		
-	_last_xp_gain_time = current_time
+
+	if amount > MAX_XP_PER_TRANSACTION:
+		_reject("concessao unica acima do teto (%d, fonte %s)" % [amount, source])
+		return false
+
+	var agora := Time.get_ticks_msec()
+	if agora - _window_start_ms >= WINDOW_MS:
+		_window_start_ms = agora
+		_window_total = 0
+
+	if _window_total + amount > MAX_XP_PER_WINDOW:
+		_reject("orcamento da janela estourado (%d + %d, fonte %s)" % [_window_total, amount, source])
+		return false
+
+	_window_total += amount
 	return true
 
-## Cria um "hash" simplificado para validar se o arquivo de save foi adulterado maliciosamente.
+
+func _reject(motivo: String) -> void:
+	_blocked_count += 1
+	push_warning("SecurityManager: XP recusado -- %s" % motivo)
+
+
+func blocked_count() -> int:
+	return _blocked_count
+
+
+## Assinatura do save local. Usada pelo CloudSaveSync para detectar que o
+## arquivo foi trocado por fora entre duas sincronizacoes.
 func generate_save_checksum(data_string: String) -> String:
-	# Simula um HMAC simples baseado no SHA256 para dificultar alterações manuais
-	# no arquivo cfg local por jogadores mal intencionados antes do CloudSave.
-	var ctx = HashingContext.new()
+	var ctx := HashingContext.new()
 	ctx.start(HashingContext.HASH_SHA256)
 	ctx.update(data_string.to_utf8_buffer())
-	var res = ctx.finish()
-	return res.hex_encode()
+	return ctx.finish().hex_encode()

@@ -4,14 +4,17 @@
     "game_stats": true,
     "new_achievements": true,
     "daily_quests": true,
-    "weekly_quests": false,
+    "weekly_quests": true,
     "streaks": true,
     "social_challenges": false,
-    "new_rewards": true
+    "new_rewards": true,
+    "leagues": true,
+    "collections": true,
+    "cloud_save": true
   },
   "liveops": {
     "current_season": "season_1_launch",
     "xp_multiplier": 1.0,
-    "motd": "Bem-vindo ao PlayTable com Google Play Games!"
+    "motd": "Missoes diarias, ligas e conquistas: seu progresso agora aparece no perfil."
   }
 }

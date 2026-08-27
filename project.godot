@@ -24,24 +24,31 @@ theme/custom="res://shared/theme/MainTheme.tres"
 
 [autoload]
 
+; Ordem importa: a ordem de registro e a ordem em que os autoloads conectam nos
+; sinais do GameEventBus, e portanto a ordem em que reagem. O
+; GamificationManager precisa normalizar o resultado da partida (contadores,
+; recordes, flags, streak) ANTES que conquista, missao, maestria, liga e Play
+; Games leiam o perfil -- senao todos avaliam o estado da partida anterior.
 SaveManager="*res://core/save/SaveManager.gd"
 LocaleManager="*res://core/i18n/LocaleManager.gd"
 SceneManager="*res://core/navegacao/SceneManager.gd"
 AudioManager="*res://core/audio/AudioManager.gd"
 GameEventBus="*res://core/services/GameEventBus.gd"
 PlayerProfile="*res://core/services/PlayerProfile.gd"
-GamificationManager="*res://core/services/GamificationManager.gd"
-PlayGamesManager="*res://core/services/PlayGamesManager.gd"
-CloudSaveSync="*res://core/save/CloudSaveSync.gd"
-AchievementEngine="*res://core/services/AchievementEngine.gd"
-QuestEngine="*res://core/services/QuestEngine.gd"
-RewardSystem="*res://core/services/RewardSystem.gd"
-LeaderboardSync="*res://core/services/LeaderboardSync.gd"
-LiveOpsManager="*res://core/services/LiveOpsManager.gd"
 SecurityManager="*res://core/services/SecurityManager.gd"
+LiveOpsManager="*res://core/services/LiveOpsManager.gd"
+RewardSystem="*res://core/services/RewardSystem.gd"
+DifficultyManager="*res://core/services/DifficultyManager.gd"
+GamificationManager="*res://core/services/GamificationManager.gd"
 MasteryEngine="*res://core/services/MasteryEngine.gd"
 LeagueSystem="*res://core/services/LeagueSystem.gd"
 CollectionSystem="*res://core/services/CollectionSystem.gd"
+AchievementEngine="*res://core/services/AchievementEngine.gd"
+QuestEngine="*res://core/services/QuestEngine.gd"
+LeaderboardSync="*res://core/services/LeaderboardSync.gd"
+PlayGamesManager="*res://core/services/PlayGamesManager.gd"
+CloudSaveSync="*res://core/save/CloudSaveSync.gd"
+EngagementManager="*res://core/services/EngagementManager.gd"
 
 [internationalization]
 

@@ -1,38 +1,75 @@
 extends Node
 
-## Centralizador de Ranking e Leaderboards
-## 
-## Captura métricas competitivas do GameEventBus (como best time, combos)
-## e avalia se merecem ir para os placares globais e sociais dos amigos via PGS.
+## Recordes pessoais e o valor que cada jogo manda para o placar.
+##
+## Nem todo jogo pontua igual: no Campo Minado e no Hanoi *menor* e melhor
+## (tempo, jogadas), no Poker e maior (fichas), no Resta Um e menor (pecas que
+## sobraram). O Play Games ordena pelo que o placar declara, entao o valor tem
+## que sair daqui ja no formato certo -- mandar segundos cru para um placar
+## configurado como "maior vence" poe o pior jogador no topo.
+##
+## O recorde local vale por si: o jogador ve seu melhor tempo na tela de perfil
+## mesmo sem Play Games, sem login e sem rede.
+
+## Metrica de placar por jogo. `invert` marca os placares onde menor e melhor.
+const METRICAS := {
+	"campo_minado": {"campo": "time",  "key": "LB_MINESWEEPER_TIME", "invert": true,  "escala": 1000},
+	"memoria":      {"campo": "moves", "key": "LB_MEMORY_MOVES",     "invert": true,  "escala": 1},
+	"hanoi":        {"campo": "moves", "key": "LB_HANOI_MOVES",      "invert": true,  "escala": 1},
+	"solitario":    {"campo": "pegs",  "key": "LB_SOLITAIRE_PEGS",   "invert": true,  "escala": 1},
+	"poker":        {"campo": "score", "key": "LB_POKER_BANKROLL",   "invert": false, "escala": 1},
+}
+
 
 func _ready() -> void:
 	if GameEventBus:
-		GameEventBus.score_updated.connect(_on_score_updated)
 		GameEventBus.match_completed.connect(_on_match_completed)
 
-func _on_score_updated(game_id: String, new_score: int) -> void:
-	# Submete ao PGS Leaderboards se aplicável
-	if PlayGamesManager and PlayGamesManager.is_available():
-		PlayGamesManager.submit_score(game_id, new_score)
-		
-	# Avalia se a pontuação bateu o recorde local
-	_evaluate_local_highscore(game_id, new_score)
 
 func _on_match_completed(game_id: String, result: Dictionary) -> void:
-	# Algumas tabelas são baseadas em tempo de vitória, não em "pontos" puros.
-	if result.has("win") and result["win"] == true and result.has("time_taken"):
-		# No Play Games, tempo muitas vezes é enviado em milissegundos
-		var time_ms = result["time_taken"] * 1000
-		
-		# game_id_BEST_TIME deve estar mapeado no PlayGamesManager.LEADERBOARDS
-		var leaderboard_key = game_id + "_BEST_TIME"
-		if PlayGamesManager and PlayGamesManager.LEADERBOARDS.has(leaderboard_key):
-			PlayGamesManager.submit_score(leaderboard_key, time_ms)
+	if not METRICAS.has(game_id):
+		return
+	var m: Dictionary = METRICAS[game_id]
 
-func _evaluate_local_highscore(game_id: String, score: int) -> void:
-	var stat_key = "best_score_" + game_id
-	var current_best = PlayerProfile.get_stat(stat_key, 0)
-	
-	if score > current_best:
-		# Atualiza o melhor placar localmente (idempotência local)
-		PlayerProfile.increment_stat(stat_key, score - current_best)
+	# Metrica de "menor e melhor" so vale em vitoria: perder rapido nao e recorde.
+	if bool(m["invert"]) and not bool(result.get("win", false)):
+		return
+	if not result.has(str(m["campo"])):
+		return
+
+	var bruto := float(result[str(m["campo"])])
+	if bruto <= 0.0:
+		return
+	var valor := int(round(bruto * float(m["escala"])))
+
+	var chave_local := "record_" + game_id
+	var novo_recorde := PlayerProfile.record_min(chave_local, valor) if bool(m["invert"]) \
+		else PlayerProfile.record_max(chave_local, valor)
+
+	if novo_recorde and PlayGamesManager:
+		PlayGamesManager.submit_score(str(m["key"]), valor)
+
+
+## Recorde pessoal de um jogo, ja formatado para leitura. Vazio quando ainda
+## nao ha recorde.
+func personal_best(game_id: String) -> String:
+	if not METRICAS.has(game_id):
+		return ""
+	var valor := int(PlayerProfile.get_stat("record_" + game_id, 0))
+	if valor <= 0:
+		return ""
+	var m: Dictionary = METRICAS[game_id]
+	match str(m["campo"]):
+		"time":
+			var segundos := int(valor / int(m["escala"]))
+			return "%d:%02d" % [segundos / 60, segundos % 60]
+		"moves":
+			return tr("RECORD_MOVES") % valor
+		"pegs":
+			return tr("RECORD_PEGS") % valor
+		_:
+			return str(valor)
+
+
+func has_leaderboard(game_id: String) -> bool:
+	return METRICAS.has(game_id)

@@ -1,0 +1,114 @@
+{
+  "_doc": "Pool de missoes. O QuestEngine sorteia DAILY_COUNT diarias por dia e WEEKLY_COUNT semanais por semana ISO, com semente derivada da data -- reabrir o app no mesmo dia devolve as mesmas missoes em vez de resortear. Tipos: play, win, play_game, win_game, collect, distinct_games, perfect, fast_win, mastery_xp.",
+  "daily_count": 3,
+  "weekly_count": 2,
+  "daily": [
+    {
+      "id": "d_play_3",
+      "type": "play",
+      "target": 3,
+      "xp": 300
+    },
+    {
+      "id": "d_play_5",
+      "type": "play",
+      "target": 5,
+      "xp": 450
+    },
+    {
+      "id": "d_win_1",
+      "type": "win",
+      "target": 1,
+      "xp": 400
+    },
+    {
+      "id": "d_win_3",
+      "type": "win",
+      "target": 3,
+      "xp": 700
+    },
+    {
+      "id": "d_distinct_2",
+      "type": "distinct_games",
+      "target": 2,
+      "xp": 350
+    },
+    {
+      "id": "d_distinct_3",
+      "type": "distinct_games",
+      "target": 3,
+      "xp": 550
+    },
+    {
+      "id": "d_board_2",
+      "type": "win_category",
+      "target": 2,
+      "xp": 500,
+      "category": "board"
+    },
+    {
+      "id": "d_cards_2",
+      "type": "win_category",
+      "target": 2,
+      "xp": 500,
+      "category": "cards"
+    },
+    {
+      "id": "d_fast_1",
+      "type": "fast_win",
+      "target": 1,
+      "xp": 600
+    },
+    {
+      "id": "d_perfect_1",
+      "type": "perfect",
+      "target": 1,
+      "xp": 800
+    },
+    {
+      "id": "d_mastery_100",
+      "type": "mastery_xp",
+      "target": 100,
+      "xp": 400
+    }
+  ],
+  "weekly": [
+    {
+      "id": "w_play_20",
+      "type": "play",
+      "target": 20,
+      "xp": 2000
+    },
+    {
+      "id": "w_win_10",
+      "type": "win",
+      "target": 10,
+      "xp": 2500
+    },
+    {
+      "id": "w_distinct_6",
+      "type": "distinct_games",
+      "target": 6,
+      "xp": 2200
+    },
+    {
+      "id": "w_win_all_cat",
+      "type": "win_category",
+      "target": 5,
+      "xp": 2400,
+      "category": "board"
+    },
+    {
+      "id": "w_mastery_800",
+      "type": "mastery_xp",
+      "target": 800,
+      "xp": 2600
+    },
+    {
+      "id": "w_perfect_3",
+      "type": "perfect",
+      "target": 3,
+      "xp": 3000
+    }
+  ]
+}
