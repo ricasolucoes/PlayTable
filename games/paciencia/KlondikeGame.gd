@@ -50,6 +50,11 @@ func _ready() -> void:
 	status_label = $UI/VBoxContainer/Header/StatusLabel
 	btn_restart = $UI/VBoxContainer/Header/BtnRestart
 	env_3d.set_felt_color(Color(0.06, 0.3, 0.18))
+	# O tabuleiro do Klondike ocupa 5,5 x 5,0 unidades e nasce centrado em zero;
+	# sem informar isso a camera usava as 6x6 padrao com a area util errada e a
+	# mesa aparecia deslocada para o canto, com as cartas pequenas demais.
+	env_3d.set_safe_area(215.0, 110.0)
+	env_3d.frame_content(_table_content_size())
 	stock = CardPile.new()
 	waste = CardPile.new()
 	foundations.clear()
@@ -65,6 +70,15 @@ func _ready() -> void:
 		tableau_buttons[i].pressed.connect(_on_tableau_col_pressed.bind(i))
 		
 	_start_new_game()
+
+## Area que a mesa ocupa: as sete colunas em largura, e do monte no fundo ate a
+## cascata mais longa na frente.
+func _table_content_size() -> Vector2:
+	var width: float = TABLEAU_SPACING_X * 6.0 + Tokens3D.CARD_WIDTH + 0.5
+	var back: float = STOCK_POS_3D.z - Tokens3D.CARD_LENGTH * 0.5
+	var front: float = TABLEAU_START_Z + TABLEAU_CASCADE_Z * 11.0 + Tokens3D.CARD_LENGTH * 0.5
+	return Vector2(width, front - back + 0.4)
+
 
 func _start_new_game() -> void:
 	moves_count = 0
