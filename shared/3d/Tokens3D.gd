@@ -43,7 +43,7 @@ const CAM_TILT_BOARD := 52.0   ## Tabuleiros quadrados: le linhas e colunas.
 const CAM_TILT_CARDS := 44.0   ## Cartas: mostra a face sem achatar.
 const CAM_TILT_TRACK := 58.0   ## Trilhas/percursos: mais de cima.
 const CAM_FOV := 42.0          ## FOV contido: evita perspectiva exagerada.
-const CAM_MARGIN := 1.12       ## Folga ao redor do conteudo enquadrado.
+const CAM_MARGIN := 1.04       ## Folga ao redor do conteudo enquadrado.
 
 # ---------------------------------------------------------------------------
 # Sombras e contato.

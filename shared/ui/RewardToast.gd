@@ -105,8 +105,14 @@ func _build() -> void:
 func _on_xp_gained(amount: int, _source: String) -> void:
 	if amount <= 0:
 		return
+	# A curva de nivel mora no PlayerProfile: perguntar em vez de repetir a
+	# formula aqui, senao o toast passa a mentir na primeira vez que a curva
+	# mudar.
+	var progresso := Vector2i(PlayerProfile.total_xp, 1000)
+	if PlayerProfile.has_method("xp_progress"):
+		progresso = PlayerProfile.xp_progress()
 	_push("⭐", tr("TOAST_XP") % amount, tr("TOAST_LEVEL_PROGRESS") % [
-		PlayerProfile.level, PlayerProfile.total_xp, PlayerProfile.level * 1000])
+		PlayerProfile.level, progresso.x, progresso.y])
 
 
 func _on_level_up(new_level: int) -> void:

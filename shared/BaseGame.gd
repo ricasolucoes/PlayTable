@@ -79,6 +79,100 @@ func _derive_game_id() -> String:
 	return "playtable"
 
 
+# ------------------------------------------------------------ enquadramento
+
+## Folga entre a HUD e a borda do tabuleiro, em pixels do viewport logico.
+const HUD_GAP := 10.0
+
+var _fit_size: Vector2 = Vector2.ZERO
+var _fit_center: Vector3 = Vector3.ZERO
+var _refit_pending: bool = false
+
+
+## Enquadra a mesa no espaco que a HUD deixa livre.
+##
+## Regra da casa: o jogo ocupa a tela. Sem isto a camera usa o enquadramento
+## padrao de 6x6 unidades para qualquer conteudo -- um tabuleiro de damas de 6,4
+## fica cortado nas laterais e um monte de descarte de uma carta so fica do
+## tamanho de uma unha, com metade da tela em feltro vazio.
+##
+## A faixa util nao e um numero escrito a mao: sai da HUD que a cena realmente
+## tem. Mexer no cabecalho ou nos botoes reenquadra sozinho.
+func fit_table(content_size: Vector2, center: Vector3 = Vector3.ZERO) -> void:
+	_fit_size = content_size
+	_fit_center = center
+	if env_3d == null:
+		return
+	_apply_fit()
+	# No `_ready` os Control ainda nao tem retangulo: o container de baixo ainda
+	# mede a tela inteira e a HUD sairia com 1260 px de altura. Refaz a conta
+	# depois do primeiro passe de layout, e sempre que a janela mudar.
+	_schedule_refit()
+	var vp := get_viewport()
+	if vp and not vp.size_changed.is_connected(_apply_fit):
+		vp.size_changed.connect(_apply_fit)
+
+
+func _apply_fit() -> void:
+	if env_3d == null or _fit_size == Vector2.ZERO:
+		return
+	var bandas := measure_hud_bands()
+	env_3d.set_safe_area(bandas.x, bandas.y)
+	env_3d.frame_content(_fit_size, _fit_center)
+
+
+func _schedule_refit() -> void:
+	if _refit_pending or not is_inside_tree():
+		return
+	_refit_pending = true
+	await get_tree().process_frame
+	await get_tree().process_frame
+	_refit_pending = false
+	if is_instance_valid(self) and is_inside_tree():
+		_apply_fit()
+
+
+## Quanto a HUD come em cima e embaixo, em pixels do viewport logico.
+##
+## Conta so os blocos de HUD de primeiro nivel -- os que a propria cena ancora
+## ao topo (`anchor_bottom == 0`) ou ao rodape (`anchor_top == 1`). O que esta
+## dentro de um Container nao entra: quem posiciona esses e o container, e as
+## ancoras deles ficam em zero mesmo quando o bloco esta colado no rodape. Era
+## por isso que um botao de "Pedir Carta" no pe da tela era lido como HUD de
+## topo de 1260 px de altura.
+func measure_hud_bands() -> Vector2:
+	var vp := get_viewport_rect().size
+	if vp.y <= 0.0:
+		return Vector2(HUD_GAP, HUD_GAP)
+	return _scan_hud(self, vp.y) + Vector2(HUD_GAP, HUD_GAP)
+
+
+## Devolve (topo, rodape). Vector2 anda por valor no GDScript, entao a soma sobe
+## pelo retorno -- passar um acumulador nao funcionaria.
+func _scan_hud(node: Node, altura: float) -> Vector2:
+	var bandas := Vector2.ZERO
+	for child in node.get_children():
+		if child is CanvasLayer:
+			continue                       # o aviso de recompensa nao e HUD fixa
+		if child is Control:
+			var ctrl := child as Control
+			if not ctrl.visible or ctrl.name.begins_with("Touch"):
+				continue
+			if not (node is Container):
+				var r := ctrl.get_global_rect()
+				if r.size.x > 0.0 and r.size.y > 0.0:
+					if ctrl.anchor_top <= 0.001 and ctrl.anchor_bottom <= 0.001:
+						bandas.x = maxf(bandas.x, r.end.y)
+						continue           # o bloco ja foi medido inteiro
+					elif ctrl.anchor_top >= 0.999 and ctrl.anchor_bottom >= 0.999:
+						bandas.y = maxf(bandas.y, altura - r.position.y)
+						continue
+		var filho := _scan_hud(child, altura)
+		bandas.x = maxf(bandas.x, filho.x)
+		bandas.y = maxf(bandas.y, filho.y)
+	return bandas
+
+
 # ---------------------------------------------------------------- navegação
 
 ## Ligado no `.tscn` de 13 jogos.
@@ -147,7 +241,27 @@ func report_match_result(player_won: bool, extra: Dictionary = {}) -> void:
 		return
 	var payload := extra.duplicate()
 	payload["win"] = player_won
+	payload.merge(_close_difficulty(player_won, bool(payload.get("draw", false))))
 	GameEventBus.emit_match_completed(game_id, payload)
+
+
+## Fecha a partida na escada de dificuldade e devolve o que a gamificacao
+## precisa saber dela.
+##
+## Todo jogo anda na escada, tenha IA ou nao: `difficulty` conta ao XP que a
+## partida valia (o `xp_scale`), e `difficulty_delta` diz para a HUD se o
+## degrau subiu ou desceu. Quem consome o degrau para escolher a jogada da IA
+## e cada jogo, no proprio `_ready()`.
+func _close_difficulty(player_won: bool, draw: bool) -> Dictionary:
+	if DifficultyManager == null:
+		return {}
+	var delta := DifficultyManager.register_result(game_id, player_won, draw)
+	var nivel := DifficultyManager.get_level(game_id)
+	return {
+		"difficulty": nivel,
+		"difficulty_delta": delta,
+		"xp_scale": DifficultyManager.xp_scale(nivel - delta),
+	}
 
 
 ## Revela o modal de resultado com o fade que os jogos 2D repetiam.

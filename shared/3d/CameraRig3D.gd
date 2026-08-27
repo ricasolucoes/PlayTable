@@ -111,21 +111,37 @@ func _apply_framing() -> void:
 
 	var base_tilt := clampf(tilt_degrees, 20.0, 89.0)
 	var need_w := content_size.x * 0.5 * margin
-	var dist_for_width := need_w / maxf(half_h, 0.0001)
+	var depth_half := content_size.y * 0.5 * margin
+
+	# A borda de perto do tabuleiro nao esta na distancia do foco: esta
+	# `depth_half * cos(tilt)` mais perto da camera, e por isso projeta MAIS
+	# larga e MAIS alta que o centro. Dimensionar pelo plano do foco fazia o
+	# tabuleiro vazar pela borda de baixo da tela; a folga de 12% em volta do
+	# conteudo existia so para esconder isso, e comia tela nos jogos em que a
+	# mesa era rasa. Agora a conta e feita na borda que realmente encosta.
+	var dist_w := func(tilt: float) -> float:
+		return need_w / maxf(half_h, 0.0001) + depth_half * cos(deg_to_rad(tilt))
+
+	var dist_for_width: float = dist_w.call(base_tilt)
 
 	# Em retrato a largura quase sempre manda. Se ela manda, sobra altura de
 	# tela sem uso -- entao inclina mais a camera ate a profundidade projetada
 	# encostar na faixa util. O tabuleiro cresce sem sair do enquadramento.
-	var depth_half := content_size.y * 0.5 * margin
 	if depth_half > 0.0001:
+		# `sin_needed >= 1` significa que nem deitando a camera de todo a
+		# profundidade encosta na faixa util -- e o caso do tabuleiro quadrado
+		# em tela de retrato. Antes isso fazia o enquadramento DESISTIR de
+		# inclinar e o tabuleiro ficava com 45% da altura util em branco.
+		# Inclinar mais sempre ajuda: aumenta a profundidade projetada e ainda
+		# aproxima a camera. Entao o caso sem solucao vai ate o limite.
 		var sin_needed := (dist_for_width * half_v * safe_fraction) / depth_half
-		if sin_needed < 1.0:
-			var balanced := rad_to_deg(asin(clampf(sin_needed, 0.0, 1.0)))
-			base_tilt = clampf(maxf(base_tilt, balanced), base_tilt, max_auto_tilt)
+		var balanced := rad_to_deg(asin(clampf(sin_needed, 0.0, 1.0)))
+		base_tilt = clampf(maxf(base_tilt, balanced), base_tilt, max_auto_tilt)
+		dist_for_width = dist_w.call(base_tilt)
 
 	var tilt_rad := deg_to_rad(base_tilt)
-	var need_d := depth_half * sin(tilt_rad)
-	var dist_for_depth := need_d / maxf(half_v * safe_fraction, 0.0001)
+	var dist_for_depth := depth_half * sin(tilt_rad) / maxf(half_v * safe_fraction, 0.0001) \
+		+ depth_half * cos(tilt_rad)
 	var dist := maxf(dist_for_width, dist_for_depth)
 	dist = maxf(dist, 1.0)
 

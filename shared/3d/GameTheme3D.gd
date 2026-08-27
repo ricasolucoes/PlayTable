@@ -39,6 +39,11 @@ extends Resource
 ## Inclinacao preferida da camera.
 @export var camera_tilt: float = Tokens3D.CAM_TILT_BOARD
 
+## Ate onde o enquadramento automatico pode deitar a camera para aproveitar a
+## altura da tela. Tabuleiro aceita quase de cima; mesa de carteado nao, senao
+## a face da carta achata e para de ler.
+@export_range(20.0, 89.0, 0.5) var camera_max_tilt: float = 74.0
+
 ## Intensidade do brilho geral. Contido: brilho nao e acabamento.
 @export var glow_strength: float = 0.18
 
@@ -63,6 +68,7 @@ static func casino_green() -> GameTheme3D:
 	t.ambient_energy = 0.50
 	t.accent = Color(0.96, 0.80, 0.34)
 	t.camera_tilt = Tokens3D.CAM_TILT_CARDS
+	t.camera_max_tilt = 56.0
 	return t
 
 ## Salao de jogos: nogueira, marfim, luz de abajur.

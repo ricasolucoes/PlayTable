@@ -50,6 +50,7 @@ func apply_theme(new_theme: GameTheme3D) -> void:
 	_apply_environment()
 	if camera:
 		camera.tilt_degrees = new_theme.camera_tilt
+		camera.max_auto_tilt = new_theme.camera_max_tilt
 
 func _apply_surfaces() -> void:
 	if table_top:
@@ -118,6 +119,7 @@ func _apply_environment() -> void:
 ## Chame sempre que o tabuleiro for montado ou mudar de tamanho.
 func frame_content(size_xz: Vector2, center: Vector3 = Vector3.ZERO) -> void:
 	if camera:
+		camera.max_auto_tilt = _active_theme.camera_max_tilt
 		camera.frame_content(size_xz, center, _active_theme.camera_tilt)
 	framing_changed.emit(size_xz)
 
