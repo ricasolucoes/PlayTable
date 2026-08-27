@@ -13,16 +13,9 @@ var score_x: int = 0
 var score_o: int = 0
 var piece_nodes: Array[Node2D] = []
 
-## Nivel da IA. Sobe um degrau a cada vitoria do jogador e so desce depois de
-## duas derrotas seguidas -- perder uma vez nao tira o degrau conquistado.
-##
-## Fica gravado: sem isso a IA voltava ao nivel 1 toda vez que a tela era
-## reaberta, e a mesma abertura de forquilha ganhava de novo, para sempre.
-const DIFFICULTY_KEY := "ttt_ai_level"
-const LOSSES_KEY := "ttt_losses_streak"
-
-var ai_level: int = TicTacToeRules.Level.HARD
-var losses_streak: int = 0
+## Degrau de 1 a 10 do DifficultyManager, o mesmo dos outros jogos. Quem move
+## a escada e o `report_match_result()` do BaseGame; aqui so se le.
+var ai_level: int = DifficultyManager.DEFAULT_LEVEL
 
 @onready var grid_container: GridContainer = $BoardContainer/Grid
 @onready var x_panel: PanelContainer = $VBoxContainer/ScoreBoard/P1Panel
@@ -37,43 +30,51 @@ var losses_streak: int = 0
 
 func _ready() -> void:
 	status_label = $VBoxContainer/StatusCard/StatusVBox/StatusLabel
-	ai_level = clampi(int(SaveManager.get_setting(DIFFICULTY_KEY, TicTacToeRules.Level.HARD)),
-		TicTacToeRules.Level.EASY, TicTacToeRules.MAX_LEVEL)
-	losses_streak = int(SaveManager.get_setting(LOSSES_KEY, 0))
+	ai_level = DifficultyManager.get_level(game_id)
 	_setup_grid_cells()
 	_update_level_label()
 	_update_turn_ui()
 	win_modal.visible = false
 	strike_line.visible = false
+	_maybe_ai_opens()
 
 
 func _update_level_label() -> void:
 	if level_label:
-		level_label.text = tr("TTT_LEVEL_LABEL") % tr(TicTacToeRules.level_name(ai_level))
+		level_label.text = DifficultyManager.label_for(game_id)
 
 
-## Ajusta o degrau depois da partida e grava.
-func _tune_difficulty(player_won: bool, was_draw: bool) -> void:
-	var subiu := false
-	if player_won:
-		losses_streak = 0
-		if ai_level < TicTacToeRules.MAX_LEVEL:
-			ai_level += 1
-			subiu = true
-	elif was_draw:
-		losses_streak = 0
-	else:
-		losses_streak += 1
-		if losses_streak >= 2 and ai_level > TicTacToeRules.Level.EASY:
-			ai_level -= 1
-			losses_streak = 0
+## Do degrau 8 em diante quem abre a partida e a IA.
+##
+## Jogo da velha e resolvido: contra minimax perfeito quem abre no maximo
+## empata. Enquanto o jogador abria sempre, ele nao podia perder -- e a escada
+## travava no topo para sempre, porque so a derrota faz descer.
+func _maybe_ai_opens() -> void:
+	if not vs_ai or game_over or not TicTacToeRules.ai_opens(ai_level):
+		return
+	is_player_turn = false
+	_update_turn_ui()
+	set_status(tr("DIFF_AI_OPENS"))
+	await get_tree().create_timer(0.45).timeout
+	if is_inside_tree():
+		_do_ai_turn()
 
-	SaveManager.set_setting(DIFFICULTY_KEY, ai_level)
-	SaveManager.set_setting(LOSSES_KEY, losses_streak)
+
+## Fecha a partida na escada e avisa na tela quando o degrau andou.
+##
+## Quem move a escada e `report_match_result()`, no BaseGame -- todo jogo anda
+## nela, tenha IA ou nao. Aqui so se le o degrau novo, que so existe depois
+## daquela chamada.
+func _close_ladder(player_won: bool, was_draw: bool) -> void:
+	var antes := DifficultyManager.get_level(game_id)
+	report_match_result(player_won, {"ai_level": ai_level, "draw": was_draw})
+
+	var depois := DifficultyManager.get_level(game_id)
+	ai_level = depois
 	_update_level_label()
-
-	if subiu:
-		win_modal_sub.text += "\n" + (tr("TTT_LEVEL_UP") % tr(TicTacToeRules.level_name(ai_level)))
+	var aviso := DifficultyManager.change_notice(depois, depois - antes)
+	if aviso != "":
+		win_modal_sub.text += "\n" + aviso
 
 func _setup_grid_cells() -> void:
 	for child in grid_container.get_children():
@@ -168,8 +169,7 @@ func _handle_game_won(winner_id: int, combo: Array[int]) -> void:
 	# O jogo termina por modal, nao por `finish_game()`: a gamificacao precisa
 	# ser publicada a mao.
 	var venceu := winner_id == 1
-	_tune_difficulty(venceu, false)
-	report_match_result(venceu, {"ai_level": ai_level})
+	_close_ladder(venceu, false)
 	if venceu and env_3d != null:
 		env_3d.celebrate_win()
 	reveal_result_modal(win_modal)
@@ -179,8 +179,7 @@ func _handle_game_draw() -> void:
 	win_modal_title.text = "Empate!"
 	win_modal_sub.text = "Nenhum jogador conseguiu alinhar 3 peças."
 	if AudioManager: AudioManager.play_draw()
-	_tune_difficulty(false, true)
-	report_match_result(false, {"ai_level": ai_level, "draw": true})
+	_close_ladder(false, true)
 	reveal_result_modal(win_modal)
 
 func _update_turn_ui() -> void:
@@ -196,6 +195,7 @@ func _update_turn_ui() -> void:
 
 func _start_new_game() -> void:
 	win_modal.visible = false
+	ai_level = DifficultyManager.get_level(game_id)
 	_update_level_label()
 	board.fill(0)
 	game_over = false
@@ -205,3 +205,4 @@ func _start_new_game() -> void:
 		piece.piece_type = piece.PieceType.EMPTY
 		piece.set_winning(false)
 	_update_turn_ui()
+	_maybe_ai_opens()

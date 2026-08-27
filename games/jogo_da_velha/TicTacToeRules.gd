@@ -80,60 +80,75 @@ static func get_best_move(grid: Grid2D, ai_player_id: int) -> int:
 # Dificuldade
 # ---------------------------------------------------------------------------
 
-## Niveis da IA. O jogo sobe um degrau a cada vitoria do jogador.
+## Degraus de 1 a 10, os mesmos do DifficultyManager.
 ##
 ## `get_best_move` acima e uma heuristica: vencer, bloquear, centro, canto. Ela
 ## perde para a abertura classica de forquilha -- canto, canto oposto, e o
-## jogador fecha duas linhas de uma vez -- e era sempre a mesma IA, partida
-## apos partida. Do nivel 4 em diante quem joga e o minimax, que nao tem
-## forquilha para explorar: no nivel 5 o melhor resultado possivel e o empate.
-enum Level { EASY = 1, MEDIUM = 2, HARD = 3, EXPERT = 4, PERFECT = 5 }
+## jogador fecha duas linhas de uma vez. Do degrau 6 em diante quem joga e o
+## minimax, que nao tem forquilha para explorar.
+##
+## Jogo da velha e um jogo resolvido: com os dois jogando bem, da empate. Por
+## isso os degraus altos mexem em duas coisas alem da forca da busca:
+##
+##   - **quem abre.** Do degrau 8 em diante a IA sai na frente. Enquanto o
+##     jogador abria sempre, contra minimax perfeito ele nao podia perder --
+##     no maximo empatar -- e a escada travava para sempre no topo. Era esse o
+##     "descobri como ganhar e nao perdi mais": nao havia derrota possivel.
+##   - **variar entre jogadas igualmente boas.** O minimax devolvia sempre a
+##     primeira da lista de preferencia, entao a partida inteira era decorada
+##     depois de vista uma vez. Sortear entre as jogadas de mesma nota nao
+##     enfraquece nada -- elas valem o mesmo -- e desmancha a linha decorada.
 
-const MAX_LEVEL := Level.PERFECT
+const MAX_LEVEL := 10
+const MIN_LEVEL := 1
 
-## Chance de o nivel EXPERT jogar fora do minimax. E o degrau entre "quase
-## sempre acerta" e "nunca erra": sem ele o salto do 3 para o 5 e brusco demais.
-const EXPERT_SLIP := 0.22
+## Do degrau 8 para cima a IA abre a partida.
+const NIVEL_IA_ABRE := 8
 
-## Ordem de desempate quando varias jogadas valem o mesmo para o minimax:
-## centro, cantos, laterais. Sem isto a IA perfeita abre sempre na casa 0.
+## Chance de o degrau jogar abaixo da propria forca, por degrau (indice 0 = 1).
+## Nos degraus 1 a 4 o desvio e jogada ao acaso; de 6 a 8, cair na heuristica.
+const DESVIO := [1.0, 0.60, 0.35, 0.15, 0.0, 0.45, 0.25, 0.10, 0.0, 0.0]
+
+## Ordem de desempate do minimax: centro, cantos, laterais. Vale como base
+## quando o sorteio entre iguais nao se aplica.
 const PREFERENCE := [4, 0, 2, 6, 8, 1, 3, 5, 7]
 
 
-static func level_name(level: int) -> String:
-	match clampi(level, Level.EASY, MAX_LEVEL):
-		Level.EASY: return "TTT_LEVEL_EASY"
-		Level.MEDIUM: return "TTT_LEVEL_MEDIUM"
-		Level.HARD: return "TTT_LEVEL_HARD"
-		Level.EXPERT: return "TTT_LEVEL_EXPERT"
-		_: return "TTT_LEVEL_PERFECT"
+static func clamp_level(level: int) -> int:
+	return clampi(level, MIN_LEVEL, MAX_LEVEL)
 
 
-## A jogada da IA no nivel pedido, ou -1 se o tabuleiro esta cheio.
+## Verdadeiro quando e a IA que faz a primeira jogada da partida.
+static func ai_opens(level: int) -> bool:
+	return clamp_level(level) >= NIVEL_IA_ABRE
+
+
+## A jogada da IA no degrau pedido, ou -1 se o tabuleiro esta cheio.
 static func get_move(grid: Grid2D, ai_player_id: int, level: int) -> int:
 	var empty := get_empty_indices(grid)
 	if empty.is_empty():
 		return -1
-	var lvl := clampi(level, Level.EASY, MAX_LEVEL)
 
-	match lvl:
-		Level.EASY:
+	var lvl := clamp_level(level)
+	var desvio: float = DESVIO[lvl - 1]
+
+	if lvl <= 5:
+		# Degraus de baixo: heuristica com chance de jogar qualquer coisa.
+		if randf() < desvio:
 			empty.shuffle()
 			return empty[0]
-		Level.MEDIUM:
-			var win_now := _find_immediate(grid, ai_player_id, empty)
-			if win_now != -1:
-				return win_now
+		if lvl <= 2:
+			var fecha := _find_immediate(grid, ai_player_id, empty)
+			if fecha != -1:
+				return fecha
 			empty.shuffle()
 			return empty[0]
-		Level.HARD:
-			return get_best_move(grid, ai_player_id)
-		Level.EXPERT:
-			if randf() < EXPERT_SLIP:
-				return get_best_move(grid, ai_player_id)
-			return minimax_move(grid, ai_player_id)
-		_:
-			return minimax_move(grid, ai_player_id)
+		return get_best_move(grid, ai_player_id)
+
+	# Degraus de cima: minimax, com chance de escorregar para a heuristica.
+	if desvio > 0.0 and randf() < desvio:
+		return get_best_move(grid, ai_player_id)
+	return minimax_move(grid, ai_player_id)
 
 
 ## A casa que fecha a linha de `player_id` agora, ou -1.
@@ -149,9 +164,12 @@ static func _find_immediate(grid: Grid2D, player_id: int, empty: Array[int]) -> 
 
 ## Minimax completo. Cabe inteiro: sao no maximo 9! = 362.880 folhas e a poda
 ## alfa-beta corta a maior parte, entao roda em fracao de milissegundo.
+##
+## Entre as jogadas de melhor nota, sorteia. Todas valem o mesmo para a busca,
+## entao a forca nao muda -- so para de ser a mesma partida toda vez.
 static func minimax_move(grid: Grid2D, ai_player_id: int) -> int:
 	var human_id := 1 if ai_player_id == 2 else 2
-	var melhor := -1
+	var melhores: Array[int] = []
 	var melhor_nota := -100
 
 	for idx in PREFERENCE:
@@ -162,9 +180,13 @@ static func minimax_move(grid: Grid2D, ai_player_id: int) -> int:
 		grid.cells[idx] = 0
 		if nota > melhor_nota:
 			melhor_nota = nota
-			melhor = idx
+			melhores = [idx] as Array[int]
+		elif nota == melhor_nota:
+			melhores.append(idx)
 
-	return melhor
+	if melhores.is_empty():
+		return -1
+	return melhores[randi() % melhores.size()]
 
 
 ## Nota da posicao pelos olhos de `ai_id`. Vitoria mais rapida vale mais que

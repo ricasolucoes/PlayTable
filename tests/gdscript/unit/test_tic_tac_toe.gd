@@ -230,3 +230,57 @@ func test_combo_e_check_win_nunca_discordam() -> void:
 			if tem_combo != venceu:
 				divergencias.append("%s / %d" % [str(celulas), jogador])
 	assert_eq(divergencias, [] as Array[String], "combo e check_win divergem")
+
+
+# ------------------------------------------------------- escada de dificuldade
+
+## Jogo da velha e resolvido: quem abre, contra minimax perfeito, no maximo
+## empata. Enquanto o jogador abria sempre, ele nao podia perder -- e a escada,
+## que so desce na derrota, travava no topo para sempre.
+func test_a_ia_abre_a_partida_nos_degraus_de_cima() -> void:
+	for nivel in range(1, RulesScript.NIVEL_IA_ABRE):
+		assert_false(RulesScript.ai_opens(nivel), "degrau %d: quem abre e o jogador" % nivel)
+	for nivel in range(RulesScript.NIVEL_IA_ABRE, RulesScript.MAX_LEVEL + 1):
+		assert_true(RulesScript.ai_opens(nivel), "degrau %d: quem abre e a IA" % nivel)
+
+
+func test_todo_degrau_devolve_jogada_valida() -> void:
+	for nivel in range(1, RulesScript.MAX_LEVEL + 1):
+		var g := _grid([1,0,0, 0,2,0, 0,0,0])
+		var jogada: int = RulesScript.get_move(g, O, nivel)
+		assert_between(jogada, 0, 8, "degrau %d joga dentro do tabuleiro" % nivel)
+		assert_eq(g.cells[jogada], VAZIO, "degrau %d joga em casa vazia" % nivel)
+
+
+func test_degrau_fora_da_faixa_e_puxado_para_dentro() -> void:
+	assert_eq(RulesScript.clamp_level(0), RulesScript.MIN_LEVEL, "abaixo do fundo")
+	assert_eq(RulesScript.clamp_level(99), RulesScript.MAX_LEVEL, "acima do topo")
+
+
+## O minimax devolvia sempre a primeira da lista de preferencia, entao a partida
+## inteira era decorada depois de vista uma vez. Sortear entre jogadas de mesma
+## nota nao enfraquece nada: elas valem o mesmo para a busca.
+func test_o_minimax_varia_entre_jogadas_igualmente_boas() -> void:
+	var vistas := {}
+	for _tentativa in range(60):
+		vistas[RulesScript.minimax_move(_grid([0,0,0, 0,0,0, 0,0,0]), O)] = true
+	assert_gt(vistas.size(), 1, "o tabuleiro vazio nao abre sempre na mesma casa")
+
+
+## Variar entre iguais nao pode custar forca: no tabuleiro vazio o minimax so
+## considera jogadas que garantem o empate contra jogo perfeito.
+func test_variar_nao_enfraquece_o_minimax() -> void:
+	for _tentativa in range(30):
+		var g := _grid([0,0,0, 0,0,0, 0,0,0])
+		var lado := O
+		while true:
+			var jogada: int = RulesScript.minimax_move(g, lado)
+			if jogada == -1:
+				break
+			g.cells[jogada] = lado
+			if RulesScript.check_win(g, lado) or RulesScript.is_draw(g):
+				break
+			lado = X if lado == O else O
+		assert_true(RulesScript.is_draw(g), "minimax contra minimax da empate")
+		assert_false(RulesScript.check_win(g, X), "X nao venceu")
+		assert_false(RulesScript.check_win(g, O), "O nao venceu")
