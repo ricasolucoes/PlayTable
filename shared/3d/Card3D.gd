@@ -17,6 +17,15 @@ signal card_clicked(card: Card3D)
 @export var suit: String = CardArt2D.SUIT_SPADE
 @export var is_face_up: bool = false
 
+## De onde saem as faces. Trocado pelo Cartas Coloridas por UnoCardAtlas3D: o
+## baralho dele nao tem naipe nem figura, e pedir uma carta de UNO ao atlas
+## frances devolvia um 7 de espadas onde devia estar um 7 vermelho. Os dois
+## atlas tem a mesma interface (ensure_built, is_ready, back_uv, rim_uv,
+## face_material, body_material), entao aqui nada mais precisa saber qual e.
+##
+## Trocar so vale ANTES de a carta entrar na arvore.
+var atlas: Object = CardAtlas3D
+
 @onready var mesh_instance: MeshInstance3D = $MeshInstance3D
 @onready var contact_shadow: MeshInstance3D = $ContactShadow
 @onready var picker: Area3D = $Picker
@@ -30,7 +39,7 @@ var _ready_done: bool = false
 func _ready() -> void:
 	_setup_collision()
 	_setup_contact_shadow()
-	await CardAtlas3D.ensure_built(self)
+	await atlas.ensure_built(self)
 	if not is_instance_valid(self):
 		return
 	_ready_done = true
@@ -46,13 +55,13 @@ func setup(p_rank: String, p_suit: String, p_face_up: bool = false) -> void:
 		rotation_degrees.z = 0.0 if is_face_up else 180.0
 
 func _update_visuals() -> void:
-	if mesh_instance == null or not CardAtlas3D.is_ready():
+	if mesh_instance == null or not atlas.is_ready():
 		return
 	mesh_instance.mesh = MeshBuilder3D.card_mesh(
 		Tokens3D.CARD_WIDTH, Tokens3D.CARD_LENGTH, Tokens3D.CARD_THICKNESS,
-		CardAtlas3D.back_uv(), CardAtlas3D.rim_uv())
-	mesh_instance.set_surface_override_material(0, CardAtlas3D.face_material(rank, suit))
-	mesh_instance.set_surface_override_material(1, CardAtlas3D.body_material())
+		atlas.back_uv(), atlas.rim_uv())
+	mesh_instance.set_surface_override_material(0, atlas.face_material(rank, suit))
+	mesh_instance.set_surface_override_material(1, atlas.body_material())
 	rotation_degrees.z = 0.0 if is_face_up else 180.0
 
 func _setup_collision() -> void:

@@ -4,15 +4,6 @@ extends BaseGame
 
 ## UnoLikeGame: Cartas Coloridas 3D com Cartas Físicas, Arremesso no Descarte e Partículas
 
-const COLOR_MAP = {
-	Card.ColorType.RED: Color(0.9, 0.25, 0.25),
-	Card.ColorType.BLUE: Color(0.2, 0.55, 0.9),
-	Card.ColorType.GREEN: Color(0.2, 0.75, 0.35),
-	Card.ColorType.YELLOW: Color(0.95, 0.8, 0.1),
-	Card.ColorType.WILD: Color(0.3, 0.3, 0.35),
-	Card.ColorType.NONE: Color(0.3, 0.3, 0.35)
-}
-
 const COLOR_NAMES = {
 	Card.ColorType.RED: "Vermelho",
 	Card.ColorType.BLUE: "Azul",
@@ -33,6 +24,11 @@ var pending_wild4: bool = false
 
 var discard_cards_3d: Array[Card3D] = []
 
+## Moldura no feltro em volta do descarte, na cor que esta valendo. Depois de um
+## curinga a carta de cima e preta: sem esta marca so o texto do topo diz que
+## cor foi escolhida, e ele fica longe de onde a jogada acontece.
+var _color_marker: TableZone3D = null
+
 @onready var cards_root: Node3D = $CardsRoot
 @onready var active_color_banner: Label = $UI/VBoxContainer/ActiveColorBanner
 @onready var ai_info_label: Label = $UI/VBoxContainer/AIInfoLabel
@@ -50,10 +46,25 @@ func _ready() -> void:
 	# 6x6 unidades padrao para um monte de descarte de uma carta so: a carta da
 	# mesa saia do tamanho de uma unha.
 	fit_table(Vector2(2.4, 2.4), Vector3(0.0, 0.0, -0.3))
+	_build_color_marker()
 	player_hand = CardHand.new()
 	ai_hand = CardHand.new()
 	discard_pile = CardPile.new()
 	_start_new_game()
+
+
+func _build_color_marker() -> void:
+	# Moldura fina em volta do descarte, e nao um disco aceso: um disco no
+	# tamanho de ler a cor de longe vira um borrao que apaga a propria carta.
+	_color_marker = TableZone3D.new()
+	_color_marker.name = "ActiveColorMarker"
+	_color_marker.position = Vector3(0.0, 0.0, -0.3)
+	cards_root.add_child(_color_marker)
+
+
+func _paint_active_color(col: Color) -> void:
+	if _color_marker:
+		_color_marker.setup(Vector2(1.06, 1.36), "", col)
 
 func _start_new_game() -> void:
 	game_over = false
@@ -62,7 +73,11 @@ func _start_new_game() -> void:
 	btn_restart.hide()
 	color_picker_modal.hide()
 	
-	for c in cards_root.get_children(): c.queue_free()
+	# So as cartas: `cards_root.get_children()` levaria junto a marca da cor
+	# ativa, que mora no mesmo no e tem de sobreviver entre partidas.
+	for c in discard_cards_3d:
+		if is_instance_valid(c):
+			c.queue_free()
 	discard_cards_3d.clear()
 	
 	draw_pile = Deck.create_uno_deck()
@@ -91,8 +106,12 @@ func _start_new_game() -> void:
 	_update_ui()
 
 func _spawn_top_discard_3d(card: Card) -> void:
-	var c_3d := preload("res://shared/3d/Card3D.tscn").instantiate()
-	c_3d.setup(card.get_display_value(), UnoRules.get_color_symbol(card.color_type), true)
+	var c_3d: Card3D = preload("res://shared/3d/Card3D.tscn").instantiate()
+	# O baralho aqui e de UNO: as faces saem do UnoCardAtlas3D, nao do atlas
+	# frances. Pedir "7 vermelho" ao atlas frances devolvia um 7 de espadas, e a
+	# mesa dizia "Cor Ativa: Amarelo" com uma carta de espadas em cima.
+	c_3d.atlas = UnoCardAtlas3D
+	c_3d.setup(UnoCardArt2D.kind_key(card), UnoCardArt2D.color_key(card.color_type), true)
 	
 	var rot_y := randf_range(-15.0, 15.0)
 	var target_pos := Vector3(0.0, 0.05 + (discard_cards_3d.size() * 0.004), -0.3)
@@ -118,10 +137,13 @@ func _draw_from_deck() -> Card:
 func _update_ui() -> void:
 	ai_info_label.text = "IA: %d cartas" % ai_hand.size()
 	
-	var col = COLOR_MAP.get(active_color, Color.WHITE)
+	# A cor sai da propria arte da carta: uma definicao so de "vermelho de UNO"
+	# para o banner, a mao, a marca da mesa e a face impressa.
+	var col := UnoCardArt2D.color_of(UnoCardArt2D.color_key(active_color))
 	var col_name = COLOR_NAMES.get(active_color, "Indefinida")
 	active_color_banner.text = "Cor Ativa: %s" % col_name
 	active_color_banner.add_theme_color_override("font_color", col)
+	_paint_active_color(col)
 	
 	# Mão do jogador
 	for c in player_cards_container.get_children(): c.queue_free()
@@ -129,47 +151,14 @@ func _update_ui() -> void:
 	
 	for i in range(player_hand.size()):
 		var card := player_hand.get_card(i)
-		var btn := Button.new()
-		btn.custom_minimum_size = Vector2(72, 95)
-		btn.add_theme_font_size_override("font_size", 26)
-		btn.focus_mode = Control.FOCUS_NONE
+		var view := UnoCard2D.new()
+		view.custom_minimum_size = Vector2(78, 116)
+		view.setup(card)
+		view.playable = is_player_turn and not game_over and not waiting_color_pick \
+			and UnoRules.can_play_card(card, top_card, active_color)
+		view.pressed.connect(_on_player_card_clicked.bind(i))
+		player_cards_container.add_child(view)
 
-		var card_col: Color = COLOR_MAP.get(card.color_type, Color(0.20, 0.20, 0.24))
-		var can_play := UnoRules.can_play_card(card, top_card, active_color)
-		var live := is_player_turn and can_play and not game_over and not waiting_color_pick
-
-		# `self_modulate` multiplicava a cor da carta pelo fundo escuro do tema:
-		# vermelho e verde viravam quase preto e a mao inteira parecia uma
-		# fileira de botoes apagados. A carta agora tem estilo proprio.
-		for state in ["normal", "hover", "pressed", "focus", "disabled"]:
-			btn.add_theme_stylebox_override(state, _card_style(card_col, live))
-		btn.add_theme_color_override("font_color", _ink_for(card_col))
-		btn.add_theme_color_override("font_disabled_color", _ink_for(card_col))
-		btn.text = card.get_display_value()
-
-		btn.disabled = not live
-		btn.pressed.connect(_on_player_card_clicked.bind(i))
-		player_cards_container.add_child(btn)
-
-
-## Estilo da carta na mao: a cor e o fundo, nao um filtro por cima do tema.
-func _card_style(card_col: Color, live: bool) -> StyleBoxFlat:
-	var style := StyleBoxFlat.new()
-	style.bg_color = card_col if live else card_col.darkened(0.35)
-	style.border_color = Color(1, 1, 1, 0.92) if live else Color(1, 1, 1, 0.30)
-	style.set_border_width_all(3 if live else 2)
-	style.set_corner_radius_all(12)
-	style.content_margin_left = 6
-	style.content_margin_right = 6
-	style.content_margin_top = 6
-	style.content_margin_bottom = 6
-	return style
-
-
-## Tinta que le sobre a cor da carta. O amarelo pede texto escuro; os outros nao.
-func _ink_for(card_col: Color) -> Color:
-	return Color(0.10, 0.09, 0.08) if card_col.get_luminance() > 0.55 \
-		else Color(0.99, 0.99, 1.0)
 
 func _on_player_card_clicked(idx: int) -> void:
 	if not is_player_turn or game_over or waiting_color_pick: return
