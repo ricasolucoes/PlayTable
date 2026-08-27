@@ -124,32 +124,50 @@ func test_tocar_uma_peca_das_damas_a_seleciona() -> void:
 
 func test_tocar_uma_coordenada_do_radar_atira() -> void:
 	var jogo := await _montar(BATALHA_NAVAL)
-	var board: Board3D = jogo.board_3d
+	var board: Board3D = jogo.radar_board
 	var alvo := Vector2i(4, 4)
 	assert_true(jogo.ai_grid.get_cell(alvo.x, alvo.y) in [0, 1], "coordenada ainda nao atacada")
-	await _tocar(_na_tela(jogo, board.get_cell_position_3d(alvo.x, alvo.y, 0.02)))
+	var mundo: Vector3 = board.to_global(board.get_cell_position_3d(alvo.x, alvo.y, 0.02))
+	await _tocar(_na_tela(jogo, mundo))
 	assert_true(jogo.ai_grid.get_cell(alvo.x, alvo.y) in [2, 3], "o tiro foi registrado")
-	assert_true(jogo.markers_3d.has(alvo), "e o pino apareceu na casa")
+	assert_eq(jogo._radar_marks.get_child_count(), 1, "e o pino apareceu na casa")
 
 
 func test_tocar_a_propria_frota_avisa_em_vez_de_calar() -> void:
+	# Os dois mapas ficam na mesa ao mesmo tempo: tocar o de baixo nao pode
+	# atirar, mas tambem nao pode ficar calado.
 	var jogo := await _montar(BATALHA_NAVAL)
-	jogo.viewing_radar = false
-	jogo._update_view_mode()
-	await wait_process_frames(1)
-	jogo._on_cell_clicked(0, 0)
-	assert_string_contains(jogo.status_label.text, "Radar", "explica que se ataca pelo Radar")
+	jogo._on_fleet_cell_clicked(0, 0)
+	assert_string_contains(jogo.status_label.text, "de cima", "manda atirar no mapa de cima")
 	assert_true(jogo.ai_grid.get_cell(0, 0) in [0, 1], "e nao atira")
 
 
 func test_a_frota_e_visivel_sobre_o_oceano() -> void:
 	# O casco antigo tinha a mesma luminancia das casas do oceano.
 	var jogo := await _montar(BATALHA_NAVAL)
-	jogo.viewing_radar = false
-	jogo._update_view_mode()
 	await wait_process_frames(1)
-	assert_eq(jogo.ships_root.get_child_count(), jogo.player_ships.size(), "um casco por navio")
-	var casco: MeshInstance3D = jogo.ships_root.get_child(0)
+	assert_eq(jogo._fleet_hulls.get_child_count(), jogo.player_ships.size(), "um casco por navio")
+	var casco: MeshInstance3D = jogo._fleet_hulls.get_child(0)
 	var casco_lum: float = (casco.material_override as StandardMaterial3D).albedo_color.get_luminance()
 	var oceano_lum: float = Color(0.10, 0.20, 0.34).get_luminance()
 	assert_gt(casco_lum - oceano_lum, 0.4, "casco claro sobre oceano escuro")
+
+
+func test_afundar_um_navio_inimigo_revela_o_casco_inteiro() -> void:
+	# Antes o jogador so ficava com os pinos vermelhos e nunca via o que tinha
+	# derrubado.
+	var jogo := await _montar(BATALHA_NAVAL)
+	var navio: Dictionary = jogo.ai_ships[0]
+	assert_eq(jogo._radar_wrecks.get_child_count(), 0, "nenhum destroco antes de afundar")
+	for casa in navio["cells"]:
+		jogo.ai_grid.set_cell(casa.x, casa.y, 1)
+	var ultima: Vector2i = navio["cells"][navio["cells"].size() - 1]
+	for casa in navio["cells"]:
+		if casa != ultima:
+			jogo.ai_grid.set_cell(casa.x, casa.y, 3)
+			navio["hits"] = int(navio["hits"]) + 1
+	jogo.is_player_turn = true
+	jogo._on_radar_cell_clicked(ultima.x, ultima.y)
+	await wait_process_frames(1)
+	assert_true(navio["sunk"], "o navio afundou")
+	assert_gt(jogo._radar_wrecks.get_child_count(), 0, "o casco aparece no mapa de ataque")
