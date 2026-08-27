@@ -146,7 +146,13 @@ func test_ia_semeia_sem_tocar_na_kalah_do_jogador() -> void:
 	var jogo := _jogo()
 	jogo.pits = [0, 0, 0, 0, 0, 0, 7, 8, 0, 0, 0, 0, 0, 0]
 	jogo.is_player_turn = false
-	jogo._play_ai_turn()
+
+	# A busca da IA roda fora da linha principal; aqui exercitamos a escolha e
+	# a semeadura, que e o que o turno dela faz.
+	var cova: int = MancalaAI.choose_pit(MancalaAI.achatar(jogo.pits), 1, 10)
+	assert_eq(cova, 7, "so a cova 7 tem gema")
+	jogo._semear(cova, 1)
+
 	assert_eq(jogo.pits[6], 7, "a kalah do jogador nao recebeu gema da IA")
 	assert_eq(jogo.pits[13], 1, "a IA pos uma gema na propria kalah")
 	assert_eq(jogo.pits[0], 1, "a volta passou pelas covas do jogador")
@@ -195,3 +201,117 @@ func test_partida_completa_nao_trava() -> void:
 				vez = 1 - vez
 		assert_true(jogadas > 0, "a partida andou")
 		assert_true(jogadas < 500, "a partida terminou sem estourar o limite")
+
+
+# ----------------------------------------------------------------- MancalaAI
+#
+# A IA antiga era `valid_pits.pick_random()`. Num jogo em que a jogada gulosa e
+# uma linha de codigo -- terminar na propria Kalah da turno extra -- sortear a
+# cova significa jogar abaixo de quem notou a regra na primeira partida.
+
+const AIScript = preload("res://games/mancala/MancalaAI.gd")
+
+const JOGADOR := 0
+const IA := 1
+
+
+func _pits(lista: Array) -> PackedInt32Array:
+	var p := PackedInt32Array()
+	p.resize(14)
+	for i in range(14):
+		p[i] = int(lista[i])
+	return p
+
+
+## A regra que a IA de sorteio passava batido em toda partida.
+func test_a_ia_pega_o_turno_extra_quando_ele_esta_na_mesa() -> void:
+	# Cova 12 com 1 gema termina exatamente na Kalah da IA (13).
+	var pits := _pits([4, 4, 4, 4, 4, 4, 0, 3, 3, 3, 3, 3, 1, 0])
+	for _tentativa in range(6):
+		assert_eq(AIScript.choose_pit(pits, IA, 10), 12, "a cova que cai na propria Kalah")
+
+
+func test_o_turno_extra_e_reconhecido_pela_semeadura() -> void:
+	var pits := _pits([4, 4, 4, 4, 4, 4, 0, 3, 3, 3, 3, 3, 1, 0])
+	assert_true(AIScript.semear(pits, 12, IA), "terminou na Kalah da IA: joga de novo")
+	assert_eq(pits[13], 1, "a gema entrou na Kalah")
+
+	var outra := _pits([4, 4, 4, 4, 4, 4, 0, 3, 3, 3, 3, 3, 2, 0])
+	assert_false(AIScript.semear(outra, 12, IA), "passou da Kalah: nao ha turno extra")
+
+
+## Semear nunca pode encher a Kalah do adversario.
+func test_a_semeadura_pula_a_kalah_do_adversario() -> void:
+	var pits := _pits([0, 0, 0, 0, 0, 0, 7, 8, 0, 0, 0, 0, 0, 0])
+	AIScript.semear(pits, 7, IA)
+	assert_eq(pits[6], 7, "a Kalah do jogador ficou como estava")
+	assert_eq(pits[13], 1, "a Kalah da IA recebeu uma")
+	assert_eq(pits[0], 1, "a volta chegou nas covas do jogador")
+
+
+## Captura: ultima gema em cova propria vazia, com gema na cova oposta.
+func test_a_ia_captura_quando_a_captura_esta_disponivel() -> void:
+	# Cova 8 com 1 gema termina na 9, que esta vazia; a oposta (3) tem 5.
+	var pits := _pits([0, 0, 0, 5, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0])
+	assert_eq(AIScript.choose_pit(pits, IA, 10), 8, "a cova que captura")
+
+	AIScript.semear(pits, 8, IA)
+	assert_eq(pits[13], 6, "as 5 da oposta mais a que chegou")
+	assert_eq(pits[3], 0, "a cova oposta foi esvaziada")
+	assert_eq(pits[9], 0, "e a cova de chegada tambem")
+
+
+## Sem isto a nota do fim de partida esta errada e a busca fecha no lugar errado.
+func test_o_fim_de_partida_varre_o_que_sobrou() -> void:
+	var pits := _pits([0, 0, 0, 0, 0, 0, 10, 2, 3, 0, 0, 0, 0, 5])
+	assert_true(AIScript.acabou(pits), "o jogador ficou sem gema")
+	AIScript.varrer(pits)
+	assert_eq(pits[13], 10, "a IA recolheu as 5 que tinha em jogo")
+	assert_eq(pits[6], 10, "a Kalah do jogador nao mudou")
+
+	var soma := 0
+	for v in pits:
+		soma += v
+	assert_eq(soma, 20, "nenhuma gema sumiu na varredura")
+
+
+func test_o_fim_de_partida_distingue_vitoria_de_derrota() -> void:
+	var ganhando := _pits([0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 20])
+	assert_gt(AIScript.evaluate(ganhando, IA), AIScript.VITORIA - 1, "a IA venceu")
+	assert_lt(AIScript.evaluate(ganhando, JOGADOR), -AIScript.VITORIA + 1, "o jogador perdeu")
+
+
+func test_a_escada_de_perfis_e_monotonica() -> void:
+	var nos_antes := 0
+	var erro_antes := 1.1
+	for perfil in AIScript.PERFIS:
+		assert_gt(int(perfil["nos"]), nos_antes, "o orcamento cresce a cada degrau")
+		assert_true(float(perfil["erro"]) <= erro_antes, "a chance de erro nunca sobe")
+		nos_antes = int(perfil["nos"])
+		erro_antes = float(perfil["erro"])
+	assert_eq(float(AIScript.PERFIS[AIScript.PERFIS.size() - 1]["erro"]), 0.0,
+		"o degrau do topo nao erra de proposito")
+
+
+## O teste que a IA de sorteio nao passaria: em partida cheia, o degrau do topo
+## tem de terminar com mais gemas que o degrau de baixo.
+func test_o_degrau_do_topo_ganha_do_degrau_de_baixo() -> void:
+	var vitorias := 0
+	for partida in range(6):
+		var pits := _pits([4, 4, 4, 4, 4, 4, 0, 4, 4, 4, 4, 4, 4, 0])
+		# Alterna quem comeca: sair na frente pesa no Kalah.
+		var lado: int = JOGADOR if partida % 2 == 0 else IA
+		var lances := 0
+		while not AIScript.acabou(pits) and lances < 200:
+			var nivel: int = 10 if lado == IA else 1
+			var cova: int = AIScript.choose_pit(pits, lado, nivel)
+			if cova < 0:
+				break
+			if not AIScript.semear(pits, cova, lado):
+				lado = 1 - lado
+			lances += 1
+		AIScript.varrer(pits)
+		if pits[13] > pits[6]:
+			vitorias += 1
+
+	assert_gt(vitorias, 3, "o degrau 10 venceu %d de 6 partidas contra o degrau 1" % vitorias)

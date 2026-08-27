@@ -6,6 +6,9 @@ var pits: Array = []
 var is_player_turn: bool = true
 var gems_3d: Dictionary = {}
 
+## Degrau de 1 a 10 do DifficultyManager. Vira orcamento de busca da IA.
+var ai_level: int = DifficultyManager.DEFAULT_LEVEL
+
 @onready var board_root: Node3D = $BoardRoot
 @onready var gems_root: Node3D = $GemsRoot
 @onready var player_pits_container: HBoxContainer = $UI/CenterContainer/VBox/PlayerRow
@@ -40,6 +43,7 @@ func _ready() -> void:
 	env_3d = $TabletopEnvironment3D
 	status_label = $UI/VBoxContainer/StatusLabel
 	btn_restart = $UI/VBoxContainer/BtnRestart
+	ai_level = DifficultyManager.get_level(game_id)
 	_setup_3d_mancala_board()
 	_setup_ui_buttons()
 	fit_table(Vector2(6.8, 2.4))
@@ -83,6 +87,7 @@ func _start_new_game() -> void:
 	is_player_turn = true
 	btn_restart.hide()
 	
+	ai_level = DifficultyManager.get_level(game_id)
 	pits.clear()
 	for i in range(14):
 		pits.append(0 if (i == 6 or i == 13) else 4)
@@ -115,8 +120,9 @@ func _sync_gems_3d() -> void:
 		gems_3d[pit_idx] = gem_list
 
 func _update_ui() -> void:
+	set_duel_score(pits[6], pits[13])
 	player_store_label.text = "Sua Kalah:\n💎 %d" % pits[6]
-	ai_store_label.text = "Kalah IA:\n💎 %d" % pits[13]
+	ai_store_label.text = "Kalah IA:\n💎 %d%s" % [pits[13], difficulty_suffix()]
 	
 	for i in range(6):
 		var btn := player_pits_container.get_child(i) as Button
@@ -124,75 +130,81 @@ func _update_ui() -> void:
 		btn.text = "%d" % count
 		btn.disabled = not is_player_turn or count == 0 or game_over
 
+## Semeia a cova do jogador. A regra e a mesma que a busca da IA usa: semear,
+## pular a Kalah do adversario, turno extra e captura moram todos em
+## `MancalaAI.semear()`. Enquanto a cena tinha a propria copia -- uma para cada
+## lado, alias -- nada garantia que a IA estivesse buscando sobre o jogo que a
+## cena de fato jogava.
 func _on_player_pit_clicked(pit_idx: int) -> void:
 	if game_over or not is_player_turn or pits[pit_idx] == 0: return
-	
-	var seeds = pits[pit_idx]
-	pits[pit_idx] = 0
-	var curr := pit_idx
-	
-	while seeds > 0:
-		curr = (curr + 1) % 14
-		if curr == 13: continue # Pula o Kalah da IA
-		pits[curr] += 1
-		seeds -= 1
-		
-	# Regra de captura do Mancala
-	if curr >= 0 and curr <= 5 and pits[curr] == 1 and pits[12 - curr] > 0:
-		var captured = pits[12 - curr] + 1
-		pits[curr] = 0
-		pits[12 - curr] = 0
-		pits[6] += captured
-		set_status("💎 Captura espetacular! +%d gemas!" % captured)
-		
-	_sync_gems_3d()
-	_update_ui()
-	
+
+	var ganhou := _semear(pit_idx, 0)
+	if ganhou["capturou"] > 0:
+		set_status("💎 Captura espetacular! +%d gemas!" % ganhou["capturou"])
+
 	if _check_game_over(): return
-	
-	if curr == 6:
+
+	if ganhou["extra"]:
 		set_status("Última gema caiu na sua Kalah! Jogue novamente.")
 		return
-		
+
 	is_player_turn = false
 	set_status("Vez da IA...")
 	_update_ui()
 	await get_tree().create_timer(0.7).timeout
 	_play_ai_turn()
 
-func _play_ai_turn() -> void:
-	var valid_pits: Array = []
-	for i in range(7, 13):
-		if pits[i] > 0: valid_pits.append(i)
-		
-	if valid_pits.is_empty():
-		_check_game_over()
-		return
-		
-	var chosen_pit = valid_pits.pick_random()
-	var seeds = pits[chosen_pit]
-	pits[chosen_pit] = 0
-	var curr = chosen_pit
-	
-	while seeds > 0:
-		curr = (curr + 1) % 14
-		if curr == 6: continue # Pula Kalah do Jogador
-		pits[curr] += 1
-		seeds -= 1
-		
-	if curr >= 7 and curr <= 12 and pits[curr] == 1 and pits[12 - curr] > 0:
-		var captured = pits[12 - curr] + 1
-		pits[curr] = 0
-		pits[12 - curr] = 0
-		pits[13] += captured
-		set_status("IA capturou suas gemas!")
-		
+
+## Aplica a semeadura e redesenha. Devolve `{extra, capturou}` -- quantas gemas
+## a captura levou, para a cena ter o que dizer.
+func _semear(cova: int, lado: int) -> Dictionary:
+	var kalah := MancalaAI.KALAH_JOGADOR if lado == 0 else MancalaAI.KALAH_IA
+	var plano := MancalaAI.achatar(pits)
+	var antes: int = plano[kalah]
+	var extra := MancalaAI.semear(plano, cova, lado)
+	for i in range(14):
+		pits[i] = plano[i]
+
+	# Semeadura normal poe no maximo uma gema na propria Kalah; o que passar
+	# disso veio de captura.
+	var ganho: int = plano[kalah] - antes
+	var capturou: int = ganho if ganho > 1 else 0
+
 	_sync_gems_3d()
 	_update_ui()
-	
+	return {"extra": extra, "capturou": capturou}
+
+## Pensa fora da linha principal, durante a pausa de encenacao que ja existia.
+func _play_ai_turn() -> void:
+	var plano := MancalaAI.achatar(pits)
+	var saida: Array = []
+	var tarefa := WorkerThreadPool.add_task(
+		MancalaAI.pensar_em_tarefa.bind(plano, 1, ai_level, saida))
+	# A arvore fica guardada antes do laco: quando o jogador sai da cena com a
+	# busca em andamento, `get_tree()` passa a devolver `null` no quadro
+	# seguinte, e `await null.process_frame` estoura. A tarefa nao segura
+	# referencia para a cena, entao esperar por ela aqui e seguro.
+	var arvore := get_tree()
+	while not WorkerThreadPool.is_task_completed(tarefa):
+		if arvore == null:
+			break
+		await arvore.process_frame
+	WorkerThreadPool.wait_for_task_completion(tarefa)
+	if not is_inside_tree() or game_over:
+		return
+
+	var cova: int = int(saida[0]) if not saida.is_empty() else -1
+	if cova < 0:
+		_check_game_over()
+		return
+
+	var ganhou := _semear(cova, 1)
+	if ganhou["capturou"] > 0:
+		set_status("IA capturou %d das suas gemas!" % ganhou["capturou"])
+
 	if _check_game_over(): return
-	
-	if curr == 13:
+
+	if ganhou["extra"]:
 		set_status("IA jogou no próprio Kalah e joga novamente!")
 		await get_tree().create_timer(0.7).timeout
 		_play_ai_turn()
