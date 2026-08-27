@@ -186,6 +186,87 @@ func test_dias_entre_datas() -> void:
 	assert_eq(PlayerProfile.days_between("", "2026-08-27"), 0, "perfil novo não tem data anterior")
 
 
+# =============================================================== sequência diária
+
+## A sequência é o motor de retorno do jogo: é o que faz o jogador abrir o app
+## amanhã. `update_daily_streak()` compara com a data do sistema, então os
+## testes ancoram `last_played_date` em deslocamentos a partir de hoje.
+
+func test_dia_seguinte_soma_um_na_sequencia() -> void:
+	PlayerProfile.last_played_date = PlayerProfile.date_offset(-1)
+	PlayerProfile.current_streak = 4
+	PlayerProfile.update_daily_streak()
+	assert_eq(PlayerProfile.current_streak, 5, "voltou no dia seguinte")
+	assert_eq(PlayerProfile.last_played_date, Time.get_date_string_from_system(), "data avança")
+
+
+func test_jogar_de_novo_no_mesmo_dia_nao_mexe_na_sequencia() -> void:
+	PlayerProfile.last_played_date = Time.get_date_string_from_system()
+	PlayerProfile.current_streak = 4
+	PlayerProfile.update_daily_streak()
+	PlayerProfile.update_daily_streak()
+	assert_eq(PlayerProfile.current_streak, 4, "cinco partidas num dia é um dia")
+
+
+func test_um_dia_perdido_sem_congelamento_zera_a_sequencia() -> void:
+	PlayerProfile.last_played_date = PlayerProfile.date_offset(-2)
+	PlayerProfile.current_streak = 12
+	PlayerProfile.stats = {"streak_freezes": 0}
+	PlayerProfile.update_daily_streak()
+	assert_eq(PlayerProfile.current_streak, 1, "sem congelamento, recomeça")
+
+
+func test_o_congelamento_salva_a_sequencia_e_e_consumido() -> void:
+	PlayerProfile.last_played_date = PlayerProfile.date_offset(-2)
+	PlayerProfile.current_streak = 12
+	PlayerProfile.stats = {"streak_freezes": 2}
+	PlayerProfile.update_daily_streak()
+	assert_eq(PlayerProfile.current_streak, 13, "um dia perdido não apaga doze")
+	assert_eq(int(PlayerProfile.get_stat("streak_freezes")), 1, "gastou um congelamento")
+
+
+func test_o_congelamento_nao_cobre_dois_dias_perdidos() -> void:
+	PlayerProfile.last_played_date = PlayerProfile.date_offset(-4)
+	PlayerProfile.current_streak = 12
+	PlayerProfile.stats = {"streak_freezes": 3}
+	PlayerProfile.update_daily_streak()
+	assert_eq(PlayerProfile.current_streak, 1, "congelamento cobre um dia, não uma semana")
+	assert_eq(int(PlayerProfile.get_stat("streak_freezes")), 3, "e não é gasto à toa")
+
+
+func test_voltar_depois_de_duas_semanas_marca_o_retorno() -> void:
+	PlayerProfile.last_played_date = PlayerProfile.date_offset(-20)
+	PlayerProfile.current_streak = 30
+	PlayerProfile.flags = []
+	PlayerProfile.stats = {"streak_freezes": 0}
+	PlayerProfile.update_daily_streak()
+	assert_true(PlayerProfile.has_flag("comeback"), "quem some 20 dias e volta ganha o reconhecimento")
+	assert_eq(PlayerProfile.current_streak, 1, "mas a sequência recomeça")
+
+
+func test_a_maior_sequencia_e_um_recorde_que_nao_cai() -> void:
+	PlayerProfile.last_played_date = PlayerProfile.date_offset(-1)
+	PlayerProfile.current_streak = 9
+	PlayerProfile.longest_streak = 9
+	PlayerProfile.update_daily_streak()
+	assert_eq(PlayerProfile.longest_streak, 10, "sobe junto")
+
+	PlayerProfile.last_played_date = PlayerProfile.date_offset(-5)
+	PlayerProfile.stats = {"streak_freezes": 0}
+	PlayerProfile.update_daily_streak()
+	assert_eq(PlayerProfile.current_streak, 1, "a atual quebrou")
+	assert_eq(PlayerProfile.longest_streak, 10, "o recorde fica")
+
+
+func test_data_malformada_no_perfil_nao_quebra_a_conta() -> void:
+	# `user://` é editável; data corrompida fazia o Time reclamar a cada abertura.
+	assert_eq(PlayerProfile.days_between("2026-08-32", "2026-09-01"), 0, "dia 32 não existe")
+	assert_eq(PlayerProfile.days_between("2026-13-01", "2026-09-01"), 0, "mês 13 não existe")
+	assert_eq(PlayerProfile.days_between("ontem", "hoje"), 0, "texto qualquer")
+	assert_eq(PlayerProfile.days_between("2026-02-29", "2026-03-01"), 0, "2026 não é bissexto")
+	assert_eq(PlayerProfile.days_between("2024-02-29", "2024-03-01"), 1, "2024 é bissexto")
+
+
 # ============================================================== anti-cheat de XP
 
 func test_cascata_legitima_de_uma_vitoria_passa_inteira() -> void:

@@ -267,12 +267,51 @@ func update_daily_streak() -> void:
 		GameEventBus.daily_streak_updated.emit(current_streak)
 
 
+## Dias entre duas datas ISO. Devolve 0 quando qualquer uma nao for utilizavel.
+##
+## A validacao existe porque a data vem do arquivo de perfil, que e texto num
+## `user://` que o jogador pode editar. Data malformada fazia o Time reclamar
+## no console a cada abertura do app, e a conta saia de qualquer jeito.
 static func days_between(date1_str: String, date2_str: String) -> int:
-	if date1_str == "" or date2_str == "":
+	if not _data_valida(date1_str) or not _data_valida(date2_str):
 		return 0
 	var unix1 := Time.get_unix_time_from_datetime_string(date1_str + "T00:00:00")
 	var unix2 := Time.get_unix_time_from_datetime_string(date2_str + "T00:00:00")
 	return clampi(int(round((unix2 - unix1) / 86400.0)), 0, 99999)
+
+
+static func _data_valida(iso: String) -> bool:
+	var partes := iso.split("-")
+	if partes.size() != 3:
+		return false
+	for p in partes:
+		if not p.is_valid_int():
+			return false
+	var ano := int(partes[0])
+	var mes := int(partes[1])
+	var dia := int(partes[2])
+	if ano < 1970 or mes < 1 or mes > 12 or dia < 1:
+		return false
+	return dia <= _dias_no_mes(ano, mes)
+
+
+const DIAS_POR_MES := [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
+
+
+static func _dias_no_mes(ano: int, mes: int) -> int:
+	if mes == 2 and _bissexto(ano):
+		return 29
+	return DIAS_POR_MES[mes - 1]
+
+
+static func _bissexto(ano: int) -> bool:
+	return ano % 4 == 0 and (ano % 100 != 0 or ano % 400 == 0)
+
+
+## Data ISO deslocada em `dias` a partir de hoje. Negativo volta no tempo.
+static func date_offset(dias: int) -> String:
+	var agora := int(Time.get_unix_time_from_system())
+	return Time.get_date_string_from_unix_time(agora + dias * 86400)
 
 
 # ------------------------------------------------------------------ conquistas
