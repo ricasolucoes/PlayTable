@@ -197,3 +197,118 @@ func test_pick_best_color_com_mao_vazia_devolve_uma_cor_valida() -> void:
 	var cor = RulesScript.pick_best_color_for_hand([])
 	assert_true(cor in [VERMELHO, AZUL, VERDE, AMARELO],
 		"mao vazia ainda devolve cor jogavel, nunca curinga")
+
+
+# --------------------------------------------------------------------- UnoAI
+#
+# A IA antiga era `playable_indices.pick_random()`. Ela guardava o +2 para o
+# fim quando o jogador estava com uma carta so, queimava o curinga tendo carta
+# da cor na mao, e descartava as cartas baixas primeiro -- ficando com as caras
+# quando o jogador batia.
+
+const AIScript = preload("res://games/unolike/UnoAI.gd")
+
+
+func _carta(cor: Card.ColorType, valor: int, tipo: String = "number") -> Card:
+	return Card.new(valor, Card.Suit.NONE, cor, tipo)
+
+
+## Carta de acao da cor ativa vem na frente do numero: nesta implementacao os
+## quatro efeitos dao turno extra a quem os joga, entao segura-las nao paga.
+func test_a_carta_de_acao_sai_antes_do_numero() -> void:
+	var topo := _carta(Card.ColorType.RED, 5)
+	var mao := [
+		_carta(Card.ColorType.RED, 9),
+		_carta(Card.ColorType.RED, 0, "draw2"),
+	]
+	for _tentativa in range(8):
+		assert_eq(AIScript.escolher_carta(mao, topo, Card.ColorType.RED, 5, 10), 1,
+			"o +2 da turno extra e ainda faz o outro comprar")
+
+
+## Com o adversario a uma carta de bater, a ordem entre as cartas de acao
+## inverte: vale mais a que faz ele comprar.
+func test_a_ia_prefere_fazer_comprar_quando_o_adversario_esta_a_uma_carta() -> void:
+	var topo := _carta(Card.ColorType.RED, 5)
+	var mao := [
+		_carta(Card.ColorType.RED, 0, "skip"),
+		_carta(Card.ColorType.RED, 0, "draw2"),
+	]
+	for _tentativa in range(8):
+		assert_eq(AIScript.escolher_carta(mao, topo, Card.ColorType.RED, 1, 10), 1,
+			"o +2 adia a batida dele; o pular so empurra o turno")
+
+	# Sem urgencia as duas sao cartas de acao da cor: as duas servem.
+	var vistas: Dictionary = {}
+	for _tentativa in range(12):
+		vistas[AIScript.escolher_carta(mao, topo, Card.ColorType.RED, 6, 10)] = true
+	assert_true(vistas.size() >= 1, "sem urgencia, qualquer carta de acao serve")
+
+
+## Curinga e sempre jogavel: queima-lo tendo carta da cor na mao joga fora uma
+## jogada legal garantida para quando nada mais encaixar.
+func test_a_ia_guarda_o_curinga_enquanto_tem_carta_da_cor() -> void:
+	var topo := _carta(Card.ColorType.BLUE, 3)
+	var mao := [
+		_carta(Card.ColorType.WILD, 0, "wild"),
+		_carta(Card.ColorType.BLUE, 7),
+	]
+	for _tentativa in range(8):
+		assert_eq(AIScript.escolher_carta(mao, topo, Card.ColorType.BLUE, 5, 10), 1,
+			"a carta da cor sai antes do curinga")
+
+
+## Quem fica com a mao cara paga o dobro se o outro bater.
+func test_entre_cartas_da_cor_a_mais_cara_sai_primeiro() -> void:
+	var topo := _carta(Card.ColorType.GREEN, 4)
+	var mao := [
+		_carta(Card.ColorType.GREEN, 2),
+		_carta(Card.ColorType.GREEN, 9),
+	]
+	for _tentativa in range(8):
+		assert_eq(AIScript.escolher_carta(mao, topo, Card.ColorType.GREEN, 5, 10), 1,
+			"o 9 sai antes do 2")
+
+
+## Trocar a cor ativa costuma ajudar o outro lado: seguir na cor que a mao ja
+## tem vale mais.
+func test_seguir_na_cor_vale_mais_que_trocar_de_cor() -> void:
+	var topo := _carta(Card.ColorType.YELLOW, 6)
+	var mao := [
+		_carta(Card.ColorType.RED, 6),      # encaixa pelo numero, troca a cor
+		_carta(Card.ColorType.YELLOW, 1),   # segue na cor
+	]
+	for _tentativa in range(8):
+		assert_eq(AIScript.escolher_carta(mao, topo, Card.ColorType.YELLOW, 5, 10), 1,
+			"a carta da cor ativa sai antes da que troca de cor")
+
+
+func test_a_ia_sem_jogada_devolve_menos_um() -> void:
+	var topo := _carta(Card.ColorType.RED, 5)
+	var mao := [_carta(Card.ColorType.BLUE, 2), _carta(Card.ColorType.GREEN, 7)]
+	assert_eq(AIScript.escolher_carta(mao, topo, Card.ColorType.RED, 5, 10), -1,
+		"nada encaixa")
+
+
+func test_a_ia_so_devolve_carta_jogavel() -> void:
+	var topo := _carta(Card.ColorType.RED, 5)
+	var mao := [
+		_carta(Card.ColorType.BLUE, 2),
+		_carta(Card.ColorType.RED, 8),
+		_carta(Card.ColorType.GREEN, 7),
+	]
+	for nivel in range(1, 11):
+		for _tentativa in range(6):
+			var i: int = AIScript.escolher_carta(mao, topo, Card.ColorType.RED, 4, nivel)
+			assert_true(UnoRules.is_valid_play(mao[i], Card.ColorType.RED, topo),
+				"degrau %d escolheu carta jogavel" % nivel)
+
+
+func test_a_escada_de_perfis_e_monotonica() -> void:
+	var erro_antes := 1.1
+	for perfil in AIScript.PERFIS:
+		assert_true(float(perfil["erro"]) <= erro_antes, "a chance de erro nunca sobe")
+		erro_antes = float(perfil["erro"])
+	assert_eq(float(AIScript.PERFIS[AIScript.PERFIS.size() - 1]["erro"]), 0.0,
+		"o degrau do topo nao sorteia a carta")
+	assert_gt(float(AIScript.PERFIS[0]["erro"]), 0.5, "o degrau de baixo sorteia quase sempre")

@@ -19,6 +19,10 @@ var ai_hand: CardHand
 
 var active_color: Card.ColorType = Card.ColorType.RED
 var is_player_turn: bool = true
+
+## Degrau de 1 a 10 do DifficultyManager. Vira a chance de a IA largar a
+## prioridade e sortear a carta.
+var ai_level: int = DifficultyManager.DEFAULT_LEVEL
 var waiting_color_pick: bool = false
 var pending_wild4: bool = false
 
@@ -80,6 +84,7 @@ func _start_new_game() -> void:
 			c.queue_free()
 	discard_cards_3d.clear()
 	
+	ai_level = DifficultyManager.get_level(game_id)
 	draw_pile = Deck.create_uno_deck()
 	draw_pile.shuffle()
 	
@@ -135,7 +140,8 @@ func _draw_from_deck() -> Card:
 	return draw_pile.draw()
 
 func _update_ui() -> void:
-	ai_info_label.text = "IA: %d cartas" % ai_hand.size()
+	set_duel_score(player_hand.size(), ai_hand.size(), "suas", "da ia")
+	ai_info_label.text = DifficultyManager.label_for(game_id)
 	
 	# A cor sai da propria arte da carta: uma definicao so de "vermelho de UNO"
 	# para o banner, a mao, a marca da mesa e a face impressa.
@@ -296,7 +302,10 @@ func _play_ai_turn() -> void:
 		set_status("Sua Vez! Escolha uma carta.")
 		_update_ui()
 	else:
-		var chosen_idx = playable_indices.pick_random()
+		var chosen_idx := UnoAI.escolher_carta(ai_hand.cards, top_card, active_color,
+			player_hand.size(), ai_level)
+		if chosen_idx < 0:
+			chosen_idx = playable_indices[0]
 		var card := ai_hand.remove_at(chosen_idx)
 		discard_pile.push(card)
 		_spawn_top_discard_3d(card)
