@@ -190,3 +190,41 @@ func test_cena_troca_de_regra_misere_normal() -> void:
 	jogo._on_btn_rule_toggle_pressed()
 	assert_false(jogo.is_misere, "mudou para regra normal")
 
+
+
+# ------------------------------------------------- escada de dificuldade
+#
+# O Nim andava por tres botoes -- Facil (30%), Medio (75%), Mestre (100%) --
+# num campo proprio que nascia sempre em "Mestre" e sumia ao fechar a cena,
+# enquanto a escada do DifficultyManager andava em paralelo mexendo so no XP.
+
+func test_a_chance_otima_cresce_a_cada_degrau() -> void:
+	assert_eq(Rules.CHANCE_OTIMA.size(), DifficultyManager.MAX_LEVEL,
+		"uma chance por degrau da escada")
+	var antes := -1.0
+	for chance in Rules.CHANCE_OTIMA:
+		assert_gt(float(chance), antes, "a chance de acertar cresce a cada degrau")
+		antes = float(chance)
+	assert_eq(float(Rules.CHANCE_OTIMA[Rules.CHANCE_OTIMA.size() - 1]), 1.0,
+		"o degrau do topo joga sempre a jogada perfeita")
+
+
+func test_o_degrau_do_topo_joga_sempre_a_jogada_de_bouton() -> void:
+	# [1, 2, 3] no normal tem Nim-Sum 0; [1, 2, 4] nao, e a jogada otima leva a
+	# pilha de 4 para 3.
+	var heaps := [1, 2, 4]
+	for _tentativa in range(10):
+		var m: Dictionary = Rules.get_move(heaps, false, 10)
+		assert_eq(int(m["heap"]), 2, "mexe na pilha de 4")
+		assert_eq(int(m["take"]), 1, "deixando 3, com Nim-Sum zero")
+
+
+func test_todo_degrau_devolve_jogada_legal() -> void:
+	var heaps := [1, 3, 5, 7]
+	for nivel in range(1, DifficultyManager.MAX_LEVEL + 1):
+		for _tentativa in range(6):
+			var m: Dictionary = Rules.get_move(heaps, true, nivel)
+			var h: int = int(m["heap"])
+			assert_true(h >= 0 and h < heaps.size(), "degrau %d mira pilha que existe" % nivel)
+			assert_true(int(m["take"]) >= 1 and int(m["take"]) <= int(heaps[h]),
+				"degrau %d tira entre 1 e o que a pilha tem" % nivel)

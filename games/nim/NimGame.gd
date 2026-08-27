@@ -20,7 +20,12 @@ const DISCARD_POS: Vector3 = Vector3(3.2, 0.15, 0.0)
 var preset_name: String = "classic_3"
 var is_misere: bool = true
 var is_vs_ai: bool = true
-var ai_difficulty: String = "hard" # easy, medium, hard
+## Degrau de 1 a 10 do DifficultyManager, o mesmo dos outros jogos.
+##
+## Antes eram tres botoes -- Facil, Medio, Mestre -- num campo proprio que
+## nascia sempre em "Mestre" e sumia ao fechar a cena, enquanto a escada do
+## jogo andava em paralelo mexendo so no XP.
+var ai_level: int = DifficultyManager.DEFAULT_LEVEL
 var current_turn: int = 1 # 1: Jogador 1 (ou Humano), 2: Jogador 2 (ou IA)
 var heaps: Array[int] = []
 var selected_heap: int = -1
@@ -38,7 +43,6 @@ var heap_halos: Array[MeshInstance3D] = []
 var discard_tray: Node3D = null
 
 # Referências de Nós UI
-@onready var title_label: Label = $UI/TopBar/HeaderHBox/TitleLabel
 @onready var status_bar_label: Label = $UI/VBoxContainer/StatusLabel
 @onready var nim_sum_label: Label = $UI/TopBar/StatsHBox/NimSumCard/NimSumVal
 @onready var turns_label: Label = $UI/TopBar/StatsHBox/TurnsCard/TurnsVal
@@ -119,15 +123,13 @@ func _setup_ui_events() -> void:
 		btn.pressed.connect(func(): _on_preset_selected(p_key))
 		preset_buttons_container.add_child(btn)
 		
-	# Dificuldades
-	var diff_keys := ["easy", "medium", "hard"]
-	var diff_names := ["Fácil", "Médio", "Mestre"]
-	for i in range(diff_keys.size()):
-		var d_key: String = diff_keys[i]
+	# Dificuldades: uma parada por faixa da escada do DifficultyManager.
+	for degrau in DEGRAUS_DO_BOTAO:
+		var d: int = degrau
 		var btn := Button.new()
-		btn.text = diff_names[i]
-		btn.custom_minimum_size = Vector2(70, 36)
-		btn.pressed.connect(func(): _on_difficulty_selected(d_key))
+		btn.text = tr(DifficultyManager.tier_name(d))
+		btn.custom_minimum_size = Vector2(78, 36)
+		btn.pressed.connect(func(): _on_difficulty_selected(d))
 		diff_buttons_container.add_child(btn)
 
 
@@ -187,6 +189,7 @@ func _setup_3d_tabletop() -> void:
 func _start_new_game() -> void:
 	game_over = false
 	current_turn = Rules.PLAYER_HUMAN
+	ai_level = DifficultyManager.get_level(game_id)
 	heaps = Rules.create_heaps(preset_name)
 	move_history.clear()
 	turn_count = 0
@@ -556,7 +559,7 @@ func _trigger_ai_turn() -> void:
 
 
 func _execute_ai_decision() -> void:
-	var ai_move := Rules.get_best_ai_move(heaps, is_misere, ai_difficulty)
+	var ai_move := Rules.get_move(heaps, is_misere, ai_level)
 	var h_idx: int = ai_move["heap"]
 	var take: int = ai_move["take"]
 	
@@ -597,18 +600,14 @@ func _handle_game_over(last_player: int) -> void:
 	var winner: int = Rules.get_winner(last_player, is_misere)
 	var human_won: bool = (winner == Rules.PLAYER_HUMAN)
 	
-	var base_xp: int = 150
-	var diff_multiplier: int = 1
-	match ai_difficulty:
-		"medium": diff_multiplier = 2
-		"hard": diff_multiplier = 3
-	var total_xp: int = base_xp * diff_multiplier if human_won else 30
-	
+	# O degrau ja e pago pelo `xp_scale` que o BaseGame publica: multiplicar de
+	# novo aqui contava a dificuldade duas vezes, e so no Nim.
+	var total_xp: int = 150 if human_won else 30
+
 	var result: Dictionary = {
 		"winner": winner,
 		"turns": turn_count,
 		"misere": is_misere,
-		"difficulty": ai_difficulty,
 		"preset": preset_name,
 		"time": elapsed_time,
 	}
@@ -618,7 +617,7 @@ func _handle_game_over(last_player: int) -> void:
 	# contador por jogo agora e do PlayerProfile (`per_game`), igual para os 19.
 	var fatos: Array[String] = []
 	if human_won:
-		if is_misere and ai_difficulty == "hard":
+		if is_misere and ai_level >= DifficultyManager.MAX_LEVEL - 1:
 			fatos.append("nim_misere")
 		if preset_name == "pyramid_4":
 			fatos.append("nim_pyramid")
@@ -642,7 +641,7 @@ func _handle_game_over(last_player: int) -> void:
 			result_title.text = "🏆 Vitória Triunfal!"
 			result_stars.text = "⭐⭐⭐"
 			result_details.text = "Você superou a IA no nível %s!\nTurnos: %d | Tempo: %s" % [
-				_get_diff_name(ai_difficulty), turn_count, _format_time(elapsed_time)
+				tr(DifficultyManager.tier_name(ai_level)), turn_count, _format_time(elapsed_time)
 			]
 			finish_game("🏆 Parabéns! Você venceu a partida de Nim!", true)
 		else:
@@ -732,11 +731,19 @@ func _on_preset_selected(p_key: String) -> void:
 	_start_new_game()
 
 
-func _on_difficulty_selected(d_key: String) -> void:
+## Degraus em que os botoes param. Um por faixa de
+## `DifficultyManager.tier_name()`.
+const DEGRAUS_DO_BOTAO := [2, 4, 6, 8, 10]
+
+
+## O botao empurra a escada. Quem grava e o DifficultyManager, entao a escolha
+## sobrevive a fechar a cena -- coisa que o campo `ai_difficulty` nunca fez.
+func _on_difficulty_selected(degrau: int) -> void:
 	play_click()
-	ai_difficulty = d_key
+	DifficultyManager.set_level(game_id, degrau)
+	ai_level = DifficultyManager.get_level(game_id)
 	_highlight_active_settings_buttons()
-	set_status("Dificuldade alterada para: %s" % _get_diff_name(d_key))
+	set_status("Dificuldade: %s" % DifficultyManager.label_for(game_id))
 
 
 func _on_btn_rematch_pressed() -> void:
@@ -752,8 +759,14 @@ func _update_hud_stats() -> void:
 	var nim_sum: int = Rules.calculate_nim_sum(heaps)
 	nim_sum_label.text = str(nim_sum)
 	turns_label.text = str(turn_count)
-	mode_label.text = "%s (%s)" % ["Misère" if is_misere else "Normal", _get_diff_name(ai_difficulty) if is_vs_ai else "Local"]
-	title_label.text = "Jogo de Nim 3D • %s" % ("Misère" if is_misere else "Normal")
+	mode_label.text = "%s (%s)" % ["Misère" if is_misere else "Normal",
+		DifficultyManager.label_for(game_id) if is_vs_ai else "Local"]
+	# O que resta na mesa e o unico numero que conta para quem esta jogando; o
+	# XOR e a contagem de turnos ficam nos cartoes, que sao leitura de analise.
+	var restam := 0
+	for pilha in heaps:
+		restam += pilha
+	set_counter(restam, "peças")
 
 
 func _highlight_active_settings_buttons() -> void:
@@ -762,16 +775,11 @@ func _highlight_active_settings_buttons() -> void:
 		btn.modulate = Color(1.0, 1.0, 1.0) if is_active else Color(0.7, 0.7, 0.7)
 		
 	for btn: Button in diff_buttons_container.get_children():
-		var is_active: bool = (btn.text == _get_diff_name(ai_difficulty))
+		var is_active: bool = (btn.text == tr(DifficultyManager.tier_name(ai_level)))
 		btn.modulate = Color(1.0, 1.0, 1.0) if is_active else Color(0.7, 0.7, 0.7)
 
 
-func _get_diff_name(key: String) -> String:
-	match key:
-		"easy": return "Fácil"
-		"medium": return "Médio"
-		"hard": return "Mestre"
-		_: return "Mestre"
+
 
 
 func _format_time(seconds: float) -> String:

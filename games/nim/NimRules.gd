@@ -108,25 +108,41 @@ static func get_all_valid_moves(heaps: Array) -> Array[Dictionary]:
 	return moves
 
 
+## Chance de jogar a jogada matematicamente otima, por degrau da escada do
+## DifficultyManager.
+##
+## O Nim andava por tres botoes -- Facil (30%), Medio (75%), Mestre (100%) --
+## num campo proprio que nascia sempre em "Mestre" e sumia ao fechar a cena,
+## enquanto a escada do jogo andava em paralelo mexendo so no XP.
+const CHANCE_OTIMA := [0.15, 0.28, 0.40, 0.52, 0.64, 0.74, 0.84, 0.92, 0.98, 1.0]
+
+
+## A jogada da IA no degrau pedido. O degrau vira a chance de jogar a jogada
+## matematicamente perfeita (Teorema de Bouton); no resto das vezes ela joga
+## uma jogada legal qualquer.
+static func get_move(heaps: Array, is_misere: bool, level: int) -> Dictionary:
+	var lvl := clampi(level, 1, CHANCE_OTIMA.size())
+	return _jogar(heaps, is_misere, float(CHANCE_OTIMA[lvl - 1]))
+
+
 ## IA com Teorema de Bouton e estratégia de Nim-Sum ótimo para Normal e Misère.
 ## difficulty: "easy" (30% ótimo), "medium" (75% ótimo), "hard" (100% ótimo).
 static func get_best_ai_move(heaps: Array, is_misere: bool = true, difficulty: String = "hard") -> Dictionary:
-	var all_moves := get_all_valid_moves(heaps)
-	if all_moves.is_empty():
-		return {"heap": -1, "take": 0}
-
-	# Aplica taxa de acerto conforme a dificuldade selecionada
-	var rnd := randf()
 	var optimal_chance: float = 1.0
 	match difficulty:
 		"easy":
 			optimal_chance = 0.30
 		"medium":
 			optimal_chance = 0.75
-		"hard":
-			optimal_chance = 1.0
+	return _jogar(heaps, is_misere, optimal_chance)
 
-	if rnd > optimal_chance:
+
+static func _jogar(heaps: Array, is_misere: bool, optimal_chance: float) -> Dictionary:
+	var all_moves := get_all_valid_moves(heaps)
+	if all_moves.is_empty():
+		return {"heap": -1, "take": 0}
+
+	if randf() > optimal_chance:
 		# Jogada aleatória (casual)
 		return all_moves[randi() % all_moves.size()]
 

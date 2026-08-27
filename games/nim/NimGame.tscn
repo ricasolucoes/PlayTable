@@ -32,29 +32,11 @@ layout_mode = 1
 anchors_preset = 10
 anchor_right = 1.0
 offset_left = 16.0
-offset_top = 28.0
+offset_top = 134.0
 offset_right = -16.0
-offset_bottom = 130.0
+offset_bottom = 176.0
 grow_horizontal = 2
 theme_override_constants/separation = 6
-
-[node name="HeaderHBox" type="HBoxContainer" parent="UI/TopBar"]
-layout_mode = 2
-
-[node name="BtnBack" type="Button" parent="UI/TopBar/HeaderHBox"]
-custom_minimum_size = Vector2(90, 44)
-layout_mode = 2
-text = "‹ Voltar"
-
-[node name="TitleLabel" type="Label" parent="UI/TopBar/HeaderHBox"]
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.8)
-theme_override_constants/shadow_offset_x = 2
-theme_override_constants/shadow_offset_y = 2
-theme_override_font_sizes/font_size = 24
-text = "Jogo de Nim 3D"
-horizontal_alignment = 1
 
 [node name="StatsHBox" type="HBoxContainer" parent="UI/TopBar"]
 layout_mode = 2
@@ -99,9 +81,9 @@ layout_mode = 1
 anchors_preset = 10
 anchor_right = 1.0
 offset_left = 20.0
-offset_top = 140.0
+offset_top = 186.0
 offset_right = -20.0
-offset_bottom = 180.0
+offset_bottom = 226.0
 grow_horizontal = 2
 
 [node name="StatusLabel" type="Label" parent="UI/VBoxContainer"]
@@ -118,9 +100,9 @@ layout_mode = 1
 anchors_preset = 10
 anchor_right = 1.0
 offset_left = 16.0
-offset_top = 185.0
+offset_top = 231.0
 offset_right = -16.0
-offset_bottom = 230.0
+offset_bottom = 276.0
 grow_horizontal = 2
 horizontal_scroll_mode = 1
 vertical_scroll_mode = 0
@@ -136,7 +118,7 @@ layout_mode = 1
 anchors_preset = 10
 anchor_right = 1.0
 offset_left = 16.0
-offset_top = 236.0
+offset_top = 282.0
 offset_right = -16.0
 offset_bottom = 280.0
 grow_horizontal = 2
