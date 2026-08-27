@@ -17,9 +17,16 @@ const IDS_PGS := "res://core/configs/play_games_ids.json"
 const POOL_MISSOES := "res://core/configs/quests.json"
 
 var _backup: Dictionary = {}
+var _backup_fila: String = ""
 
 
 func before_each() -> void:
+	# A fila do Play Games mora em disco e é global: sem guardá-la, a suíte
+	# apagaria envios pendentes de quem estiver jogando nesta máquina -- e o
+	# próprio teste da fila leria o que a rodada anterior deixou lá.
+	_backup_fila = FileAccess.get_file_as_string(PlayGamesManager.QUEUE_PATH) \
+		if FileAccess.file_exists(PlayGamesManager.QUEUE_PATH) else ""
+
 	_backup = {
 		"level": PlayerProfile.level,
 		"lifetime_xp": PlayerProfile.lifetime_xp,
@@ -37,6 +44,13 @@ func before_each() -> void:
 
 
 func after_each() -> void:
+	if _backup_fila != "":
+		var f := FileAccess.open(PlayGamesManager.QUEUE_PATH, FileAccess.WRITE)
+		if f:
+			f.store_string(_backup_fila)
+	elif FileAccess.file_exists(PlayGamesManager.QUEUE_PATH):
+		DirAccess.remove_absolute(ProjectSettings.globalize_path(PlayGamesManager.QUEUE_PATH))
+
 	PlayerProfile.level = _backup["level"]
 	PlayerProfile.lifetime_xp = _backup["lifetime_xp"]
 	PlayerProfile.current_streak = _backup["current_streak"]
@@ -386,6 +400,7 @@ func test_id_nao_mapeado_nao_e_enviado() -> void:
 func test_a_fila_offline_colapsa_repeticao() -> void:
 	var pgm := preload("res://core/services/PlayGamesManager.gd").new()
 	add_child_autofree(pgm)
+	pgm._queue.clear()
 
 	pgm._enqueue({"op": "score", "id": "L1", "key": "LB", "score": 100})
 	pgm._enqueue({"op": "score", "id": "L1", "key": "LB", "score": 400})

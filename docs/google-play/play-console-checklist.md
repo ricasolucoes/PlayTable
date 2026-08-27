@@ -1,21 +1,58 @@
-# Google Play Console & Level Up Checklist
+# Google Play Console — o que falta para o Play Games ligar
 
-Lista de tarefas manuais a serem executadas diretamente no Google Play Console para garantir o suporte ao Sidekick, Gamificação e os selos de qualidade.
+O código está pronto e vai no APK. O que falta são os **identificadores**, que
+só a conta do Play Console gera, e a configuração do lado do Google. Enquanto
+os ids estiverem vazios em `core/configs/play_games_ids.json`, o
+`PlayGamesManager` não envia nada — de propósito, porque id inventado é
+recusado em silêncio pelo servidor e daria a impressão de que a integração
+funciona.
 
-- [ ] **Play Games Services configurado**: Projeto criado e vinculado ao aplicativo no Console.
-- [ ] **Application ID configurado**: `games_ids.xml` e AndroidManifest validados.
-- [ ] **Credenciais configuradas**: OAuth 2.0 Client IDs criados (debug e release).
-- [ ] **Tester accounts configuradas**: Contas Google adicionadas na aba de testes do PGS.
-- [ ] **Achievements criados**: Criação de 40+ conquistas no painel do Console.
-- [ ] **Achievements publicados**: Publicar conquistas após os testes locais.
-- [ ] **Game Stats configurado**: Fazer o upload dos arquivos `PlayerGameEvent.csv`, `ProgressionStatConfig.csv`, etc.
-- [ ] **Game Stats publicado**: Aprovação e publicação das estatísticas.
-- [ ] **Sidekick habilitado**: Ir em Configurações Avançadas de Teste e ativar o overlay Sidekick para o App Bundle.
-- [ ] **Internal testing criado**: Fazer o upload da versão com Gamificação Engine na trilha interna.
-- [ ] **Closed testing criado**: Passar de Internal para Closed e convidar beta testers.
-- [ ] **Rewards configurados**: Configurar as recompensas (in-app products / Play Games Rewards).
-- [ ] **Play Points avaliado**: Aplicar para o programa de Play Points, caso elegível.
-- [ ] **Play Pass avaliado**: Analisar viabilidade de inclusão no Play Pass (sem anúncios e sem IAP).
-- [ ] **Quests configuradas**: Avaliar integração de Play Games Quests via painel (se a API estiver ativa para a conta).
-- [ ] **Store videos configurados**: Preparar vídeos "How to Play" e Dicas que aparecerão no Sidekick.
-- [ ] **Level Up requisitos revisados**: Preencher o formulário final para submissão ao programa Level Up do Google.
+Conferir a qualquer momento:
+
+```sh
+android/pgs/install.sh --check        # lado Android: plugin, manifesto, permissão
+python3 tools/gen_achievement_matrix.py   # quantas conquistas ainda sem id
+```
+
+E, de dentro do jogo, `PlayGamesManager.diagnostics()` responde em uma linha:
+plugin presente, login, quantos ids mapeados, quantos envios na fila offline.
+
+## Já feito no repositório
+
+- [x] **Plugin Android** — `android/pgs/java/.../PlayTablePGS.java`, contra o PGS v2
+- [x] **`APP_ID` no manifesto** — sem essa meta-data o SDK lança exceção na primeira chamada
+- [x] **Permissão de internet** — o AAB de release saía sem permissão de rede nenhuma
+- [x] **Dependência do SDK** — pela propriedade oficial `-Pplugins_remote_binaries`
+- [x] **55 conquistas** definidas em `core/configs/achievements.json`
+- [x] **9 placares e 5 eventos** definidos em `core/configs/play_games_ids.json`
+- [x] **Saved Games** com merge no conflito
+- [x] **Fila offline** persistida, para o que foi feito sem rede chegar depois
+
+## Pendente no Console (manual)
+
+- [ ] **Projeto do Play Games criado** e vinculado a `org.playtable.app`
+- [ ] **ID do projeto** copiado para `app_id` em `core/configs/play_games_ids.json`
+- [ ] **OAuth 2.0 Client IDs** de debug **e de release**, com o SHA-1 de cada keystore
+      — sem o de release o app assinado nunca autentica, e o erro não é claro
+- [ ] **55 conquistas criadas**, com os ids `CgkI...` colados no mapa
+      (a matriz em `achievement-matrix.md` traz nome, descrição, tipo e XP de cada uma)
+- [ ] **Conquistas publicadas** depois do teste
+- [ ] **9 placares criados** — atenção à ordenação: quatro são *menor é melhor*
+      (tempo do Campo Minado, jogadas da Memória e da Torre, peças do Resta Um).
+      O jogo já manda o valor no formato certo; o placar precisa estar configurado assim
+- [ ] **5 eventos criados** e publicados
+- [ ] **Contas de teste** adicionadas na aba de testes do PGS — antes de publicar, só elas autenticam
+- [ ] **Sidekick habilitado** nas Configurações Avançadas de Teste do App Bundle
+- [ ] **Trilha interna** com o AAB, para validar login e conquista em aparelho real
+- [ ] **Trilha fechada** com testadores externos
+- [ ] **Play Points / Play Pass** avaliados (o app não tem anúncio nem compra, o que ajuda no Play Pass)
+- [ ] **Level Up** — formulário final, depois de conquistas e placares publicados
+
+## Ordem que funciona
+
+1. Projeto do PGS + `app_id` → `install.sh` → build → o app já autentica.
+2. Conquistas no Console → ids no mapa → as conquistas começam a chegar.
+3. Placares e eventos → o resto do painel enche.
+
+Não adianta inverter: sem `app_id` o SDK nem inicializa, e sem login nada é
+enviado (fica na fila, e sobe quando o login resolver).
