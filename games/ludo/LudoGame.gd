@@ -18,6 +18,9 @@ var players_pawns = [
 var current_turn: int = 0
 var last_roll: int = 0
 var can_roll: bool = true
+
+## Degrau de 1 a 10 do DifficultyManager, o mesmo para as tres IAs.
+var ai_level: int = DifficultyManager.DEFAULT_LEVEL
 var pawns_3d = [[], [], [], []]
 
 @onready var board_root: Node3D = $BoardRoot
@@ -30,6 +33,7 @@ func _ready() -> void:
 	env_3d = $TabletopEnvironment3D
 	status_label = $UI/VBoxContainer/StatusLabel
 	btn_restart = $UI/Actions/BtnRestart
+	ai_level = DifficultyManager.get_level(game_id)
 	_setup_3d_ludo_board()
 	_setup_3d_pawns()
 	dice_3d.roll_finished.connect(_on_dice_roll_finished)
@@ -116,6 +120,7 @@ func _start_new_game() -> void:
 	current_turn = 0
 	last_roll = 0
 	can_roll = true
+	ai_level = DifficultyManager.get_level(game_id)
 	btn_restart.hide()
 	
 	players_pawns = [
@@ -129,10 +134,29 @@ func _start_new_game() -> void:
 	dice_3d.set_value_immediate(6)
 	btn_dice.text = "🎲 Rolar Dado"
 	btn_dice.disabled = false
-	set_status("Sua Vez! Toque no dado para rolar.")
+	set_status("Sua Vez! Toque no dado para rolar.%s" % difficulty_suffix())
 	_sync_pawns_positions(true)
 
+## Peoes que chegaram ao centro, o unico placar que o Ludo tem -- e o unico
+## jogo da casa que nao mostrava numero nenhum na tela ate agora. Sao quatro
+## cores, mas a barra tem dois lados: do outro vai a cor da IA que esta na
+## frente, que e com quem o jogador esta perdendo ou ganhando.
+func _pintar_placar() -> void:
+	var em_casa := func(p: int) -> int:
+		var n := 0
+		for idx in range(PAWNS_PER_PLAYER):
+			if players_pawns[p][idx] >= 32:
+				n += 1
+		return n
+	var melhor_ia := 0
+	for p in range(1, 4):
+		melhor_ia = maxi(melhor_ia, em_casa.call(p))
+	set_duel_score("%d/%d" % [em_casa.call(0), PAWNS_PER_PLAYER],
+		"%d/%d" % [melhor_ia, PAWNS_PER_PLAYER])
+
+
 func _sync_pawns_positions(immediate: bool = false) -> void:
+	_pintar_placar()
 	for p in range(4):
 		for idx in range(PAWNS_PER_PLAYER):
 			var step_val = players_pawns[p][idx]
@@ -208,7 +232,7 @@ func _move_player_pawn(idx: int, roll: int) -> void:
 func _next_turn() -> void:
 	current_turn = (current_turn + 1) % 4
 	if current_turn == 0:
-		set_status("Sua Vez! Toque no dado para rolar.")
+		set_status("Sua Vez! Toque no dado para rolar.%s" % difficulty_suffix())
 		can_roll = true
 		btn_dice.disabled = false
 	else:
@@ -221,14 +245,9 @@ func _next_turn() -> void:
 
 func _handle_ai_roll(roll: int) -> void:
 	var p := current_turn
-	var movable: Array = []
-	for idx in range(PAWNS_PER_PLAYER):
-		var pos = players_pawns[p][idx]
-		if pos == -1 and roll == 6: movable.append(idx)
-		elif pos >= 0 and pos + roll <= 32: movable.append(idx)
-		
-	if not movable.is_empty():
-		var chosen = movable.pick_random()
+	var chosen := LudoAI.choose_pawn(players_pawns, p, roll, START_OFFSETS, ai_level)
+
+	if chosen >= 0:
 		if players_pawns[p][chosen] == -1: players_pawns[p][chosen] = 0
 		else: players_pawns[p][chosen] += roll
 		_sync_pawns_positions()
