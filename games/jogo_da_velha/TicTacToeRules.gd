@@ -74,3 +74,131 @@ static func get_best_move(grid: Grid2D, ai_player_id: int) -> int:
 	# 5. Aleatório
 	empty.shuffle()
 	return empty[0]
+
+
+# ---------------------------------------------------------------------------
+# Dificuldade
+# ---------------------------------------------------------------------------
+
+## Niveis da IA. O jogo sobe um degrau a cada vitoria do jogador.
+##
+## `get_best_move` acima e uma heuristica: vencer, bloquear, centro, canto. Ela
+## perde para a abertura classica de forquilha -- canto, canto oposto, e o
+## jogador fecha duas linhas de uma vez -- e era sempre a mesma IA, partida
+## apos partida. Do nivel 4 em diante quem joga e o minimax, que nao tem
+## forquilha para explorar: no nivel 5 o melhor resultado possivel e o empate.
+enum Level { EASY = 1, MEDIUM = 2, HARD = 3, EXPERT = 4, PERFECT = 5 }
+
+const MAX_LEVEL := Level.PERFECT
+
+## Chance de o nivel EXPERT jogar fora do minimax. E o degrau entre "quase
+## sempre acerta" e "nunca erra": sem ele o salto do 3 para o 5 e brusco demais.
+const EXPERT_SLIP := 0.22
+
+## Ordem de desempate quando varias jogadas valem o mesmo para o minimax:
+## centro, cantos, laterais. Sem isto a IA perfeita abre sempre na casa 0.
+const PREFERENCE := [4, 0, 2, 6, 8, 1, 3, 5, 7]
+
+
+static func level_name(level: int) -> String:
+	match clampi(level, Level.EASY, MAX_LEVEL):
+		Level.EASY: return "TTT_LEVEL_EASY"
+		Level.MEDIUM: return "TTT_LEVEL_MEDIUM"
+		Level.HARD: return "TTT_LEVEL_HARD"
+		Level.EXPERT: return "TTT_LEVEL_EXPERT"
+		_: return "TTT_LEVEL_PERFECT"
+
+
+## A jogada da IA no nivel pedido, ou -1 se o tabuleiro esta cheio.
+static func get_move(grid: Grid2D, ai_player_id: int, level: int) -> int:
+	var empty := get_empty_indices(grid)
+	if empty.is_empty():
+		return -1
+	var lvl := clampi(level, Level.EASY, MAX_LEVEL)
+
+	match lvl:
+		Level.EASY:
+			empty.shuffle()
+			return empty[0]
+		Level.MEDIUM:
+			var win_now := _find_immediate(grid, ai_player_id, empty)
+			if win_now != -1:
+				return win_now
+			empty.shuffle()
+			return empty[0]
+		Level.HARD:
+			return get_best_move(grid, ai_player_id)
+		Level.EXPERT:
+			if randf() < EXPERT_SLIP:
+				return get_best_move(grid, ai_player_id)
+			return minimax_move(grid, ai_player_id)
+		_:
+			return minimax_move(grid, ai_player_id)
+
+
+## A casa que fecha a linha de `player_id` agora, ou -1.
+static func _find_immediate(grid: Grid2D, player_id: int, empty: Array[int]) -> int:
+	for idx in empty:
+		grid.cells[idx] = player_id
+		var venceu := check_win(grid, player_id)
+		grid.cells[idx] = 0
+		if venceu:
+			return idx
+	return -1
+
+
+## Minimax completo. Cabe inteiro: sao no maximo 9! = 362.880 folhas e a poda
+## alfa-beta corta a maior parte, entao roda em fracao de milissegundo.
+static func minimax_move(grid: Grid2D, ai_player_id: int) -> int:
+	var human_id := 1 if ai_player_id == 2 else 2
+	var melhor := -1
+	var melhor_nota := -100
+
+	for idx in PREFERENCE:
+		if grid.cells[idx] != 0:
+			continue
+		grid.cells[idx] = ai_player_id
+		var nota := _minimax(grid, ai_player_id, human_id, false, 1, -100, 100)
+		grid.cells[idx] = 0
+		if nota > melhor_nota:
+			melhor_nota = nota
+			melhor = idx
+
+	return melhor
+
+
+## Nota da posicao pelos olhos de `ai_id`. Vitoria mais rapida vale mais que
+## vitoria demorada -- sem o `depth` a IA adia o xeque-mate indefinidamente.
+static func _minimax(grid: Grid2D, ai_id: int, human_id: int, maximizando: bool,
+		depth: int, alfa: int, beta: int) -> int:
+	if check_win(grid, ai_id):
+		return 10 - depth
+	if check_win(grid, human_id):
+		return depth - 10
+
+	var livres := get_empty_indices(grid)
+	if livres.is_empty():
+		return 0
+
+	var a := alfa
+	var b := beta
+	if maximizando:
+		var melhor := -100
+		for idx in livres:
+			grid.cells[idx] = ai_id
+			melhor = maxi(melhor, _minimax(grid, ai_id, human_id, false, depth + 1, a, b))
+			grid.cells[idx] = 0
+			a = maxi(a, melhor)
+			if b <= a:
+				break
+		return melhor
+
+	var pior := 100
+	for idx in livres:
+		grid.cells[idx] = human_id
+		pior = mini(pior, _minimax(grid, ai_id, human_id, true, depth + 1, a, b))
+		grid.cells[idx] = 0
+		b = mini(b, pior)
+		if b <= a:
+			break
+	return pior
