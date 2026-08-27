@@ -284,3 +284,16 @@ func test_variar_nao_enfraquece_o_minimax() -> void:
 		assert_true(RulesScript.is_draw(g), "minimax contra minimax da empate")
 		assert_false(RulesScript.check_win(g, X), "X nao venceu")
 		assert_false(RulesScript.check_win(g, O), "O nao venceu")
+
+
+## O minimax da nota 0 as nove aberturas, entao "sortear entre iguais" abria em
+## lateral -- casa que nao ameaca nada e deixa o outro lado empatar sem pensar.
+## Variar e bom; variar para uma casa passiva e jogar de graca.
+func test_a_abertura_da_ia_nunca_cai_numa_lateral() -> void:
+	var vistas := {}
+	for _i in range(60):
+		var idx := RulesScript.minimax_move(_grid([0,0,0, 0,0,0, 0,0,0]), O)
+		assert_true(idx in RulesScript.CASAS_FORTES,
+			"abriu em %d, uma lateral que nao monta forquilha" % idx)
+		vistas[idx] = true
+	assert_true(vistas.size() > 1, "e ainda assim a abertura varia entre partidas")

@@ -109,9 +109,18 @@ const NIVEL_IA_ABRE := 8
 ## Nos degraus 1 a 4 o desvio e jogada ao acaso; de 6 a 8, cair na heuristica.
 const DESVIO := [1.0, 0.60, 0.35, 0.15, 0.0, 0.45, 0.25, 0.10, 0.0, 0.0]
 
-## Ordem de desempate do minimax: centro, cantos, laterais. Vale como base
-## quando o sorteio entre iguais nao se aplica.
+## Ordem de desempate do minimax: centro, cantos, laterais.
 const PREFERENCE := [4, 0, 2, 6, 8, 1, 3, 5, 7]
+
+## Casas de onde saem as forquilhas: o centro e os quatro cantos.
+##
+## O minimax da nota 0 as nove aberturas -- com jogo perfeito dos dois lados
+## toda partida empata, entao pela nota tanto faz. Mas "tanto faz" so vale
+## contra quem nao erra: abrir numa lateral nao ameaca nada e deixa o outro
+## lado empatar sem pensar, enquanto centro e canto montam forquilha na
+## primeira desatencao. O sorteio entre jogadas de mesma nota fica restrito a
+## estas casas -- variedade sem jogar de graca.
+const CASAS_FORTES := [4, 0, 2, 6, 8]
 
 
 static func clamp_level(level: int) -> int:
@@ -186,7 +195,13 @@ static func minimax_move(grid: Grid2D, ai_player_id: int) -> int:
 
 	if melhores.is_empty():
 		return -1
-	return melhores[randi() % melhores.size()]
+
+	var fortes: Array[int] = []
+	for idx in melhores:
+		if idx in CASAS_FORTES:
+			fortes.append(idx)
+	var sorteio := fortes if not fortes.is_empty() else melhores
+	return sorteio[randi() % sorteio.size()]
 
 
 ## Nota da posicao pelos olhos de `ai_id`. Vitoria mais rapida vale mais que
