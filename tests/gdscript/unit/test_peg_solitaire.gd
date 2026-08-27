@@ -143,28 +143,59 @@ func test_cena_monta_o_tabuleiro_inicial() -> void:
 
 
 func test_cena_executa_o_salto_removendo_a_esfera_saltada() -> void:
+	# Duas batidas continuam valendo, agora pelo mesmo caminho do arrasto.
 	var jogo = add_child_autofree(GameScene.instantiate())
-	jogo._on_cell_clicked(1, 3)
+	await wait_process_frames(2)
+	jogo._begin_press(jogo._cell_screen[Vector2i(1, 3)])
 	assert_eq(jogo.selected_pos, Vector2i(1, 3), "esfera selecionada")
 	assert_eq(jogo.valid_targets.size(), 1, "um destino possivel")
-	jogo._on_cell_clicked(3, 3)
+	jogo._end_press(jogo._cell_screen[Vector2i(1, 3)])
+	jogo._begin_press(jogo._cell_screen[Vector2i(3, 3)])
 	assert_eq(jogo.grid_data.get_cell(1, 3), VAZIO, "origem esvaziada")
 	assert_eq(jogo.grid_data.get_cell(2, 3), VAZIO, "esfera saltada removida")
 	assert_eq(jogo.grid_data.get_cell(3, 3), PINO, "destino ocupado")
 	assert_eq(RulesScript.count_pegs(jogo.grid_data), 31, "31 esferas restantes")
 
 
-func test_grade_de_toque_desliga_os_cantos_que_nao_existem() -> void:
-	# A grade e 7x7, mas o tabuleiro em cruz so usa 33 das 49 posicoes: os
-	# quatro blocos 2x2 dos cantos nao podem receber toque.
+func test_arrastar_a_esfera_ate_o_furo_executa_o_salto() -> void:
+	# A grade 7x7 de botoes de 44 px ficava ancorada no centro da tela, longe
+	# dos furos projetados: era dificil acertar a esfera, e nao dava para
+	# arrastar. Agora o alvo sai da projecao do proprio furo.
 	var jogo = add_child_autofree(GameScene.instantiate())
-	var botoes: Array = jogo.get_node("UI/CenterContainer/TouchGrid").get_children()
-	assert_eq(botoes.size(), 49, "49 celulas na grade")
-	var ativos := 0
-	for i in range(botoes.size()):
-		var botao: Button = botoes[i]
-		var valida: bool = RulesScript.is_valid_cell(i / 7, i % 7)
-		assert_eq(not botao.disabled, valida, "celula (%d,%d)" % [i / 7, i % 7])
-		if not botao.disabled:
-			ativos += 1
-	assert_eq(ativos, 33, "33 casas jogaveis")
+	await wait_process_frames(2)
+	var origem: Vector2 = jogo._cell_screen[Vector2i(3, 1)]
+	var destino: Vector2 = jogo._cell_screen[Vector2i(3, 3)]
+	jogo._begin_press(origem)
+	assert_eq(jogo.selected_pos, Vector2i(3, 1), "a esfera foi pega")
+	jogo._update_drag(origem.lerp(destino, 0.5))
+	jogo._update_drag(destino)
+	assert_eq(jogo._hover_target, Vector2i(3, 3), "o furo sob o dedo acende")
+	jogo._end_press(destino)
+	assert_eq(jogo.grid_data.get_cell(3, 3), PINO, "soltou no furo e saltou")
+	assert_eq(RulesScript.count_pegs(jogo.grid_data), 31, "31 esferas restantes")
+
+
+func test_o_toque_cai_no_furo_mais_proximo() -> void:
+	# Exigir o toque exato sobre o furo e o que fazia errar a esfera.
+	var jogo = add_child_autofree(GameScene.instantiate())
+	await wait_process_frames(2)
+	var centro: Vector2 = jogo._cell_screen[Vector2i(3, 1)]
+	var desvio: float = jogo._pick_radius * 0.45
+	assert_eq(jogo._cell_at(centro + Vector2(desvio, 0.0)), Vector2i(3, 1),
+		"errar por meio raio ainda pega a esfera certa")
+	assert_eq(jogo._cell_at(centro + Vector2(0.0, -desvio)), Vector2i(3, 1),
+		"em qualquer direcao")
+	assert_eq(jogo._cell_at(Vector2(4.0, 4.0)), Vector2i(-1, -1),
+		"longe do tabuleiro nao pega nada")
+
+
+func test_so_as_trinta_e_tres_casas_do_tabuleiro_recebem_toque() -> void:
+	# O tabuleiro em cruz usa 33 das 49 posicoes da grade 7x7: os quatro blocos
+	# 2x2 dos cantos nao existem e nao podem receber toque.
+	var jogo = add_child_autofree(GameScene.instantiate())
+	await wait_process_frames(2)
+	assert_eq(jogo._cell_screen.size(), 33, "33 casas jogaveis projetadas")
+	for r in range(7):
+		for c in range(7):
+			assert_eq(jogo._cell_screen.has(Vector2i(r, c)), RulesScript.is_valid_cell(r, c),
+				"celula (%d,%d)" % [r, c])
