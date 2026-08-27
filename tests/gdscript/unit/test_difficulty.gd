@@ -9,16 +9,61 @@ extends GutTest
 const JOGO := "jogo_de_teste_da_escada"
 
 var _backup: Dictionary = {}
+var _backup_perfil: Dictionary = {}
+var _backup_fila: String = ""
 
 
 func before_each() -> void:
 	_backup = SaveManager.settings.duplicate(true)
+	# Os testes de ligacao publicam partida de verdade no barramento, e dai sai
+	# XP, streak e envio para o Play Games -- tudo em disco. Sem guardar antes,
+	# rodar a suite mexia no progresso de quem estivesse jogando na maquina, e a
+	# sobra ainda reprovava o teste da fila offline la no test_gamificacao.
+	_backup_fila = FileAccess.get_file_as_string(PlayGamesManager.QUEUE_PATH) \
+		if FileAccess.file_exists(PlayGamesManager.QUEUE_PATH) else ""
+	_backup_perfil = {
+		"level": PlayerProfile.level,
+		"lifetime_xp": PlayerProfile.lifetime_xp,
+		"current_streak": PlayerProfile.current_streak,
+		"longest_streak": PlayerProfile.longest_streak,
+		"last_played_date": PlayerProfile.last_played_date,
+		"stats": PlayerProfile.stats.duplicate(true),
+		"per_game": PlayerProfile.per_game.duplicate(true),
+		"unlocked": PlayerProfile.unlocked_achievements.duplicate(),
+		"progress": PlayerProfile.achievement_progress.duplicate(true),
+		"flags": PlayerProfile.flags.duplicate(),
+		"quests": PlayerProfile.active_quests.duplicate(true),
+		"claimed": PlayerProfile.claimed_rewards.duplicate(),
+	}
 	DifficultyManager.set_level(JOGO, DifficultyManager.DEFAULT_LEVEL)
 
 
 func after_each() -> void:
 	SaveManager.settings = _backup
 	SaveManager.save_data()
+	DifficultyManager.reload()
+
+	if _backup_fila != "":
+		var f := FileAccess.open(PlayGamesManager.QUEUE_PATH, FileAccess.WRITE)
+		if f:
+			f.store_string(_backup_fila)
+	elif FileAccess.file_exists(PlayGamesManager.QUEUE_PATH):
+		DirAccess.remove_absolute(ProjectSettings.globalize_path(PlayGamesManager.QUEUE_PATH))
+	PlayGamesManager._queue.clear()
+
+	PlayerProfile.level = _backup_perfil["level"]
+	PlayerProfile.lifetime_xp = _backup_perfil["lifetime_xp"]
+	PlayerProfile.current_streak = _backup_perfil["current_streak"]
+	PlayerProfile.longest_streak = _backup_perfil["longest_streak"]
+	PlayerProfile.last_played_date = _backup_perfil["last_played_date"]
+	PlayerProfile.stats = _backup_perfil["stats"]
+	PlayerProfile.per_game = _backup_perfil["per_game"]
+	PlayerProfile.unlocked_achievements = _backup_perfil["unlocked"]
+	PlayerProfile.achievement_progress = _backup_perfil["progress"]
+	PlayerProfile.flags = _backup_perfil["flags"]
+	PlayerProfile.active_quests = _backup_perfil["quests"]
+	PlayerProfile.claimed_rewards = _backup_perfil["claimed"]
+	PlayerProfile.save_profile()
 
 
 func test_jogo_novo_comeca_no_degrau_padrao() -> void:
@@ -59,10 +104,10 @@ func test_a_escada_para_nas_duas_pontas() -> void:
 
 
 func test_cada_jogo_tem_a_propria_escada() -> void:
-	DifficultyManager.set_level("damas", 9)
-	DifficultyManager.set_level("jogo_da_velha", 2)
-	assert_eq(DifficultyManager.get_level("damas"), 9)
-	assert_eq(DifficultyManager.get_level("jogo_da_velha"), 2)
+	DifficultyManager.set_level(JOGO + "_a", 9)
+	DifficultyManager.set_level(JOGO + "_b", 2)
+	assert_eq(DifficultyManager.get_level(JOGO + "_a"), 9)
+	assert_eq(DifficultyManager.get_level(JOGO + "_b"), 2)
 
 
 func test_o_degrau_sobrevive_a_um_boot() -> void:

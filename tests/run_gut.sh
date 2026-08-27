@@ -86,8 +86,36 @@ fi
 # "Ignoring script ... because it does not extend GutTest", um aviso no meio da
 # saida, e segue com os outros. O arquivo some da suite sem ninguem notar --
 # aconteceu com test_table_item_3d.gd, que sumiu por um `:=` que nao inferia.
+# A suite roda contra o mesmo `user://` do jogo instalado nesta maquina: quem
+# joga aqui tem perfil, XP, fila do Play Games e degrau de dificuldade
+# gravados nele. Varios testes terminam partida de verdade -- e fim de partida
+# grava. Guardar o arquivo antes e devolver depois e o que impede a suite de
+# mexer no progresso de quem esta jogando.
+#
+# Fica no shell, e nao em `before_each`, porque assim vale para os 30 arquivos
+# de teste de uma vez, inclusive os que ainda nao existem.
+USER_DIR="$HOME/Library/Application Support/user_data"
+if [[ "$(uname)" != "Darwin" ]]; then
+	USER_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/godot/app_userdata/user_data"
+fi
+SAVE_BAK="$(mktemp)"
+SAVE_TINHA=0
+if [[ -f "$USER_DIR/config.save" ]]; then
+	cp "$USER_DIR/config.save" "$SAVE_BAK"
+	SAVE_TINHA=1
+fi
+
+restaurar_save() {
+	if (( SAVE_TINHA )); then
+		cp "$SAVE_BAK" "$USER_DIR/config.save"
+	else
+		rm -f "$USER_DIR/config.save"
+	fi
+	rm -f "$SAVE_BAK"
+}
+
 SAIDA="$(mktemp)"
-trap 'rm -f "$SAIDA"' EXIT
+trap 'rm -f "$SAIDA"; restaurar_save' EXIT
 
 set +e
 "$GODOT_BIN" --headless --path "$REPO_ROOT" -s addons/gut/gut_cmdln.gd "$@" 2>&1 | tee "$SAIDA"

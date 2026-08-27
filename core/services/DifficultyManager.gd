@@ -38,6 +38,17 @@ var _levels: Dictionary = {}
 
 
 func _ready() -> void:
+	reload()
+
+
+## Relê os degraus do disco, descartando o que estiver em memoria.
+##
+## O autoload guarda os degraus numa copia viva, e e ela que `_persist()`
+## escreve. Quem devolve o SaveManager ao estado anterior -- a suite de testes
+## faz isso -- precisa avisar aqui, senao a copia velha volta para o disco na
+## proxima gravacao e o degrau do jogador muda sozinho.
+func reload() -> void:
+	_levels.clear()
 	var gravado: Variant = SaveManager.get_setting(SAVE_KEY, {}) if SaveManager else {}
 	if typeof(gravado) == TYPE_DICTIONARY:
 		for chave in gravado:
