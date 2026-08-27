@@ -365,9 +365,12 @@ func _execute_jump(from_pos: Vector2i, target_dict: Dictionary) -> void:
 
 func _end_game() -> void:
 	var remaining: int = PegSolitaireRules.count_pegs(grid_data)
+	# `pegs` e a metrica de placar do Resta Um: quanto menos sobra, melhor.
+	# So a esfera unica conta como vitoria -- e o objetivo do jogo.
+	var fatos := {"pegs": remaining, "perfect": remaining == 1}
 	if remaining == 1:
-		finish_game("🏆 Incrível! Apenas 1 esfera restante! Vitória perfeita!", true)
+		finish_game("🏆 Incrível! Apenas 1 esfera restante! Vitória perfeita!", true, fatos)
 	elif remaining <= 3:
-		finish_game("Muito bem! Restaram apenas %d esferas." % remaining)
+		finish_game("Muito bem! Restaram apenas %d esferas." % remaining, false, fatos)
 	else:
-		finish_game("Fim de Jogo! Restaram %d esferas." % remaining)
+		finish_game("Fim de Jogo! Restaram %d esferas." % remaining, false, fatos)

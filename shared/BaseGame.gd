@@ -206,6 +206,7 @@ func restart_game() -> void:
 	play_click()
 	_result_reported = false
 	_start_new_game()
+	begin_match()
 
 
 ## Recomeça a partida. Cada jogo sobrescreve.
@@ -217,14 +218,28 @@ func _start_new_game() -> void:
 
 ## Fecha a partida: trava a entrada, anuncia o resultado, libera o reiniciar e
 ## comemora quando o jogador venceu.
-func finish_game(message: String, player_won: bool = false) -> void:
+func finish_game(message: String, player_won: bool = false, extra: Dictionary = {}) -> void:
 	game_over = true
 	set_status(message)
-	report_match_result(player_won)
+	report_match_result(player_won, extra)
 	if btn_restart != null:
 		btn_restart.show()
 	if player_won and env_3d != null:
 		env_3d.celebrate_win()
+
+
+## Anuncia que uma partida comecou.
+##
+## Serve para a gamificacao virar o balde do dia (contadores de "hoje") antes
+## do primeiro ponto subir, e para o Play Games contar sessao. Chamar de novo
+## na mesma partida nao faz mal: o balde so vira quando a data muda.
+##
+## Nem todo jogo precisa chamar -- `report_match_result()` tambem vira o balde
+## por seguranca. Quem chama e o jogo cujo `_start_new_game()` recomeca a
+## partida sem passar por `restart_game()`, como o Video Poker.
+func begin_match(mode: String = "solo") -> void:
+	if GameEventBus != null:
+		GameEventBus.emit_match_started(game_id, mode)
 
 
 ## Publica o fim de partida no barramento: dai saem o XP, a streak do dia, as

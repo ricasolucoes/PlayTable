@@ -12,6 +12,11 @@ const TOTAL_PAIRS: int = MemoryRules.TOTAL_PAIRS
 var moves_count: int = 0
 var is_checking: bool = false
 
+## Instante em que a partida comecou, para o tempo entrar no resultado. O
+## Memoria e um dos jogos que valem placar por desempenho, nao por vitoria:
+## todo mundo vence, o que distingue e em quantas jogadas.
+var _started_at: float = 0.0
+
 @onready var grid_container: GridContainer = $VBoxContainer/CenterContainer/Grid
 @onready var pairs_label: Label = $VBoxContainer/ScoreBoard/PairsPanel/HBox/Value
 @onready var moves_label: Label = $VBoxContainer/ScoreBoard/MovesPanel/HBox/Value
@@ -32,7 +37,9 @@ func _start_new_game() -> void:
 	second_card = null
 	is_checking = false
 	win_modal.visible = false
-	
+	_started_at = Time.get_ticks_msec() / 1000.0
+	begin_match()
+
 	_update_ui()
 	_generate_deck()
 
@@ -120,6 +127,14 @@ func _check_match() -> void:
 func _handle_game_won() -> void:
 	game_over = true
 	if AudioManager: AudioManager.play_win()
+
+	# O Memoria nunca reportou partida: XP, streak, maestria e a conquista de
+	# Memoria Fotografica nao existiam para quem so jogava aqui.
+	report_match_result(true, {
+		"time": Time.get_ticks_msec() / 1000.0 - _started_at,
+		"moves": moves_count,
+		"perfect": moves_count <= TOTAL_PAIRS + 2,
+	})
 	
 	win_modal_title.text = "🏆 Parabéns!"
 	var rating := "⭐⭐⭐"

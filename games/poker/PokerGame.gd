@@ -58,7 +58,12 @@ func _card_slot(i: int) -> Vector3:
 func _update_payout_table() -> void:
 	payout_table_label.text = "Royal Flush (800x) | Straight Flush (50x) | Quadra (25x) | Full House (9x)\nFlush (6x) | Sequência (4x) | Trinca (3x) | Dois Pares (2x) | Par J+ (1x)"
 
+## Nova rodada: destrava o resultado para a mao seguinte tambem ser contada.
+## O Video Poker nao passa por `restart_game()`, que e quem normalmente
+## destrava, porque nao tem botao de reiniciar -- a rodada recomeca sozinha.
 func _reset_to_bet_phase() -> void:
+	_result_reported = false
+	begin_match()
 	game_phase = "bet"
 	if chips <= 0:
 		chips = 50
@@ -187,7 +192,18 @@ func _evaluate_poker_hand() -> void:
 	var hand_name = result["name"]
 	var mult = result["multiplier"]
 	var win_amount = current_bet * mult
-	
+
+	# Cada mao e uma partida. O Poker nunca reportou nenhuma: nao dava XP, nao
+	# contava para o placar de fichas e o Royal Flush -- a conquista mais cara
+	# do catalogo -- era impossivel de tirar. `hand` leva o nome da mao para o
+	# GamificationManager reconhecer o royal flush sem conhecer o poker.
+	report_match_result(mult > 0, {
+		"score": chips + win_amount,
+		"hand": str(hand_name),
+		"bet": current_bet,
+		"perfect": mult >= 50,
+	})
+
 	if mult > 0:
 		chips += win_amount
 		set_status("🏆 %s! Você ganhou %d fichas!" % [hand_name, win_amount])

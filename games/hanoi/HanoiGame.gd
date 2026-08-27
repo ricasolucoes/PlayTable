@@ -574,9 +574,19 @@ func _handle_game_won() -> void:
 	var perfect_bonus: int = 200 if is_perfect else 0
 	var total_xp: int = base_xp + stars_bonus + perfect_bonus
 	
-	# A partida e o XP saem por BaseGame.report_match_result; aqui ficam so as
-	# conquistas proprias da Torre.
+	# A Torre publica fatos, nao conquistas: quem decide o que vira conquista e
+	# o catalogo em core/configs/achievements.json. Antes daqui saiam tres ids
+	# ("ACH_HANOI_3_PERFECT" e companhia) que nao existiam em catalogo nenhum.
+	var fatos: Array[String] = []
+	if is_perfect and disk_count >= 3:
+		fatos.append("hanoi_perfect_3")
+	if disk_count >= 5:
+		fatos.append("hanoi_5")
+	if disk_count >= 7:
+		fatos.append("hanoi_7")
+
 	report_match_result(true, {
+		"flags": fatos,
 		"xp": total_xp,
 		"perfect": is_perfect,
 		"disks": disk_count,
@@ -586,15 +596,6 @@ func _handle_game_won() -> void:
 		"time": elapsed_time,
 	})
 
-	var bus := _get_event_bus()
-	if bus:
-		if is_perfect and disk_count >= 3:
-			bus.achievement_unlocked.emit("ACH_HANOI_3_PERFECT")
-		if disk_count >= 5:
-			bus.achievement_unlocked.emit("ACH_HANOI_5_SOLVED")
-		if disk_count >= 7:
-			bus.achievement_unlocked.emit("ACH_HANOI_MASTER")
-			
 	var profile := _get_player_profile()
 	if profile:
 		profile.increment_stat("hanoi_wins")

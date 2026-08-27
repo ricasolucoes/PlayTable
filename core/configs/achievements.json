@@ -1,63 +1,517 @@
 {
   "_doc": "Catalogo de conquistas do PlayTable. Fonte unica: o AchievementEngine avalia daqui, a tela de perfil lista daqui e o PlayGamesManager traduz o id interno para o id do Play Console via play_games_ids.json. Regras: stat, level, streak, game_win, distinct_games, mastery, flag, all.",
   "achievements": [
-    {"id": "ACH_FIRST_BLOOD",    "cat": "progressao", "xp": 100,   "rule": {"type": "stat", "key": "total_wins", "target": 1}},
-    {"id": "ACH_WIN_10",         "cat": "habilidade", "xp": 500,   "rule": {"type": "stat", "key": "total_wins", "target": 10}},
-    {"id": "ACH_WIN_50",         "cat": "habilidade", "xp": 1500,  "rule": {"type": "stat", "key": "total_wins", "target": 50}},
-    {"id": "ACH_WIN_100",        "cat": "habilidade", "xp": 5000,  "rule": {"type": "stat", "key": "total_wins", "target": 100}},
-    {"id": "ACH_VETERAN",        "cat": "habilidade", "xp": 400,   "rule": {"type": "stat", "key": "total_matches", "target": 25}},
-    {"id": "ACH_LEVEL_5",        "cat": "progressao", "xp": 300,   "rule": {"type": "level", "target": 5}},
-    {"id": "ACH_LEVEL_10",       "cat": "progressao", "xp": 1000,  "rule": {"type": "level", "target": 10}},
-    {"id": "ACH_LEVEL_25",       "cat": "progressao", "xp": 2500,  "rule": {"type": "level", "target": 25}},
-
-    {"id": "ACH_EXPLORER_1",     "cat": "exploracao", "xp": 250,   "rule": {"type": "distinct_games", "target": 3}},
-    {"id": "ACH_EXPLORER_5",     "cat": "exploracao", "xp": 500,   "rule": {"type": "distinct_games", "target": 8}},
-    {"id": "ACH_EXPLORER_ALL",   "cat": "exploracao", "xp": 1000,  "rule": {"type": "distinct_games", "target": 19}},
-
-    {"id": "ACH_STREAK_3",       "cat": "persistencia", "xp": 500,  "rule": {"type": "streak", "target": 3}},
-    {"id": "ACH_STREAK_7",       "cat": "persistencia", "xp": 1500, "rule": {"type": "streak", "target": 7}},
-    {"id": "ACH_STREAK_30",      "cat": "persistencia", "xp": 5000, "rule": {"type": "streak", "target": 30}},
-    {"id": "ACH_COMEBACK",       "cat": "persistencia", "xp": 1000, "rule": {"type": "flag", "key": "comeback"}},
-    {"id": "ACH_QUESTS_10",      "cat": "persistencia", "xp": 800,  "rule": {"type": "stat", "key": "quests_completed", "target": 10}},
-    {"id": "ACH_MARATHON",       "cat": "persistencia", "xp": 700,  "rule": {"type": "stat", "key": "matches_today", "target": 10}},
-
-    {"id": "ACH_PERFECT_WIN",    "cat": "segredos", "xp": 2000,  "hidden": true, "rule": {"type": "flag", "key": "perfect"}},
-    {"id": "ACH_FAST_WIN",       "cat": "habilidade", "xp": 1000, "rule": {"type": "flag", "key": "fast_win"}},
-    {"id": "ACH_TIE_BREAKER",    "cat": "segredos", "xp": 800,   "hidden": true, "rule": {"type": "flag", "key": "close_call"}},
-    {"id": "ACH_LOSER_5",        "cat": "segredos", "xp": 100,   "hidden": true, "rule": {"type": "stat", "key": "loss_streak", "target": 5}},
-    {"id": "ACH_NIGHT_OWL",      "cat": "segredos", "xp": 300,   "hidden": true, "rule": {"type": "flag", "key": "night_owl"}},
-    {"id": "ACH_EARLY_BIRD",     "cat": "segredos", "xp": 300,   "hidden": true, "rule": {"type": "flag", "key": "early_bird"}},
-    {"id": "ACH_MULTIPLAYER_1",  "cat": "social", "xp": 200,     "rule": {"type": "flag", "key": "pass_play"}},
-
-    {"id": "ACH_TICTACTOE_WIN",  "cat": "tabuleiro", "xp": 200, "rule": {"type": "game_win", "game": "jogo_da_velha"}},
-    {"id": "ACH_CHECKERS_WIN",   "cat": "tabuleiro", "xp": 300, "rule": {"type": "game_win", "game": "damas"}},
-    {"id": "ACH_CONNECT4_WIN",   "cat": "tabuleiro", "xp": 300, "rule": {"type": "game_win", "game": "quatro_em_linha"}},
-    {"id": "ACH_DOMINO_WIN",     "cat": "tabuleiro", "xp": 300, "rule": {"type": "game_win", "game": "domino"}},
-    {"id": "ACH_HANOI_WIN",      "cat": "tabuleiro", "xp": 300, "rule": {"type": "game_win", "game": "hanoi"}},
-    {"id": "ACH_BATTLESHIP_WIN", "cat": "tabuleiro", "xp": 400, "rule": {"type": "game_win", "game": "batalha_naval"}},
-    {"id": "ACH_LUDO_WIN",       "cat": "tabuleiro", "xp": 400, "rule": {"type": "game_win", "game": "ludo"}},
-    {"id": "ACH_MANCALA_WIN",    "cat": "tabuleiro", "xp": 400, "rule": {"type": "game_win", "game": "mancala"}},
-    {"id": "ACH_NIM_WIN",        "cat": "tabuleiro", "xp": 400, "rule": {"type": "game_win", "game": "nim"}},
-    {"id": "ACH_PEG_WIN",        "cat": "tabuleiro", "xp": 400, "rule": {"type": "game_win", "game": "solitario"}},
-    {"id": "ACH_REVERSI_WIN",    "cat": "tabuleiro", "xp": 500, "rule": {"type": "game_win", "game": "reversi"}},
-    {"id": "ACH_MINESWEEPER_WIN","cat": "tabuleiro", "xp": 500, "rule": {"type": "game_win", "game": "campo_minado"}},
-    {"id": "ACH_SENET_WIN",      "cat": "tabuleiro", "xp": 500, "rule": {"type": "game_win", "game": "senet"}},
-    {"id": "ACH_BACKGAMMON_WIN", "cat": "tabuleiro", "xp": 500, "rule": {"type": "game_win", "game": "gamao"}},
-
-    {"id": "ACH_MEMORY_WIN",     "cat": "cartas", "xp": 200, "rule": {"type": "game_win", "game": "memoria"}},
-    {"id": "ACH_SOLITAIRE_WIN",  "cat": "cartas", "xp": 300, "rule": {"type": "game_win", "game": "paciencia"}},
-    {"id": "ACH_UNO_WIN",        "cat": "cartas", "xp": 300, "rule": {"type": "game_win", "game": "unolike"}},
-    {"id": "ACH_BLACKJACK_WIN",  "cat": "cartas", "xp": 400, "rule": {"type": "game_win", "game": "blackjack"}},
-    {"id": "ACH_POKER_WIN",      "cat": "cartas", "xp": 500, "rule": {"type": "game_win", "game": "poker"}},
-    {"id": "ACH_POKER_ROYAL",    "cat": "segredos", "xp": 10000, "hidden": true, "rule": {"type": "flag", "key": "royal_flush"}},
-
-    {"id": "ACH_ITEMS_100",      "cat": "colecao", "xp": 300,  "rule": {"type": "stat", "key": "total_items_collected", "target": 100}},
-    {"id": "ACH_ITEMS_1000",     "cat": "colecao", "xp": 2000, "rule": {"type": "stat", "key": "total_items_collected", "target": 1000}},
-    {"id": "ACH_COLLECTOR_10",   "cat": "colecao", "xp": 600,  "rule": {"type": "stat", "key": "collection_items", "target": 10}},
-    {"id": "ACH_CUSTOM_BOARD",   "cat": "colecao", "xp": 100,  "rule": {"type": "flag", "key": "custom_board"}},
-
-    {"id": "ACH_MASTERY_5",      "cat": "habilidade", "xp": 1200, "rule": {"type": "mastery", "target": 5}},
-
-    {"id": "ACH_100_PERCENT",    "cat": "progressao", "xp": 20000, "hidden": true, "rule": {"type": "all"}}
+    {
+      "id": "ACH_FIRST_BLOOD",
+      "cat": "progressao",
+      "xp": 100,
+      "rule": {
+        "type": "stat",
+        "key": "total_wins",
+        "target": 1
+      }
+    },
+    {
+      "id": "ACH_WIN_10",
+      "cat": "habilidade",
+      "xp": 500,
+      "rule": {
+        "type": "stat",
+        "key": "total_wins",
+        "target": 10
+      }
+    },
+    {
+      "id": "ACH_WIN_50",
+      "cat": "habilidade",
+      "xp": 1500,
+      "rule": {
+        "type": "stat",
+        "key": "total_wins",
+        "target": 50
+      }
+    },
+    {
+      "id": "ACH_WIN_100",
+      "cat": "habilidade",
+      "xp": 5000,
+      "rule": {
+        "type": "stat",
+        "key": "total_wins",
+        "target": 100
+      }
+    },
+    {
+      "id": "ACH_VETERAN",
+      "cat": "habilidade",
+      "xp": 400,
+      "rule": {
+        "type": "stat",
+        "key": "total_matches",
+        "target": 25
+      }
+    },
+    {
+      "id": "ACH_LEVEL_5",
+      "cat": "progressao",
+      "xp": 300,
+      "rule": {
+        "type": "level",
+        "target": 5
+      }
+    },
+    {
+      "id": "ACH_LEVEL_10",
+      "cat": "progressao",
+      "xp": 1000,
+      "rule": {
+        "type": "level",
+        "target": 10
+      }
+    },
+    {
+      "id": "ACH_LEVEL_25",
+      "cat": "progressao",
+      "xp": 2500,
+      "rule": {
+        "type": "level",
+        "target": 25
+      }
+    },
+    {
+      "id": "ACH_EXPLORER_1",
+      "cat": "exploracao",
+      "xp": 250,
+      "rule": {
+        "type": "distinct_games",
+        "target": 3
+      }
+    },
+    {
+      "id": "ACH_EXPLORER_5",
+      "cat": "exploracao",
+      "xp": 500,
+      "rule": {
+        "type": "distinct_games",
+        "target": 8
+      }
+    },
+    {
+      "id": "ACH_EXPLORER_ALL",
+      "cat": "exploracao",
+      "xp": 1000,
+      "rule": {
+        "type": "distinct_games",
+        "target": 19
+      }
+    },
+    {
+      "id": "ACH_STREAK_3",
+      "cat": "persistencia",
+      "xp": 500,
+      "rule": {
+        "type": "streak",
+        "target": 3
+      }
+    },
+    {
+      "id": "ACH_STREAK_7",
+      "cat": "persistencia",
+      "xp": 1500,
+      "rule": {
+        "type": "streak",
+        "target": 7
+      }
+    },
+    {
+      "id": "ACH_STREAK_30",
+      "cat": "persistencia",
+      "xp": 5000,
+      "rule": {
+        "type": "streak",
+        "target": 30
+      }
+    },
+    {
+      "id": "ACH_COMEBACK",
+      "cat": "persistencia",
+      "xp": 1000,
+      "rule": {
+        "type": "flag",
+        "key": "comeback"
+      }
+    },
+    {
+      "id": "ACH_QUESTS_10",
+      "cat": "persistencia",
+      "xp": 800,
+      "rule": {
+        "type": "stat",
+        "key": "quests_completed",
+        "target": 10
+      }
+    },
+    {
+      "id": "ACH_MARATHON",
+      "cat": "persistencia",
+      "xp": 700,
+      "rule": {
+        "type": "stat",
+        "key": "matches_today",
+        "target": 10
+      }
+    },
+    {
+      "id": "ACH_PERFECT_WIN",
+      "cat": "segredos",
+      "xp": 2000,
+      "hidden": true,
+      "rule": {
+        "type": "flag",
+        "key": "perfect"
+      }
+    },
+    {
+      "id": "ACH_FAST_WIN",
+      "cat": "habilidade",
+      "xp": 1000,
+      "rule": {
+        "type": "flag",
+        "key": "fast_win"
+      }
+    },
+    {
+      "id": "ACH_TIE_BREAKER",
+      "cat": "segredos",
+      "xp": 800,
+      "hidden": true,
+      "rule": {
+        "type": "flag",
+        "key": "close_call"
+      }
+    },
+    {
+      "id": "ACH_LOSER_5",
+      "cat": "segredos",
+      "xp": 100,
+      "hidden": true,
+      "rule": {
+        "type": "stat",
+        "key": "loss_streak",
+        "target": 5
+      }
+    },
+    {
+      "id": "ACH_NIGHT_OWL",
+      "cat": "segredos",
+      "xp": 300,
+      "hidden": true,
+      "rule": {
+        "type": "flag",
+        "key": "night_owl"
+      }
+    },
+    {
+      "id": "ACH_EARLY_BIRD",
+      "cat": "segredos",
+      "xp": 300,
+      "hidden": true,
+      "rule": {
+        "type": "flag",
+        "key": "early_bird"
+      }
+    },
+    {
+      "id": "ACH_MULTIPLAYER_1",
+      "cat": "social",
+      "xp": 200,
+      "rule": {
+        "type": "flag",
+        "key": "pass_play"
+      }
+    },
+    {
+      "id": "ACH_TICTACTOE_WIN",
+      "cat": "tabuleiro",
+      "xp": 200,
+      "rule": {
+        "type": "game_win",
+        "game": "jogo_da_velha"
+      }
+    },
+    {
+      "id": "ACH_CHECKERS_WIN",
+      "cat": "tabuleiro",
+      "xp": 300,
+      "rule": {
+        "type": "game_win",
+        "game": "damas"
+      }
+    },
+    {
+      "id": "ACH_CONNECT4_WIN",
+      "cat": "tabuleiro",
+      "xp": 300,
+      "rule": {
+        "type": "game_win",
+        "game": "quatro_em_linha"
+      }
+    },
+    {
+      "id": "ACH_DOMINO_WIN",
+      "cat": "tabuleiro",
+      "xp": 300,
+      "rule": {
+        "type": "game_win",
+        "game": "domino"
+      }
+    },
+    {
+      "id": "ACH_HANOI_WIN",
+      "cat": "tabuleiro",
+      "xp": 300,
+      "rule": {
+        "type": "game_win",
+        "game": "hanoi"
+      }
+    },
+    {
+      "id": "ACH_BATTLESHIP_WIN",
+      "cat": "tabuleiro",
+      "xp": 400,
+      "rule": {
+        "type": "game_win",
+        "game": "batalha_naval"
+      }
+    },
+    {
+      "id": "ACH_LUDO_WIN",
+      "cat": "tabuleiro",
+      "xp": 400,
+      "rule": {
+        "type": "game_win",
+        "game": "ludo"
+      }
+    },
+    {
+      "id": "ACH_MANCALA_WIN",
+      "cat": "tabuleiro",
+      "xp": 400,
+      "rule": {
+        "type": "game_win",
+        "game": "mancala"
+      }
+    },
+    {
+      "id": "ACH_NIM_WIN",
+      "cat": "tabuleiro",
+      "xp": 400,
+      "rule": {
+        "type": "game_win",
+        "game": "nim"
+      }
+    },
+    {
+      "id": "ACH_PEG_WIN",
+      "cat": "tabuleiro",
+      "xp": 400,
+      "rule": {
+        "type": "game_win",
+        "game": "solitario"
+      }
+    },
+    {
+      "id": "ACH_REVERSI_WIN",
+      "cat": "tabuleiro",
+      "xp": 500,
+      "rule": {
+        "type": "game_win",
+        "game": "reversi"
+      }
+    },
+    {
+      "id": "ACH_MINESWEEPER_WIN",
+      "cat": "tabuleiro",
+      "xp": 500,
+      "rule": {
+        "type": "game_win",
+        "game": "campo_minado"
+      }
+    },
+    {
+      "id": "ACH_SENET_WIN",
+      "cat": "tabuleiro",
+      "xp": 500,
+      "rule": {
+        "type": "game_win",
+        "game": "senet"
+      }
+    },
+    {
+      "id": "ACH_BACKGAMMON_WIN",
+      "cat": "tabuleiro",
+      "xp": 500,
+      "rule": {
+        "type": "game_win",
+        "game": "gamao"
+      }
+    },
+    {
+      "id": "ACH_MEMORY_WIN",
+      "cat": "cartas",
+      "xp": 200,
+      "rule": {
+        "type": "game_win",
+        "game": "memoria"
+      }
+    },
+    {
+      "id": "ACH_SOLITAIRE_WIN",
+      "cat": "cartas",
+      "xp": 300,
+      "rule": {
+        "type": "game_win",
+        "game": "paciencia"
+      }
+    },
+    {
+      "id": "ACH_UNO_WIN",
+      "cat": "cartas",
+      "xp": 300,
+      "rule": {
+        "type": "game_win",
+        "game": "unolike"
+      }
+    },
+    {
+      "id": "ACH_BLACKJACK_WIN",
+      "cat": "cartas",
+      "xp": 400,
+      "rule": {
+        "type": "game_win",
+        "game": "blackjack"
+      }
+    },
+    {
+      "id": "ACH_POKER_WIN",
+      "cat": "cartas",
+      "xp": 500,
+      "rule": {
+        "type": "game_win",
+        "game": "poker"
+      }
+    },
+    {
+      "id": "ACH_POKER_ROYAL",
+      "cat": "segredos",
+      "xp": 10000,
+      "hidden": true,
+      "rule": {
+        "type": "flag",
+        "key": "royal_flush"
+      }
+    },
+    {
+      "id": "ACH_ITEMS_100",
+      "cat": "colecao",
+      "xp": 300,
+      "rule": {
+        "type": "stat",
+        "key": "total_items_collected",
+        "target": 100
+      }
+    },
+    {
+      "id": "ACH_ITEMS_1000",
+      "cat": "colecao",
+      "xp": 2000,
+      "rule": {
+        "type": "stat",
+        "key": "total_items_collected",
+        "target": 1000
+      }
+    },
+    {
+      "id": "ACH_COLLECTOR_10",
+      "cat": "colecao",
+      "xp": 600,
+      "rule": {
+        "type": "stat",
+        "key": "collection_items",
+        "target": 10
+      }
+    },
+    {
+      "id": "ACH_CUSTOM_BOARD",
+      "cat": "colecao",
+      "xp": 100,
+      "rule": {
+        "type": "flag",
+        "key": "custom_board"
+      }
+    },
+    {
+      "id": "ACH_MASTERY_5",
+      "cat": "habilidade",
+      "xp": 1200,
+      "rule": {
+        "type": "mastery",
+        "target": 5
+      }
+    },
+    {
+      "id": "ACH_HANOI_PERFECT_3",
+      "cat": "tabuleiro",
+      "xp": 400,
+      "rule": {
+        "type": "flag",
+        "key": "hanoi_perfect_3"
+      }
+    },
+    {
+      "id": "ACH_HANOI_5",
+      "cat": "tabuleiro",
+      "xp": 700,
+      "rule": {
+        "type": "flag",
+        "key": "hanoi_5"
+      }
+    },
+    {
+      "id": "ACH_HANOI_MASTER",
+      "cat": "tabuleiro",
+      "xp": 1500,
+      "rule": {
+        "type": "flag",
+        "key": "hanoi_7"
+      }
+    },
+    {
+      "id": "ACH_NIM_MISERE",
+      "cat": "tabuleiro",
+      "xp": 600,
+      "rule": {
+        "type": "flag",
+        "key": "nim_misere"
+      }
+    },
+    {
+      "id": "ACH_NIM_PYRAMID",
+      "cat": "tabuleiro",
+      "xp": 600,
+      "rule": {
+        "type": "flag",
+        "key": "nim_pyramid"
+      }
+    },
+    {
+      "id": "ACH_100_PERCENT",
+      "cat": "progressao",
+      "xp": 20000,
+      "hidden": true,
+      "rule": {
+        "type": "all"
+      }
+    }
   ]
 }

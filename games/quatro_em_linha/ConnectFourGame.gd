@@ -21,6 +21,9 @@ var score_p1: int = 0
 var score_p2: int = 0
 var piece_instances := {}  ## Vector2i(linha, coluna) -> no da ficha
 
+## Instante em que a partida comecou, para o tempo entrar no resultado.
+var _started_at: float = 0.0
+
 @onready var pieces_layer: Node2D = $BoardArea/PiecesLayer
 @onready var board_back: Control = $BoardArea/BoardBack
 @onready var board_front: Control = $BoardArea/BoardFront
@@ -131,6 +134,16 @@ func _do_ai_turn() -> void:
 
 func _handle_game_won(winner_id: int, win_cells: Array[Vector2i]) -> void:
 	game_over = true
+
+	# O 4 em Linha terminava direto no modal e nunca publicava a partida: nem a
+	# vitoria nem a derrota chegavam na gamificacao. `close_call` marca a
+	# partida decidida com o tabuleiro quase cheio, que e a conquista "Por um
+	# triz".
+	report_match_result(winner_id == 1, {
+		"time": Time.get_ticks_msec() / 1000.0 - _started_at,
+		"close_call": _pecas_no_tabuleiro() >= COLS * ROWS - 3,
+	})
+
 	if winner_id == 1:
 		score_p1 += 1
 		p1_score_lbl.text = str(score_p1)
@@ -153,6 +166,10 @@ func _handle_game_won(winner_id: int, win_cells: Array[Vector2i]) -> void:
 
 func _handle_game_draw() -> void:
 	game_over = true
+	report_match_result(false, {
+		"draw": true,
+		"time": Time.get_ticks_msec() / 1000.0 - _started_at,
+	})
 	win_modal_title.text = "Empate!"
 	win_modal_sub.text = "O tabuleiro ficou completamente cheio."
 	if AudioManager: AudioManager.play_draw()
@@ -178,4 +195,11 @@ func _start_new_game() -> void:
 	piece_instances.clear()
 	game_over = false
 	is_player_turn = true
+	_started_at = Time.get_ticks_msec() / 1000.0
+	begin_match()
 	_update_turn_ui()
+
+
+## Quantas fichas ja cairam. Usado para reconhecer a partida decidida no fim.
+func _pecas_no_tabuleiro() -> int:
+	return piece_instances.size()

@@ -127,7 +127,7 @@ func _sync_revealed_3d() -> void:
 func _trigger_game_over(hit_r: int, hit_c: int) -> void:
 	timer_active = false
 	btn_smiley.text = "😵"
-	finish_game("💥 BOOM! Você detonou uma mina!")
+	finish_game("💥 BOOM! Você detonou uma mina!", false, {"time": elapsed_time})
 	
 	for r in range(MinesweeperRules.ROWS):
 		for c in range(MinesweeperRules.COLS):
@@ -140,7 +140,10 @@ func _check_win_condition() -> void:
 		game_won = true
 		timer_active = false
 		btn_smiley.text = "😎"
-		finish_game("🏆 Campo 100%% Desarmado! Vitória em %d segundos!" % int(elapsed_time), true)
+		# O tempo e o que o Campo Minado tem de recorde: alimenta o placar
+		# LB_MINESWEEPER_TIME e a conquista de vitoria rapida.
+		finish_game("🏆 Campo 100%% Desarmado! Vitória em %d segundos!" % int(elapsed_time), true,
+			{"time": elapsed_time})
 
 func _on_btn_mode_pressed() -> void:
 	is_flag_mode = not is_flag_mode

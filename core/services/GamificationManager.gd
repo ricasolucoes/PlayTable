@@ -19,6 +19,12 @@ extends Node
 ##   mode       String  "pass_play" quando foi humano contra humano
 ##   score      int     pontuacao que vale placar
 ##   moves      int     jogadas usadas, para recorde de menor numero
+##   flags      Array   fatos proprios do jogo ("hanoi_7", "nim_misere"). O
+##                      motor so os grava; quem decide se viram conquista e o
+##                      catalogo. Assim o jogo nao precisa conhecer nenhum id
+##                      de conquista -- o Nim e a Torre de Hanoi emitiam seis
+##                      ids que nao existiam no catalogo e iam parar no perfil
+##                      como lixo, e no Play Games como id invalido.
 ##   xp_scale   float   multiplicador do degrau de dificuldade (DifficultyManager)
 ##   difficulty int     degrau 1..10 em que a partida terminou
 
@@ -101,6 +107,9 @@ func _registrar_flags(game_id: String, result: Dictionary, venceu: bool) -> void
 			PlayerProfile.set_flag("night_owl")
 		elif hora >= 5 and hora < 6:
 			PlayerProfile.set_flag("early_bird")
+
+	for fato in result.get("flags", []):
+		PlayerProfile.set_flag(str(fato))
 
 	if str(result.get("mode", "")) == "pass_play":
 		PlayerProfile.set_flag("pass_play")

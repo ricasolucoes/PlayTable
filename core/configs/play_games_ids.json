@@ -51,6 +51,11 @@
     "ACH_COLLECTOR_10": "",
     "ACH_CUSTOM_BOARD": "",
     "ACH_MASTERY_5": "",
+    "ACH_HANOI_PERFECT_3": "",
+    "ACH_HANOI_5": "",
+    "ACH_HANOI_MASTER": "",
+    "ACH_NIM_MISERE": "",
+    "ACH_NIM_PYRAMID": "",
     "ACH_100_PERCENT": ""
   },
   "leaderboards": {

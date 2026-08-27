@@ -613,28 +613,21 @@ func _handle_game_over(last_player: int) -> void:
 		"time": elapsed_time,
 	}
 
-	var bus := _get_event_bus()
-	if bus:
-		# A partida e o XP saem por BaseGame.report_match_result, abaixo; aqui
-		# ficam so as conquistas proprias do Nim.
-		if human_won:
-			bus.achievement_unlocked.emit("ACH_NIM_FIRST_WIN")
-			if is_misere and ai_difficulty == "hard":
-				bus.achievement_unlocked.emit("ACH_NIM_MISERE_MASTER")
-			if preset_name == "pyramid_4":
-				bus.achievement_unlocked.emit("ACH_NIM_PYRAMID_SOLVER")
-				
+	# O Nim publica fatos, nao conquistas: quem decide o que vira conquista e o
+	# catalogo. Daqui saiam tres ids que nao existiam em catalogo nenhum, e o
+	# contador por jogo agora e do PlayerProfile (`per_game`), igual para os 19.
+	var fatos: Array[String] = []
+	if human_won:
+		if is_misere and ai_difficulty == "hard":
+			fatos.append("nim_misere")
+		if preset_name == "pyramid_4":
+			fatos.append("nim_pyramid")
+
 	result["xp"] = total_xp
+	result["flags"] = fatos
+	result["mode"] = "solo" if is_vs_ai else "pass_play"
 	report_match_result(human_won, result)
 
-	var profile := _get_player_profile()
-	if profile:
-		if human_won:
-			profile.increment_stat("nim_wins")
-		else:
-			profile.increment_stat("nim_losses")
-		profile.increment_stat("nim_matches")
-		profile.save_profile()
 		
 	var audio := _get_audio_mgr()
 	if audio:
