@@ -35,8 +35,11 @@ func _ready() -> void:
 	env_3d = $TabletopEnvironment3D
 	status_label = $UI/VBoxContainer/StatusLabel
 	board_3d.setup_board(MinesweeperRules.ROWS, MinesweeperRules.COLS, 0.75, "slate_grid")
-	build_touch_grid($UI/CenterContainer/TouchGrid, MinesweeperRules.ROWS, MinesweeperRules.COLS,
-		Vector2(40, 40), _on_cell_clicked)
+	# O toque entra pelo proprio tabuleiro: a casa tocada e a casa desenhada.
+	# A grade 2D de botoes que ficava aqui era plana e ancorada no centro da
+	# tela, e nao coincidia com o tabuleiro em perspectiva.
+	board_3d.cell_clicked.connect(_on_cell_clicked)
+	fit_table(board_3d.content_size())
 	_start_new_game()
 
 func _process(delta: float) -> void:

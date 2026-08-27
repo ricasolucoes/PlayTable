@@ -110,8 +110,7 @@ func _setup_3d_hierarchy() -> void:
 	theme.surface_color = Color(0.08, 0.28, 0.20) # Feltro verde nobre
 	theme.accent = Color(0.92, 0.78, 0.35)
 	env_3d.apply_theme(theme)
-	env_3d.set_safe_area(220.0, 140.0)
-	env_3d.frame_content(Vector2(BOARD_WIDTH + 0.6, BOARD_DEPTH + 0.4))
+	fit_table(Vector2(BOARD_WIDTH + 0.35, BOARD_DEPTH + 0.25))
 
 	board_root = $TabletopEnvironment3D/BoardRoot
 	for c in board_root.get_children():

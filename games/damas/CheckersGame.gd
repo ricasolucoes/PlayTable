@@ -20,8 +20,7 @@ func _ready() -> void:
 	env_3d.apply_theme(_build_theme())
 	board_3d.setup_board(CheckersRules.ROWS, CheckersRules.COLS, 0.75, "wood_checkered")
 	# O tabuleiro se anuncia para a camera: nao existe distancia escrita a mao.
-	env_3d.set_safe_area(200.0, 130.0)
-	env_3d.frame_content(board_3d.content_size())
+	fit_table(board_3d.content_size())
 	board_3d.cell_clicked.connect(_on_cell_clicked)
 	_start_new_game()
 

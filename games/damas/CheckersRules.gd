@@ -73,15 +73,27 @@ static func get_valid_moves_for_piece(grid: Grid2D, pos: Vector2i) -> Array[Dict
 		})
 	return formatted
 
-static func get_best_ai_move(grid: Grid2D) -> Dictionary:
-	var moves := get_all_valid_moves(grid, -1)
-	if moves.is_empty(): return {}
-	var chosen := moves[0]
-	var cap_pos = chosen["captures"][0] if (chosen.has("captures") and chosen["captures"].size() > 0) else Vector2i(-1, -1)
+## O turno da IA no degrau pedido, com a cadeia de capturas inteira.
+##
+## A escolha mora em `CheckersAI`; aqui fica so a porta. Devolve `{}` quando as
+## pretas nao tem jogada.
+static func get_ai_turn(grid: Grid2D, level: int = 10) -> Dictionary:
+	return CheckersAI.choose_turn(grid, -1, level)
+
+
+## Mesma escolha no formato antigo de um salto so (`from`/`to`/`captured`).
+##
+## A cena anima salto a salto e continua a cadeia pelo `hops` do turno; este
+## atalho existe para quem so quer o primeiro lance.
+static func get_best_ai_move(grid: Grid2D, level: int = 10) -> Dictionary:
+	var turno := get_ai_turn(grid, level)
+	if turno.is_empty():
+		return {}
+	var primeiro: Dictionary = turno["hops"][0]
 	return {
-		"from": chosen["from"],
-		"to": chosen["to"],
-		"captured": cap_pos
+		"from": turno["from"],
+		"to": primeiro["to"],
+		"captured": primeiro["captured"]
 	}
 
 static func apply_move(grid: Grid2D, from_pos: Vector2i, to_pos: Vector2i, captured_pos: Vector2i = Vector2i(-1, -1)) -> Dictionary:

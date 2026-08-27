@@ -53,8 +53,7 @@ func _ready() -> void:
 	# O tabuleiro do Klondike ocupa 5,5 x 5,0 unidades e nasce centrado em zero;
 	# sem informar isso a camera usava as 6x6 padrao com a area util errada e a
 	# mesa aparecia deslocada para o canto, com as cartas pequenas demais.
-	env_3d.set_safe_area(215.0, 110.0)
-	env_3d.frame_content(_table_content_size())
+	fit_table(_table_content_size())
 	stock = CardPile.new()
 	waste = CardPile.new()
 	foundations.clear()

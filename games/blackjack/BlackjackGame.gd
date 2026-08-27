@@ -30,9 +30,7 @@ func _ready() -> void:
 	# A HUD come 210 px em cima e os botoes 120 embaixo; a mesa ocupa o resto.
 	# Sem isto a camera usava o enquadramento padrao de 6x6 unidades e as cartas
 	# -- que juntas nao passam de 3,5 -- ficavam do tamanho de um selo.
-	env_3d.set_safe_area(210.0, 120.0)
-	env_3d.frame_content(Vector2(ZONE_SIZE.x + 0.30,
-		(PLAYER_Z - DEALER_Z) + ZONE_SIZE.y + 0.45))
+	fit_table(Vector2(ZONE_SIZE.x + 0.30, (PLAYER_Z - DEALER_Z) + ZONE_SIZE.y + 0.45))
 	_build_table_zones()
 	player_hand = CardHand.new()
 	dealer_hand = CardHand.new()

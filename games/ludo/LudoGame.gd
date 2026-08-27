@@ -33,6 +33,9 @@ func _ready() -> void:
 	_setup_3d_ludo_board()
 	_setup_3d_pawns()
 	dice_3d.roll_finished.connect(_on_dice_roll_finished)
+	# O tabuleiro tem 6,5 unidades; sem isto a camera usava as 6x6 padrao com a
+	# area util errada e sobrava meia tela de feltro vazio.
+	fit_table(Vector2(6.7, 6.7))
 	_start_new_game()
 
 func _setup_3d_ludo_board() -> void:

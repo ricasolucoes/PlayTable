@@ -79,8 +79,7 @@ func _place_boards() -> void:
 	_board_caption(fleet_board, "SUA FROTA", Color(0.52, 0.86, 1.0), fleet_size)
 
 	# A HUD ocupa os 230 px de cima; a camera enquadra a faixa que sobra.
-	env_3d.set_safe_area(230.0, 95.0)
-	env_3d.frame_content(Vector2(maxf(radar_size.x, fleet_size.x) + 0.45, total_depth + 0.45))
+	fit_table(Vector2(maxf(radar_size.x, fleet_size.x) + 0.45, total_depth + 0.45))
 
 
 func _board_caption(board: Board3D, text: String, color: Color, board_size: Vector2) -> void:

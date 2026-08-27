@@ -15,7 +15,9 @@ func _ready() -> void:
 	status_label = $UI/VBoxContainer/StatusLabel
 	btn_restart = $UI/VBoxContainer/BtnRestart
 	board_3d.setup_board(8, 8, 0.75, "reversi_green")
-	build_touch_grid($UI/CenterContainer/TouchGrid, 8, 8, Vector2(40, 40), _on_cell_clicked)
+	# O toque entra pelo proprio tabuleiro: a casa tocada e a casa desenhada.
+	board_3d.cell_clicked.connect(_on_cell_clicked)
+	fit_table(board_3d.content_size())
 	_start_new_game()
 
 func _start_new_game() -> void:

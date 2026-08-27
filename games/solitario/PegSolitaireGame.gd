@@ -42,8 +42,7 @@ func _ready() -> void:
 	# O tabuleiro tem 6,4 unidades de diametro; sem informar isso a camera
 	# usava o enquadramento padrao de 6x6 e a grade de toque plana, que era
 	# ancorada no centro da tela, nao caia sobre furo nenhum.
-	env_3d.set_safe_area(190.0, 110.0)
-	env_3d.frame_content(Vector2(6.8, 6.8))
+	fit_table(Vector2(6.8, 6.8))
 
 	touch_layer.mouse_filter = Control.MOUSE_FILTER_STOP
 	touch_layer.gui_input.connect(_on_touch_layer_input)

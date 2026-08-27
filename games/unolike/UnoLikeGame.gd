@@ -49,8 +49,7 @@ func _ready() -> void:
 	# Sem informar a area util e o tamanho do conteudo, a camera enquadrava as
 	# 6x6 unidades padrao para um monte de descarte de uma carta so: a carta da
 	# mesa saia do tamanho de uma unha.
-	env_3d.set_safe_area(230.0, 250.0)
-	env_3d.frame_content(Vector2(2.4, 2.4), Vector3(0.0, 0.0, -0.3))
+	fit_table(Vector2(2.4, 2.4), Vector3(0.0, 0.0, -0.3))
 	player_hand = CardHand.new()
 	ai_hand = CardHand.new()
 	discard_pile = CardPile.new()

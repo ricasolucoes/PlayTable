@@ -78,6 +78,7 @@ func _ready() -> void:
 	
 	_setup_ui_events()
 	_setup_3d_tabletop()
+	fit_table(Vector2(7.3, 4.9))
 	_start_new_game()
 
 

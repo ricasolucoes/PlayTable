@@ -151,8 +151,7 @@ func _setup_3d_tabletop() -> void:
 		pegs_root.add_child(cap)
 		
 	# Enquadra a câmera na área do jogo
-	if env_3d:
-		env_3d.frame_content(Vector2(6.8, 4.0), Vector3(0, 0.8, 0))
+	fit_table(Vector2(6.8, 4.0), Vector3(0, 0.8, 0))
 
 
 func _setup_difficulty_buttons() -> void:

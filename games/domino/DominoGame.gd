@@ -39,9 +39,6 @@ func _ready() -> void:
 	status_label = $UI/VBoxContainer/StatusLabel
 	btn_restart = $UI/Actions/BtnRestart
 	menu_scene_path = MENU_TABULEIRO
-	# A HUD come 210 px em cima e a bandeja da mao 234 embaixo: a corrente tem
-	# de caber na faixa do meio, nao no centro geometrico da tela.
-	env_3d.set_safe_area(210.0, 234.0)
 	_start_new_game()
 
 func _start_new_game() -> void:
@@ -135,8 +132,7 @@ func _render_table_tiles_3d() -> void:
 			x += span
 
 	# Enquadra o que a corrente ocupa agora, com folga para a proxima jogada.
-	if env_3d:
-		env_3d.frame_content(Vector2(maxf(widest, 1.8) + 0.6, maxf(total_depth, 1.0) + 0.6))
+	fit_table(Vector2(maxf(widest, 1.8) + 0.6, maxf(total_depth, 1.0) + 0.6))
 
 
 ## Divide a corrente em fileiras que cabem na largura da mesa.

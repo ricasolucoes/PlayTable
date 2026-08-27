@@ -42,6 +42,7 @@ func _ready() -> void:
 	btn_restart = $UI/VBoxContainer/BtnRestart
 	_setup_3d_mancala_board()
 	_setup_ui_buttons()
+	fit_table(Vector2(6.8, 2.4))
 	_start_new_game()
 
 func _setup_3d_mancala_board() -> void:

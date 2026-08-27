@@ -42,9 +42,7 @@ func _ready() -> void:
 	# A HUD come 250 px em cima e os controles 120 embaixo. Sem informar isso a
 	# camera usava o enquadramento padrao de 6x6 para uma mao que nao passa de
 	# 3,8: as cartas ficavam pequenas demais para ler o naipe.
-	env_3d.set_safe_area(250.0, 120.0)
-	env_3d.frame_content(Vector2(ZONE_SIZE.x + 0.10, ZONE_SIZE.y + 0.55),
-		Vector3(0.0, 0.0, ZONE_Z))
+	fit_table(Vector2(ZONE_SIZE.x + 0.10, ZONE_SIZE.y + 0.55), Vector3(0.0, 0.0, ZONE_Z))
 	cards_root.add_child(TableZone3D.create(ZONE_SIZE, Vector3(0.0, 0.0, ZONE_Z),
 		"SUA MÃO", Color(0.98, 0.84, 0.42)))
 	player_hand = CardHand.new()
