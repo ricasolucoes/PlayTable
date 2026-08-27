@@ -2,6 +2,17 @@ extends BaseGame
 
 ## DominoGame: Dominó 3D com Pedras em Marfim Nobre, Rebites Dourados e Disposição na Mesa
 
+## Medidas da pedra, em unidades de mundo. `LEN` corre ao longo da corrente.
+const TILE_LEN := 0.82
+const TILE_WID := 0.41
+const TILE_THICK := 0.12
+
+## Largura maxima de uma fileira antes de a corrente dobrar para a de baixo.
+const ROW_MAX_X := 5.0
+
+## Distancia entre fileiras da corrente.
+const ROW_PITCH := 0.86
+
 var boneyard: Array[Dictionary] = []
 var player_hand: Array[Dictionary] = []
 var ai_hand: Array[Dictionary] = []
@@ -17,7 +28,7 @@ var selected_tile_idx: int = -1
 @onready var table_tiles_root: Node3D = $TableTilesRoot
 @onready var ends_label: Label = $UI/VBoxContainer/EndsLabel
 @onready var ai_info_label: Label = $UI/VBoxContainer/AIInfoLabel
-@onready var player_hand_container: HBoxContainer = $UI/PlayerArea/HandContainer
+@onready var player_hand_container: HBoxContainer = $UI/PlayerArea/HandVBox/HandContainer
 @onready var btn_draw: Button = $UI/Actions/BtnDraw
 @onready var btn_pass: Button = $UI/Actions/BtnPass
 @onready var btn_play_left: Button = $UI/Actions/BtnPlayLeft
@@ -27,6 +38,10 @@ func _ready() -> void:
 	env_3d = $TabletopEnvironment3D
 	status_label = $UI/VBoxContainer/StatusLabel
 	btn_restart = $UI/Actions/BtnRestart
+	menu_scene_path = MENU_TABULEIRO
+	# A HUD come 210 px em cima e a bandeja da mao 234 embaixo: a corrente tem
+	# de caber na faixa do meio, nao no centro geometrico da tela.
+	env_3d.set_safe_area(210.0, 234.0)
 	_start_new_game()
 
 func _start_new_game() -> void:
@@ -87,60 +102,143 @@ func _start_new_game() -> void:
 		is_player_turn = true
 		_update_action_buttons()
 
+## Desenha a corrente na mesa.
+##
+## A versao anterior punha as pedras em fila reta, todas com a mesma cara de
+## retangulo de marfim: sem os pontos nao havia o que ler, e depois de umas dez
+## jogadas a fila saia da tela pelos dois lados. Agora cada pedra tem os pontos
+## gravados, a bucha entra atravessada como manda o jogo, e a corrente dobra
+## para a fileira de baixo quando enche a largura da mesa. No fim a camera
+## reenquadra o que existe -- a corrente cresce, o enquadramento cresce junto.
 func _render_table_tiles_3d() -> void:
 	for c in table_tiles_root.get_children(): c.queue_free()
-	
-	var total_tiles := board_chain.size()
-	var spacing_x := 0.95
-	var start_x := -(total_tiles * spacing_x * 0.5) + (spacing_x * 0.5)
-	
-	for i in range(total_tiles):
-		var tile_data := board_chain[i]
-		var tile_mesh := MeshInstance3D.new()
-		tile_mesh.mesh = MeshBuilder3D.create_domino_tile(0.9, 0.45, 0.1)
-		tile_mesh.material_override = MaterialFactory3D.get_ivory()
-		
-		var pos_x := start_x + (i * spacing_x)
-		tile_mesh.position = Vector3(pos_x, 0.05, 0.0)
-		
-		# Se for bucha (duplo), rotaciona em 90 graus
-		if tile_data["a"] == tile_data["b"]:
-			tile_mesh.rotation_degrees = Vector3(0, 90, 0)
-			
-		# Rebite central dourado
-		var rivet := MeshInstance3D.new()
-		var cyl := CylinderMesh.new()
-		cyl.top_radius = 0.04
-		cyl.bottom_radius = 0.04
-		cyl.height = 0.12
-		rivet.mesh = cyl
-		rivet.material_override = MaterialFactory3D.get_gold()
-		tile_mesh.add_child(rivet)
-		
-		table_tiles_root.add_child(tile_mesh)
+
+	var rows := _layout_chain_rows()
+	if rows.is_empty():
+		return
+
+	var widest := 0.0
+	for row in rows:
+		widest = maxf(widest, float(row["width"]))
+
+	var total_depth := float(rows.size()) * ROW_PITCH
+	var z0 := -total_depth * 0.5 + ROW_PITCH * 0.5
+
+	for row_idx in rows.size():
+		var row: Dictionary = rows[row_idx]
+		var row_z: float = z0 + float(row_idx) * ROW_PITCH
+		var x: float = -float(row["width"]) * 0.5
+		for entry in (row["tiles"] as Array):
+			var span := float(entry["span"])
+			_spawn_table_tile(entry["tile"], Vector3(x + span * 0.5, 0.06, row_z),
+				bool(entry["is_double"]), int(entry["end_mark"]), span)
+			x += span
+
+	# Enquadra o que a corrente ocupa agora, com folga para a proxima jogada.
+	if env_3d:
+		env_3d.frame_content(Vector2(maxf(widest, 1.8) + 0.6, maxf(total_depth, 1.0) + 0.6))
+
+
+## Divide a corrente em fileiras que cabem na largura da mesa.
+##
+## Devolve `[{width: float, tiles: [{tile, span, is_double, end_mark}]}]`, onde
+## `end_mark` e -1 na ponta esquerda, 1 na direita e 0 no meio.
+func _layout_chain_rows() -> Array[Dictionary]:
+	var rows: Array[Dictionary] = []
+	var current: Array = []
+	var width := 0.0
+	var last := board_chain.size() - 1
+
+	for i in board_chain.size():
+		var tile: Dictionary = board_chain[i]
+		var is_double: bool = tile["a"] == tile["b"]
+		# A bucha entra atravessada: ocupa a largura da pedra, nao o comprimento.
+		var span: float = (TILE_WID if is_double else TILE_LEN) + 0.03
+		if not current.is_empty() and width + span > ROW_MAX_X:
+			rows.append({"width": width, "tiles": current})
+			current = []
+			width = 0.0
+		var end_mark := 0
+		if i == 0:
+			end_mark = -1
+		elif i == last:
+			end_mark = 1
+		current.append({"tile": tile, "span": span, "is_double": is_double, "end_mark": end_mark})
+		width += span
+
+	if not current.is_empty():
+		rows.append({"width": width, "tiles": current})
+	return rows
+
+
+func _spawn_table_tile(tile: Dictionary, pos: Vector3, is_double: bool, end_mark: int,
+		span: float) -> void:
+	var node := Node3D.new()
+	node.position = pos
+	# A malha nasce comprida em Z. Pedra normal deita ao longo da corrente (X);
+	# a bucha fica como nasceu, atravessada.
+	node.rotation_degrees.y = 0.0 if is_double else 90.0
+
+	var tile_mesh := MeshInstance3D.new()
+	tile_mesh.mesh = MeshBuilder3D.create_domino_tile(TILE_LEN, TILE_WID, TILE_THICK)
+	tile_mesh.material_override = MaterialFactory3D.get_ivory()
+	node.add_child(tile_mesh)
+
+	node.add_child(PipFactory3D.domino_divider(TILE_LEN, TILE_WID, TILE_THICK))
+	node.add_child(PipFactory3D.domino_pips(tile["a"], tile["b"], TILE_LEN, TILE_WID, TILE_THICK))
+
+	table_tiles_root.add_child(node)
+
+	if end_mark != 0 and board_chain.size() > 1:
+		table_tiles_root.add_child(_end_marker(pos, end_mark, span))
+
+
+## Halo dourado rente a mesa, encostado na ponta livre da corrente. E o que liga
+## o rotulo "Pontas: [ 3 ] <-> [ 5 ]" a pedra de onde aquele numero saiu.
+##
+## Fica preso ao TableTilesRoot, e nao a pedra: a pedra normal esta girada 90
+## graus e a bucha nao, entao um filho da pedra apontaria para lados diferentes
+## nos dois casos. Em coordenadas de mesa a corrente sempre corre em X.
+func _end_marker(tile_pos: Vector3, end_mark: int, span: float) -> MeshInstance3D:
+	var halo := MeshInstance3D.new()
+	var disc := CylinderMesh.new()
+	disc.top_radius = TILE_WID * 0.22
+	disc.bottom_radius = TILE_WID * 0.22
+	disc.height = 0.014
+	halo.mesh = disc
+	halo.position = tile_pos + Vector3(float(end_mark) * (span * 0.5 + TILE_WID * 0.30),
+		-0.05, 0.0)
+	halo.material_override = MaterialFactory3D.get_glow(Color(1.0, 0.82, 0.28), 0.85)
+	halo.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	return halo
 
 func _update_ui() -> void:
 	ai_info_label.text = "IA: %d pedras  |  Dorme (Monte): %d pedras" % [ai_hand.size(), boneyard.size()]
 	ends_label.text = "Pontas: [ %d ] <---------> [ %d ]" % [left_end, right_end]
 	
-	# Mão do Jogador
+	# Mão do Jogador: pedras desenhadas, nao botoes com o texto "6/---/4".
 	for c in player_hand_container.get_children(): c.queue_free()
+
+	# Com 7 pedras na mao e a largura fixa do container, cada pedra tem 82 px.
+	# Passando disso (compra do monte) elas encolhem ate caber, em vez de a
+	# fileira transbordar e sumir pelas bordas da tela.
+	var count: int = maxi(player_hand.size(), 1)
+	var available: float = player_hand_container.size.x
+	if available <= 0.0:
+		available = 600.0
+	var sep: float = player_hand_container.get_theme_constant("separation")
+	var tile_w: float = clampf((available - sep * float(count - 1)) / float(count), 36.0, 74.0)
+
 	for i in range(player_hand.size()):
-		var tile := player_hand[i]
-		var btn := Button.new()
-		btn.custom_minimum_size = Vector2(72, 80)
-		btn.add_theme_font_size_override("font_size", 20)
-		btn.text = "%d\n---\n%d" % [tile["a"], tile["b"]]
-		
-		if i == selected_tile_idx:
-			btn.self_modulate = Color(0.95, 0.8, 0.2)
-		else:
-			var can_play := DominoRules.can_play_tile(tile, left_end, right_end)
-			btn.self_modulate = Color(0.3, 0.75, 0.4) if (is_player_turn and can_play) else Color(0.85, 0.85, 0.85)
-			
-		btn.pressed.connect(_on_player_tile_selected.bind(i))
-		player_hand_container.add_child(btn)
-		
+		var tile: Dictionary = player_hand[i]
+		var view := DominoTile2D.new()
+		view.custom_minimum_size = Vector2(tile_w, tile_w * 1.8)
+		view.setup(tile["a"], tile["b"])
+		view.selected = (i == selected_tile_idx)
+		view.playable = is_player_turn and DominoRules.can_play_tile(tile, left_end, right_end)
+		view.pressed.connect(_on_player_tile_selected.bind(i))
+		player_hand_container.add_child(view)
+
 	_update_action_buttons()
 
 func _update_action_buttons() -> void:

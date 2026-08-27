@@ -1,7 +1,18 @@
-[gd_scene load_steps=3 format=3 uid="uid://dominogameuid"]
+[gd_scene load_steps=4 format=3 uid="uid://dominogameuid"]
 
 [ext_resource type="Script" path="res://games/domino/DominoGame.gd" id="1_script"]
 [ext_resource type="PackedScene" uid="uid://tabletopenv3duid" path="res://shared/3d/TabletopEnvironment3D.tscn" id="2_env"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_hand"]
+bg_color = Color(0.043, 0.098, 0.075, 0.85)
+border_width_top = 2
+border_color = Color(0.95, 0.79, 0.32, 0.55)
+corner_radius_top_left = 22
+corner_radius_top_right = 22
+content_margin_left = 12.0
+content_margin_top = 8.0
+content_margin_right = 12.0
+content_margin_bottom = 10.0
 
 [node name="DominoGame" type="Control"]
 layout_mode = 3
@@ -127,31 +138,35 @@ layout_mode = 2
 theme_override_font_sizes/font_size = 18
 text = "🔄 Nova Partida"
 
-[node name="PlayerArea" type="Control" parent="UI"]
+[node name="PlayerArea" type="PanelContainer" parent="UI"]
 layout_mode = 1
 anchors_preset = 12
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_top = -140.0
-offset_bottom = -20.0
+offset_top = -222.0
+offset_bottom = -12.0
 grow_horizontal = 2
 grow_vertical = 0
+mouse_filter = 1
+theme_override_styles/panel = SubResource("StyleBoxFlat_hand")
 
-[node name="HandContainer" type="HBoxContainer" parent="UI/PlayerArea"]
-layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -300.0
-offset_top = -45.0
-offset_right = 300.0
-offset_bottom = 45.0
-grow_horizontal = 2
-grow_vertical = 2
-theme_override_constants/separation = 8
+[node name="HandVBox" type="VBoxContainer" parent="UI/PlayerArea"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="HandTitle" type="Label" parent="UI/PlayerArea/HandVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.98, 0.86, 0.45, 1)
+theme_override_font_sizes/font_size = 15
+text = "SUA MÃO"
+horizontal_alignment = 1
+
+[node name="HandContainer" type="HBoxContainer" parent="UI/PlayerArea/HandVBox"]
+custom_minimum_size = Vector2(0, 158)
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 6
 alignment = 1
 
 [connection signal="pressed" from="UI/VBoxContainer/TopBar/BtnBack" to="." method="_on_btn_back_pressed"]
