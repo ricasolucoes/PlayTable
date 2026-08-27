@@ -105,6 +105,11 @@ func _draw() -> void:
 		_draw_card_front(w, h)
 
 func _draw_card_back(w: float, h: float) -> void:
+	var back_tex := AssetCatalog.get_card_back("blue")
+	if back_tex:
+		draw_texture_rect(back_tex, Rect2(0, 0, w, h), false)
+		return
+
 	# Ivory border
 	draw_rect(Rect2(0, 0, w, h), Color(0.96, 0.94, 0.90), true)
 	
@@ -196,6 +201,11 @@ func _draw_crown(c: Vector2) -> void:
 	draw_circle(c + Vector2(24, -8), 3.5, Color(0.9, 0.15, 0.15))
 
 func _draw_ruby(c: Vector2) -> void:
+	var tex := AssetCatalog.get_gem("ruby")
+	if tex:
+		var s := 54.0
+		draw_texture_rect(tex, Rect2(c.x - s*0.5, c.y - s*0.5, s, s), false)
+		return
 	var top = [
 		c + Vector2(-16, -14),
 		c + Vector2(16, -14),
@@ -213,6 +223,11 @@ func _draw_ruby(c: Vector2) -> void:
 	draw_line(c + Vector2(8, -14), c + Vector2(0, 22), Color(0.6, 0.05, 0.1, 0.8), 1.5)
 
 func _draw_emerald(c: Vector2) -> void:
+	var tex := AssetCatalog.get_gem("emerald")
+	if tex:
+		var s := 54.0
+		draw_texture_rect(tex, Rect2(c.x - s*0.5, c.y - s*0.5, s, s), false)
+		return
 	var pts = [
 		c + Vector2(-12, -20),
 		c + Vector2(12, -20),
@@ -232,6 +247,7 @@ func _draw_emerald(c: Vector2) -> void:
 		c + Vector2(-14, 0)
 	]
 	draw_colored_polygon(inner, Color(0.35, 0.95, 0.65))
+
 
 func _draw_shield(c: Vector2) -> void:
 	var pts = [
