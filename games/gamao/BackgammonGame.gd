@@ -868,29 +868,17 @@ func _handle_game_over(winner: int) -> void:
 	else:
 		msg = "A IA venceu a partida (%s)." % win_type_title
 
+	# A gamificacao sai por BaseGame.report_match_result: quem credita o XP,
+	# conta a partida e cuida da streak e o GamificationManager, ouvindo o
+	# barramento. O jogo so diz quanto vale a vitoria neste tabuleiro.
+	var xp_reward: int = (60 * multiplier) if is_player_win else 15
+	report_match_result(is_player_win, {
+		"xp": xp_reward,
+		"win_type": win_type,
+		"turns": turn_count,
+		"time": elapsed_time,
+	})
 	finish_game(msg, is_player_win)
-
-	# Integração de Gamificação
-	var xp_reward := 0
-	if is_player_win:
-		xp_reward = 60 * multiplier
-	else:
-		xp_reward = 15
-
-	if GameEventBus:
-		GameEventBus.emit_match_completed("backgammon", {
-			"win": is_player_win,
-			"win_type": win_type,
-			"turns": turn_count,
-			"time": elapsed_time
-		})
-		GameEventBus.emit_xp_gained(xp_reward, "match_win" if is_player_win else "match_loss")
-
-	if PlayerProfile:
-		PlayerProfile.increment_stat("total_matches")
-		if is_player_win:
-			PlayerProfile.increment_stat("total_wins")
-		PlayerProfile.update_daily_streak()
 
 	# Modal de Resultado
 	_show_result_modal(is_player_win, win_type_title, xp_reward)

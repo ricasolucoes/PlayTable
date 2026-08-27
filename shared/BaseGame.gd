@@ -37,6 +37,14 @@ var btn_restart: BaseButton = null
 ## Mesa 3D, quando o jogo tem uma. `finish_game()` comemora nela.
 var env_3d: TabletopEnvironment3D = null
 
+## Identificador do jogo no barramento de eventos, tirado da pasta da cena
+## (`res://games/gamao/BackgammonGame.tscn` -> `gamao`).
+var game_id: String = ""
+
+## Trava para o resultado nao ser contado duas vezes na mesma partida: varios
+## jogos chamam `finish_game()` de mais de um caminho de fim.
+var _result_reported: bool = false
+
 
 ## O raiz de cada jogo é uma Control de tela inteira. No filtro padrão ela
 ## retém o clique, e ele nunca chega ao Picker do Board3D — foi assim que as
@@ -46,6 +54,29 @@ var env_3d: TabletopEnvironment3D = null
 ## não encadeia `_ready` entre pai e filho, e os 16 jogos têm o próprio.
 func _init() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
+
+
+## Liga a gamificacao sem que nenhum dos 19 jogos precise saber dela.
+##
+## O motor (GamificationManager, XP, nivel, streak, conquistas) ja existia e
+## escutava o GameEventBus, mas so tres jogos publicavam alguma coisa nele e
+## nada aparecia na tela: era gamificacao invisivel. Aqui a cena ganha o aviso
+## visual, e `finish_game()` passa a publicar o resultado da partida.
+func _enter_tree() -> void:
+	game_id = _derive_game_id()
+	if get_node_or_null("RewardToast") == null:
+		var toast := RewardToast.new()
+		toast.name = "RewardToast"
+		add_child(toast)
+
+
+func _derive_game_id() -> String:
+	var path := scene_file_path
+	if path.begins_with("res://games/"):
+		var parts := path.split("/")
+		if parts.size() >= 4:
+			return parts[3]
+	return "playtable"
 
 
 # ---------------------------------------------------------------- navegação
@@ -79,6 +110,7 @@ func _on_restart_pressed() -> void:
 
 func restart_game() -> void:
 	play_click()
+	_result_reported = false
 	_start_new_game()
 
 
@@ -94,10 +126,28 @@ func _start_new_game() -> void:
 func finish_game(message: String, player_won: bool = false) -> void:
 	game_over = true
 	set_status(message)
+	report_match_result(player_won)
 	if btn_restart != null:
 		btn_restart.show()
 	if player_won and env_3d != null:
 		env_3d.celebrate_win()
+
+
+## Publica o fim de partida no barramento: dai saem o XP, a streak do dia, as
+## conquistas e o aviso na tela. Jogos que terminam por modal em vez de
+## `finish_game()` -- o Jogo da Velha e um -- chamam isto direto.
+##
+## Ignora chamadas repetidas na mesma partida; `_start_new_game()` de cada jogo
+## nao precisa lembrar de destravar, quem destrava e `restart_game()`.
+func report_match_result(player_won: bool, extra: Dictionary = {}) -> void:
+	if _result_reported:
+		return
+	_result_reported = true
+	if GameEventBus == null:
+		return
+	var payload := extra.duplicate()
+	payload["win"] = player_won
+	GameEventBus.emit_match_completed(game_id, payload)
 
 
 ## Revela o modal de resultado com o fade que os jogos 2D repetiam.

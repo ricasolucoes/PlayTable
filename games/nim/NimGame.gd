@@ -603,26 +603,29 @@ func _handle_game_over(last_player: int) -> void:
 		"hard": diff_multiplier = 3
 	var total_xp: int = base_xp * diff_multiplier if human_won else 30
 	
+	var result: Dictionary = {
+		"winner": winner,
+		"turns": turn_count,
+		"misere": is_misere,
+		"difficulty": ai_difficulty,
+		"preset": preset_name,
+		"time": elapsed_time,
+	}
+
 	var bus := _get_event_bus()
 	if bus:
-		var result: Dictionary = {
-			"win": human_won,
-			"winner": winner,
-			"turns": turn_count,
-			"misere": is_misere,
-			"difficulty": ai_difficulty,
-			"preset": preset_name,
-			"time": elapsed_time
-		}
-		bus.emit_match_completed("nim", result)
+		# A partida e o XP saem por BaseGame.report_match_result, abaixo; aqui
+		# ficam so as conquistas proprias do Nim.
 		if human_won:
-			bus.emit_xp_gained(total_xp, "nim_win")
 			bus.achievement_unlocked.emit("ACH_NIM_FIRST_WIN")
 			if is_misere and ai_difficulty == "hard":
 				bus.achievement_unlocked.emit("ACH_NIM_MISERE_MASTER")
 			if preset_name == "pyramid_4":
 				bus.achievement_unlocked.emit("ACH_NIM_PYRAMID_SOLVER")
 				
+	result["xp"] = total_xp
+	report_match_result(human_won, result)
+
 	var profile := _get_player_profile()
 	if profile:
 		if human_won:

@@ -575,20 +575,20 @@ func _handle_game_won() -> void:
 	var perfect_bonus: int = 200 if is_perfect else 0
 	var total_xp: int = base_xp + stars_bonus + perfect_bonus
 	
+	# A partida e o XP saem por BaseGame.report_match_result; aqui ficam so as
+	# conquistas proprias da Torre.
+	report_match_result(true, {
+		"xp": total_xp,
+		"perfect": is_perfect,
+		"disks": disk_count,
+		"moves": move_count,
+		"optimal_moves": optimal,
+		"stars": stars,
+		"time": elapsed_time,
+	})
+
 	var bus := _get_event_bus()
 	if bus:
-		var result: Dictionary = {
-			"win": true,
-			"perfect": is_perfect,
-			"disks": disk_count,
-			"moves": move_count,
-			"optimal_moves": optimal,
-			"stars": stars,
-			"time": elapsed_time
-		}
-		bus.emit_match_completed("hanoi", result)
-		bus.emit_xp_gained(total_xp, "hanoi_win")
-		
 		if is_perfect and disk_count >= 3:
 			bus.achievement_unlocked.emit("ACH_HANOI_3_PERFECT")
 		if disk_count >= 5:
