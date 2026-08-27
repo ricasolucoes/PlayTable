@@ -34,8 +34,15 @@ mkdir -p "$PROJECT_DIR/android/build/assetPackInstallTime/src/main/assets"
 "$PROJECT_DIR/android/pgs/install.sh"
 PGS_DEPS="$(tr '\n' '|' < "$PROJECT_DIR/android/pgs/gradle_deps.txt" | sed 's/|$//')"
 
+# As ABIs precisam vir na linha do gradle: estes builds nao passam pelo
+# exportador do Godot, entao `architectures/*` do export_presets.cfg nao chega
+# aqui e o gradle assume as quatro. O APK saia com x86 e x86_64 -- 153 MB de
+# biblioteca nativa que nenhum telefone usa.
+ABIS="armeabi-v7a|arm64-v8a"
+
 cd "$PROJECT_DIR/android/build"
 ./gradlew bundleStandardRelease \
+    -Pexport_enabled_abis="$ABIS" \
     -Pplugins_remote_binaries="$PGS_DEPS" \
     -Pexport_package_name="org.playtable.app" \
     -Pexport_version_code="$VERSION_CODE" \
