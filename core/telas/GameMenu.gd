@@ -236,7 +236,7 @@ func _create_game_card(game: GameDefinition) -> Button:
 	fundo.add_child(textos)
 
 	var titulo := Label.new()
-	titulo.text = game.title
+	titulo.text = game.display_name()
 	titulo.add_theme_font_size_override("font_size", FONTE_TITULO)
 	titulo.add_theme_color_override("font_color", Color(0.99, 0.98, 0.95))
 	titulo.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.85))

@@ -99,7 +99,7 @@ func mastery_for_ui() -> Array:
 			continue
 		saida.append({
 			"id": id,
-			"title": def.title,
+			"title": def.display_name(),
 			"icon": def.icon,
 			"level": get_mastery_level(id),
 			"xp": get_mastery_xp(id),

@@ -5,7 +5,13 @@
 class_name GameDefinition
 extends Resource
 
-## The display title of the game (translatable key or direct text)
+## Chave de tradução do nome do jogo (`GAME_CONNECT4`, `GAME_GAMAO`...).
+##
+## Era texto fixo em português — "Quatro em Linha" escrito no catálogo — e o
+## CSV tinha uma chave traduzida por jogo que ninguém lia. O aplicativo virava
+## para o inglês e os dezenove nomes continuavam em português, no menu, na
+## barra de cima e no aviso de maestria. Quem mostra o nome chama
+## `display_name()`; `title` sozinho é a chave, e não serve de rótulo.
 @export var title: String = ""
 
 ## The emoji or icon character displayed alongside the title
@@ -65,3 +71,17 @@ func tagged(p_genre: String, p_modes: int) -> GameDefinition:
 ## filtra é que decide o que fazer com isso.
 func has_mode(mode: int) -> bool:
 	return (modes & mode) != 0
+
+
+## O nome do jogo no idioma de agora. Use isto em qualquer lugar que o nome
+## apareça na tela; `title` é a chave, não o rótulo.
+##
+## `TranslationServer.translate` em vez de `tr()` porque `Resource` não é `Node`
+## e não tem o atalho — é a mesma chamada que `GameMenu.get_game_subtitle` faz.
+func display_name() -> String:
+	return TranslationServer.translate(title)
+
+
+## A descrição no idioma de agora, ou vazio quando a entrada não tem chave.
+func display_description() -> String:
+	return TranslationServer.translate(description) if description != "" else ""

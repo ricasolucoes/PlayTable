@@ -95,28 +95,35 @@ func test_cada_entrada_do_catalogo_tem_titulo_icone_e_descricao() -> void:
 		assert_true(def.is_implemented, "%s marcado como implementado" % def.title)
 
 
-## ACHADO (documentado no CHANGELOG, nao corrigido aqui): o catalogo aponta
-## para chaves GAME_DESC_* que NAO existem em core/i18n/translations.csv, e o
-## CSV tem chaves GAME_* com o nome de cada jogo que NINGUEM usa — os menus
-## montam o botao com game.title, que e texto fixo em portugues. Ou seja, os
-## nomes dos jogos nunca sao traduzidos e as descricoes nunca aparecem.
-## Escolher qual dos dois lados muda e decisao do dono; o teste abaixo tranca
-## o que hoje esta certo: existe uma chave de nome traduzida para cada jogo.
+## O nome e a descricao de cada jogo saem do catalogo como CHAVE, e quem mostra
+## chama display_name()/display_description(). Ate a v0.7.0 o catalogo trazia o
+## nome escrito em portugues e as chaves GAME_* do CSV nao eram lidas por
+## ninguem: o aplicativo virava para o ingles e os dezenove nomes ficavam em
+## portugues no menu, na barra de cima e no aviso de maestria.
+##
+## O teste percorre o proprio catalogo em vez de uma lista escrita a mao: jogo
+## novo entra sem chave e o teste acusa, que e o ponto.
 
-func test_o_csv_tem_um_nome_traduzido_para_cada_um_dos_jogos() -> void:
-	var chaves := [
-		"GAME_CONNECT4", "GAME_TICTACTOE", "GAME_REVERSI", "GAME_BATTLESHIP",
-		"GAME_CHECKERS", "GAME_MANCALA", "GAME_SOLITAIRE", "GAME_MINESWEEPER",
-		"GAME_DOMINO", "GAME_LUDO", "GAME_SENET", "GAME_MEMORY",
-		"GAME_KLONDIKE", "GAME_BLACKJACK", "GAME_UNOLIKE", "GAME_POKER",
-		"GAME_HANOI", "GAME_NIM", "GAME_GAMAO",
-	]
-	assert_eq(chaves.size(), GameCatalog.get_all_games().size(), "uma chave por jogo")
+func test_nome_e_descricao_de_cada_jogo_traduzem_nos_tres_idiomas() -> void:
 	var antes := LocaleManager.current_locale
 	for idioma in ["pt_BR", "en", "es"]:
 		LocaleManager.set_locale(idioma)
-		for chave in chaves:
-			assert_ne(tr(chave), chave, "%s sem traducao em %s" % [chave, idioma])
+		for def in GameCatalog.get_all_games():
+			assert_ne(def.display_name(), def.title,
+				"%s sem nome traduzido em %s" % [def.title, idioma])
+			assert_ne(def.display_description(), def.description,
+				"%s sem descricao traduzida em %s" % [def.title, idioma])
+	LocaleManager.set_locale(antes)
+
+
+## O nome que a barra de cima do jogo mostra e o mesmo do catalogo, no idioma
+## de agora -- nao a chave crua nem uma segunda verdade escrita na cena.
+func test_a_barra_de_cima_mostra_o_nome_traduzido() -> void:
+	var antes := LocaleManager.current_locale
+	LocaleManager.set_locale("en")
+	assert_eq(GameCatalog.bar_title("gamao"), "Backgammon", "barra em ingles")
+	LocaleManager.set_locale("pt_BR")
+	assert_eq(GameCatalog.bar_title("gamao"), "Gamão", "barra em portugues")
 	LocaleManager.set_locale(antes)
 
 

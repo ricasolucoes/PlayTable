@@ -132,7 +132,7 @@ func _on_quest(quest_id: String) -> void:
 
 func _on_mastery(game_id: String, novo_nivel: int) -> void:
 	var def := GameCatalog.find_by_id(game_id)
-	var nome := def.title if def != null else game_id
+	var nome := def.display_name() if def != null else game_id
 	_push("📈", tr("TOAST_MASTERY") % [novo_nivel, nome], "")
 
 

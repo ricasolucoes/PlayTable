@@ -21,33 +21,33 @@ const DUPLA := GameDefinition.Mode.VERSUS
 ## Returns all board game definitions.
 static func get_board_games() -> Array[GameDefinition]:
 	return [
-		GameDefinition.create("Quatro em Linha", "🔴", "res://games/quatro_em_linha/ConnectFourGame.tscn", &"board", "GAME_DESC_CONNECT_FOUR")
+		GameDefinition.create("GAME_CONNECT4", "🔴", "res://games/quatro_em_linha/ConnectFourGame.tscn", &"board", "GAME_DESC_CONNECT_FOUR")
 			.tagged("GENRE_STRATEGY", IA),
-		GameDefinition.create("Jogo da Velha", "❌", "res://games/jogo_da_velha/TicTacToeGame.tscn", &"board", "GAME_DESC_TIC_TAC_TOE")
+		GameDefinition.create("GAME_TICTACTOE", "❌", "res://games/jogo_da_velha/TicTacToeGame.tscn", &"board", "GAME_DESC_TIC_TAC_TOE")
 			.tagged("GENRE_CLASSIC", IA),
-		GameDefinition.create("Damas", "⬛", "res://games/damas/CheckersGame.tscn", &"board", "GAME_DESC_CHECKERS")
+		GameDefinition.create("GAME_CHECKERS", "⬛", "res://games/damas/CheckersGame.tscn", &"board", "GAME_DESC_CHECKERS")
 			.tagged("GENRE_CLASSIC", IA),
-		GameDefinition.create("Batalha Naval", "🚢", "res://games/batalha_naval/BattleshipGame.tscn", &"board", "GAME_DESC_BATTLESHIP")
+		GameDefinition.create("GAME_BATTLESHIP", "🚢", "res://games/batalha_naval/BattleshipGame.tscn", &"board", "GAME_DESC_BATTLESHIP")
 			.tagged("GENRE_STRATEGY", IA),
-		GameDefinition.create("Reversi", "⚫", "res://games/reversi/ReversiGame.tscn", &"board", "GAME_DESC_REVERSI")
+		GameDefinition.create("GAME_REVERSI", "⚫", "res://games/reversi/ReversiGame.tscn", &"board", "GAME_DESC_REVERSI")
 			.tagged("GENRE_STRATEGY", IA),
-		GameDefinition.create("Mancala", "💎", "res://games/mancala/MancalaGame.tscn", &"board", "GAME_DESC_MANCALA")
+		GameDefinition.create("GAME_MANCALA", "💎", "res://games/mancala/MancalaGame.tscn", &"board", "GAME_DESC_MANCALA")
 			.tagged("GENRE_ANCESTRAL", IA),
-		GameDefinition.create("Ludo", "🎲", "res://games/ludo/LudoGame.tscn", &"board", "GAME_DESC_LUDO")
+		GameDefinition.create("GAME_LUDO", "🎲", "res://games/ludo/LudoGame.tscn", &"board", "GAME_DESC_LUDO")
 			.tagged("GENRE_RACE", IA),
-		GameDefinition.create("Senet", "𓁹", "res://games/senet/SenetGame.tscn", &"board", "GAME_DESC_SENET")
+		GameDefinition.create("GAME_SENET", "𓁹", "res://games/senet/SenetGame.tscn", &"board", "GAME_DESC_SENET")
 			.tagged("GENRE_EGYPT", IA),
-		GameDefinition.create("Resta Um", "🔘", "res://games/solitario/PegSolitaireGame.tscn", &"board", "GAME_DESC_PEG_SOLITAIRE")
+		GameDefinition.create("GAME_SOLITAIRE", "🔘", "res://games/solitario/PegSolitaireGame.tscn", &"board", "GAME_DESC_PEG_SOLITAIRE")
 			.tagged("GENRE_PUZZLE", SOLO),
-		GameDefinition.create("Campo Minado", "💣", "res://games/campo_minado/MinesweeperGame.tscn", &"board", "GAME_DESC_MINESWEEPER")
+		GameDefinition.create("GAME_MINESWEEPER", "💣", "res://games/campo_minado/MinesweeperGame.tscn", &"board", "GAME_DESC_MINESWEEPER")
 			.tagged("GENRE_LOGIC", SOLO),
-		GameDefinition.create("Dominó", "🁣", "res://games/domino/DominoGame.tscn", &"board", "GAME_DESC_DOMINO")
+		GameDefinition.create("GAME_DOMINO", "🁣", "res://games/domino/DominoGame.tscn", &"board", "GAME_DESC_DOMINO")
 			.tagged("GENRE_CLASSIC", IA),
-		GameDefinition.create("Torres de Hanói", "🗼", "res://games/hanoi/HanoiGame.tscn", &"board", "GAME_DESC_HANOI")
+		GameDefinition.create("GAME_HANOI", "🗼", "res://games/hanoi/HanoiGame.tscn", &"board", "GAME_DESC_HANOI")
 			.tagged("GENRE_LOGIC", SOLO),
-		GameDefinition.create("Jogo de Nim", "🪙", "res://games/nim/NimGame.tscn", &"board", "GAME_DESC_NIM")
+		GameDefinition.create("GAME_NIM", "🪙", "res://games/nim/NimGame.tscn", &"board", "GAME_DESC_NIM")
 			.tagged("GENRE_STRATEGY", IA | DUPLA),
-		GameDefinition.create("Gamão", "🎲", "res://games/gamao/BackgammonGame.tscn", &"board", "GAME_DESC_BACKGAMMON")
+		GameDefinition.create("GAME_GAMAO", "🎲", "res://games/gamao/BackgammonGame.tscn", &"board", "GAME_DESC_BACKGAMMON")
 			.tagged("GENRE_STRATEGY", IA | DUPLA),
 	]
 
@@ -55,15 +55,15 @@ static func get_board_games() -> Array[GameDefinition]:
 ## Returns all card game definitions.
 static func get_card_games() -> Array[GameDefinition]:
 	return [
-		GameDefinition.create("Paciência (Klondike)", "🃏", "res://games/paciencia/KlondikeGame.tscn", &"cards", "GAME_DESC_KLONDIKE")
+		GameDefinition.create("GAME_KLONDIKE", "🃏", "res://games/paciencia/KlondikeGame.tscn", &"cards", "GAME_DESC_KLONDIKE")
 			.tagged("GENRE_PATIENCE", SOLO),
-		GameDefinition.create("Jogo da Memória", "🧠", "res://games/memoria/MemoryGame.tscn", &"cards", "GAME_DESC_MEMORY")
+		GameDefinition.create("GAME_MEMORY", "🧠", "res://games/memoria/MemoryGame.tscn", &"cards", "GAME_DESC_MEMORY")
 			.tagged("GENRE_MEMORY", SOLO),
-		GameDefinition.create("21 (Blackjack)", "🂡", "res://games/blackjack/BlackjackGame.tscn", &"cards", "GAME_DESC_BLACKJACK")
+		GameDefinition.create("GAME_BLACKJACK", "🂡", "res://games/blackjack/BlackjackGame.tscn", &"cards", "GAME_DESC_BLACKJACK")
 			.tagged("GENRE_CASINO", IA),
-		GameDefinition.create("Jogo de Cores & Cartas", "🌈", "res://games/unolike/UnoLikeGame.tscn", &"cards", "GAME_DESC_UNO_LIKE")
+		GameDefinition.create("GAME_UNOLIKE", "🌈", "res://games/unolike/UnoLikeGame.tscn", &"cards", "GAME_DESC_UNO_LIKE")
 			.tagged("GENRE_SHEDDING", IA),
-		GameDefinition.create("Poker Dice / Cartas", "♠", "res://games/poker/PokerGame.tscn", &"cards", "GAME_DESC_POKER")
+		GameDefinition.create("GAME_POKER", "♠", "res://games/poker/PokerGame.tscn", &"cards", "GAME_DESC_POKER")
 			.tagged("GENRE_VIDEO_POKER", SOLO),
 	]
 
@@ -114,7 +114,7 @@ static func all_game_ids() -> Array[String]:
 	return ids
 
 
-## Nome do jogo na barra de cima.
+## Nome do jogo na barra de cima, no idioma de agora.
 ##
 ## O catálogo é a única fonte do nome: até agora a tela dizia "Damas 3D" e o
 ## catálogo dizia "Damas", duas verdades para a mesma coisa. Nenhum título
@@ -123,4 +123,4 @@ static func all_game_ids() -> Array[String]:
 ## próprio rótulo corta com reticências.
 static func bar_title(game_id: String) -> String:
 	var def := find_by_id(game_id)
-	return def.title if def != null else ""
+	return def.display_name() if def != null else ""
