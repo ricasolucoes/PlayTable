@@ -15,7 +15,9 @@ signal cloud_save_saved(success: bool)
 signal sync_conflict_resolved()
 
 const SNAPSHOT_NAME := "PlayTable_Progress"
-const SAVE_DESCRIPTION := "Progresso do PlayTable"
+## Descricao do slot, que o seletor de jogos salvos do Play Games mostra ao
+## jogador -- por isso e chave, e a traducao e lida na hora de salvar.
+const SAVE_DESCRIPTION := "CLOUD_SAVE_DESCRIPTION"
 const SCHEMA := 2
 
 var _plugin: Object = null
@@ -151,7 +153,7 @@ func save_to_cloud() -> void:
 		return
 	_sync_pendente = false
 	var dados := JSON.stringify(serialize_profile()).to_utf8_buffer()
-	_plugin.saveSnapshot(SNAPSHOT_NAME, SAVE_DESCRIPTION, Marshalls.raw_to_base64(dados))
+	_plugin.saveSnapshot(SNAPSHOT_NAME, tr(SAVE_DESCRIPTION), Marshalls.raw_to_base64(dados))
 
 
 func load_from_cloud() -> void:

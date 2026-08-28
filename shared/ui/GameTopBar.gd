@@ -13,7 +13,7 @@ extends Control
 ## carregar um nó de cabeçalho. O jogo só diz o placar, e são duas formas:
 ##
 ##     set_duel_score(minhas, da_ia)                        # dois lados
-##     set_counters([{"value": "14", "label": "jogadas"}])  # jogo solo
+##     set_counters([{"value": "14", "label": "SCORE_PLAYS"}])  # jogo solo
 ##
 ## O placar são células "número sobre rótulo", no máximo duas: com três, o nome
 ## do jogo não cabe mais nos 720 px do viewport lógico.
@@ -54,8 +54,12 @@ const FONTE_PONTO := 30
 ## Largura mínima de uma célula, para o placar não dançar quando 9 vira 10.
 const LARGURA_CELULA := 72.0
 
-const ROTULO_VOCE := "você"
-const ROTULO_IA := "ia"
+## Rótulos do placar, em chave de tradução. Eram "você" e "ia" escritos aqui,
+## e o placar dos dezenove jogos continuava em português com o aplicativo em
+## inglês -- junto com "jogadas", "fichas", "minas" e os outros que cada jogo
+## passa. Quem traduz é `_refazer_placar`, num lugar só.
+const ROTULO_VOCE := "SCORE_YOU"
+const ROTULO_IA := "SCORE_AI"
 
 ## Cor do véu: o preto mais quente da mesa, não preto puro.
 const VEU_COR := Color(0.031, 0.024, 0.016)
@@ -270,7 +274,9 @@ func _refazer_placar() -> void:
 		var rotulo := _nos[i].get_child(1) as Label
 		valor.text = str(_celulas[i]["value"])
 		valor.add_theme_color_override("font_color", cor)
-		rotulo.text = str(_celulas[i]["label"])
+		# `tr` de chave desconhecida devolve a própria entrada, então um jogo que
+		# ainda passe texto pronto continua aparecendo igual.
+		rotulo.text = tr(str(_celulas[i]["label"]))
 		var esperando := _duelo and _lado_ativo >= 0 and _lado_ativo != i
 		_nos[i].modulate = Color(0.6, 0.6, 0.6, 0.7) if esperando else Color(1.0, 1.0, 1.0, 1.0)
 
