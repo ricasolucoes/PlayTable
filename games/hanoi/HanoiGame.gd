@@ -166,7 +166,7 @@ func _setup_difficulty_buttons() -> void:
 		
 	for d in range(Rules.MIN_DISKS, Rules.MAX_DISKS + 1):
 		var btn := Button.new()
-		btn.text = "%d Discos" % d
+		btn.text = tr("HANOI_DISC_COUNT") % d
 		btn.custom_minimum_size = Vector2(85, 42)
 		btn.focus_mode = Control.FOCUS_NONE
 		btn.pressed.connect(_on_difficulty_selected.bind(d))
@@ -227,7 +227,7 @@ func _start_new_game() -> void:
 	_update_ui_stats()
 	_highlight_active_difficulty_button()
 	
-	set_status("Toque no Pino A (Origem) para erguer o primeiro disco!")
+	set_status(tr("HANOI_START"))
 	
 	var bus := _get_event_bus()
 	if bus:
@@ -353,7 +353,7 @@ func _on_peg_pressed(peg_idx: int) -> void:
 	# Se nenhum pino estiver selecionado -> Seleciona o pino de origem
 	if selected_peg == -1:
 		if pegs[peg_idx].is_empty():
-			set_status("Pino %s está vazio! Escolha um pino com discos." % _get_peg_name(peg_idx))
+			set_status(tr("HANOI_PEG_EMPTY") % _get_peg_name(peg_idx))
 			_play_error_buzz()
 			return
 			
@@ -362,7 +362,7 @@ func _on_peg_pressed(peg_idx: int) -> void:
 		selected_disk_node = disk_nodes.get(top_disk_size)
 		_animate_disk_lift(selected_disk_node, peg_idx)
 		_show_peg_halo(peg_idx, Color(1.0, 0.85, 0.2))
-		set_status("Disco %d erguido! Toque no pino de destino." % top_disk_size)
+		set_status(tr("HANOI_DISK_LIFTED") % top_disk_size)
 		return
 		
 	# Se o mesmo pino for tocado novamente -> Pousa o disco de volta
@@ -372,7 +372,7 @@ func _on_peg_pressed(peg_idx: int) -> void:
 		var node: Node3D = selected_disk_node
 		selected_disk_node = null
 		_animate_disk_lower(node, current_peg, pegs[current_peg].size() - 1)
-		set_status("Disco mantido no Pino %s." % _get_peg_name(current_peg))
+		set_status(tr("HANOI_DISK_KEPT") % _get_peg_name(current_peg))
 		return
 		
 	# Pino de destino selecionado -> Valida e move
@@ -387,7 +387,7 @@ func _on_peg_pressed(peg_idx: int) -> void:
 	else:
 		var moving_disk: int = Rules.get_top_disk(pegs[from_peg])
 		var target_disk: int = Rules.get_top_disk(pegs[to_peg])
-		set_status("Inválido! Disco %d não cabe sobre o disco %d." % [moving_disk, target_disk])
+		set_status(tr("HANOI_INVALID") % [moving_disk, target_disk])
 		_play_error_buzz()
 		_animate_invalid_move(selected_disk_node, from_peg, to_peg)
 
@@ -510,7 +510,7 @@ func _on_btn_undo_pressed() -> void:
 			_play_place_sound()
 			is_animating = false
 		)
-		set_status("Jogada desfeita!")
+		set_status(tr("HANOI_UNDONE"))
 
 
 func _on_btn_hint_pressed() -> void:
@@ -520,7 +520,7 @@ func _on_btn_hint_pressed() -> void:
 	
 	var hint: Dictionary = Rules.get_next_hint(pegs, disk_count, Rules.PEG_DESTINO)
 	if hint.is_empty():
-		set_status("Nenhuma dica disponível para a posição atual.")
+		set_status(tr("HANOI_NO_HINT"))
 		return
 		
 	var f: int = hint["from"]
@@ -529,7 +529,7 @@ func _on_btn_hint_pressed() -> void:
 	
 	_show_peg_halo(f, Color(1.0, 0.85, 0.2))
 	_show_peg_halo(t, Color(0.2, 1.0, 0.4))
-	set_status("💡 Dica: Mova o Disco %d do Pino %s para o Pino %s!" % [disk_val, _get_peg_name(f), _get_peg_name(t)])
+	set_status(tr("HANOI_HINT") % [disk_val, _get_peg_name(f), _get_peg_name(t)])
 
 
 func _on_btn_auto_solve_pressed() -> void:
@@ -543,10 +543,10 @@ func _on_btn_auto_solve_pressed() -> void:
 		
 	_start_new_game()
 	is_auto_solving = true
-	btn_auto_solve.text = "⏹ Parar"
+	btn_auto_solve.text = tr("HANOI_BTN_STOP")
 	auto_solution_steps = Rules.generate_optimal_solution(disk_count)
 	auto_step_index = 0
-	set_status("🤖 Solução Automática em andamento (%d passos)..." % auto_solution_steps.size())
+	set_status(tr("HANOI_AUTO_RUNNING") % auto_solution_steps.size())
 	_run_next_auto_step()
 
 
@@ -574,8 +574,8 @@ func _run_next_auto_step() -> void:
 
 func _cancel_auto_solver() -> void:
 	is_auto_solving = false
-	btn_auto_solve.text = "🤖 Auto"
-	set_status("Solução automática interrompida.")
+	btn_auto_solve.text = tr("HANOI_BTN_AUTO")
+	set_status(tr("HANOI_AUTO_STOPPED"))
 
 
 # ---------------------------------------------------------------------------
@@ -635,14 +635,12 @@ func _handle_game_won() -> void:
 		profile.save_profile()
 		
 	win_stars.text = _get_stars_string(stars)
-	win_details.text = "Jogadas: %d (Mínimo: %d)\nTempo: %s" % [
-		move_count, optimal, _format_time(elapsed_time)
-	]
-	win_xp_label.text = "+%d XP Ganho!" % total_xp
+	win_details.text = tr("HANOI_WIN_DETAILS") % [move_count, optimal, _format_time(elapsed_time)]
+	win_xp_label.text = tr("XP_EARNED") % total_xp
 	
 	if disk_count < Rules.MAX_DISKS:
 		btn_next_level.visible = true
-		btn_next_level.text = "▶ Próximo Nível (%d Discos)" % (disk_count + 1)
+		btn_next_level.text = tr("HANOI_NEXT_LEVEL") % (disk_count + 1)
 	else:
 		btn_next_level.visible = false
 		
@@ -650,7 +648,7 @@ func _handle_game_won() -> void:
 	if audio:
 		audio.play_win()
 		
-	finish_game("🏆 Incrível! Você completou a Torre de %d Discos!" % disk_count, true)
+	finish_game(tr("HANOI_WIN") % disk_count, true)
 	reveal_result_modal(win_modal, 0.4)
 
 
@@ -667,9 +665,9 @@ func _on_btn_next_level_pressed() -> void:
 
 func _get_peg_name(peg_idx: int) -> String:
 	match peg_idx:
-		0: return "A (Origem)"
-		1: return "B (Auxiliar)"
-		2: return "C (Destino)"
+		0: return tr("HANOI_PEG_A")
+		1: return tr("HANOI_PEG_B")
+		2: return tr("HANOI_PEG_C")
 		_: return "Desconhecido"
 
 
@@ -689,8 +687,8 @@ func _update_time_display() -> void:
 ## cartoes: sao a nota da partida, nao o placar dela.
 func _pintar_placar() -> void:
 	set_counters([
-		{"value": move_count, "label": "jogadas"},
-		{"value": _format_time(elapsed_time), "label": "tempo"},
+		{"value": move_count, "label": "SCORE_PLAYS"},
+		{"value": _format_time(elapsed_time), "label": "SCORE_TIME"},
 	])
 
 

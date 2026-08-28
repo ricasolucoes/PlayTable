@@ -84,8 +84,8 @@ func _place_boards() -> void:
 	radar_board.position = Vector3(0.0, 0.0, z0 + radar_size.y * 0.5)
 	fleet_board.position = Vector3(0.0, 0.0, z0 + radar_size.y + BOARD_GAP + fleet_size.y * 0.5)
 
-	_board_caption(radar_board, "FROTA INIMIGA", Color(1.0, 0.47, 0.38), radar_size)
-	_board_caption(fleet_board, "SUA FROTA", Color(0.52, 0.86, 1.0), fleet_size)
+	_board_caption(radar_board, tr("BATTLESHIP_ENEMY_FLEET"), Color(1.0, 0.47, 0.38), radar_size)
+	_board_caption(fleet_board, tr("BATTLESHIP_YOUR_FLEET"), Color(0.52, 0.86, 1.0), fleet_size)
 
 	# A HUD ocupa os 230 px de cima; a camera enquadra a faixa que sobra.
 	fit_table(Vector2(maxf(radar_size.x, fleet_size.x) + 0.45, total_depth + 0.45))
@@ -143,7 +143,7 @@ func _start_new_game() -> void:
 		_render_player_hull(player_ships[i], i)
 
 	_update_fleet_status_labels()
-	set_status("Sua Vez! Toque numa casa da frota inimiga.")
+	set_status(tr("BATTLESHIP_YOUR_TURN"))
 
 
 # ---------------------------------------------------------------------------
@@ -277,7 +277,7 @@ func _explode_around(parent: Node3D, center: Vector3, size: Vector3) -> void:
 func _update_fleet_status_labels() -> void:
 	var ai_sunk := BattleshipRules.count_sunk_ships(ai_ships)
 	var player_sunk := BattleshipRules.count_sunk_ships(player_ships)
-	set_duel_score("%d/5" % ai_sunk, "%d/5" % player_sunk, "afundou", "perdeu")
+	set_duel_score("%d/5" % ai_sunk, "%d/5" % player_sunk, "SCORE_SUNK", "SCORE_LOST")
 	level_label.text = DifficultyManager.label_for(game_id)
 
 
@@ -288,7 +288,7 @@ func _update_fleet_status_labels() -> void:
 func _on_fleet_cell_clicked(_r: int, _c: int) -> void:
 	if game_over:
 		return
-	set_status("Esse é o seu mapa. Atire no de cima, da frota inimiga.")
+	set_status(tr("BATTLESHIP_WRONG_BOARD"))
 
 
 func _on_radar_cell_clicked(r: int, c: int) -> void:
@@ -296,7 +296,7 @@ func _on_radar_cell_clicked(r: int, c: int) -> void:
 		return
 	var cell_val: int = ai_grid.get_cell(r, c)
 	if cell_val == 2 or cell_val == 3:
-		set_status("Você já atirou nessa coordenada. Escolha outra.")
+		set_status(tr("BATTLESHIP_ALREADY_SHOT"))
 		return
 
 	var is_hit: bool = cell_val == 1
@@ -308,12 +308,12 @@ func _on_radar_cell_clicked(r: int, c: int) -> void:
 	if is_hit:
 		var sunk_ship := BattleshipRules.check_ship_sunk(ai_ships, ai_grid, r, c)
 		if sunk_ship.size() > 0:
-			set_status("💥 Você afundou o %s inimigo!" % sunk_ship["name"])
+			set_status(tr("BATTLESHIP_YOU_SANK") % tr(str(sunk_ship["name"])))
 			_reveal_enemy_wreck(sunk_ship)
 		else:
-			set_status("🎯 Fogo certeiro!")
+			set_status(tr("BATTLESHIP_HIT"))
 	else:
-		set_status("🌊 Água!")
+		set_status(tr("BATTLESHIP_MISS"))
 
 	_update_fleet_status_labels()
 
@@ -345,12 +345,12 @@ func _play_ai_turn() -> void:
 		var sunk := BattleshipRules.check_ship_sunk(player_ships, player_grid, r, c)
 		if sunk.size() > 0:
 			afundadas = sunk["cells"]
-			set_status("⚠️ Inimigo afundou seu %s!" % sunk["name"])
+			set_status(tr("BATTLESHIP_AI_SANK") % tr(str(sunk["name"])))
 			_burn_player_hull(sunk)
 		else:
-			set_status("⚠️ Inimigo acertou sua frota!")
+			set_status(tr("BATTLESHIP_AI_HIT"))
 	else:
-		set_status("Inimigo atirou na água. Sua vez!")
+		set_status(tr("BATTLESHIP_AI_MISS"))
 	BattleshipAI.registrar(ai_memoria, ai_target, is_hit, afundadas)
 
 	_update_fleet_status_labels()
@@ -364,6 +364,6 @@ func _play_ai_turn() -> void:
 
 func _end_game(is_player_win: bool) -> void:
 	if is_player_win:
-		finish_game("🏆 Vitória! Toda a frota inimiga foi destruída!", true)
+		finish_game(tr("BATTLESHIP_WIN"), true)
 	else:
-		finish_game("Derrota! Sua frota foi aniquilada.")
+		finish_game(tr("BATTLESHIP_LOSE"))

@@ -116,7 +116,7 @@ func _start_new_game() -> void:
 	grid_data = PegSolitaireRules.create_initial_board()
 	_sync_marbles_3d()
 	_update_ui()
-	set_status("Toque em uma esfera para selecionar e saltar!")
+	set_status(tr("PEG_START"))
 
 func _sync_marbles_3d() -> void:
 	for m in marbles_root.get_children(): m.queue_free()
@@ -134,7 +134,7 @@ func _sync_marbles_3d() -> void:
 
 func _update_ui() -> void:
 	var pegs_count := PegSolitaireRules.count_pegs(grid_data)
-	set_counter(pegs_count, "esferas")
+	set_counter(pegs_count, "SCORE_PEGS")
 
 # ---------------------------------------------------------------------------
 # Toque e arrasto
@@ -293,7 +293,7 @@ func _end_press(ponto: Vector2) -> void:
 		marble.slide_to(_get_cell_pos_3d(origem.x, origem.y))
 		marble.set_lift(0.0)
 	if _drag_moved and alvo != origem:
-		set_status("Solte a esfera num furo iluminado.")
+		set_status(tr("PEG_DROP"))
 	_paint_targets()
 
 
@@ -304,9 +304,9 @@ func _select(pos: Vector2i) -> void:
 		(marbles_3d[p] as Token3D).highlight(p == pos)
 	_paint_targets()
 	if valid_targets.is_empty():
-		set_status("Esta esfera não tem saltos possíveis.")
+		set_status(tr("PEG_NO_JUMPS"))
 	else:
-		set_status("Arraste até um furo iluminado — ou toque nele.")
+		set_status(tr("PEG_DRAG_HINT"))
 
 
 func _clear_selection() -> void:
@@ -368,8 +368,8 @@ func _end_game() -> void:
 	# So a esfera unica conta como vitoria -- e o objetivo do jogo.
 	var fatos := {"pegs": remaining, "perfect": remaining == 1}
 	if remaining == 1:
-		finish_game("🏆 Incrível! Apenas 1 esfera restante! Vitória perfeita!", true, fatos)
+		finish_game(tr("PEG_WIN_PERFECT"), true, fatos)
 	elif remaining <= 3:
-		finish_game("Muito bem! Restaram apenas %d esferas." % remaining, false, fatos)
+		finish_game(tr("PEG_GOOD") % remaining, false, fatos)
 	else:
-		finish_game("Fim de Jogo! Restaram %d esferas." % remaining, false, fatos)
+		finish_game(tr("PEG_OVER") % remaining, false, fatos)

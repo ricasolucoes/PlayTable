@@ -171,14 +171,14 @@ func _handle_game_won(winner_id: int, win_cells: Array[Vector2i]) -> void:
 	if winner_id == 1:
 		score_p1 += 1
 		set_duel_score(score_p1, score_p2)
-		win_modal_title.text = "🏆 Vitória!"
-		win_modal_sub.text = "Você conectou 4 fichas vermelhas!"
+		win_modal_title.text = tr("WIN_TITLE")
+		win_modal_sub.text = tr("CONNECT4_WIN_DESC")
 		if AudioManager: AudioManager.play_win()
 	else:
 		score_p2 += 1
 		set_duel_score(score_p1, score_p2)
-		win_modal_title.text = "Computador Venceu!"
-		win_modal_sub.text = "A inteligência artificial completou a linha."
+		win_modal_title.text = tr("CONNECT4_LOSE")
+		win_modal_sub.text = tr("CONNECT4_LOSE_DESC")
 		if AudioManager: AudioManager.play_draw()
 		
 	# Highlight winning pieces
@@ -194,8 +194,8 @@ func _handle_game_draw() -> void:
 		"draw": true,
 		"time": Time.get_ticks_msec() / 1000.0 - _started_at,
 	})
-	win_modal_title.text = "Empate!"
-	win_modal_sub.text = "O tabuleiro ficou completamente cheio."
+	win_modal_title.text = tr("DRAW_TITLE")
+	win_modal_sub.text = tr("CONNECT4_DRAW_DESC")
 	if AudioManager: AudioManager.play_draw()
 	reveal_result_modal(win_modal, 0.8)
 
@@ -205,9 +205,9 @@ func _update_turn_ui() -> void:
 	set_duel_score(score_p1, score_p2)
 	set_active_side(is_player_turn)
 	if is_player_turn:
-		set_status("Sua Vez (Fichas Vermelhas)%s" % difficulty_suffix())
+		set_status(tr("CONNECT4_YOUR_TURN") + difficulty_suffix())
 	else:
-		set_status("Vez da IA (Fichas Douradas)...")
+		set_status(tr("CONNECT4_AI_TURN"))
 
 func _start_new_game() -> void:
 	win_modal.visible = false

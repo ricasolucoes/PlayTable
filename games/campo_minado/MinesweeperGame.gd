@@ -62,7 +62,7 @@ func _start_new_game() -> void:
 	timer_active = false
 	_pintar_placar()
 	btn_smiley.text = "🙂"
-	set_status("Toque em uma tecla mecânica para iniciar!%s" % difficulty_suffix())
+	set_status(tr("MINESWEEPER_START") + difficulty_suffix())
 	
 	for f in flags_root.get_children(): f.queue_free()
 	flags_3d.clear()
@@ -85,8 +85,8 @@ func _pintar_placar() -> void:
 	if grid_data != null:
 		faltam = maxi(0, total_minas - MinesweeperRules.count_flagged(grid_data))
 	set_counters([
-		{"value": "%02d" % faltam, "label": "minas"},
-		{"value": "%03d" % int(elapsed_time), "label": "tempo"},
+		{"value": "%02d" % faltam, "label": "SCORE_MINES"},
+		{"value": "%03d" % int(elapsed_time), "label": "SCORE_TIME"},
 	])
 
 func _on_cell_clicked(r: int, c: int) -> void:
@@ -107,7 +107,7 @@ func _on_cell_clicked(r: int, c: int) -> void:
 		first_click = false
 		MinesweeperRules.generate_mines(grid_data, r, c, total_minas)
 		timer_active = true
-		set_status("Campo desarmado!")
+		set_status(tr("MINESWEEPER_CLEARED"))
 		
 	if cell["is_mine"]:
 		_trigger_game_over(r, c)
@@ -145,7 +145,7 @@ func _sync_revealed_3d() -> void:
 func _trigger_game_over(hit_r: int, hit_c: int) -> void:
 	timer_active = false
 	btn_smiley.text = "😵"
-	finish_game("💥 BOOM! Você detonou uma mina!", false, {"time": elapsed_time})
+	finish_game(tr("MINESWEEPER_BOOM"), false, {"time": elapsed_time})
 	
 	for r in range(MinesweeperRules.ROWS):
 		for c in range(MinesweeperRules.COLS):
@@ -160,16 +160,16 @@ func _check_win_condition() -> void:
 		btn_smiley.text = "😎"
 		# O tempo e o que o Campo Minado tem de recorde: alimenta o placar
 		# LB_MINESWEEPER_TIME e a conquista de vitoria rapida.
-		finish_game("🏆 Campo 100%% Desarmado! Vitória em %d segundos!" % int(elapsed_time), true,
+		finish_game(tr("MINESWEEPER_WIN") % int(elapsed_time), true,
 			{"time": elapsed_time})
 
 func _on_btn_mode_pressed() -> void:
 	is_flag_mode = not is_flag_mode
 	if is_flag_mode:
-		btn_mode.text = "Modo: 🚩 Bandeira"
+		btn_mode.text = tr("MINESWEEPER_MODE_FLAG")
 		btn_mode.self_modulate = Color(0.95, 0.4, 0.4)
 	else:
-		btn_mode.text = "Modo: ⛏️ Revelar"
+		btn_mode.text = tr("MINESWEEPER_MODE_DIG")
 		btn_mode.self_modulate = Color(0.4, 0.7, 0.95)
 
 func _on_btn_smiley_pressed() -> void:

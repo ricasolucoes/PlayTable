@@ -59,7 +59,7 @@ layout_mode = 2
 [node name="ModeVal" type="Label" parent="UI/TopBar/StatsHBox/ModeCard"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 13
-text = "vs IA"
+text = "MODE_VS_AI"
 horizontal_alignment = 1
 vertical_alignment = 1
 
@@ -78,7 +78,7 @@ layout_mode = 2
 theme_override_colors/font_color = Color(1, 0.92, 0.6, 1)
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.8)
 theme_override_font_sizes/font_size = 16
-text = "Sua Vez! Role os dados para começar."
+text = "BACKGAMMON_START"
 horizontal_alignment = 1
 autowrap_mode = 2
 
@@ -119,13 +119,13 @@ theme_override_constants/separation = 8
 custom_minimum_size = Vector2(140, 48)
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 0.95, 0.4, 1)
-text = "🎲 Rolar Dados"
+text = "BACKGAMMON_BTN_ROLL"
 
 [node name="BtnEndTurn" type="Button" parent="UI/DiceControls"]
 visible = false
 custom_minimum_size = Vector2(130, 48)
 layout_mode = 2
-text = "Passar Vez ›"
+text = "BACKGAMMON_BTN_END_TURN"
 
 [node name="Actions" type="HBoxContainer" parent="UI"]
 layout_mode = 1
@@ -146,22 +146,22 @@ theme_override_constants/separation = 8
 custom_minimum_size = Vector2(85, 48)
 layout_mode = 2
 disabled = true
-text = "↩ Desfazer"
+text = "BTN_UNDO_ICON2"
 
 [node name="BtnModeToggle" type="Button" parent="UI/Actions"]
 custom_minimum_size = Vector2(95, 48)
 layout_mode = 2
-text = "🤖 vs IA"
+text = "MODE_BTN_VS_AI"
 
 [node name="BtnDiffToggle" type="Button" parent="UI/Actions"]
 custom_minimum_size = Vector2(90, 48)
 layout_mode = 2
-text = "IA: Mestre"
+text = ""
 
 [node name="BtnRestart" type="Button" parent="UI/Actions"]
 custom_minimum_size = Vector2(95, 48)
 layout_mode = 2
-text = "🔄 Reiniciar"
+text = "BTN_RESET_ICON"
 
 [node name="ResultModal" type="Control" parent="."]
 visible = false
@@ -205,7 +205,7 @@ alignment = 1
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 0.85, 0.2, 1)
 theme_override_font_sizes/font_size = 24
-text = "🏆 Vitória!"
+text = "WIN_TITLE"
 horizontal_alignment = 1
 
 [node name="ResultStars" type="Label" parent="ResultModal/Panel/VBox"]
@@ -217,18 +217,18 @@ horizontal_alignment = 1
 [node name="ResultDetails" type="Label" parent="ResultModal/Panel/VBox"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 15
-text = "Vitória Simples\nTurnos: 24 • Tempo: 04:12"
+text = ""
 horizontal_alignment = 1
 
 [node name="ResultXP" type="Label" parent="ResultModal/Panel/VBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.3, 0.9, 0.4, 1)
 theme_override_font_sizes/font_size = 18
-text = "+60 XP"
+text = ""
 horizontal_alignment = 1
 
 [node name="BtnRematch" type="Button" parent="ResultModal/Panel/VBox"]
 custom_minimum_size = Vector2(180, 48)
 layout_mode = 2
 size_flags_horizontal = 4
-text = "🔄 Jogar Novamente"
+text = "BTN_RESTART_ICON"

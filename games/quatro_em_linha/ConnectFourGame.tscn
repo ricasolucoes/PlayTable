@@ -40,7 +40,7 @@ theme_override_constants/separation = 16
 [node name="BtnRestart" type="Button" parent="VBoxContainer/TopBar"]
 custom_minimum_size = Vector2(110, 54)
 layout_mode = 2
-text = "Reiniciar"
+text = "BTN_RESET"
 
 [node name="StatusCard" type="PanelContainer" parent="VBoxContainer"]
 layout_mode = 2
@@ -48,7 +48,7 @@ layout_mode = 2
 [node name="StatusLabel" type="Label" parent="VBoxContainer/StatusCard"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 22
-text = "Sua Vez (Fichas Vermelhas)"
+text = "CONNECT4_YOUR_TURN"
 horizontal_alignment = 1
 
 [node name="BoardArea" type="Control" parent="."]
@@ -129,13 +129,13 @@ alignment = 1
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 0.85, 0.35, 1)
 theme_override_font_sizes/font_size = 36
-text = "🏆 Vitória!"
+text = "WIN_TITLE"
 horizontal_alignment = 1
 
 [node name="WinSub" type="Label" parent="WinModal/Panel/VBox"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 20
-text = "Você conectou 4 fichas!"
+text = "CONNECT4_WIN_DESC"
 horizontal_alignment = 1
 autowrap_mode = 2
 
@@ -147,7 +147,7 @@ layout_mode = 2
 custom_minimum_size = Vector2(0, 60)
 layout_mode = 2
 theme_override_font_sizes/font_size = 24
-text = "Jogar Novamente"
+text = "BTN_RESTART"
 
 [connection signal="pressed" from="VBoxContainer/TopBar/BtnRestart" to="." method="_on_restart_pressed"]
 [connection signal="pressed" from="WinModal/Panel/VBox/BtnPlayAgain" to="." method="_on_restart_pressed"]

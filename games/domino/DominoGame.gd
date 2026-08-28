@@ -100,12 +100,12 @@ func _start_new_game() -> void:
 	_update_ui()
 	
 	if starting_player == 1:
-		set_status("Você abriu com [%d|%d]! Vez da IA..." % [starting_tile["a"], starting_tile["b"]])
+		set_status(tr("DOMINO_YOU_OPEN") % [starting_tile["a"], starting_tile["b"]])
 		is_player_turn = false
 		await get_tree().create_timer(0.8).timeout
 		_play_ai_turn()
 	else:
-		set_status("IA abriu com [%d|%d]! Sua vez." % [starting_tile["a"], starting_tile["b"]])
+		set_status(tr("DOMINO_AI_OPENS") % [starting_tile["a"], starting_tile["b"]])
 		is_player_turn = true
 		_update_action_buttons()
 
@@ -219,10 +219,9 @@ func _end_marker(tile_pos: Vector3, end_mark: int, span: float) -> MeshInstance3
 	return halo
 
 func _update_ui() -> void:
-	set_duel_score(player_hand.size(), ai_hand.size(), "suas", "da ia")
-	ai_info_label.text = "Dorme (Monte): %d pedras%s" % [
-		boneyard.size(), difficulty_suffix()]
-	ends_label.text = "Pontas: [ %d ] <---------> [ %d ]" % [left_end, right_end]
+	set_duel_score(player_hand.size(), ai_hand.size(), "SCORE_YOURS", "SCORE_AI_CARDS")
+	ai_info_label.text = tr("DOMINO_BONEYARD") % boneyard.size() + difficulty_suffix()
+	ends_label.text = tr("DOMINO_ENDS") % [left_end, right_end]
 	
 	# Mão do Jogador: pedras desenhadas, nao botoes com o texto "6/---/4".
 	for c in player_hand_container.get_children(): c.queue_free()
@@ -319,11 +318,11 @@ func _play_player_tile(side: String) -> void:
 	_update_ui()
 	
 	if player_hand.size() == 0:
-		_end_game("🏆 Você bateu e venceu a partida!", true)
+		_end_game(tr("DOMINO_YOU_WIN"), true)
 		return
 		
 	is_player_turn = false
-	set_status("Vez da IA...")
+	set_status(tr("AI_TURN_SHORT"))
 	_update_action_buttons()
 	await get_tree().create_timer(0.8).timeout
 	_play_ai_turn()
@@ -335,13 +334,13 @@ func _on_btn_draw_pressed() -> void:
 		DominoAI.registrar_falta(ai_memoria, left_end, right_end)
 		var drawn = boneyard.pop_back()
 		player_hand.append(drawn)
-		set_status("Você comprou uma pedra do monte.")
+		set_status(tr("DOMINO_YOU_DREW"))
 		_update_ui()
 
 func _on_btn_pass_pressed() -> void:
 	DominoAI.registrar_falta(ai_memoria, left_end, right_end)
 	consecutive_passes += 1
-	set_status("Você passou a vez.")
+	set_status(tr("DOMINO_YOU_PASSED"))
 	if consecutive_passes >= 2:
 		_check_board_lock()
 		return
@@ -361,7 +360,7 @@ func _play_ai_turn() -> void:
 	while not DominoRules.has_any_valid_move(ai_hand, left_end, right_end) \
 			and boneyard.size() > 0:
 		ai_hand.append(boneyard.pop_back())
-		set_status("IA comprou do monte...")
+		set_status(tr("DOMINO_AI_DREW"))
 
 	var ai_play := DominoAI.escolher(ai_hand, left_end, right_end, ai_memoria, ai_level)
 	if ai_play.size() > 0:
@@ -388,15 +387,15 @@ func _play_ai_turn() -> void:
 				right_end = flipped["b"]
 				
 		_render_table_tiles_3d()
-		set_status("IA jogou na ponta %s. Sua vez!" % side)
+		set_status(tr("DOMINO_AI_PLAYED") % tr("DOMINO_SIDE_LEFT" if side == "left" else "DOMINO_SIDE_RIGHT"))
 		
 		if ai_hand.size() == 0:
-			_end_game("A IA bateu e venceu a partida!", false)
+			_end_game(tr("DOMINO_AI_WIN"), false)
 			return
 	else:
 		# Chegou aqui com o monte vazio e sem jogada: so resta passar.
 		consecutive_passes += 1
-		set_status("IA passou a vez. Sua vez!")
+		set_status(tr("DOMINO_AI_PASSED"))
 		if consecutive_passes >= 2:
 			_check_board_lock()
 			return
@@ -408,11 +407,11 @@ func _check_board_lock() -> void:
 	var p_pts := DominoRules.calculate_hand_points(player_hand)
 	var ai_pts := DominoRules.calculate_hand_points(ai_hand)
 	if p_pts < ai_pts:
-		_end_game("Jogo Fechado! Você venceu por pontos (%d x %d)!" % [p_pts, ai_pts], true)
+		_end_game(tr("DOMINO_LOCK_YOU_WIN") % [p_pts, ai_pts], true)
 	elif ai_pts < p_pts:
-		_end_game("Jogo Fechado! IA venceu por pontos (%d x %d)!" % [ai_pts, p_pts], false)
+		_end_game(tr("DOMINO_LOCK_AI_WIN") % [ai_pts, p_pts], false)
 	else:
-		_end_game("Jogo Fechado! Empate exato de pontos (%d)!" % p_pts, false)
+		_end_game(tr("DOMINO_LOCK_DRAW") % p_pts, false)
 
 func _end_game(msg: String, is_player_win: bool) -> void:
 	finish_game(msg, is_player_win)

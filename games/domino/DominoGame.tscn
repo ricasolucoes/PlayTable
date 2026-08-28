@@ -51,21 +51,21 @@ theme_override_constants/separation = 8
 layout_mode = 2
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.8)
 theme_override_font_sizes/font_size = 18
-text = "Dorme (Monte): 14 pedras"
+text = ""
 horizontal_alignment = 1
 
 [node name="EndsLabel" type="Label" parent="UI/VBoxContainer"]
 layout_mode = 2
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.8)
 theme_override_font_sizes/font_size = 20
-text = "Pontas: [ 6 ] <------> [ 6 ]"
+text = ""
 horizontal_alignment = 1
 
 [node name="StatusLabel" type="Label" parent="UI/VBoxContainer"]
 layout_mode = 2
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.8)
 theme_override_font_sizes/font_size = 20
-text = "Sua Vez!"
+text = "YOUR_TURN_BANG"
 horizontal_alignment = 1
 
 [node name="Actions" type="HBoxContainer" parent="UI"]
@@ -89,35 +89,35 @@ visible = false
 custom_minimum_size = Vector2(120, 50)
 layout_mode = 2
 theme_override_font_sizes/font_size = 18
-text = "⬅ Jogar Esq."
+text = "DOMINO_BTN_LEFT"
 
 [node name="BtnPlayRight" type="Button" parent="UI/Actions"]
 visible = false
 custom_minimum_size = Vector2(120, 50)
 layout_mode = 2
 theme_override_font_sizes/font_size = 18
-text = "Jogar Dir. ➡"
+text = "DOMINO_BTN_RIGHT"
 
 [node name="BtnDraw" type="Button" parent="UI/Actions"]
 visible = false
 custom_minimum_size = Vector2(130, 50)
 layout_mode = 2
 theme_override_font_sizes/font_size = 18
-text = "📥 Comprar"
+text = "DOMINO_BTN_DRAW"
 
 [node name="BtnPass" type="Button" parent="UI/Actions"]
 visible = false
 custom_minimum_size = Vector2(130, 50)
 layout_mode = 2
 theme_override_font_sizes/font_size = 18
-text = "⏭ Passar"
+text = "DOMINO_BTN_PASS"
 
 [node name="BtnRestart" type="Button" parent="UI/Actions"]
 visible = false
 custom_minimum_size = Vector2(160, 50)
 layout_mode = 2
 theme_override_font_sizes/font_size = 18
-text = "🔄 Nova Partida"
+text = "BTN_NEW_MATCH_ICON"
 
 [node name="PlayerArea" type="PanelContainer" parent="UI"]
 layout_mode = 1
@@ -140,7 +140,7 @@ theme_override_constants/separation = 4
 layout_mode = 2
 theme_override_colors/font_color = Color(0.98, 0.86, 0.45, 1)
 theme_override_font_sizes/font_size = 15
-text = "SUA MÃO"
+text = "LABEL_YOUR_HAND"
 horizontal_alignment = 1
 
 [node name="HandContainer" type="HBoxContainer" parent="UI/PlayerArea/HandVBox"]

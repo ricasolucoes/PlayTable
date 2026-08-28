@@ -82,8 +82,8 @@ func _start_new_game() -> void:
 	for i in range(1, 11):
 		board[i] = 1 if i % 2 == 1 else 2
 		
-	sticks_label.text = "Lance as 4 varetas sagradas"
-	set_status("Sua Vez! Lance as varetas.")
+	sticks_label.text = tr("SENET_CAST_HINT")
+	set_status(tr("SENET_YOUR_TURN"))
 	btn_cast_sticks.disabled = false
 	_sync_pieces_3d()
 
@@ -116,16 +116,16 @@ func _on_btn_cast_sticks_pressed() -> void:
 	current_throw = throw_res["value"]
 	has_extra_throw = throw_res["extra"]
 	
-	sticks_label.text = "Varetas: %s (Avanço: %d)" % [throw_res["display"], current_throw]
+	sticks_label.text = tr("SENET_STICKS") % [throw_res["display"], current_throw]
 	
 	if is_player_turn:
 		valid_moves = _get_valid_moves(1, current_throw)
 		if valid_moves.is_empty():
-			set_status("Sem movimentos possíveis com %d!" % current_throw)
+			set_status(tr("NO_MOVES_WITH") % current_throw)
 			await get_tree().create_timer(0.9).timeout
 			_handle_end_of_turn()
 		else:
-			set_status("Escolha qual peça avançar %d casas:" % current_throw)
+			set_status(tr("SENET_PICK_PIECE") % current_throw)
 			for m in valid_moves:
 				var rc := _get_square_row_col(m["from"])
 				board_3d.highlight_cell(rc.x, rc.y, Color(0.2, 0.85, 0.4))
@@ -220,10 +220,10 @@ func _handle_end_of_turn() -> void:
 		is_player_turn = not is_player_turn
 		can_throw = true
 		if is_player_turn:
-			set_status("Sua Vez! Lance as varetas.")
+			set_status(tr("SENET_YOUR_TURN"))
 			btn_cast_sticks.disabled = false
 		else:
-			set_status("Vez da IA...")
+			set_status(tr("AI_TURN_SHORT"))
 			btn_cast_sticks.disabled = true
 			await get_tree().create_timer(0.7).timeout
 			_on_btn_cast_sticks_pressed()
@@ -232,7 +232,7 @@ func _play_ai_move() -> void:
 	var chosen := SenetAI.choose_move(SenetAI.achatar(board), 2, current_throw,
 		ai_borne_off, player_borne_off, ai_level)
 	if chosen.is_empty():
-		set_status("IA sem movimentos possíveis!")
+		set_status(tr("SENET_AI_NO_MOVES"))
 		await get_tree().create_timer(0.8).timeout
 		_handle_end_of_turn()
 		return
@@ -241,6 +241,6 @@ func _play_ai_move() -> void:
 
 func _end_game(winner: int) -> void:
 	if winner == 1:
-		finish_game("🏆 Vitória dos Deuses! Você venceu o Senet 3D!", true)
+		finish_game(tr("SENET_WIN"), true)
 	else:
-		finish_game("A IA alcançou a imortalidade primeiro!")
+		finish_game(tr("SENET_LOSE"))

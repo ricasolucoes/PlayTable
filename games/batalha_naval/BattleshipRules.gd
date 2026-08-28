@@ -5,12 +5,14 @@ extends RefCounted
 
 const GRID_SIZE = 10
 
+## `name` e chave de traducao: o nome do navio aparece no aviso de afundamento
+## ("Voce afundou o Cruzador inimigo!"), e quem mostra chama `tr`.
 const SHIP_DEFS = [
-	{"name": "Porta-Aviões", "size": 5},
-	{"name": "Encouraçado", "size": 4},
-	{"name": "Cruzador", "size": 3},
-	{"name": "Submarino", "size": 3},
-	{"name": "Destroyer", "size": 2}
+	{"name": "SHIP_CARRIER", "size": 5},
+	{"name": "SHIP_BATTLESHIP", "size": 4},
+	{"name": "SHIP_CRUISER", "size": 3},
+	{"name": "SHIP_SUBMARINE", "size": 3},
+	{"name": "SHIP_DESTROYER", "size": 2}
 ]
 
 # Estados de célula:

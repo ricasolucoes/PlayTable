@@ -32,7 +32,7 @@ func _start_new_game() -> void:
 	ai_level = DifficultyManager.get_level(game_id)
 	grid_data = ReversiRules.create_initial_board()
 	_sync_pieces_3d()
-	set_status("Sua Vez! (Pretas / Obsidiana)")
+	set_status(tr("REVERSI_YOUR_TURN_LONG"))
 
 func _sync_pieces_3d() -> void:
 	for p in pieces_root.get_children(): p.queue_free()
@@ -123,12 +123,12 @@ func _after_player_move() -> void:
 		
 	if ai_moves.size() > 0:
 		is_player_turn = false
-		set_status("Vez da IA (Brancas)...")
+		set_status(tr("REVERSI_AI_TURN"))
 		_highlight_valid_moves()
 		await get_tree().create_timer(0.6).timeout
 		_play_ai_turn()
 	else:
-		set_status("IA sem jogadas! Sua vez novamente.")
+		set_status(tr("REVERSI_AI_NO_MOVES"))
 		_highlight_valid_moves()
 
 ## Pensa fora da linha principal, durante a pausa de encenacao que ja existia.
@@ -189,10 +189,10 @@ func _play_ai_turn() -> void:
 		
 	if player_moves.size() > 0:
 		is_player_turn = true
-		set_status("Sua Vez! (Pretas)")
+		set_status(tr("REVERSI_YOUR_TURN"))
 		_highlight_valid_moves()
 	else:
-		set_status("Você sem jogadas! Vez da IA...")
+		set_status(tr("REVERSI_YOU_NO_MOVES"))
 		await get_tree().create_timer(0.6).timeout
 		_play_ai_turn()
 
@@ -200,8 +200,8 @@ func _end_game() -> void:
 	# get_winner devolve {"winner", "black", "white"}, nao o id do vencedor.
 	var winner: int = ReversiRules.get_winner(grid_data)["winner"]
 	if winner == 1:
-		finish_game("🏆 Você Venceu!", true)
+		finish_game(tr("RESULT_YOU_WIN"), true)
 	elif winner == 2:
-		finish_game("IA Venceu!")
+		finish_game(tr("RESULT_AI_WINS"))
 	else:
-		finish_game("Empate!")
+		finish_game(tr("DRAW_TITLE"))

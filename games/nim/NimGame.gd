@@ -114,11 +114,15 @@ func _setup_ui_events() -> void:
 	
 	# Presets
 	var preset_keys := ["simple_3", "classic_3", "pyramid_4", "wide_5"]
-	var preset_names := ["Simples [1,2,3]", "Clássico [3,4,5]", "Pirâmide [1,3,5,7]", "Largo [1..5]"]
+	var preset_names := ["NIM_PRESET_SIMPLE", "NIM_PRESET_CLASSIC", "NIM_PRESET_PYRAMID", "NIM_PRESET_WIDE"]
 	for i in range(preset_keys.size()):
 		var p_key: String = preset_keys[i]
 		var btn := Button.new()
-		btn.text = preset_names[i]
+		btn.text = tr(preset_names[i])
+		# A chave fica no nó: o realce comparava as três primeiras letras do texto
+		# com as do id ("cla" contra "Clássico"), e já errava dois dos quatro
+		# presets em português. Com o nome traduzido erraria em todo idioma.
+		btn.set_meta("preset", p_key)
 		btn.custom_minimum_size = Vector2(100, 38)
 		btn.pressed.connect(func(): _on_preset_selected(p_key))
 		preset_buttons_container.add_child(btn)
@@ -209,9 +213,9 @@ func _start_new_game() -> void:
 	_highlight_active_settings_buttons()
 	
 	if is_misere:
-		set_status("Sua vez! Modo Misère: quem retirar a ÚLTIMA peça perde.")
+		set_status(tr("NIM_TURN_MISERE"))
 	else:
-		set_status("Sua vez! Modo Normal: quem retirar a ÚLTIMA peça vence.")
+		set_status(tr("NIM_TURN_NORMAL"))
 		
 	var bus := _get_event_bus()
 	if bus:
@@ -346,7 +350,7 @@ func _rebuild_heap_ui_buttons() -> void:
 		var count: int = heaps[h]
 		var btn := Button.new()
 		btn.name = "BtnHeap_%d" % h
-		btn.text = "Pilha %c: %d" % [65 + h, count]
+		btn.text = tr("NIM_HEAP_COUNT") % [65 + h, count]
 		btn.custom_minimum_size = Vector2(110, 48)
 		btn.disabled = (count <= 0)
 		btn.pressed.connect(func(): _on_heap_selected(heap_idx))
@@ -378,7 +382,7 @@ func _on_heap_selected(heap_idx: int) -> void:
 	_update_heap_halos()
 	
 	take_controls_container.visible = true
-	set_status("Pilha %c selecionada. Escolha quantas peças deseja retirar e confirme." % (65 + heap_idx))
+	set_status(tr("NIM_HEAP_PICKED") % (65 + heap_idx))
 
 
 func _set_take_count(count: int) -> void:
@@ -397,12 +401,12 @@ func _update_take_buttons_state() -> void:
 		return
 		
 	var available: int = heaps[selected_heap]
-	take_label.text = "Retirar: %d peça(s)" % selected_take_count
+	take_label.text = tr("NIM_TAKE_COUNT") % selected_take_count
 	
 	btn_take_1.disabled = (available < 1)
 	btn_take_2.disabled = (available < 2)
 	btn_take_3.disabled = (available < 3)
-	btn_take_all.text = "Todas (%d)" % available
+	btn_take_all.text = tr("NIM_TAKE_ALL") % available
 	
 	# Destaca o botão da quantidade selecionada
 	btn_take_1.modulate = Color(1.2, 1.2, 1.2) if selected_take_count == 1 else Color(0.8, 0.8, 0.8)
@@ -535,13 +539,13 @@ func _on_move_animation_finished(last_player: int) -> void:
 	_update_hud_stats()
 	
 	if is_vs_ai and current_turn == Rules.PLAYER_AI:
-		set_status("Vez da IA... pensando na jogada com Teorema de Bouton.")
+		set_status(tr("NIM_AI_THINKING"))
 		_trigger_ai_turn()
 	else:
 		if is_vs_ai:
-			set_status("Sua vez! Escolha uma pilha.")
+			set_status(tr("NIM_YOUR_TURN"))
 		else:
-			set_status("Vez do Jogador %d! Escolha uma pilha." % current_turn)
+			set_status(tr("NIM_PLAYER_TURN") % current_turn)
 
 
 # ---------------------------------------------------------------------------
@@ -578,7 +582,7 @@ func _execute_ai_decision() -> void:
 	_update_heap_halos()
 	_lift_selected_pieces()
 	
-	set_status("A IA retirou %d peça(s) da Pilha %c!" % [take, 65 + h_idx])
+	set_status(tr("NIM_AI_TOOK") % [take, 65 + h_idx])
 	
 	# Anima a retirada após breve destaque
 	var timer := get_tree().create_timer(0.45)
@@ -638,26 +642,26 @@ func _handle_game_over(last_player: int) -> void:
 	# Atualiza modal de resultado
 	if is_vs_ai:
 		if human_won:
-			result_title.text = "🏆 Vitória Triunfal!"
+			result_title.text = tr("NIM_WIN_TITLE")
 			result_stars.text = "⭐⭐⭐"
-			result_details.text = "Você superou a IA no nível %s!\nTurnos: %d | Tempo: %s" % [
+			result_details.text = tr("NIM_WIN_DETAILS") % [
 				tr(DifficultyManager.tier_name(ai_level)), turn_count, _format_time(elapsed_time)
 			]
-			finish_game("🏆 Parabéns! Você venceu a partida de Nim!", true)
+			finish_game(tr("NIM_WIN"), true)
 		else:
-			result_title.text = "💀 Fim de Jogo"
+			result_title.text = tr("NIM_LOSE_TITLE")
 			result_stars.text = "⭐☆☆"
-			result_details.text = "A IA dominou a partida desta vez.\nTurnos: %d | Tempo: %s" % [
+			result_details.text = tr("NIM_LOSE_DETAILS") % [
 				turn_count, _format_time(elapsed_time)
 			]
-			finish_game("A IA venceu. Tente uma nova estratégia!", false)
+			finish_game(tr("NIM_LOSE"), false)
 	else:
-		result_title.text = "🎉 Vitória do Jogador %d!" % winner
+		result_title.text = tr("NIM_LOCAL_WIN_TITLE") % winner
 		result_stars.text = "⭐⭐⭐"
-		result_details.text = "Partida Local de 2 Jogadores Concluída!\nTurnos: %d" % turn_count
-		finish_game("Jogador %d venceu a disputa!" % winner, true)
+		result_details.text = tr("NIM_LOCAL_DETAILS") % turn_count
+		finish_game(tr("NIM_LOCAL_WIN") % winner, true)
 		
-	result_xp_label.text = "+%d XP" % total_xp if human_won else "+%d XP (Participação)" % total_xp
+	result_xp_label.text = tr("TOAST_XP") % total_xp if human_won else tr("XP_PARTICIPATION") % total_xp
 	reveal_result_modal(result_modal, 0.4)
 
 
@@ -691,7 +695,7 @@ func _on_btn_undo_pressed() -> void:
 	_build_3d_heaps_and_tokens()
 	_rebuild_heap_ui_buttons()
 	_update_hud_stats()
-	set_status("Jogada desfeita com sucesso!")
+	set_status(tr("NIM_UNDONE"))
 
 
 func _on_btn_hint_pressed() -> void:
@@ -705,23 +709,23 @@ func _on_btn_hint_pressed() -> void:
 		var t: int = best_move["take"]
 		_on_heap_selected(h)
 		_set_take_count(t)
-		set_status("💡 Dica Matemática: Retire %d peça(s) da Pilha %c para anular o Nim-Sum!" % [t, 65 + h])
+		set_status(tr("NIM_HINT") % [t, 65 + h])
 	else:
 		var nim_s := Rules.calculate_nim_sum(heaps)
-		set_status("💡 Posição Equilibrada (Nim-Sum = %d). Qualquer lance mudará o equilíbrio!" % nim_s)
+		set_status(tr("NIM_HINT_BALANCED") % nim_s)
 
 
 func _on_btn_mode_toggle_pressed() -> void:
 	play_click()
 	is_vs_ai = not is_vs_ai
-	btn_mode_toggle.text = "🤖 Vs IA" if is_vs_ai else "👥 2 Jogadores"
+	btn_mode_toggle.text = tr("NIM_BTN_VS_AI") if is_vs_ai else tr("NIM_BTN_TWO_PLAYERS")
 	_start_new_game()
 
 
 func _on_btn_rule_toggle_pressed() -> void:
 	play_click()
 	is_misere = not is_misere
-	btn_rule_toggle.text = "👑 Misère" if is_misere else "⭐ Normal"
+	btn_rule_toggle.text = tr("NIM_BTN_MISERE") if is_misere else tr("NIM_BTN_NORMAL")
 	_start_new_game()
 
 
@@ -743,7 +747,7 @@ func _on_difficulty_selected(degrau: int) -> void:
 	DifficultyManager.set_level(game_id, degrau)
 	ai_level = DifficultyManager.get_level(game_id)
 	_highlight_active_settings_buttons()
-	set_status("Dificuldade: %s" % DifficultyManager.label_for(game_id))
+	set_status(tr("DIFF_SET") % DifficultyManager.label_for(game_id))
 
 
 func _on_btn_rematch_pressed() -> void:
@@ -759,19 +763,19 @@ func _update_hud_stats() -> void:
 	var nim_sum: int = Rules.calculate_nim_sum(heaps)
 	nim_sum_label.text = str(nim_sum)
 	turns_label.text = str(turn_count)
-	mode_label.text = "%s (%s)" % ["Misère" if is_misere else "Normal",
-		DifficultyManager.label_for(game_id) if is_vs_ai else "Local"]
+	mode_label.text = "%s (%s)" % [tr("NIM_MODE_MISERE") if is_misere else tr("NIM_MODE_NORMAL"),
+		DifficultyManager.label_for(game_id) if is_vs_ai else tr("NIM_MODE_LOCAL")]
 	# O que resta na mesa e o unico numero que conta para quem esta jogando; o
 	# XOR e a contagem de turnos ficam nos cartoes, que sao leitura de analise.
 	var restam := 0
 	for pilha in heaps:
 		restam += pilha
-	set_counter(restam, "peças")
+	set_counter(restam, "SCORE_PIECES")
 
 
 func _highlight_active_settings_buttons() -> void:
 	for btn: Button in preset_buttons_container.get_children():
-		var is_active: bool = btn.text.to_lower().contains(preset_name.substr(0, 3))
+		var is_active: bool = str(btn.get_meta("preset", "")) == preset_name
 		btn.modulate = Color(1.0, 1.0, 1.0) if is_active else Color(0.7, 0.7, 0.7)
 		
 	for btn: Button in diff_buttons_container.get_children():

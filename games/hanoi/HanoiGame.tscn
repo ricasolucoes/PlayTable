@@ -71,7 +71,7 @@ alignment = 1
 layout_mode = 2
 theme_override_font_sizes/font_size = 13
 theme_override_colors/font_color = Color(0.8, 0.8, 0.8, 1)
-text = "Mínimo"
+text = "HANOI_MINIMUM"
 horizontal_alignment = 1
 
 [node name="MinMovesValue" type="Label" parent="UI/VBoxContainer/InfoCards/MinMovesCard/VBox"]
@@ -92,7 +92,7 @@ alignment = 1
 layout_mode = 2
 theme_override_font_sizes/font_size = 13
 theme_override_colors/font_color = Color(0.8, 0.8, 0.8, 1)
-text = "Precisão"
+text = "HANOI_ACCURACY"
 horizontal_alignment = 1
 
 [node name="StarsValue" type="Label" parent="UI/VBoxContainer/InfoCards/StarsCard/VBox"]
@@ -105,7 +105,7 @@ horizontal_alignment = 1
 layout_mode = 2
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.8)
 theme_override_font_sizes/font_size = 18
-text = "Toque no pino de origem para erguer o disco!"
+text = "HANOI_START"
 horizontal_alignment = 1
 autowrap_mode = 2
 
@@ -129,22 +129,19 @@ alignment = 1
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 18
-text = "Pino A
-(Origem)"
+text = "HANOI_BTN_PEG_A"
 
 [node name="BtnPegB" type="Button" parent="UI/PegTouchArea"]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 18
-text = "Pino B
-(Auxiliar)"
+text = "HANOI_BTN_PEG_B"
 
 [node name="BtnPegC" type="Button" parent="UI/PegTouchArea"]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 18
-text = "Pino C
-(Destino)"
+text = "HANOI_BTN_PEG_C"
 
 [node name="Actions" type="HBoxContainer" parent="UI"]
 layout_mode = 1
@@ -165,25 +162,25 @@ alignment = 1
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 16
-text = "↶ Desfazer"
+text = "BTN_UNDO_ICON"
 
 [node name="BtnHint" type="Button" parent="UI/Actions"]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 16
-text = "💡 Dica"
+text = "BTN_HINT_ICON"
 
 [node name="BtnAutoSolve" type="Button" parent="UI/Actions"]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 16
-text = "🤖 Auto"
+text = "HANOI_BTN_AUTO"
 
 [node name="BtnRestart" type="Button" parent="UI/Actions"]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 16
-text = "🔄 Reiniciar"
+text = "BTN_RESET_ICON"
 
 [node name="WinModal" type="ColorRect" parent="."]
 visible = false
@@ -218,7 +215,7 @@ alignment = 1
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 0.85, 0.2, 1)
 theme_override_font_sizes/font_size = 28
-text = "🏆 Desafio Concluído!"
+text = "HANOI_CHALLENGE_DONE"
 horizontal_alignment = 1
 
 [node name="WinStars" type="Label" parent="WinModal/Panel/VBox"]
@@ -230,34 +227,33 @@ horizontal_alignment = 1
 [node name="WinDetails" type="Label" parent="WinModal/Panel/VBox"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 18
-text = "Jogadas: 7 (Mínimo: 7)
-Tempo: 00:15"
+text = ""
 horizontal_alignment = 1
 
 [node name="WinXP" type="Label" parent="WinModal/Panel/VBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.2, 1, 0.4, 1)
 theme_override_font_sizes/font_size = 20
-text = "+450 XP Ganho!"
+text = ""
 horizontal_alignment = 1
 
 [node name="BtnNextLevel" type="Button" parent="WinModal/Panel/VBox"]
 custom_minimum_size = Vector2(0, 48)
 layout_mode = 2
 theme_override_font_sizes/font_size = 18
-text = "▶ Próximo Nível"
+text = "HANOI_NEXT_LEVEL_SHORT"
 
 [node name="BtnPlayAgain" type="Button" parent="WinModal/Panel/VBox"]
 custom_minimum_size = Vector2(0, 48)
 layout_mode = 2
 theme_override_font_sizes/font_size = 18
-text = "🔄 Jogar Novamente"
+text = "BTN_RESTART_ICON"
 
 [node name="BtnMenu" type="Button" parent="WinModal/Panel/VBox"]
 custom_minimum_size = Vector2(0, 48)
 layout_mode = 2
 theme_override_font_sizes/font_size = 18
-text = "🏠 Menu Principal"
+text = "BTN_MAIN_MENU_ICON"
 
 [connection signal="pressed" from="UI/PegTouchArea/BtnPegA" to="." method="_on_peg_pressed" binds=[0]]
 [connection signal="pressed" from="UI/PegTouchArea/BtnPegB" to="." method="_on_peg_pressed" binds=[1]]

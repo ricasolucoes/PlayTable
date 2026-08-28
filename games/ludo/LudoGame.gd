@@ -2,7 +2,7 @@ extends BaseGame
 
 ## LudoGame: Ludo 3D com Tabuleiro em Cruz Colorido, Peões Esculpidos e Dado 3D Físico
 
-const PLAYER_NAMES = ["Jogador (Vermelho)", "IA (Azul)", "IA (Verde)", "IA (Amarelo)"]
+const PLAYER_NAMES = ["LUDO_P_RED", "LUDO_P_BLUE", "LUDO_P_GREEN", "LUDO_P_YELLOW"]
 const PLAYER_MAT_NAMES = ["plastic_red", "plastic_blue", "plastic_green", "plastic_yellow"]
 const START_OFFSETS = [0, 7, 14, 21]
 const TRACK_LENGTH = 28
@@ -132,9 +132,9 @@ func _start_new_game() -> void:
 	
 	dice_3d.position = Vector3(0, 0.35, 0)
 	dice_3d.set_value_immediate(6)
-	btn_dice.text = "🎲 Rolar Dado"
+	btn_dice.text = tr("LUDO_BTN_ROLL")
 	btn_dice.disabled = false
-	set_status("Sua Vez! Toque no dado para rolar.%s" % difficulty_suffix())
+	set_status(tr("LUDO_YOUR_TURN") + difficulty_suffix())
 	_sync_pawns_positions(true)
 
 ## Peoes que chegaram ao centro, o unico placar que o Ludo tem -- e o unico
@@ -173,12 +173,12 @@ func _on_btn_dice_pressed() -> void:
 	btn_dice.disabled = true
 	
 	var rolled := randi_range(1, 6)
-	set_status("Rolando dado...")
+	set_status(tr("LUDO_ROLLING"))
 	dice_3d.roll(rolled, 0.75)
 
 func _on_dice_roll_finished(val: int) -> void:
 	last_roll = val
-	btn_dice.text = "🎲 Dado: %d" % last_roll
+	btn_dice.text = tr("LUDO_DICE_VALUE") % last_roll
 	
 	if current_turn == 0:
 		_handle_player_roll(last_roll)
@@ -193,18 +193,18 @@ func _handle_player_roll(roll: int) -> void:
 		elif pos >= 0 and pos + roll <= 32: movable.append(idx)
 		
 	if movable.is_empty():
-		set_status("Sem movimentos possíveis com %d!" % roll)
+		set_status(tr("NO_MOVES_WITH") % roll)
 		await get_tree().create_timer(0.8).timeout
 		_next_turn()
 	elif movable.size() == 1:
 		_move_player_pawn(movable[0], roll)
 	else:
-		set_status("Escolha qual peão deseja mover:")
+		set_status(tr("LUDO_PICK_PAWN"))
 		for c in pawn_buttons_container.get_children(): c.queue_free()
 		for idx in movable:
 			var btn := Button.new()
 			btn.custom_minimum_size = Vector2(140, 50)
-			btn.text = "Mover Peão %d" % (idx + 1)
+			btn.text = tr("LUDO_MOVE_PAWN") % (idx + 1)
 			btn.pressed.connect(_on_pawn_choice_selected.bind(idx, roll))
 			pawn_buttons_container.add_child(btn)
 
@@ -223,7 +223,7 @@ func _move_player_pawn(idx: int, roll: int) -> void:
 	if _check_win(0): return
 	
 	if roll == 6:
-		set_status("Tirou 6! Você ganha mais um turno.")
+		set_status(tr("LUDO_ROLLED_SIX"))
 		can_roll = true
 		btn_dice.disabled = false
 	else:
@@ -232,11 +232,11 @@ func _move_player_pawn(idx: int, roll: int) -> void:
 func _next_turn() -> void:
 	current_turn = (current_turn + 1) % 4
 	if current_turn == 0:
-		set_status("Sua Vez! Toque no dado para rolar.%s" % difficulty_suffix())
+		set_status(tr("LUDO_YOUR_TURN") + difficulty_suffix())
 		can_roll = true
 		btn_dice.disabled = false
 	else:
-		set_status("Vez da %s..." % PLAYER_NAMES[current_turn])
+		set_status(tr("LUDO_TURN_OF") % tr(PLAYER_NAMES[current_turn]))
 		can_roll = false
 		btn_dice.disabled = true
 		await get_tree().create_timer(0.6).timeout
@@ -256,7 +256,7 @@ func _handle_ai_roll(roll: int) -> void:
 	if _check_win(p): return
 	
 	if roll == 6:
-		set_status("%s tirou 6 e joga novamente!" % PLAYER_NAMES[p])
+		set_status(tr("LUDO_ROLLED_SIX_AGAIN") % tr(PLAYER_NAMES[p]))
 		await get_tree().create_timer(0.6).timeout
 		var ai_roll := randi_range(1, 6)
 		dice_3d.roll(ai_roll, 0.6)
@@ -278,7 +278,7 @@ func _check_captures(active_p: int, active_idx: int) -> void:
 				if active_abs == other_abs:
 					# Captura! Peão adversário volta para a base
 					players_pawns[other_p][other_idx] = -1
-					set_status("💥 Peão capturado e mandado de volta à base!")
+					set_status(tr("LUDO_CAPTURED"))
 					_sync_pawns_positions()
 
 func _check_win(p: int) -> bool:
@@ -289,8 +289,8 @@ func _check_win(p: int) -> bool:
 			break
 	if all_finished:
 		if p == 0:
-			finish_game("🏆 Parabéns! Você venceu o Ludo 3D!", true)
+			finish_game(tr("LUDO_WIN"), true)
 		else:
-			finish_game("%s venceu a partida!" % PLAYER_NAMES[p])
+			finish_game(tr("LUDO_LOSE") % tr(PLAYER_NAMES[p]))
 		return true
 	return false

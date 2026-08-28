@@ -152,14 +152,14 @@ func _handle_game_won(winner_id: int, combo: Array[int]) -> void:
 	if winner_id == 1:
 		score_x += 1
 		set_duel_score(score_x, score_o)
-		win_modal_title.text = "🏆 Vitória do X!"
-		win_modal_sub.text = "Você alinhou 3 peças com sucesso!"
+		win_modal_title.text = tr("TICTACTOE_WIN_X")
+		win_modal_sub.text = tr("TICTACTOE_WIN_X_DESC")
 		if AudioManager: AudioManager.play_win()
 	else:
 		score_o += 1
 		set_duel_score(score_x, score_o)
-		win_modal_title.text = "Vitória do O!"
-		win_modal_sub.text = "A IA completou a trinca de ouro."
+		win_modal_title.text = tr("TICTACTOE_WIN_O")
+		win_modal_sub.text = tr("TICTACTOE_WIN_O_DESC")
 		if AudioManager: AudioManager.play_draw()
 
 	# O jogo termina por modal, nao por `finish_game()`: a gamificacao precisa
@@ -172,8 +172,8 @@ func _handle_game_won(winner_id: int, combo: Array[int]) -> void:
 
 func _handle_game_draw() -> void:
 	game_over = true
-	win_modal_title.text = "Empate!"
-	win_modal_sub.text = "Nenhum jogador conseguiu alinhar 3 peças."
+	win_modal_title.text = tr("DRAW_TITLE")
+	win_modal_sub.text = tr("TICTACTOE_DRAW_DESC")
 	if AudioManager: AudioManager.play_draw()
 	_close_ladder(false, true)
 	reveal_result_modal(win_modal)
@@ -183,9 +183,9 @@ func _update_turn_ui() -> void:
 	set_duel_score(score_x, score_o)
 	set_active_side(is_player_turn)
 	if is_player_turn:
-		set_status("Sua Vez (Cruz X Carmesim)")
+		set_status(tr("TICTACTOE_YOUR_TURN"))
 	else:
-		set_status("Vez do Computador (Anel O Dourado)...")
+		set_status(tr("TICTACTOE_AI_TURN"))
 
 func _start_new_game() -> void:
 	win_modal.visible = false

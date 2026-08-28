@@ -92,7 +92,7 @@ func _start_new_game() -> void:
 	for i in range(14):
 		pits.append(0 if (i == 6 or i == 13) else 4)
 		
-	set_status("Sua Vez! Escolha uma cova para semear.")
+	set_status(tr("MANCALA_YOUR_TURN_LONG"))
 	_sync_gems_3d()
 	_update_ui()
 
@@ -121,8 +121,8 @@ func _sync_gems_3d() -> void:
 
 func _update_ui() -> void:
 	set_duel_score(pits[6], pits[13])
-	player_store_label.text = "Sua Kalah:\n💎 %d" % pits[6]
-	ai_store_label.text = "Kalah IA:\n💎 %d%s" % [pits[13], difficulty_suffix()]
+	player_store_label.text = tr("MANCALA_YOUR_STORE") % pits[6]
+	ai_store_label.text = tr("MANCALA_AI_STORE") % pits[13] + difficulty_suffix()
 	
 	for i in range(6):
 		var btn := player_pits_container.get_child(i) as Button
@@ -140,16 +140,16 @@ func _on_player_pit_clicked(pit_idx: int) -> void:
 
 	var ganhou := _semear(pit_idx, 0)
 	if ganhou["capturou"] > 0:
-		set_status("💎 Captura espetacular! +%d gemas!" % ganhou["capturou"])
+		set_status(tr("MANCALA_YOU_CAPTURE") % ganhou["capturou"])
 
 	if _check_game_over(): return
 
 	if ganhou["extra"]:
-		set_status("Última gema caiu na sua Kalah! Jogue novamente.")
+		set_status(tr("MANCALA_FREE_TURN"))
 		return
 
 	is_player_turn = false
-	set_status("Vez da IA...")
+	set_status(tr("AI_TURN_SHORT"))
 	_update_ui()
 	await get_tree().create_timer(0.7).timeout
 	_play_ai_turn()
@@ -200,18 +200,18 @@ func _play_ai_turn() -> void:
 
 	var ganhou := _semear(cova, 1)
 	if ganhou["capturou"] > 0:
-		set_status("IA capturou %d das suas gemas!" % ganhou["capturou"])
+		set_status(tr("MANCALA_AI_CAPTURE") % ganhou["capturou"])
 
 	if _check_game_over(): return
 
 	if ganhou["extra"]:
-		set_status("IA jogou no próprio Kalah e joga novamente!")
+		set_status(tr("MANCALA_AI_FREE_TURN"))
 		await get_tree().create_timer(0.7).timeout
 		_play_ai_turn()
 		return
 		
 	is_player_turn = true
-	set_status("Sua Vez! Escolha uma cova.")
+	set_status(tr("MANCALA_YOUR_TURN"))
 	_update_ui()
 
 func _check_game_over() -> bool:
@@ -231,10 +231,10 @@ func _check_game_over() -> bool:
 		_update_ui()
 		
 		if pits[6] > pits[13]:
-			finish_game("🏆 Você Venceu! (%d x %d)" % [pits[6], pits[13]], true)
+			finish_game(tr("RESULT_YOU_WIN_SCORE") % [pits[6], pits[13]], true)
 		elif pits[13] > pits[6]:
-			finish_game("IA Venceu! (%d x %d)" % [pits[13], pits[6]])
+			finish_game(tr("RESULT_AI_WINS_SCORE") % [pits[13], pits[6]])
 		else:
-			finish_game("Empate! (%d x %d)" % [pits[6], pits[13]])
+			finish_game(tr("RESULT_DRAW_SCORE") % [pits[6], pits[13]])
 		return true
 	return false

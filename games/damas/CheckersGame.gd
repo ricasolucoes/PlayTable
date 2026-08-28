@@ -48,7 +48,7 @@ func _start_new_game() -> void:
 	_update_level_label()
 	grid_data = CheckersRules.create_initial_board()
 	_sync_pieces_3d()
-	set_status("Sua Vez! (Marfim)")
+	set_status(tr("CHECKERS_YOUR_TURN"))
 
 
 func _update_level_label() -> void:
@@ -111,7 +111,7 @@ func _on_cell_clicked(r: int, c: int) -> void:
 		# outra peca enquanto a IA, que joga pelas regras, era obrigada a comer.
 		# Era metade do motivo de ganhar das Damas sem pensar.
 		if not _piece_is_playable(clicked_pos):
-			set_status("Captura obrigatória: jogue a peça que come.")
+			set_status(tr("CHECKERS_MUST_CAPTURE"))
 			_highlight_forced_captures()
 			return
 		selected_pos = clicked_pos
@@ -210,7 +210,7 @@ func _execute_player_move(from_pos: Vector2i, move_dict: Dictionary) -> void:
 			board_3d.highlight_cell(to_pos.x, to_pos.y, Color(0.9, 0.75, 0.2))
 			for vm in valid_moves:
 				board_3d.highlight_cell(vm["to"].x, vm["to"].y, Color(0.2, 0.8, 0.4))
-			set_status("Captura múltipla obrigatória!")
+			set_status(tr("CHECKERS_MUST_CHAIN"))
 			return
 			
 	continuing_capture_pos = Vector2i(-1, -1)
@@ -227,7 +227,7 @@ func _check_game_end_or_ai_turn() -> void:
 		return
 		
 	is_player_turn = false
-	set_status("Vez da IA (Obsidiana)...")
+	set_status(tr("CHECKERS_AI_TURN"))
 
 	# A busca roda fora da linha principal e comeca junto com a pausa de
 	# encenacao: no degrau 10 ela leva perto de meio segundo aqui e mais num
@@ -304,7 +304,7 @@ func _play_ai_turn(turno: Dictionary) -> void:
 		return
 
 	is_player_turn = true
-	set_status("Sua Vez! (Marfim)")
+	set_status(tr("CHECKERS_YOUR_TURN"))
 
 
 func _is_queen(pos: Vector2i) -> bool:
@@ -314,9 +314,9 @@ func _is_queen(pos: Vector2i) -> bool:
 func _end_game(winner: int) -> void:
 	var antes := DifficultyManager.get_level(game_id)
 	if winner == 1:
-		finish_game("🏆 Você Venceu!", true)
+		finish_game(tr("RESULT_YOU_WIN"), true)
 	else:
-		finish_game("IA Venceu!")
+		finish_game(tr("RESULT_AI_WINS"))
 
 	# `finish_game` publica a partida e o BaseGame move o degrau. O aviso vem
 	# depois porque so ai o degrau novo existe.

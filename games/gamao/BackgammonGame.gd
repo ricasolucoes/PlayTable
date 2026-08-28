@@ -362,8 +362,8 @@ func _setup_touch_overlays() -> void:
 
 	for pt in range(1, 25):
 		touch_targets[pt] = _create_touch_button(pt, "%d" % pt)
-	touch_targets[Rules.BAR_POS] = _create_touch_button(Rules.BAR_POS, "BARRA")
-	touch_targets[Rules.BEAR_OFF_POS] = _create_touch_button(Rules.BEAR_OFF_POS, "SAÍDA")
+	touch_targets[Rules.BAR_POS] = _create_touch_button(Rules.BAR_POS, tr("BACKGAMMON_BAR"))
+	touch_targets[Rules.BEAR_OFF_POS] = _create_touch_button(Rules.BEAR_OFF_POS, tr("BACKGAMMON_BEAR_OFF"))
 
 	if env_3d:
 		env_3d.framing_changed.connect(func(_size: Vector2): _refresh_touch_overlays())
@@ -544,7 +544,7 @@ func _start_new_game() -> void:
 	btn_roll_dice.show()
 	result_modal.visible = false
 
-	set_status("Sua Vez! Role os dados para começar.")
+	set_status(tr("BACKGAMMON_START"))
 
 
 # ---------------------------------------------------------------------------
@@ -646,16 +646,16 @@ func _on_btn_roll_dice_pressed() -> void:
 	# Verifica se há qualquer jogada legal possível
 	var legal_moves := Rules.get_all_legal_single_moves(game_state, current_player, available_moves)
 	if legal_moves.is_empty():
-		set_status("Sem jogadas possíveis! Turno encerrado.")
+		set_status(tr("BACKGAMMON_NO_MOVES"))
 		await get_tree().create_timer(1.2).timeout
 		_finish_turn()
 	else:
 		if current_player == Rules.PLAYER_WHITE:
 			if Rules.has_checkers_on_bar(game_state, current_player):
-				set_status("Você tem peças na Barra! Reentre no tabuleiro.")
+				set_status(tr("BACKGAMMON_ON_BAR"))
 				_on_position_touched(Rules.BAR_POS)
 			else:
-				set_status("Escolha uma peça para mover.")
+				set_status(tr("BACKGAMMON_PICK_CHECKER"))
 		btn_end_turn.show()
 
 
@@ -701,7 +701,7 @@ func _select_position(pt: int) -> void:
 
 	# Se houver peças na Barra, é obrigatório selecionar a Barra
 	if Rules.has_checkers_on_bar(game_state, current_player) and pt != Rules.BAR_POS:
-		set_status("Reentrada obrigatória a partir da Barra!")
+		set_status(tr("BACKGAMMON_MUST_REENTER"))
 		_select_position(Rules.BAR_POS)
 		return
 
@@ -720,7 +720,7 @@ func _select_position(pt: int) -> void:
 	# Calcula destinos válidos
 	var moves := Rules.get_valid_moves_for_position(game_state, current_player, pt, available_moves)
 	if moves.is_empty():
-		set_status("Nenhum movimento válido para esta peça com os dados atuais.")
+		set_status(tr("BACKGAMMON_NO_MOVE_HERE"))
 		return
 
 	selected_pos = pt
@@ -738,9 +738,9 @@ func _select_position(pt: int) -> void:
 	_sync_touch_visuals()
 
 	if pt == Rules.BAR_POS:
-		set_status("Barra selecionada. Escolha a casa de reentrada.")
+		set_status(tr("BACKGAMMON_BAR_PICKED"))
 	else:
-		set_status("Ponto %d selecionado. Escolha o destino." % pt)
+		set_status(tr("BACKGAMMON_POINT_PICKED") % pt)
 
 
 func _clear_all_highlights() -> void:
@@ -799,7 +799,7 @@ func _execute_player_move(from_pos: int, move_data: Dictionary) -> void:
 		if Rules.has_checkers_on_bar(game_state, current_player):
 			_select_position(Rules.BAR_POS)
 		else:
-			set_status("Movimento realizado! Escolha a próxima peça.")
+			set_status(tr("BACKGAMMON_MOVED"))
 
 
 func _finish_turn() -> void:
@@ -820,14 +820,14 @@ func _finish_turn() -> void:
 	if is_vs_ai and current_player == Rules.PLAYER_BLACK:
 		btn_roll_dice.disabled = true
 		btn_roll_dice.hide()
-		set_status("Vez da IA (Pretas)... Rolando dados.")
+		set_status(tr("BACKGAMMON_AI_TURN"))
 		await get_tree().create_timer(0.6).timeout
 		_play_ai_turn()
 	else:
 		btn_roll_dice.disabled = false
 		btn_roll_dice.show()
-		var player_name := "Você" if current_player == Rules.PLAYER_WHITE else "Jogador 2"
-		set_status("Sua Vez (%s)! Role os dados." % player_name)
+		var player_name := tr("BACKGAMMON_P1") if current_player == Rules.PLAYER_WHITE else tr("BACKGAMMON_P2")
+		set_status(tr("BACKGAMMON_YOUR_TURN") % player_name)
 
 
 # ---------------------------------------------------------------------------
@@ -853,15 +853,15 @@ func _play_ai_turn() -> void:
 	var ai_sequence := Rules.get_ai_turn(game_state, Rules.PLAYER_BLACK, available_moves, ai_level)
 
 	if ai_sequence.is_empty():
-		set_status("A IA não tem jogadas legais.")
+		set_status(tr("BACKGAMMON_AI_NO_MOVES"))
 		await get_tree().create_timer(1.0).timeout
 	else:
 		for mv in ai_sequence:
 			if game_over:
 				break
-			set_status("IA movendo de %s para %s..." % [
-				"Barra" if mv["from"] == 0 else str(mv["from"]),
-				"Bear-off" if mv["to"] == 25 else str(mv["to"])
+			set_status(tr("BACKGAMMON_AI_MOVING") % [
+				tr("BACKGAMMON_BAR") if mv["from"] == 0 else str(mv["from"]),
+				tr("BACKGAMMON_BEAR_OFF") if mv["to"] == 25 else str(mv["to"])
 			])
 			await get_tree().create_timer(0.65).timeout
 
@@ -926,15 +926,16 @@ func _on_btn_undo_pressed() -> void:
 	valid_destinations.clear()
 	btn_undo.disabled = (turn_history.size() <= 1)
 
-	set_status("Lance desfeito. Escolha outro movimento.")
+	set_status(tr("BACKGAMMON_UNDONE"))
 
 
 func _on_btn_mode_toggle_pressed() -> void:
 	if AudioManager:
 		AudioManager.play_click()
 	is_vs_ai = not is_vs_ai
-	mode_label.text = "vs IA" if is_vs_ai else "2 Jogadores"
-	btn_mode_toggle.text = "Modo: %s" % ("vs IA" if is_vs_ai else "2 Jogadores")
+	var modo := tr("MODE_VS_AI") if is_vs_ai else tr("MODE_TWO_PLAYERS")
+	mode_label.text = modo
+	btn_mode_toggle.text = tr("MODE_LABEL") % modo
 	_start_new_game()
 
 
@@ -963,9 +964,9 @@ func _on_btn_diff_toggle_pressed() -> void:
 
 func _pintar_degrau() -> void:
 	if btn_diff_toggle != null:
-		btn_diff_toggle.text = "IA: %s" % tr(DifficultyManager.tier_name(ai_level))
+		btn_diff_toggle.text = tr("AI_TIER") % tr(DifficultyManager.tier_name(ai_level))
 	if mode_label != null and is_vs_ai:
-		mode_label.text = "vs IA • %s" % DifficultyManager.label_for(game_id)
+		mode_label.text = "%s • %s" % [tr("MODE_VS_AI"), DifficultyManager.label_for(game_id)]
 
 
 func _on_btn_rematch_pressed() -> void:
@@ -1000,20 +1001,20 @@ func _handle_game_over(winner: int) -> void:
 	var win_type := Rules.get_win_type(game_state, winner)
 	var is_player_win := (winner == Rules.PLAYER_WHITE)
 
-	var win_type_title := "Vitória Simples"
+	var win_type_title := tr("BACKGAMMON_WIN_SINGLE")
 	var multiplier := 1
 	if win_type == "gammon":
-		win_type_title = "Vitória por GAMMON! (2x)"
+		win_type_title = tr("BACKGAMMON_WIN_GAMMON")
 		multiplier = 2
 	elif win_type == "backgammon":
-		win_type_title = "Vitória por BACKGAMMON! (3x)"
+		win_type_title = tr("BACKGAMMON_WIN_BACKGAMMON")
 		multiplier = 3
 
 	var msg := ""
 	if is_player_win:
-		msg = "Parabéns! Você venceu (%s)!" % win_type_title
+		msg = tr("BACKGAMMON_YOU_WIN") % win_type_title
 	else:
-		msg = "A IA venceu a partida (%s)." % win_type_title
+		msg = tr("BACKGAMMON_AI_WIN") % win_type_title
 
 	# A gamificacao sai por BaseGame.report_match_result: quem credita o XP,
 	# conta a partida e cuida da streak e o GamificationManager, ouvindo o
@@ -1036,17 +1037,17 @@ func _show_result_modal(is_win: bool, win_type_text: String, xp_earned: int) -> 
 	result_modal.modulate.a = 0.0
 
 	if is_win:
-		result_title.text = "🏆 VITÓRIA!"
+		result_title.text = tr("BACKGAMMON_RESULT_WIN")
 		result_stars.text = "⭐⭐⭐"
-		result_details.text = "%s\nTurnos: %d • Tempo: %02d:%02d" % [
+		result_details.text = tr("BACKGAMMON_RESULT_DETAILS") % [
 			win_type_text, turn_count, int(elapsed_time) / 60, int(elapsed_time) % 60
 		]
 	else:
-		result_title.text = "FIM DE JOGO"
+		result_title.text = tr("BACKGAMMON_RESULT_LOSE")
 		result_stars.text = "⭐"
-		result_details.text = "%s\nTurnos: %d" % [win_type_text, turn_count]
+		result_details.text = tr("BACKGAMMON_RESULT_TURNS") % [win_type_text, turn_count]
 
-	result_xp_label.text = "+%d XP Ganho" % xp_earned
+	result_xp_label.text = tr("XP_EARNED_PLAIN") % xp_earned
 
 	var tw := create_tween()
 	tw.tween_property(result_modal, "modulate:a", 1.0, 0.4).set_trans(Tween.TRANS_CUBIC)

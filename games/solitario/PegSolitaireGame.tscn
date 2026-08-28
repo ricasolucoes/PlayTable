@@ -50,7 +50,7 @@ theme_override_constants/separation = 10
 layout_mode = 2
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.8)
 theme_override_font_sizes/font_size = 20
-text = "Toque em uma esfera para saltar!"
+text = "PEG_START"
 horizontal_alignment = 1
 
 [node name="Actions" type="HBoxContainer" parent="UI"]
@@ -70,6 +70,6 @@ visible = false
 custom_minimum_size = Vector2(180, 50)
 layout_mode = 2
 theme_override_font_sizes/font_size = 20
-text = "🔄 Nova Partida"
+text = "BTN_NEW_MATCH_ICON"
 
 [connection signal="pressed" from="UI/Actions/BtnRestart" to="." method="_on_btn_restart_pressed"]

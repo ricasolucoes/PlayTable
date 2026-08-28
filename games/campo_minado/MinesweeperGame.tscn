@@ -54,7 +54,7 @@ text = "🙂"
 layout_mode = 2
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.8)
 theme_override_font_sizes/font_size = 20
-text = "Toque em uma casa para começar!"
+text = "MINESWEEPER_START"
 horizontal_alignment = 1
 
 [node name="Controls" type="HBoxContainer" parent="UI"]
@@ -73,7 +73,7 @@ alignment = 1
 custom_minimum_size = Vector2(220, 52)
 layout_mode = 2
 theme_override_font_sizes/font_size = 20
-text = "Modo: ⛏️ Revelar"
+text = "MINESWEEPER_MODE_DIG"
 
 [connection signal="pressed" from="UI/VBoxContainer/Header/BtnSmiley" to="." method="_on_btn_smiley_pressed"]
 [connection signal="pressed" from="UI/Controls/BtnMode" to="." method="_on_btn_mode_pressed"]

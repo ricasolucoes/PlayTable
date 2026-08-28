@@ -42,7 +42,7 @@ theme_override_constants/separation = 12
 layout_mode = 2
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.8)
 theme_override_font_sizes/font_size = 22
-text = "Sua Vez! Escolha uma cova para semear."
+text = "MANCALA_YOUR_TURN_LONG"
 horizontal_alignment = 1
 
 [node name="BtnRestart" type="Button" parent="UI/VBoxContainer"]
@@ -51,7 +51,7 @@ custom_minimum_size = Vector2(180, 50)
 layout_mode = 2
 size_flags_horizontal = 4
 theme_override_font_sizes/font_size = 20
-text = "🔄 Jogar Novamente"
+text = "BTN_RESTART_ICON"
 
 [node name="CenterContainer" type="Control" parent="UI"]
 layout_mode = 1
@@ -81,8 +81,7 @@ layout_mode = 2
 size_flags_horizontal = 3
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.8)
 theme_override_font_sizes/font_size = 20
-text = "Kalah IA:
-💎 0"
+text = ""
 horizontal_alignment = 1
 
 [node name="PlayerStoreLabel" type="Label" parent="UI/CenterContainer/HBoxStores"]
@@ -90,8 +89,7 @@ layout_mode = 2
 size_flags_horizontal = 3
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.8)
 theme_override_font_sizes/font_size = 20
-text = "Sua Kalah:
-💎 0"
+text = ""
 horizontal_alignment = 1
 
 [node name="VBox" type="VBoxContainer" parent="UI/CenterContainer"]
