@@ -1,8 +1,6 @@
-[gd_scene load_steps=4 format=3 uid="uid://mainmenuuid"]
+[gd_scene load_steps=2 format=3 uid="uid://mainmenuuid"]
 
 [ext_resource type="Script" path="res://core/telas/MainMenu.gd" id="1_script"]
-[ext_resource type="PackedScene" uid="uid://tabletopbg01" path="res://shared/ui/TabletopBackground.tscn" id="2_bg"]
-[ext_resource type="Theme" uid="uid://cxq6a87e8qf1b" path="res://shared/theme/MainTheme.tres" id="3_theme"]
 
 [node name="MainMenu" type="Control"]
 layout_mode = 3
@@ -11,89 +9,4 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-theme = ExtResource("3_theme")
 script = ExtResource("1_script")
-
-[node name="TabletopBackground" parent="." instance=ExtResource("2_bg")]
-layout_mode = 1
-
-[node name="VBoxContainer" type="VBoxContainer" parent="."]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = 32.0
-offset_top = 80.0
-offset_right = -32.0
-offset_bottom = -60.0
-grow_horizontal = 2
-grow_vertical = 2
-theme_override_constants/separation = 40
-
-[node name="HeaderCard" type="PanelContainer" parent="VBoxContainer"]
-layout_mode = 2
-
-[node name="VBox" type="VBoxContainer" parent="VBoxContainer/HeaderCard"]
-layout_mode = 2
-theme_override_constants/separation = 8
-
-[node name="Title" type="Label" parent="VBoxContainer/HeaderCard/VBox"]
-layout_mode = 2
-theme_override_colors/font_color = Color(1, 0.88, 0.42, 1)
-theme_override_font_sizes/font_size = 46
-text = "APP_TITLE"
-horizontal_alignment = 1
-
-[node name="Subtitle" type="Label" parent="VBoxContainer/HeaderCard/VBox"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.85, 0.80, 0.70, 1)
-theme_override_font_sizes/font_size = 20
-text = "APP_SUBTITLE"
-horizontal_alignment = 1
-
-[node name="Spacer" type="Control" parent="VBoxContainer"]
-custom_minimum_size = Vector2(0, 20)
-layout_mode = 2
-
-[node name="VBoxButtons" type="VBoxContainer" parent="VBoxContainer"]
-layout_mode = 2
-size_flags_vertical = 3
-theme_override_constants/separation = 20
-alignment = 1
-
-[node name="BtnTabuleiro" type="Button" parent="VBoxContainer/VBoxButtons"]
-custom_minimum_size = Vector2(0, 100)
-layout_mode = 2
-theme_override_font_sizes/font_size = 30
-text = "MENU_BOARD_GAMES"
-
-[node name="BtnCartas" type="Button" parent="VBoxContainer/VBoxButtons"]
-custom_minimum_size = Vector2(0, 100)
-layout_mode = 2
-theme_override_font_sizes/font_size = 30
-text = "MENU_CARD_GAMES"
-
-[node name="BtnSound" type="Button" parent="VBoxContainer/VBoxButtons"]
-custom_minimum_size = Vector2(0, 70)
-layout_mode = 2
-theme_override_font_sizes/font_size = 20
-text = "SOUND_ON"
-
-[node name="BtnLanguage" type="Button" parent="VBoxContainer/VBoxButtons"]
-custom_minimum_size = Vector2(0, 70)
-layout_mode = 2
-theme_override_font_sizes/font_size = 20
-text = "BTN_LANGUAGE"
-
-[node name="Footer" type="Label" parent="VBoxContainer"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.65, 0.60, 0.52, 1)
-theme_override_font_sizes/font_size = 16
-text = "FOOTER_OFFLINE_PROMISE"
-horizontal_alignment = 1
-
-[connection signal="pressed" from="VBoxContainer/VBoxButtons/BtnTabuleiro" to="." method="_on_btn_tabuleiro_pressed"]
-[connection signal="pressed" from="VBoxContainer/VBoxButtons/BtnCartas" to="." method="_on_btn_cartas_pressed"]
-[connection signal="pressed" from="VBoxContainer/VBoxButtons/BtnSound" to="." method="_on_btn_sound_toggle_pressed"]
-[connection signal="pressed" from="VBoxContainer/VBoxButtons/BtnLanguage" to="." method="_on_btn_language_pressed"]
-

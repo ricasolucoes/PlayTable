@@ -227,6 +227,7 @@ func quests_for_ui(scope: String = "") -> Array:
 			"id": qid,
 			"scope": str(q.get("scope", "daily")),
 			"template": str(q.get("template", "")),
+			"type": str(q.get("type", "")),
 			"progress": int(q.get("progress", 0)),
 			"target": int(q.get("target", 1)),
 			"xp": int(q.get("xp", 0)),
