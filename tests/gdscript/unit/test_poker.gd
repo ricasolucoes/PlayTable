@@ -30,14 +30,14 @@ func _mesmo_naipe(valores: Array, naipe: Card.Suit) -> Array:
 
 func test_royal_flush() -> void:
 	var r: Dictionary = EvaluatorScript.evaluate_hand(_mesmo_naipe([10, 11, 12, 13, 14], COPAS))
-	assert_eq(r["name"], "Royal Flush")
+	assert_eq(r["name"], "POKER_HAND_ROYAL_FLUSH")
 	assert_eq(r["mult"], 800)
 	assert_eq(r["rank"], 10)
 
 
 func test_straight_flush() -> void:
 	var r: Dictionary = EvaluatorScript.evaluate_hand(_mesmo_naipe([5, 6, 7, 8, 9], OUROS))
-	assert_eq(r["name"], "Straight Flush")
+	assert_eq(r["name"], "POKER_HAND_STRAIGHT_FLUSH")
 	assert_eq(r["mult"], 50)
 	assert_eq(r["rank"], 9)
 
@@ -52,7 +52,7 @@ func test_quadra() -> void:
 func test_full_house() -> void:
 	var r: Dictionary = EvaluatorScript.evaluate_hand(
 		_mao([10, 10, 10, 4, 4], [COPAS, OUROS, PAUS, COPAS, OUROS]))
-	assert_eq(r["name"], "Full House")
+	assert_eq(r["name"], "POKER_HAND_FULL_HOUSE")
 	assert_eq(r["mult"], 9)
 	assert_eq(r["rank"], 7)
 
@@ -88,7 +88,7 @@ func test_trinca() -> void:
 func test_dois_pares() -> void:
 	var r: Dictionary = EvaluatorScript.evaluate_hand(
 		_mao([12, 12, 5, 5, 2], [COPAS, OUROS, COPAS, OUROS, PAUS]))
-	assert_eq(r["name"], "Dois Pares")
+	assert_eq(r["name"], "POKER_HAND_TWO_PAIR")
 	assert_eq(r["mult"], 2)
 	assert_eq(r["rank"], 3)
 
@@ -118,7 +118,7 @@ func test_carta_alta_nao_paga() -> void:
 
 func test_mao_incompleta() -> void:
 	var r: Dictionary = EvaluatorScript.evaluate_hand(_mao([2, 4], [COPAS, OUROS]))
-	assert_eq(r["name"], "Mão Incompleta")
+	assert_eq(r["name"], "POKER_HAND_INCOMPLETE")
 	assert_eq(r["mult"], 0)
 	assert_eq(r["rank"], 0)
 	assert_eq(EvaluatorScript.evaluate_hand([])["rank"], 0, "mao vazia")
@@ -153,7 +153,7 @@ func test_evaluate_e_apelido_de_evaluate_hand() -> void:
 
 func test_ordem_das_cartas_nao_muda_o_resultado() -> void:
 	var mao := _mao([4, 10, 10, 4, 10], [COPAS, COPAS, OUROS, OUROS, PAUS])
-	assert_eq(EvaluatorScript.evaluate_hand(mao)["name"], "Full House",
+	assert_eq(EvaluatorScript.evaluate_hand(mao)["name"], "POKER_HAND_FULL_HOUSE",
 		"avaliador ordena antes de decidir")
 
 
@@ -166,7 +166,7 @@ func test_qualquer_mao_de_um_baralho_real_recebe_um_rank() -> void:
 		var r: Dictionary = EvaluatorScript.evaluate_hand(mao)
 		assert_between(r["rank"], 0, 10, "rank dentro da tabela")
 		assert_true(r["mult"] >= 0, "multiplicador nao negativo")
-		assert_ne(r["name"], "Mão Incompleta", "5 cartas nunca sao mao incompleta")
+		assert_ne(r["name"], "POKER_HAND_INCOMPLETE", "5 cartas nunca sao mao incompleta")
 		# Descarte e nova compra, como o jogo faz na segunda fase.
 		mao[0] = baralho.draw()
 		mao[1] = baralho.draw()

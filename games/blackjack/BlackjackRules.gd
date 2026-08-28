@@ -52,22 +52,23 @@ static func is_blackjack(cards: Array) -> bool:
 static func dealer_should_hit(cards: Array) -> bool:
 	return calculate_score(cards) < 17
 
+## `message` sai como CHAVE de traducao, nao como frase: quem exibe chama `tr`.
 static func evaluate_match(player_cards: Array, dealer_cards: Array) -> Dictionary:
 	var p_score := calculate_score(player_cards)
 	var d_score := calculate_score(dealer_cards)
 	
 	if p_score > 21:
-		return {"winner": "dealer", "reason": "player_bust", "message": "Estourou! Você Perdeu."}
+		return {"winner": "dealer", "reason": "player_bust", "message": "BLACKJACK_MSG_PLAYER_BUST"}
 	if d_score > 21:
-		return {"winner": "player", "reason": "dealer_bust", "message": "Dealer Estourou! Você Venceu."}
+		return {"winner": "player", "reason": "dealer_bust", "message": "BLACKJACK_MSG_DEALER_BUST"}
 	if is_blackjack(player_cards) and not is_blackjack(dealer_cards):
-		return {"winner": "player", "reason": "blackjack", "message": "Blackjack! Você Venceu!"}
+		return {"winner": "player", "reason": "blackjack", "message": "BLACKJACK_MSG_BLACKJACK"}
 	if is_blackjack(dealer_cards) and not is_blackjack(player_cards):
-		return {"winner": "dealer", "reason": "dealer_blackjack", "message": "Dealer fez Blackjack!"}
+		return {"winner": "dealer", "reason": "dealer_blackjack", "message": "BLACKJACK_MSG_DEALER_BJ"}
 		
 	if p_score > d_score:
-		return {"winner": "player", "reason": "higher_score", "message": "Você Venceu!"}
+		return {"winner": "player", "reason": "higher_score", "message": "BLACKJACK_MSG_YOU_WIN"}
 	elif d_score > p_score:
-		return {"winner": "dealer", "reason": "dealer_higher", "message": "Dealer Venceu!"}
+		return {"winner": "dealer", "reason": "dealer_higher", "message": "BLACKJACK_MSG_DEALER_WIN"}
 	else:
-		return {"winner": "draw", "reason": "push", "message": "Empate!"}
+		return {"winner": "draw", "reason": "push", "message": "BLACKJACK_MSG_PUSH"}

@@ -40,7 +40,7 @@ theme_override_constants/separation = 10
 layout_mode = 2
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.8)
 theme_override_font_sizes/font_size = 24
-text = "Sua vez!"
+text = "YOUR_TURN_BANG"
 horizontal_alignment = 1
 
 [node name="Buttons" type="HBoxContainer" parent="UI"]
@@ -60,20 +60,20 @@ alignment = 1
 custom_minimum_size = Vector2(160, 56)
 layout_mode = 2
 theme_override_font_sizes/font_size = 22
-text = "🃏 Pedir Carta"
+text = "BLACKJACK_BTN_HIT"
 
 [node name="BtnStand" type="Button" parent="UI/Buttons"]
 custom_minimum_size = Vector2(160, 56)
 layout_mode = 2
 theme_override_font_sizes/font_size = 22
-text = "✋ Parar"
+text = "BLACKJACK_BTN_STAND"
 
 [node name="BtnRestart" type="Button" parent="UI/Buttons"]
 visible = false
 custom_minimum_size = Vector2(180, 56)
 layout_mode = 2
 theme_override_font_sizes/font_size = 22
-text = "🔄 Nova Rodada"
+text = "BTN_NEW_ROUND_ICON"
 
 [connection signal="pressed" from="UI/Buttons/BtnHit" to="." method="_on_btn_hit_pressed"]
 [connection signal="pressed" from="UI/Buttons/BtnStand" to="." method="_on_btn_stand_pressed"]

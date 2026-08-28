@@ -39,9 +39,9 @@ func _ready() -> void:
 ## meio do verde nao dizem qual e a mao de quem.
 func _build_table_zones() -> void:
 	cards_root.add_child(TableZone3D.create(ZONE_SIZE, Vector3(0.0, 0.0, DEALER_Z),
-		"MESA · CARTEADOR", Color(0.96, 0.80, 0.36), true))
+		tr("BLACKJACK_DEALER_ZONE"), Color(0.96, 0.80, 0.36), true))
 	cards_root.add_child(TableZone3D.create(ZONE_SIZE, Vector3(0.0, 0.0, PLAYER_Z),
-		"SUA MÃO", Color(0.52, 0.86, 1.0)))
+		tr("LABEL_YOUR_HAND"), Color(0.52, 0.86, 1.0)))
 
 func _start_new_game() -> void:
 	game_over = false
@@ -77,10 +77,10 @@ func _start_new_game() -> void:
 	_spawn_card_3d(d_c2, false, 1, true) # Visível
 	
 	_update_labels(false)
-	set_status("Sua vez! Pedir carta ou parar?")
+	set_status(tr("BLACKJACK_YOUR_TURN"))
 	
 	if BlackjackRules.is_blackjack(player_hand.get_all()):
-		_reveal_dealer_and_end("🏆 Blackjack Natural! Você Venceu!", true)
+		_reveal_dealer_and_end(tr("BLACKJACK_NATURAL"), true)
 
 func _spawn_card_3d(card: Card, is_player: bool, index: int, face_up: bool) -> Card3D:
 	var c_3d := preload("res://shared/3d/Card3D.tscn").instantiate()
@@ -133,7 +133,7 @@ func _update_labels(show_dealer: bool) -> void:
 		mesa = str(BlackjackRules.calculate_hand_value(dealer_hand.get_all()))
 	else:
 		mesa = "%d+" % BlackjackRules.calculate_hand_value(dealer_hand.get_all().slice(1))
-	set_duel_score(p_score, mesa, "sua mão", "mesa")
+	set_duel_score(p_score, mesa, "SCORE_YOUR_HAND", "SCORE_TABLE")
 
 func _on_btn_hit_pressed() -> void:
 	if game_over: return
@@ -144,14 +144,14 @@ func _on_btn_hit_pressed() -> void:
 	_update_labels(false)
 	
 	if BlackjackRules.is_busted(player_hand.get_all()):
-		_reveal_dealer_and_end("Estourou! Você ultrapassou 21.", false)
+		_reveal_dealer_and_end(tr("BLACKJACK_YOU_BUST"), false)
 
 func _on_btn_stand_pressed() -> void:
 	if game_over: return
 	
 	btn_hit.disabled = true
 	btn_stand.disabled = true
-	set_status("Vez do Dealer...")
+	set_status(tr("BLACKJACK_DEALER_TURN"))
 	
 	# Vira a carta oculta do dealer em 3D
 	if dealer_cards_3d.size() > 0:
@@ -173,13 +173,13 @@ func _on_btn_stand_pressed() -> void:
 	
 	if outcome == BlackjackRules.Winner.PLAYER:
 		if d_score > 21:
-			_end_game("🏆 Dealer estourou (%d)! Você Venceu!" % d_score, true)
+			_end_game(tr("BLACKJACK_DEALER_BUST") % d_score, true)
 		else:
-			_end_game("🏆 Você Venceu a rodada!", true)
+			_end_game(tr("BLACKJACK_YOU_WIN_ROUND"), true)
 	elif outcome == BlackjackRules.Winner.DEALER:
-		_end_game("Dealer Venceu (%d pontos)." % d_score, false)
+		_end_game(tr("BLACKJACK_DEALER_WINS") % d_score, false)
 	else:
-		_end_game("Empate (Push)! As apostas retornam.", false)
+		_end_game(tr("BLACKJACK_PUSH"), false)
 
 func _reveal_dealer_and_end(msg: String, is_player_win: bool) -> void:
 	if dealer_cards_3d.size() > 0:

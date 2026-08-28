@@ -79,7 +79,7 @@ func _on_card_clicked(card: Control) -> void:
 	
 	if first_card == null:
 		first_card = card
-		set_status("Escolha a segunda carta...")
+		set_status(tr("MEMORY_SECOND_CARD"))
 	else:
 		second_card = card
 		moves_count += 1
@@ -106,10 +106,10 @@ func _check_match() -> void:
 		if MemoryRules.is_game_won(pairs_found, TOTAL_PAIRS):
 			_handle_game_won()
 		else:
-			set_status("Par encontrado! Continue assim!")
+			set_status(tr("MEMORY_PAIR_FOUND"))
 	else:
 		# Mismatch
-		set_status("Não foi dessa vez...")
+		set_status(tr("MEMORY_NO_PAIR"))
 		await get_tree().create_timer(0.4).timeout
 		first_card.play_mismatch_shake()
 		second_card.play_mismatch_shake()
@@ -120,7 +120,7 @@ func _check_match() -> void:
 		first_card = null
 		second_card = null
 		is_checking = false
-		set_status("Encontre os pares correspondentes")
+		set_status(tr("MEMORY_FIND_PAIRS"))
 
 func _handle_game_won() -> void:
 	game_over = true
@@ -134,19 +134,19 @@ func _handle_game_won() -> void:
 		"perfect": moves_count <= TOTAL_PAIRS + 2,
 	})
 	
-	win_modal_title.text = "🏆 Parabéns!"
+	win_modal_title.text = tr("RESULT_CONGRATS")
 	var rating := "⭐⭐⭐"
 	if moves_count > 16: rating = "⭐⭐"
 	if moves_count > 24: rating = "⭐"
 	
-	win_modal_sub.text = "Você encontrou todos os 8 pares em " + str(moves_count) + " jogadas!\nClassificação: " + rating
+	win_modal_sub.text = tr("MEMORY_WIN_DESC") % [TOTAL_PAIRS, moves_count, rating]
 	
 	reveal_result_modal(win_modal)
 
 func _update_ui() -> void:
 	set_counters([
-		{"value": "%d/%d" % [pairs_found, TOTAL_PAIRS], "label": "pares"},
-		{"value": moves_count, "label": "jogadas"},
+		{"value": "%d/%d" % [pairs_found, TOTAL_PAIRS], "label": "SCORE_PAIRS"},
+		{"value": moves_count, "label": "SCORE_PLAYS"},
 	])
 	if pairs_found == 0 and moves_count == 0:
-		set_status("Toque em uma carta para começar")
+		set_status(tr("MEMORY_START"))

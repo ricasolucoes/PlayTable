@@ -6,9 +6,12 @@ extends RefCounted
 static func evaluate(cards: Array) -> Dictionary:
 	return evaluate_hand(cards)
 
+## `name` sai como CHAVE de traducao, e nao como o nome escrito: quem exibe
+## chama `tr`, e quem compara (a conquista do Royal Flush, no
+## GamificationManager) passa a comparar algo que nao muda de idioma.
 static func evaluate_hand(cards: Array) -> Dictionary:
 	if cards.size() < 5:
-		return {"name": "Mão Incompleta", "mult": 0, "rank": 0}
+		return {"name": "POKER_HAND_INCOMPLETE", "mult": 0, "rank": 0}
 		
 	var vals: Array[int] = []
 	var suits: Array[int] = []
@@ -42,41 +45,41 @@ static func evaluate_hand(cards: Array) -> Dictionary:
 	
 	# 1. Royal Flush
 	if is_flush and is_straight and vals[0] == 10 and vals[4] == 14:
-		return {"name": "Royal Flush", "mult": 800, "rank": 10}
+		return {"name": "POKER_HAND_ROYAL_FLUSH", "mult": 800, "rank": 10}
 		
 	# 2. Straight Flush
 	if is_flush and is_straight:
-		return {"name": "Straight Flush", "mult": 50, "rank": 9}
+		return {"name": "POKER_HAND_STRAIGHT_FLUSH", "mult": 50, "rank": 9}
 		
 	# 3. Quadra
 	if 4 in counts:
-		return {"name": "Quadra (4 of a Kind)", "mult": 25, "rank": 8}
+		return {"name": "POKER_HAND_FOUR_KIND", "mult": 25, "rank": 8}
 		
 	# 4. Full House
 	if counts == [2, 3]:
-		return {"name": "Full House", "mult": 9, "rank": 7}
+		return {"name": "POKER_HAND_FULL_HOUSE", "mult": 9, "rank": 7}
 		
 	# 5. Flush
 	if is_flush:
-		return {"name": "Flush (Cor)", "mult": 6, "rank": 6}
+		return {"name": "POKER_HAND_FLUSH", "mult": 6, "rank": 6}
 		
 	# 6. Sequência (Straight)
 	if is_straight:
-		return {"name": "Sequência (Straight)", "mult": 4, "rank": 5}
+		return {"name": "POKER_HAND_STRAIGHT", "mult": 4, "rank": 5}
 		
 	# 7. Trinca
 	if 3 in counts:
-		return {"name": "Trinca (3 of a Kind)", "mult": 3, "rank": 4}
+		return {"name": "POKER_HAND_THREE_KIND", "mult": 3, "rank": 4}
 		
 	# 8. Dois Pares
 	if counts == [1, 2, 2]:
-		return {"name": "Dois Pares", "mult": 2, "rank": 3}
+		return {"name": "POKER_HAND_TWO_PAIR", "mult": 2, "rank": 3}
 		
 	# 9. Par de Valetes ou Maior (Jacks or Better: J=11, Q=12, K=13, A=14)
 	if 2 in counts:
 		for v in freq:
 			if freq[v] == 2 and v >= 11:
-				return {"name": "Par de Valetes ou Maior", "mult": 1, "rank": 2}
-		return {"name": "Par Baixo (Sem prêmio)", "mult": 0, "rank": 1}
+				return {"name": "POKER_HAND_JACKS_BETTER", "mult": 1, "rank": 2}
+		return {"name": "POKER_HAND_LOW_PAIR", "mult": 0, "rank": 1}
 		
-	return {"name": "Carta Alta (Sem prêmio)", "mult": 0, "rank": 0}
+	return {"name": "POKER_HAND_HIGH_CARD", "mult": 0, "rank": 0}

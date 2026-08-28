@@ -40,21 +40,21 @@ theme_override_constants/separation = 8
 layout_mode = 2
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.8)
 theme_override_font_sizes/font_size = 20
-text = "Dificuldade 3/10 — Casual"
+text = ""
 horizontal_alignment = 1
 
 [node name="ActiveColorBanner" type="Label" parent="UI/VBoxContainer"]
 layout_mode = 2
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.8)
 theme_override_font_sizes/font_size = 22
-text = "Cor Ativa: Vermelho"
+text = ""
 horizontal_alignment = 1
 
 [node name="StatusLabel" type="Label" parent="UI/VBoxContainer"]
 layout_mode = 2
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.8)
 theme_override_font_sizes/font_size = 20
-text = "Sua Vez!"
+text = "YOUR_TURN_BANG"
 horizontal_alignment = 1
 
 [node name="ColorPickerModal" type="PanelContainer" parent="UI"]
@@ -80,7 +80,7 @@ alignment = 1
 [node name="Label" type="Label" parent="UI/ColorPickerModal/VBox"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 20
-text = "Escolha a nova cor:"
+text = "UNO_PICK_COLOR_SHORT"
 horizontal_alignment = 1
 
 [node name="Grid" type="GridContainer" parent="UI/ColorPickerModal/VBox"]
@@ -94,28 +94,28 @@ self_modulate = Color(0.9, 0.25, 0.25, 1)
 custom_minimum_size = Vector2(160, 48)
 layout_mode = 2
 theme_override_font_sizes/font_size = 18
-text = "Vermelho"
+text = "COLOR_RED"
 
 [node name="BtnBlue" type="Button" parent="UI/ColorPickerModal/VBox/Grid"]
 self_modulate = Color(0.2, 0.55, 0.9, 1)
 custom_minimum_size = Vector2(160, 48)
 layout_mode = 2
 theme_override_font_sizes/font_size = 18
-text = "Azul"
+text = "COLOR_BLUE"
 
 [node name="BtnGreen" type="Button" parent="UI/ColorPickerModal/VBox/Grid"]
 self_modulate = Color(0.2, 0.75, 0.35, 1)
 custom_minimum_size = Vector2(160, 48)
 layout_mode = 2
 theme_override_font_sizes/font_size = 18
-text = "Verde"
+text = "COLOR_GREEN"
 
 [node name="BtnYellow" type="Button" parent="UI/ColorPickerModal/VBox/Grid"]
 self_modulate = Color(0.95, 0.8, 0.1, 1)
 custom_minimum_size = Vector2(160, 48)
 layout_mode = 2
 theme_override_font_sizes/font_size = 18
-text = "Amarelo"
+text = "COLOR_YELLOW"
 
 [node name="Actions" type="HBoxContainer" parent="UI"]
 layout_mode = 1
@@ -137,14 +137,14 @@ alignment = 1
 custom_minimum_size = Vector2(140, 52)
 layout_mode = 2
 theme_override_font_sizes/font_size = 20
-text = "📥 Comprar"
+text = "DOMINO_BTN_DRAW"
 
 [node name="BtnRestart" type="Button" parent="UI/Actions"]
 visible = false
 custom_minimum_size = Vector2(160, 52)
 layout_mode = 2
 theme_override_font_sizes/font_size = 20
-text = "🔄 Nova Partida"
+text = "BTN_NEW_MATCH_ICON"
 
 [node name="PlayerArea" type="Control" parent="UI"]
 layout_mode = 1

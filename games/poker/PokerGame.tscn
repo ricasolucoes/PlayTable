@@ -40,7 +40,7 @@ theme_override_constants/separation = 8
 layout_mode = 2
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.8)
 theme_override_font_sizes/font_size = 20
-text = "Ajuste sua aposta e clique em 'DAR CARTAS'!"
+text = "POKER_ADJUST_BET"
 horizontal_alignment = 1
 
 [node name="PayoutTableContainer" type="PanelContainer" parent="UI/VBoxContainer"]
@@ -50,7 +50,7 @@ layout_mode = 2
 layout_mode = 2
 theme_override_colors/font_color = Color(0.95, 0.82, 0.35, 1)
 theme_override_font_sizes/font_size = 14
-text = "Royal Flush (800x) | Quadra (25x) | Full House (9x) | Flush (6x)"
+text = ""
 horizontal_alignment = 1
 
 [node name="Controls" type="HBoxContainer" parent="UI"]
@@ -76,7 +76,7 @@ text = "-5"
 custom_minimum_size = Vector2(220, 56)
 layout_mode = 2
 theme_override_font_sizes/font_size = 22
-text = "🃏 DAR CARTAS"
+text = "POKER_BTN_DEAL"
 
 [node name="BtnBetPlus" type="Button" parent="UI/Controls"]
 custom_minimum_size = Vector2(60, 56)

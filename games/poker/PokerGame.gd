@@ -42,7 +42,7 @@ func _ready() -> void:
 	# 3,8: as cartas ficavam pequenas demais para ler o naipe.
 	fit_table(Vector2(ZONE_SIZE.x + 0.10, ZONE_SIZE.y + 0.55), Vector3(0.0, 0.0, ZONE_Z))
 	cards_root.add_child(TableZone3D.create(ZONE_SIZE, Vector3(0.0, 0.0, ZONE_Z),
-		"SUA MÃO", Color(0.98, 0.84, 0.42)))
+		tr("LABEL_YOUR_HAND"), Color(0.98, 0.84, 0.42)))
 	player_hand = CardHand.new()
 	_update_payout_table()
 	_reset_to_bet_phase()
@@ -54,7 +54,7 @@ func _card_slot(i: int) -> Vector3:
 	return Vector3(start_x + float(i) * CARD_SPACING_X, 0.05, HAND_Z)
 
 func _update_payout_table() -> void:
-	payout_table_label.text = "Royal Flush (800x) | Straight Flush (50x) | Quadra (25x) | Full House (9x)\nFlush (6x) | Sequência (4x) | Trinca (3x) | Dois Pares (2x) | Par J+ (1x)"
+	payout_table_label.text = tr("POKER_PAYOUT_TABLE")
 
 ## Nova rodada: destrava o resultado para a mao seguinte tambem ser contada.
 ## O Video Poker nao passa por `restart_game()`, que e quem normalmente
@@ -65,25 +65,25 @@ func _reset_to_bet_phase() -> void:
 	game_phase = "bet"
 	if chips <= 0:
 		chips = 50
-		set_status("Recarga grátis de 50 fichas!")
+		set_status(tr("POKER_FREE_REFILL"))
 	else:
-		set_status("Ajuste sua aposta e clique em 'DAR CARTAS'!")
+		set_status(tr("POKER_ADJUST_BET"))
 		
 	held_cards = [false, false, false, false, false]
 	_clear_cards()
 	
 	btn_bet_minus.disabled = false
 	btn_bet_plus.disabled = false
-	btn_action.text = "🃏 DAR CARTAS"
+	btn_action.text = tr("POKER_BTN_DEAL")
 	_update_chips_ui()
 
 func _update_chips_ui() -> void:
-	set_counters([{"value": chips, "label": "fichas"}, {"value": current_bet, "label": "aposta"}])
+	set_counters([{"value": chips, "label": "SCORE_CHIPS"}, {"value": current_bet, "label": "SCORE_BET"}])
 
 func _on_btn_action_pressed() -> void:
 	if game_phase == "bet":
 		if chips < current_bet:
-			set_status("Fichas insuficientes para esta aposta!")
+			set_status(tr("POKER_NOT_ENOUGH_CHIPS"))
 			return
 		chips -= current_bet
 		_update_chips_ui()
@@ -101,9 +101,9 @@ func _on_btn_action_pressed() -> void:
 
 		btn_bet_minus.disabled = true
 		btn_bet_plus.disabled = true
-		btn_action.text = "🔄 TROCAR CARTAS"
+		btn_action.text = tr("POKER_BTN_DRAW")
 		game_phase = "hold"
-		set_status("Toque nas cartas que deseja RETER (HOLD)!")
+		set_status(tr("POKER_HOLD_HINT"))
 		
 	elif game_phase == "hold":
 		# Troca as cartas não retidas
@@ -170,7 +170,7 @@ func _set_hold_marker(idx: int, on: bool) -> void:
 	if not on:
 		return
 	var lbl := Label3D.new()
-	lbl.text = "RETER"
+	lbl.text = tr("POKER_HOLD_MARK")
 	lbl.font_size = 48
 	lbl.pixel_size = 0.0026
 	lbl.modulate = Color(0.99, 0.86, 0.36)
@@ -203,15 +203,15 @@ func _evaluate_poker_hand() -> void:
 
 	if mult > 0:
 		chips += win_amount
-		set_status("🏆 %s! Você ganhou %d fichas!" % [hand_name, win_amount])
+		set_status(tr("POKER_WIN") % [tr(str(hand_name)), win_amount])
 		env_3d.celebrate_win()
 	else:
-		set_status("%s. Nenhuma combinação premiada." % hand_name)
+		set_status(tr("POKER_NO_WIN") % tr(str(hand_name)))
 		
 	for i in range(5):
 		_set_hold_marker(i, false)
 	_update_chips_ui()
-	btn_action.text = "🃏 NOVA RODADA"
+	btn_action.text = tr("POKER_BTN_NEW_ROUND")
 	btn_bet_minus.disabled = false
 	btn_bet_plus.disabled = false
 	game_phase = "bet"

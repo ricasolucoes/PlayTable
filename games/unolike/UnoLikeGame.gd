@@ -4,12 +4,13 @@ extends BaseGame
 
 ## UnoLikeGame: Cartas Coloridas 3D com Cartas Físicas, Arremesso no Descarte e Partículas
 
+## Chaves de traducao: a cor ativa aparece no banner da mesa.
 const COLOR_NAMES = {
-	Card.ColorType.RED: "Vermelho",
-	Card.ColorType.BLUE: "Azul",
-	Card.ColorType.GREEN: "Verde",
-	Card.ColorType.YELLOW: "Amarelo",
-	Card.ColorType.WILD: "Curinga"
+	Card.ColorType.RED: "COLOR_RED",
+	Card.ColorType.BLUE: "COLOR_BLUE",
+	Card.ColorType.GREEN: "COLOR_GREEN",
+	Card.ColorType.YELLOW: "COLOR_YELLOW",
+	Card.ColorType.WILD: "COLOR_WILD"
 }
 
 var draw_pile: Deck
@@ -107,7 +108,7 @@ func _start_new_game() -> void:
 	is_player_turn = true
 	
 	_spawn_top_discard_3d(first_card)
-	set_status("Sua Vez! Jogue uma carta que combine com a cor ou valor.")
+	set_status(tr("UNO_YOUR_TURN_LONG"))
 	_update_ui()
 
 func _spawn_top_discard_3d(card: Card) -> void:
@@ -134,20 +135,20 @@ func _draw_from_deck() -> Card:
 			discard_pile.clear()
 			discard_pile.push(top)
 			draw_pile.shuffle()
-			set_status("Descarte reciclado no monte!")
+			set_status(tr("UNO_RECYCLED"))
 		else:
 			return null
 	return draw_pile.draw()
 
 func _update_ui() -> void:
-	set_duel_score(player_hand.size(), ai_hand.size(), "suas", "da ia")
+	set_duel_score(player_hand.size(), ai_hand.size(), "SCORE_YOURS", "SCORE_AI_CARDS")
 	ai_info_label.text = DifficultyManager.label_for(game_id)
 	
 	# A cor sai da propria arte da carta: uma definicao so de "vermelho de UNO"
 	# para o banner, a mao, a marca da mesa e a face impressa.
 	var col := UnoCardArt2D.color_of(UnoCardArt2D.color_key(active_color))
-	var col_name = COLOR_NAMES.get(active_color, "Indefinida")
-	active_color_banner.text = "Cor Ativa: %s" % col_name
+	var col_name := tr(str(COLOR_NAMES.get(active_color, "COLOR_UNDEFINED")))
+	active_color_banner.text = tr("UNO_ACTIVE_COLOR") % col_name
 	active_color_banner.add_theme_color_override("font_color", col)
 	_paint_active_color(col)
 	
@@ -182,7 +183,7 @@ func _on_player_card_clicked(idx: int) -> void:
 		waiting_color_pick = true
 		pending_wild4 = (card.special_type == Card.SpecialType.WILD_DRAW_FOUR)
 		color_picker_modal.show()
-		set_status("Escolha a nova cor da mesa!")
+		set_status(tr("UNO_PICK_COLOR"))
 		_update_ui()
 		return
 		
@@ -201,16 +202,16 @@ func _handle_card_effects_and_advance(card: Card, was_player: bool) -> void:
 	_update_ui()
 	
 	if was_player and player_hand.size() == 0:
-		_end_game("🏆 UNO! Você descartou todas as cartas e venceu!", true)
+		_end_game(tr("UNO_WIN"), true)
 		return
 	elif not was_player and ai_hand.size() == 0:
-		_end_game("A IA descartou tudo e venceu!", false)
+		_end_game(tr("UNO_LOSE"), false)
 		return
 		
 	if was_player and player_hand.size() == 1:
-		set_status("⚠️ UNO! Você tem apenas 1 carta!")
+		set_status(tr("UNO_YOU_ONE_CARD"))
 	elif not was_player and ai_hand.size() == 1:
-		set_status("⚠️ Atenção: IA gritou UNO (1 carta restante)!")
+		set_status(tr("UNO_AI_ONE_CARD"))
 		
 	var skip_next: bool = false
 	match card.special_type:
@@ -220,14 +221,14 @@ func _handle_card_effects_and_advance(card: Card, was_player: bool) -> void:
 					var d: Card = _draw_from_deck()
 					if d != null:
 						ai_hand.add(d)
-				set_status("IA comprou +2 cartas e perdeu a vez!")
+				set_status(tr("UNO_AI_DREW_TWO"))
 				skip_next = true
 			else:
 				for i in range(2):
 					var d: Card = _draw_from_deck()
 					if d != null:
 						player_hand.add(d)
-				set_status("Você comprou +2 cartas e perdeu a vez!")
+				set_status(tr("UNO_YOU_DREW_TWO"))
 				skip_next = true
 				
 		Card.SpecialType.WILD_DRAW_FOUR:
@@ -236,43 +237,43 @@ func _handle_card_effects_and_advance(card: Card, was_player: bool) -> void:
 					var d: Card = _draw_from_deck()
 					if d != null:
 						ai_hand.add(d)
-				set_status("IA comprou +4 cartas e perdeu a vez!")
+				set_status(tr("UNO_AI_DREW_FOUR"))
 				skip_next = true
 			else:
 				for i in range(4):
 					var d: Card = _draw_from_deck()
 					if d != null:
 						player_hand.add(d)
-				set_status("Você comprou +4 cartas e perdeu a vez!")
+				set_status(tr("UNO_YOU_DREW_FOUR"))
 				skip_next = true
 				
 		Card.SpecialType.SKIP, Card.SpecialType.REVERSE:
 			skip_next = true
-			set_status("Vez bloqueada!")
+			set_status(tr("UNO_TURN_SKIPPED"))
 			
 	_update_ui()
 	
 	if was_player:
 		if skip_next:
 			is_player_turn = true
-			set_status("Sua vez novamente!")
+			set_status(tr("UNO_YOUR_TURN_AGAIN"))
 			_update_ui()
 		else:
 			is_player_turn = false
-			set_status("Vez da IA...")
+			set_status(tr("AI_TURN_SHORT"))
 			_update_ui()
 			await get_tree().create_timer(0.9).timeout
 			_play_ai_turn()
 	else:
 		if skip_next:
 			is_player_turn = false
-			set_status("IA joga novamente!")
+			set_status(tr("UNO_AI_TURN_AGAIN"))
 			_update_ui()
 			await get_tree().create_timer(0.9).timeout
 			_play_ai_turn()
 		else:
 			is_player_turn = true
-			set_status("Sua Vez! Escolha uma carta.")
+			set_status(tr("UNO_YOUR_TURN"))
 			_update_ui()
 
 func _play_ai_turn() -> void:
@@ -287,7 +288,7 @@ func _play_ai_turn() -> void:
 		var drawn: Card = _draw_from_deck()
 		if drawn != null:
 			ai_hand.add(drawn)
-			set_status("IA não tinha jogadas e comprou uma carta.")
+			set_status(tr("UNO_AI_DREW"))
 			if UnoRules.can_play_card(drawn, top_card, active_color):
 				ai_hand.cards.erase(drawn)
 				discard_pile.push(drawn)
@@ -299,7 +300,7 @@ func _play_ai_turn() -> void:
 				_handle_card_effects_and_advance(drawn, false)
 				return
 		is_player_turn = true
-		set_status("Sua Vez! Escolha uma carta.")
+		set_status(tr("UNO_YOUR_TURN"))
 		_update_ui()
 	else:
 		var chosen_idx := UnoAI.escolher_carta(ai_hand.cards, top_card, active_color,
@@ -322,12 +323,12 @@ func _on_btn_draw_pressed() -> void:
 	var drawn: Card = _draw_from_deck()
 	if drawn != null:
 		player_hand.add(drawn)
-		set_status("Você comprou uma carta.")
+		set_status(tr("UNO_YOU_DREW"))
 		_update_ui()
 		
 		# Passa a vez
 		is_player_turn = false
-		set_status("Vez da IA...")
+		set_status(tr("AI_TURN_SHORT"))
 		_update_ui()
 		await get_tree().create_timer(0.8).timeout
 		_play_ai_turn()

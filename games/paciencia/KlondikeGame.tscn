@@ -44,13 +44,13 @@ layout_mode = 2
 size_flags_horizontal = 3
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.8)
 theme_override_font_sizes/font_size = 20
-text = "Arraste as cartas para as fundações."
+text = "KLONDIKE_DRAG_HINT"
 
 [node name="BtnRestart" type="Button" parent="UI/VBoxContainer/Header"]
 custom_minimum_size = Vector2(100, 44)
 layout_mode = 2
 theme_override_font_sizes/font_size = 18
-text = "🔄 Reiniciar"
+text = "BTN_RESET_ICON"
 
 [node name="TopRow" type="HBoxContainer" parent="UI"]
 layout_mode = 1
@@ -71,13 +71,13 @@ theme_override_constants/separation = 8
 custom_minimum_size = Vector2(75, 65)
 layout_mode = 2
 theme_override_font_sizes/font_size = 16
-text = "Monte"
+text = "KLONDIKE_STOCK"
 
 [node name="BtnWaste" type="Button" parent="UI/TopRow/StockArea"]
 custom_minimum_size = Vector2(75, 65)
 layout_mode = 2
 theme_override_font_sizes/font_size = 16
-text = "Descarte"
+text = "KLONDIKE_WASTE"
 
 [node name="Spacer" type="Control" parent="UI/TopRow"]
 layout_mode = 2
@@ -130,42 +130,42 @@ alignment = 1
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 14
-text = "Col 1"
+text = ""
 
 [node name="Col1" type="Button" parent="UI/Tableau"]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 14
-text = "Col 2"
+text = ""
 
 [node name="Col2" type="Button" parent="UI/Tableau"]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 14
-text = "Col 3"
+text = ""
 
 [node name="Col3" type="Button" parent="UI/Tableau"]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 14
-text = "Col 4"
+text = ""
 
 [node name="Col4" type="Button" parent="UI/Tableau"]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 14
-text = "Col 5"
+text = ""
 
 [node name="Col5" type="Button" parent="UI/Tableau"]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 14
-text = "Col 6"
+text = ""
 
 [node name="Col6" type="Button" parent="UI/Tableau"]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 14
-text = "Col 7"
+text = ""
 
 [connection signal="pressed" from="UI/VBoxContainer/Header/BtnRestart" to="." method="_on_btn_restart_pressed"]

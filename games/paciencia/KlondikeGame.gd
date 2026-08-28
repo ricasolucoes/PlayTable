@@ -105,7 +105,7 @@ func _start_new_game() -> void:
 		
 	_sync_3d_table()
 	_update_ui()
-	set_status("Paciência Klondike 3D iniciada!")
+	set_status(tr("KLONDIKE_START"))
 
 func _sync_3d_table() -> void:
 	for c in cards_root.get_children(): c.queue_free()
@@ -150,11 +150,11 @@ func _sync_3d_table() -> void:
 			cards_root.add_child(c_3d)
 
 func _update_ui() -> void:
-	set_counter(moves_count, "movimentos")
-	btn_stock.text = "Monte\n(%d)" % stock.size()
+	set_counter(moves_count, "SCORE_MOVES")
+	btn_stock.text = tr("KLONDIKE_STOCK_COUNT") % stock.size()
 	
 	if waste.is_empty():
-		btn_waste.text = "Vazio"
+		btn_waste.text = tr("KLONDIKE_EMPTY")
 		btn_waste.disabled = true
 	else:
 		var top := waste.peek()
@@ -170,10 +170,10 @@ func _update_ui() -> void:
 			
 	for i in range(7):
 		if tableau[i].is_empty():
-			tableau_buttons[i].text = "Col %d\n(Vazio)" % (i + 1)
+			tableau_buttons[i].text = tr("KLONDIKE_COL_EMPTY") % (i + 1)
 		else:
 			var top := tableau[i].peek()
-			tableau_buttons[i].text = "Col %d\n%s %s" % [i + 1, top.get_display_value(), top.get_suit_symbol()]
+			tableau_buttons[i].text = tr("KLONDIKE_COL_CARD") % [i + 1, top.get_display_value(), top.get_suit_symbol()]
 
 func _on_stock_pressed() -> void:
 	if game_over: return
@@ -186,12 +186,12 @@ func _on_stock_pressed() -> void:
 			var c := waste.pop()
 			c.is_face_up = false
 			stock.push(c)
-		set_status("Monte reiniciado.")
+		set_status(tr("KLONDIKE_STOCK_RESET"))
 	else:
 		var card := stock.pop()
 		card.is_face_up = true
 		waste.push(card)
-		set_status("Carta virada do monte.")
+		set_status(tr("KLONDIKE_CARD_TURNED"))
 		
 	moves_count += 1
 	_sync_3d_table()
@@ -202,7 +202,7 @@ func _on_waste_pressed() -> void:
 	selected_source = "waste"
 	selected_card_idx = waste.size() - 1
 	var top := waste.peek()
-	set_status("Selecionado: %s %s do descarte." % [top.get_display_value(), top.get_suit_symbol()])
+	set_status(tr("KLONDIKE_PICKED_WASTE") % [top.get_display_value(), top.get_suit_symbol()])
 
 func _on_foundation_pressed(f_idx: int) -> void:
 	if game_over: return
@@ -215,7 +215,7 @@ func _on_foundation_pressed(f_idx: int) -> void:
 			waste.pop()
 			f_pile.push(card)
 			moves_count += 1
-			set_status("Movido para fundação!")
+			set_status(tr("KLONDIKE_TO_FOUNDATION"))
 			_clear_selection_and_update()
 			_check_win()
 			return
@@ -229,12 +229,12 @@ func _on_foundation_pressed(f_idx: int) -> void:
 				if not col_pile.is_empty(): col_pile.peek().is_face_up = true
 				f_pile.push(card)
 				moves_count += 1
-				set_status("Movido para fundação!")
+				set_status(tr("KLONDIKE_TO_FOUNDATION"))
 				_clear_selection_and_update()
 				_check_win()
 				return
 				
-	set_status("Jogada inválida para esta fundação.")
+	set_status(tr("KLONDIKE_BAD_FOUNDATION"))
 
 func _on_tableau_col_pressed(col_idx: int) -> void:
 	if game_over: return
@@ -245,7 +245,7 @@ func _on_tableau_col_pressed(col_idx: int) -> void:
 			selected_source = "tableau_%d" % col_idx
 			selected_card_idx = target_col.size() - 1
 			var top := target_col.peek()
-			set_status("Selecionado: %s %s da Coluna %d" % [top.get_display_value(), top.get_suit_symbol(), col_idx + 1])
+			set_status(tr("KLONDIKE_PICKED_COL") % [top.get_display_value(), top.get_suit_symbol(), col_idx + 1])
 		return
 		
 	if selected_source == "waste":
@@ -261,7 +261,7 @@ func _on_tableau_col_pressed(col_idx: int) -> void:
 		if src_col_idx == col_idx:
 			selected_source = ""
 			selected_card_idx = -1
-			set_status("Seleção desfeita.")
+			set_status(tr("KLONDIKE_UNPICKED"))
 			return
 			
 		var src_col := tableau[src_col_idx]
@@ -275,7 +275,7 @@ func _on_tableau_col_pressed(col_idx: int) -> void:
 				_clear_selection_and_update()
 				return
 				
-	set_status("Jogada inválida.")
+	set_status(tr("KLONDIKE_BAD_MOVE"))
 
 func _clear_selection_and_update() -> void:
 	selected_source = ""
@@ -287,4 +287,4 @@ func _check_win() -> void:
 	var total_found: int = 0
 	for f in foundations: total_found += f.size()
 	if total_found == 52:
-		finish_game("🏆 Parabéns! Você completou a Paciência 3D!", true)
+		finish_game(tr("KLONDIKE_WIN"), true)
