@@ -41,6 +41,13 @@ func before_each() -> void:
 		"quests": PlayerProfile.active_quests.duplicate(true),
 		"claimed": PlayerProfile.claimed_rewards.duplicate(),
 	}
+	# O ELO vive em duas casas: `competitive_elo` no perfil, que o dicionario
+	# acima ja guarda, e um espelho em memoria dentro do LeagueSystem. Restaurar
+	# so o perfil deixa o espelho adiantado, e a liga da maquina de quem roda a
+	# suite passa a decidir o resultado dos testes de colecao -- foi assim que
+	# "nao equipa o que esta bloqueado" comecou a falhar num computador onde o
+	# perfil salvo tinha chegado a Diamante.
+	_backup["elo"] = LeagueSystem.current_elo
 
 
 func after_each() -> void:
@@ -63,6 +70,7 @@ func after_each() -> void:
 	PlayerProfile.flags = _backup["flags"]
 	PlayerProfile.active_quests = _backup["quests"]
 	PlayerProfile.claimed_rewards = _backup["claimed"]
+	LeagueSystem.current_elo = _backup["elo"]
 	PlayerProfile.save_profile()
 
 
@@ -547,6 +555,9 @@ func test_equipar_marca_a_flag_de_tabuleiro_proprio() -> void:
 	PlayerProfile.stats = {}
 	CollectionSystem.unlocked_items = []
 	PlayerProfile.level = 6
+	# `marble_black` abre na liga Diamante. Zerar `stats` limpa o ELO gravado,
+	# mas não o espelho do LeagueSystem.
+	LeagueSystem.current_elo = 0
 	CollectionSystem.evaluate_unlocks()
 	assert_true(CollectionSystem.equip("felt_navy"), "equipa o que está liberado")
 	assert_true(PlayerProfile.has_flag("custom_board"), "é o gatilho da conquista Tabuleiro Seu")
