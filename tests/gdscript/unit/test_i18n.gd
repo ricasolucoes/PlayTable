@@ -133,3 +133,178 @@ func test_idioma_escolhido_e_persistido() -> void:
 	SaveManager.settings = {}
 	SaveManager.load_data()
 	assert_eq(SaveManager.get_setting("locale"), "es", "sobrevive a releitura do disco")
+
+
+# ------------------------------------------------ o codigo e o CSV batem
+
+## Pastas de producao varridas pelos tres testes abaixo.
+const FONTES := ["res://core", "res://games", "res://shared"]
+
+
+## Todo arquivo com uma das extensoes, recursivamente.
+func _arquivos(extensoes: Array) -> Array:
+	var achados: Array = []
+	var pilha: Array = FONTES.duplicate()
+	while not pilha.is_empty():
+		var pasta: String = pilha.pop_back()
+		var d := DirAccess.open(pasta)
+		if d == null:
+			continue
+		d.list_dir_begin()
+		var nome := d.get_next()
+		while nome != "":
+			if nome.begins_with("."):
+				nome = d.get_next()
+				continue
+			var caminho := pasta.path_join(nome)
+			if d.current_is_dir():
+				pilha.append(caminho)
+			elif nome.get_extension() in extensoes:
+				achados.append(caminho)
+			nome = d.get_next()
+		d.list_dir_end()
+	return achados
+
+
+func _texto_de(caminho: String) -> String:
+	var f := FileAccess.open(caminho, FileAccess.READ)
+	if f == null:
+		return ""
+	var t := f.get_as_text()
+	f.close()
+	return t
+
+
+func _chaves_do_csv() -> Dictionary:
+	var chaves := {}
+	var linhas := _linhas_do_csv()
+	for i in range(1, linhas.size()):
+		chaves[linhas[i][0]] = true
+	return chaves
+
+
+## Chave citada em `tr("X")` ou posta como `text = "X"` numa cena, mas sem linha
+## no CSV, aparece na tela como o proprio nome da chave -- "MENU_TODAY_QUESTS"
+## no lugar de "Desafios de hoje". Era o caso das dezenove `GAME_DESC_*`, que o
+## catalogo citava e o CSV nao tinha.
+func test_toda_chave_citada_no_codigo_tem_linha_no_csv() -> void:
+	var chaves := _chaves_do_csv()
+	var re_tr := RegEx.create_from_string('\\btr\\("([A-Z][A-Z0-9_]+)"\\)')
+	var re_txt := RegEx.create_from_string('(?m)^text = "([A-Z][A-Z0-9_]+)"$')
+	var orfas: Array[String] = []
+	for caminho in _arquivos(["gd"]):
+		for m in re_tr.search_all(_texto_de(caminho)):
+			if not chaves.has(m.get_string(1)):
+				orfas.append("%s: %s" % [caminho.get_file(), m.get_string(1)])
+	for caminho in _arquivos(["tscn"]):
+		for m in re_txt.search_all(_texto_de(caminho)):
+			if not chaves.has(m.get_string(1)):
+				orfas.append("%s: %s" % [caminho.get_file(), m.get_string(1)])
+	assert_eq(orfas, [] as Array[String], "chave citada sem linha no CSV")
+
+
+## Cena com a frase escrita dentro nunca muda de idioma: o `text` de um Control
+## e traduzido pelo Godot quando o valor E uma chave, e ignorado quando e texto
+## pronto. Numeros, simbolos e emoji (o "⭐⭐⭐" do modal, o "7" do contador)
+## passam -- nao sao frase.
+func test_nenhuma_cena_tem_frase_escrita_no_lugar_da_chave() -> void:
+	var chaves := _chaves_do_csv()
+	var re_txt := RegEx.create_from_string('(?m)^text = "((?:[^"\\\\]|\\\\.)*)"$')
+	var re_letras := RegEx.create_from_string("[A-Za-zÀ-ÿ]")
+	var fixos: Array[String] = []
+	for caminho in _arquivos(["tscn"]):
+		for m in re_txt.search_all(_texto_de(caminho)):
+			var valor := m.get_string(1)
+			if valor == "" or chaves.has(valor):
+				continue
+			if re_letras.search_all(valor).size() < 3:
+				continue
+			fixos.append("%s: %s" % [caminho.get_file(), valor])
+	assert_eq(fixos, [] as Array[String], "cena com texto fixo em vez de chave")
+
+
+## `tr("X") % [a, b]` estoura em tempo de execucao quando a traducao daquele
+## idioma tem menos marcadores que os argumentos passados -- e o jogo so quebra
+## para quem esta naquele idioma, que e onde ninguem olha.
+func test_os_marcadores_de_formato_batem_nos_tres_idiomas() -> void:
+	var re_marc := RegEx.create_from_string("%[-0-9.]*[a-z]")
+	var linhas := _linhas_do_csv()
+	for i in range(1, linhas.size()):
+		var linha: PackedStringArray = linhas[i]
+		if linha.size() < 4:
+			continue
+		var referencia: Array[String] = []
+		for m in re_marc.search_all(linha[1]):
+			referencia.append(m.get_string())
+		for col in range(2, 4):
+			var achados: Array[String] = []
+			for m in re_marc.search_all(linha[col]):
+				achados.append(m.get_string())
+			assert_eq(achados, referencia,
+				"%s: marcadores de %s diferem do pt_BR" % [linha[0], IDIOMAS[col - 1]])
+
+
+## O mesmo que o teste das cenas, do lado do codigo: literal que o script
+## escreve direto num rotulo, num botao ou na barra de estado nunca muda de
+## idioma. Foi assim que "%d Discos" sobreviveu no seletor da Torre de Hanoi
+## depois de o resto da tela ja estar traduzido.
+##
+## Marcadores de formato e escapes saem antes da contagem: "+%d XP" e "%s\n%s"
+## sao esqueleto, nao frase. Uma chave inteira ou um prefixo de chave
+## ("LEAGUE_", que o codigo completa com o id da liga) tambem passam.
+const ESCREVEM_NA_TELA := [
+	".text =", ".game_title =", ".tooltip_text =", ".placeholder_text =",
+	"set_status(", "finish_game(", "_end_game(", "UIKit.rotulo(", "UIKit.botao(",
+]
+
+
+func test_nenhum_script_escreve_frase_direto_na_tela() -> void:
+	var chaves := _chaves_do_csv()
+	var re_ruido := RegEx.create_from_string("%[-0-9.]*[a-z]")
+	var re_letras := RegEx.create_from_string("[A-Za-zÀ-ÿ]")
+	var fixos: Array[String] = []
+	for caminho in _arquivos(["gd"]):
+		var n := 0
+		for linha in _texto_de(caminho).split("\n"):
+			n += 1
+			if linha.strip_edges().begins_with("#"):
+				continue
+			for valor in _literais_que_vao_para_a_tela(linha):
+				if chaves.has(valor) or _e_prefixo_de_chave(valor, chaves):
+					continue
+				if valor.begins_with("res://") or valor.begins_with("uid://"):
+					continue
+				var nu := re_ruido.sub(valor, "", true).replace("\\n", "").replace("\\t", "")
+				if re_letras.search_all(nu).size() < 3:
+					continue
+				fixos.append("%s:%d: %s" % [caminho.get_file(), n, valor])
+	assert_eq(fixos, [] as Array[String], "script escrevendo frase em vez de chave")
+
+
+## O literal que vem COLADO no marcador -- so espaco entre eles. `_icon.text =
+## item["icon"]` nao entra: o "icon" ali e chave de dicionario, e a frase que
+## aparece na tela veio de outro lugar. `set_status(tr("X"))` tambem nao: o que
+## segue o parentese e o `tr`, nao a aspa.
+func _literais_que_vao_para_a_tela(linha: String) -> Array[String]:
+	var saida: Array[String] = []
+	for marca in ESCREVEM_NA_TELA:
+		var i := linha.find(marca)
+		while i != -1:
+			var j: int = i + marca.length()
+			while j < linha.length() and linha[j] == " ":
+				j += 1
+			if j < linha.length() and linha[j] == '"':
+				var fim := linha.find('"', j + 1)
+				if fim != -1:
+					saida.append(linha.substr(j + 1, fim - j - 1))
+			i = linha.find(marca, i + 1)
+	return saida
+
+
+func _e_prefixo_de_chave(valor: String, chaves: Dictionary) -> bool:
+	if valor == "" or not valor.ends_with("_"):
+		return false
+	for k in chaves:
+		if str(k).begins_with(valor):
+			return true
+	return false
