@@ -4,16 +4,16 @@ milestone: v1.0
 milestone_name: milestone
 current_phase: 1
 current_phase_name: Discovery e Auditoria
-current_plan: 3
+current_plan: 4
 status: executing
-stopped_at: Completed 01-02-PLAN.md
-last_updated: "2026-08-31T22:02:20.618Z"
+stopped_at: Completed 01-03-PLAN.md
+last_updated: "2026-08-31T22:13:44.535Z"
 last_activity: 2026-08-31
 progress:
   total_phases: 14
   completed_phases: 0
   total_plans: 4
-  completed_plans: 2
+  completed_plans: 3
   percent: 25
 ---
 
@@ -30,7 +30,7 @@ See: .planning/PROJECT.md (updated 2026-08-31)
 
 **Current Phase:** 1
 **Current Phase Name:** Discovery e Auditoria
-**Current Plan:** 3
+**Current Plan:** 4
 **Total Plans in Phase:** 4
 **Status:** Ready to execute
 **Last Activity:** 2026-08-31
@@ -60,6 +60,7 @@ Progress: [███░░░░░░░] 25%
 
 *Updated after each plan completion*
 | Phase 01 P02 | 8min | 2 tasks | 1 files |
+| Phase 01 P03 | 25min | 2 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -71,6 +72,8 @@ Recent decisions affecting current work:
 - [Phase 01]: PROJECT.md passa a descrever tres camadas (local, Play Games opcional, servidor proprio opcional) em vez de negar servidor e conta
 - [Phase 01]: Fase 7.1 (Multiplayer Online) inserida no ROADMAP entre a fase 7 e a fase 8, sem renumerar nada
 - [Phase 01]: current-requirements.md reescrito do zero confrontando 19 requisitos oficiais do Google com o codigo real; PGS v2 no cliente ja esta substancialmente entregue, gargalo real e configuracao no Play Console
+- [Phase 01]: docs/server/api-contract.md fixa 9 secoes de regra-base (endereco, identidade, servidor-ausente, erro, idempotencia, 6 grupos de endpoint por fase dona) sem desenhar nenhum payload
+- [Phase 01]: Cliente HTTP do servidor proprio reaproveita a fila de PlayGamesManager.gd:220-277 (user://, colapso de repeticao) trocando so o transporte, sem detector de conectividade separado
 
 ### Pending Todos
 
@@ -82,8 +85,8 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-08-31T22:02:20.609Z
-Stopped at: Completed 01-02-PLAN.md
+Last session: 2026-08-31T22:13:44.503Z
+Stopped at: Completed 01-03-PLAN.md
 Resume file: None
 
 ---
