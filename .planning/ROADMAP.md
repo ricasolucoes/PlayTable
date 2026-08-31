@@ -100,6 +100,16 @@ Plans:
 Plans:
 - [ ] TBD (run /gsd-plan-phase 7 to break down)
 
+### Phase 7.1: Multiplayer Online
+
+**Goal:** Jogar com amigos pela internet contra o servidor próprio, sem que nada disso vire requisito para quem joga offline.
+**Requirements**: Consumir o contrato definido em `docs/server/api-contract.md` (grupos `/v1/rooms/*` e `/v1/matches/*`); cliente HTTP resiliente que trate servidor inacessível como estado normal, com fila local persistida em `user://` e retry, reaproveitando a forma que `core/services/PlayGamesManager.gd:220-277` já usa para o PGS — sem detector de conectividade paralelo; telas de sala, convite e partida; turno autoritativo do servidor para os jogos que já têm modo de 2 jogadores no mesmo aparelho; reconexão e abandono. O servidor `playtable.ricasolucoes.com.br` é mantido fora deste repositório. (Ver arquivo `REQUIREMENTS.md` na pasta da fase)
+**Depends on:** Phase 7
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd-plan-phase 7.1 to break down)
+
 ### Phase 8: LiveOps e Configurações Dinâmicas
 
 **Goal:** Criar sistemas Server-Driven e LiveOps.
