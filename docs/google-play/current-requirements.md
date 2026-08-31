@@ -8,7 +8,7 @@
 
 | Símbolo | Significado |
 |---|---|
-| ✅ Conforme | O requisito está atendido pelo código deste repositório — [ver evidência na coluna Implementação](#1-play-games-services-v2-no-cliente) |
+| ✅ Conforme | O requisito está atendido pelo código deste repositório — [ver evidência na coluna Implementação](#1-play-games-services-v2-no-cliente), por exemplo `android/pgs/java/org/playtable/pgs/PlayTablePGS.java` |
 | 🟡 Parcial | Parte existe, parte falta; a coluna "Situação atual" diz qual é qual — https://developer.android.com/games/guidelines |
 | 🔴 Ausente | Nada no código atende a isto — `SEM-CODIGO` |
 | 🟦 Só Console | O código está pronto; o que falta é configuração no Play Console, fora deste repositório — `core/configs/play_games_ids.json` |
@@ -36,3 +36,49 @@ Regras que valem para toda linha, aqui e na seção seguinte:
 - Nunca escreva "implementado" sozinho. Ou vem `arquivo:linha`, ou vem `SEM-CODIGO`.
 - Não invente número de linha. Se não souber a linha exata, cite só o caminho do arquivo.
 - Barras verticais dentro de uma célula precisam de escape (`\|`), senão quebram a coluna.
+
+## 2. Lacunas reais de código
+
+| Requisito | Fonte oficial | Impacto | Situação atual (verificada no código) | Implementação (arquivo:linha) | Status | Confiança |
+|---|---|---|---|---|---|---|
+| **Game Stats API** (`GameStatsClient` via `Games.getGameStatsClient(activity)`, eventos por `PlayerGameEvent.Builder`, `recordEvent()`/`recordEvents()` mais `requestEventsUpload()`; stat de progressão pelo evento reservado `progressUpdate` com a propriedade `currentProgress`; máximo de 50 stats por jogo; configuração sobe por 3 CSVs mais ícones no Console) | `https://developer.android.com/games/pgs/gamestats`, `https://developer.android.com/games/pgs/android/gamestats` | **é um produto diferente da Events API clássica.** O código de eventos atual não conta para o requisito `LU-GS-*` do Level Up | nenhuma linha de `GameStatsClient` no repositório (`SEM-CODIGO`). Os CSVs em `docs/google-play/game-stats/` têm a nomenclatura certa, mas colunas mais enxutas do que a doc atual pede — `PlayerGameEvent.csv` traz `Event ID,Name,Description,Status`, e `ProgressionStatConfig.csv` traz `Stat ID,Name,Description,Unit,Aggregation Type,Status`. Não assuma que estão prontos para upload | `SEM-CODIGO`; artefatos parciais em `docs/google-play/game-stats/PlayerGameEvent.csv` e `docs/google-play/game-stats/ProgressionStatConfig.csv` | 🔴 Ausente | MÉDIA (o template exato de coluna do Console precisa ser reconferido antes da fase 5) |
+| **Recall API (PGRR)** — servidor-a-servidor com service account, não OAuth de usuário; liga uma Persona interna a um Token por PGS Player, uma persona por perfil | `https://developers.google.com/games/services/android/recall`, `https://developer.android.com/games/pgs/recall` | exige um backend que fale com a API; não dá para fazer 100% no cliente | zero ocorrências no repositório, confirmado por varredura; as únicas menções estavam nos próprios documentos desatualizados. Como o servidor próprio ainda não existe, o backend da Recall teria de ser o `playtable.ricasolucoes.com.br` — ou aceita-se a limitação e fica só o Cloud Save | `SEM-CODIGO`; destino do contrato em `docs/server/api-contract.md` | 🔴 Ausente | ALTA |
+| **Seamless restore** — reconectar o jogador ao progresso ao reinstalar ou trocar de aparelho, sem tela de login; havendo conflito entre convidado local e Cloud Save remoto, a diretriz é perguntar, não sobrescrever | `https://developer.android.com/games/pgs/seamless-restore` | descreve exatamente o cenário de três camadas deste projeto | nada implementado; depende da Recall API ou do servidor próprio. **Uma fonte (blog de março/2026) associa isto ao prazo de 2026-11-30 do Level Up; a página evergreen de seamless restore não confirma essa obrigatoriedade** | `SEM-CODIGO` | 🔴 Ausente | MÉDIA (fontes discordam sobre obrigatório × recomendado; revalidar na fase 3) |
+| **Play Integrity API** — app genuíno, dispositivo certificado, binário não adulterado; a verificação do token acontece no **backend**, não no cliente | `https://developer.android.com/google/play/integrity`, `https://developer.android.com/google/play/integrity/overview` | sem servidor, dá para pedir o token no cliente, mas não para verificá-lo | nenhuma ocorrência no repositório. O que existe é limitação local de XP por janela deslizante, que não é integridade de plataforma | `SEM-CODIGO`; validação local em `core/services/SecurityManager.gd` | 🔴 Ausente | ALTA |
+
+## 3. Programa Level Up, Sidekick e plataforma
+
+| Requisito | Fonte oficial | Impacto | Situação atual (verificada no código) | Implementação (arquivo:linha) | Status | Confiança |
+|---|---|---|---|---|---|---|
+| **Sidekick — piso de dispositivo**: Android 13 (API 33) ou mais, 3 GB de RAM ou mais, um Gamer Profile, instalado pela Play Store | `https://developer.android.com/games/pgs/play-games-sidekick` | abaixo do piso o overlay simplesmente não abre — a UI não pode prometer o que o aparelho não tem | a ponte já checa exatamente API 33 mais 3 GB | `android/pgs/java/org/playtable/pgs/PlayTablePGS.java:59-61`, `android/pgs/java/org/playtable/pgs/PlayTablePGS.java:397-413` | ✅ Conforme | ALTA |
+| **Sidekick — publicação**: em **AAB**, o Sidekick entra automaticamente ao marcar "Add Play Games Sidekick to app bundles" no Console, **sem** dependência Gradle manual. Em **APK**, é preciso adicionar `com.google.android.play:sidekick:+` à mão e preencher o formulário de registro (1 a 2 semanas de aprovação) | `https://developer.android.com/games/pgs/play-games-sidekick-sdk` | derruba a leitura antiga de que AAB seria obrigatório para ter Sidekick | a publicação é por AAB, então a dependência manual não é necessária — e `android/pgs/gradle_deps.txt` tem só `play-services-games-v2:20.1.2` e `play-services-auth:21.2.0`, o que está **certo** para esse caminho. O `docs/PLAY_GAMES_SIDEKICK.md:62` afirma o contrário e foi corrigido nesta fase | `build_aab.sh`, `android/pgs/gradle_deps.txt`, `docs/PLAY_GAMES_SIDEKICK.md:62` | ✅ Conforme | MÉDIA (reconferir a página antes de fechar a configuração do Console na fase 9) |
+| **Level Up — prazos**: Sidekick mais Achievements até **2026-07-31**; Cloud Save até **2026-11-30**. Quem não cumpre perde ofertas de Play Points, o limite de APK de 34 GB, a consideração em coleções e campanhas, e o acesso à aba "Você" e ao Sidekick | `https://android-developers.googleblog.com/2026/03/level-up-your-game.html`, `https://play.google.com/console/about/levelupplus/` | **o prazo de 2026-07-31 já venceu — hoje é 2026-08-31.** O de Cloud Save vence em 3 meses | o código de Sidekick, Achievements e Cloud Save está pronto; o que trava é a configuração no Console, com os ids ainda vazios | `core/configs/play_games_ids.json`, `docs/google-play/play-console-checklist.md` | ⛔ Prazo vencido (Sidekick + Achievements) / 🟦 Só Console (Cloud Save, até 2026-11-30) | ALTA |
+| **Level Up — diretrizes técnicas** (`LU-SK-GAA`, `LU-AC-GAA` a `GAC`, `LU-CS-GAA`/`GAB`, `LU-GS-GAA` a `GAC`, `LU-RE-GAA` a `GAD`): mínimo de 10 conquistas, recomendado 40 ou mais, com 4 alcançáveis na primeira hora; Game Stats com no mínimo 5 stats repetitivos e 1 de progressão quando houver mecânica de progresso; Cloud Save com política declarada de resolução de conflito; Rewards com 2 ofertas de uso único até 2026-09-30 e 1 repetível até 2027-03-01 | `https://developer.android.com/games/guidelines` | define o piso de cada sistema | conquistas com folga confortável (55 catalogadas); Cloud Save com política explícita (`RESOLUTION_POLICY_MANUAL`); Game Stats em zero; Rewards existe como funil de XP, mas sem o conceito de "oferta resgatável" no sentido do Google | `core/configs/achievements.json`, `core/save/CloudSaveSync.gd`, `core/services/RewardSystem.gd` | 🟡 Parcial | MÉDIA (resumo de WebFetch, não citação literal da página) |
+| **Play Points para desenvolvedores** — aberto a todos os jogos elegíveis; basta aceitar os termos uma vez no Console; ativo em cerca de 26 países, e o Brasil não apareceu na lista encontrada | `https://support.google.com/googleplay/android-developer/answer/16517110`, `https://play.google.com/console/about/programs/googleplaypoints/` | não é código, é aceite de termos mais criação de oferta | nenhuma barreira técnica; nada a fazer no repositório | `SEM-CODIGO` | ⚪ Decisão de produto | MÉDIA |
+| **Play Pass** — a elegibilidade do lado do desenvolvedor não ficou clara: a busca devolve documentação de usuário final. O `docs/google-play/play-console-checklist.md` observa que "sem anúncio nem compra ajuda", o que é verdade para os critérios gerais de qualidade, mas não é confirmação formal de aceite | nenhuma página oficial de critério de desenvolvedor encontrada | baixo agora | sem ação de código; reavaliar quando o time decidir submeter | `SEM-CODIGO`; nota em `docs/google-play/play-console-checklist.md` | ⚪ Decisão de produto | BAIXA |
+| **Target API level da Play Store**: apps novos ou atualizados precisam de **API 36** a partir de **2026-08-31**; apps existentes intocados precisam de pelo menos API 35 para continuar visíveis a novos usuários em Android mais recente; há extensão possível até 2026-11-01 | `https://support.google.com/googleplay/android-developer/answer/11926878` | **o prazo é hoje.** Build publicado a partir de agora sem API 36 é rejeitado, salvo extensão pedida | os dois scripts de build reais já passam `-Pexport_version_target_sdk=36` e estão conformes. O preset do editor ainda declarava `target_sdk="35"` em `export_presets.cfg:29` — não afeta o pipeline, mas engana quem usar "Projeto > Exportar"; corrigido nesta fase | `build_aab.sh:54`, `build_apk.sh:68`, `export_presets.cfg:29` | ✅ Conforme | ALTA |
+
+## 4. Resumo por status
+
+| Status | Quantos | Requisitos |
+|---|---|---|
+| ✅ Conforme | 8 | 1, 2, 3, 5, 6, 7, 13, 14, 19 — detalhado em `docs/google-play/compatibility-audit.md` |
+| 🟦 Só Console | 3 | 4, 8, 15 (parte Cloud Save) — detalhado em `docs/google-play/compatibility-audit.md` |
+| 🔴 Ausente | 4 | 9, 10, 11, 12 — detalhado em `docs/google-play/compatibility-audit.md` |
+| ⛔ Prazo vencido | 1 | 15 (parte Sidekick + Achievements) — detalhado em `docs/google-play/compatibility-audit.md` |
+| 🟡 Parcial | 1 | 16 — detalhado em `docs/google-play/compatibility-audit.md` |
+| ⚪ Decisão de produto | 2 | 17, 18 — detalhado em `docs/google-play/compatibility-audit.md` |
+
+Nota de contagem: o requisito 15 (Level Up — prazos) carrega dois status ao mesmo tempo — ⛔ para Sidekick+Achievements e 🟦 para Cloud Save — por isso aparece em duas linhas desta tabela.
+
+## 5. O que reconferir antes de codar
+
+| Item | Confiança | Fase que reconfere | Por quê |
+|---|---|---|---|
+| Colunas exatas dos CSVs de Game Stats no Console | MÉDIA | Fase 5 | a resposta veio de resumo, não de citação literal — `https://developer.android.com/games/pgs/android/gamestats` |
+| Seamless restore é obrigatório ou recomendado até 2026-11-30 | MÉDIA | Fase 3 | o blog e a página evergreen discordam — `https://developer.android.com/games/pgs/seamless-restore` |
+| Caminho de publicação do Sidekick (AAB automático × APK manual) | MÉDIA | Fase 9 | a leitura antiga dizia que AAB era obrigatório — `https://developer.android.com/games/pgs/play-games-sidekick-sdk` |
+| Diretrizes `LU-*` completas | MÉDIA | Fases 5 e 9 | resumo de WebFetch — `https://developer.android.com/games/guidelines` |
+| Elegibilidade de Play Pass do lado do desenvolvedor | BAIXA | quando o time decidir submeter | nenhuma página oficial encontrada — `SEM-CODIGO` |
+
+O entregável que cruza estes 19 requisitos com o roadmap das 14 fases deste milestone é `docs/google-play/compatibility-audit.md`.
