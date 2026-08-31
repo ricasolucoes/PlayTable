@@ -35,30 +35,26 @@ layout_mode = 2
 theme_override_constants/separation = 16
 
 [node name="BtnVoltar" type="Button" parent="VBoxContainer/TopBar"]
-custom_minimum_size = Vector2(140, 88)
+custom_minimum_size = Vector2(140.0, 88.0)
 layout_mode = 2
-theme_override_font_sizes/font_size = 27
 text = "BTN_BACK"
 
 [node name="Title" type="Label" parent="VBoxContainer/TopBar"]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_font_sizes/font_size = 32
 text = "MENU_BOARD_GAMES"
 vertical_alignment = 1
 clip_text = true
 
 [node name="BtnFiltro" type="Button" parent="VBoxContainer/TopBar"]
-custom_minimum_size = Vector2(150, 88)
+custom_minimum_size = Vector2(150.0, 88.0)
 layout_mode = 2
-theme_override_font_sizes/font_size = 27
 text = "BTN_FILTERS"
 
 [node name="Resumo" type="Label" parent="VBoxContainer"]
 visible = false
 layout_mode = 2
 theme_override_colors/font_color = Color(0.82, 0.72, 0.52, 1)
-theme_override_font_sizes/font_size = 26
 text = ""
 
 [node name="ScrollContainer" type="ScrollContainer" parent="VBoxContainer"]

@@ -39,9 +39,9 @@ theme_override_constants/separation = 8
 [node name="StatusLabel" type="Label" parent="UI/VBoxContainer"]
 layout_mode = 2
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.8)
-theme_override_font_sizes/font_size = 20
 text = "POKER_ADJUST_BET"
 horizontal_alignment = 1
+clip_text = true
 
 [node name="PayoutTableContainer" type="PanelContainer" parent="UI/VBoxContainer"]
 layout_mode = 2
@@ -49,9 +49,10 @@ layout_mode = 2
 [node name="PayoutLabel" type="Label" parent="UI/VBoxContainer/PayoutTableContainer"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.95, 0.82, 0.35, 1)
-theme_override_font_sizes/font_size = 14
 text = ""
 horizontal_alignment = 1
+autowrap_mode = 2
+clip_text = true
 
 [node name="Controls" type="HBoxContainer" parent="UI"]
 layout_mode = 1
@@ -67,21 +68,18 @@ theme_override_constants/separation = 16
 alignment = 1
 
 [node name="BtnBetMinus" type="Button" parent="UI/Controls"]
-custom_minimum_size = Vector2(60, 56)
+custom_minimum_size = Vector2(88.0, 88.0)
 layout_mode = 2
-theme_override_font_sizes/font_size = 24
 text = "-5"
 
 [node name="BtnAction" type="Button" parent="UI/Controls"]
-custom_minimum_size = Vector2(220, 56)
+custom_minimum_size = Vector2(220.0, 88.0)
 layout_mode = 2
-theme_override_font_sizes/font_size = 22
 text = "POKER_BTN_DEAL"
 
 [node name="BtnBetPlus" type="Button" parent="UI/Controls"]
-custom_minimum_size = Vector2(60, 56)
+custom_minimum_size = Vector2(88.0, 88.0)
 layout_mode = 2
-theme_override_font_sizes/font_size = 24
 text = "+5"
 
 [connection signal="pressed" from="UI/Controls/BtnBetMinus" to="." method="_on_btn_bet_minus_pressed"]

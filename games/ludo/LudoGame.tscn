@@ -45,9 +45,9 @@ theme_override_constants/separation = 12
 [node name="StatusLabel" type="Label" parent="UI/VBoxContainer"]
 layout_mode = 2
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.8)
-theme_override_font_sizes/font_size = 22
 text = "LUDO_YOUR_TURN"
 horizontal_alignment = 1
+clip_text = true
 
 [node name="DiceArea" type="Control" parent="UI"]
 layout_mode = 1
@@ -65,12 +65,12 @@ grow_vertical = 2
 
 [node name="BtnDice" type="Button" parent="UI/DiceArea"]
 layout_mode = 1
+custom_minimum_size = Vector2(88, 88)
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_font_sizes/font_size = 22
 text = "LUDO_BTN_ROLL"
 
 [node name="PawnSelectionArea" type="Control" parent="UI"]
@@ -111,9 +111,8 @@ alignment = 1
 
 [node name="BtnRestart" type="Button" parent="UI/Actions"]
 visible = false
-custom_minimum_size = Vector2(180, 50)
+custom_minimum_size = Vector2(180.0, 88.0)
 layout_mode = 2
-theme_override_font_sizes/font_size = 20
 text = "BTN_NEW_MATCH_ICON"
 
 [connection signal="pressed" from="UI/DiceArea/BtnDice" to="." method="_on_btn_dice_pressed"]

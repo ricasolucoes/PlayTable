@@ -37,9 +37,10 @@ layout_mode = 2
 theme_override_constants/separation = 16
 
 [node name="BtnRestart" type="Button" parent="VBoxContainer/TopBar"]
-custom_minimum_size = Vector2(110, 54)
+custom_minimum_size = Vector2(110.0, 88.0)
 layout_mode = 2
 text = "BTN_RESET"
+clip_text = true
 
 [node name="BtnModeToggle" type="Button" parent="VBoxContainer/TopBar"]
 custom_minimum_size = Vector2(150.0, 88.0)
@@ -52,9 +53,9 @@ layout_mode = 2
 
 [node name="StatusLabel" type="Label" parent="VBoxContainer/StatusCard"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 22
 text = "MEMORY_START"
 horizontal_alignment = 1
+clip_text = true
 
 [node name="ScrollContainer" type="ScrollContainer" parent="VBoxContainer"]
 layout_mode = 2
@@ -103,13 +104,11 @@ alignment = 1
 [node name="WinTitle" type="Label" parent="WinModal/Panel/VBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 0.85, 0.35, 1)
-theme_override_font_sizes/font_size = 36
 text = "RESULT_CONGRATS"
 horizontal_alignment = 1
 
 [node name="WinSub" type="Label" parent="WinModal/Panel/VBox"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 20
 text = "MEMORY_ALL_PAIRS"
 horizontal_alignment = 1
 autowrap_mode = 2
@@ -119,9 +118,8 @@ custom_minimum_size = Vector2(0, 10)
 layout_mode = 2
 
 [node name="BtnPlayAgain" type="Button" parent="WinModal/Panel/VBox"]
-custom_minimum_size = Vector2(0, 60)
+custom_minimum_size = Vector2(88.0, 88.0)
 layout_mode = 2
-theme_override_font_sizes/font_size = 24
 text = "BTN_RESTART"
 
 [connection signal="pressed" from="VBoxContainer/TopBar/BtnRestart" to="." method="_on_restart_pressed"]

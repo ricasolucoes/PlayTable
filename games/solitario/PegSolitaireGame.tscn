@@ -49,7 +49,6 @@ theme_override_constants/separation = 10
 [node name="StatusLabel" type="Label" parent="UI/VBoxContainer"]
 layout_mode = 2
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.8)
-theme_override_font_sizes/font_size = 20
 text = "PEG_START"
 horizontal_alignment = 1
 
@@ -67,9 +66,8 @@ alignment = 1
 
 [node name="BtnRestart" type="Button" parent="UI/Actions"]
 visible = false
-custom_minimum_size = Vector2(180, 50)
+custom_minimum_size = Vector2(180.0, 88.0)
 layout_mode = 2
-theme_override_font_sizes/font_size = 20
 text = "BTN_NEW_MATCH_ICON"
 
 [connection signal="pressed" from="UI/Actions/BtnRestart" to="." method="_on_btn_restart_pressed"]

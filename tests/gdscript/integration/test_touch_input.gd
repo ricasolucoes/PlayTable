@@ -25,10 +25,14 @@ const JOGOS := [
 	"res://games/mancala/MancalaGame.tscn",
 	"res://games/senet/SenetGame.tscn",
 	"res://games/paciencia/KlondikeGame.tscn",
+	"res://games/paciencia_spider/SpiderGame.tscn",
 	"res://games/memoria/MemoryGame.tscn",
 	"res://games/blackjack/BlackjackGame.tscn",
 	"res://games/unolike/UnoLikeGame.tscn",
 	"res://games/poker/PokerGame.tscn",
+	"res://games/hanoi/HanoiGame.tscn",
+	"res://games/nim/NimGame.tscn",
+	"res://games/gamao/BackgammonGame.tscn",
 ]
 
 

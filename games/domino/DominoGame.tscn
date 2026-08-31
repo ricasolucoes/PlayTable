@@ -50,23 +50,23 @@ theme_override_constants/separation = 8
 [node name="AIInfoLabel" type="Label" parent="UI/VBoxContainer"]
 layout_mode = 2
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.8)
-theme_override_font_sizes/font_size = 18
 text = ""
 horizontal_alignment = 1
+clip_text = true
 
 [node name="EndsLabel" type="Label" parent="UI/VBoxContainer"]
 layout_mode = 2
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.8)
-theme_override_font_sizes/font_size = 20
 text = ""
 horizontal_alignment = 1
+clip_text = true
 
 [node name="StatusLabel" type="Label" parent="UI/VBoxContainer"]
 layout_mode = 2
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.8)
-theme_override_font_sizes/font_size = 20
 text = "YOUR_TURN_BANG"
 horizontal_alignment = 1
+clip_text = true
 
 [node name="Actions" type="HBoxContainer" parent="UI"]
 layout_mode = 1
@@ -86,37 +86,32 @@ alignment = 1
 
 [node name="BtnPlayLeft" type="Button" parent="UI/Actions"]
 visible = false
-custom_minimum_size = Vector2(120, 50)
+custom_minimum_size = Vector2(120.0, 88.0)
 layout_mode = 2
-theme_override_font_sizes/font_size = 18
 text = "DOMINO_BTN_LEFT"
 
 [node name="BtnPlayRight" type="Button" parent="UI/Actions"]
 visible = false
-custom_minimum_size = Vector2(120, 50)
+custom_minimum_size = Vector2(120.0, 88.0)
 layout_mode = 2
-theme_override_font_sizes/font_size = 18
 text = "DOMINO_BTN_RIGHT"
 
 [node name="BtnDraw" type="Button" parent="UI/Actions"]
 visible = false
-custom_minimum_size = Vector2(130, 50)
+custom_minimum_size = Vector2(130.0, 88.0)
 layout_mode = 2
-theme_override_font_sizes/font_size = 18
 text = "DOMINO_BTN_DRAW"
 
 [node name="BtnPass" type="Button" parent="UI/Actions"]
 visible = false
-custom_minimum_size = Vector2(130, 50)
+custom_minimum_size = Vector2(130.0, 88.0)
 layout_mode = 2
-theme_override_font_sizes/font_size = 18
 text = "DOMINO_BTN_PASS"
 
 [node name="BtnRestart" type="Button" parent="UI/Actions"]
 visible = false
-custom_minimum_size = Vector2(160, 50)
+custom_minimum_size = Vector2(160.0, 88.0)
 layout_mode = 2
-theme_override_font_sizes/font_size = 18
 text = "BTN_NEW_MATCH_ICON"
 
 [node name="PlayerArea" type="PanelContainer" parent="UI"]
@@ -139,7 +134,6 @@ theme_override_constants/separation = 4
 [node name="HandTitle" type="Label" parent="UI/PlayerArea/HandVBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.98, 0.86, 0.45, 1)
-theme_override_font_sizes/font_size = 15
 text = "LABEL_YOUR_HAND"
 horizontal_alignment = 1
 

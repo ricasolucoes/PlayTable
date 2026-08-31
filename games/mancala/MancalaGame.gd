@@ -78,7 +78,7 @@ func _setup_ui_buttons() -> void:
 	for c in player_pits_container.get_children(): c.queue_free()
 	for i in range(6):
 		var btn := Button.new()
-		btn.custom_minimum_size = Vector2(52, 60)
+		btn.custom_minimum_size = Vector2(UIKit.TOQUE_MIN, UIKit.TOQUE_MIN)
 		btn.pressed.connect(_on_player_pit_clicked.bind(i))
 		player_pits_container.add_child(btn)
 

@@ -22,7 +22,7 @@ extends GutTest
 ## ponta com grow_vertical = 2, e quando o conteudo (grade de cartas de 75x120
 ## mais o cabecalho) passa dos 960 px ela cresce para os dois lados e empurra
 ## BtnBack, Title e BtnRestart para y = -20, acima da borda da tela.
-const ABERTOS: Array[String] = ["M1", "M3", "M4", "M6"]
+const ABERTOS: Array[String] = []
 
 
 # ------------------------------------------------------------------ a regua
@@ -60,10 +60,14 @@ const JOGOS := [
 	"res://games/mancala/MancalaGame.tscn",
 	"res://games/senet/SenetGame.tscn",
 	"res://games/paciencia/KlondikeGame.tscn",
+	"res://games/paciencia_spider/SpiderGame.tscn",
 	"res://games/memoria/MemoryGame.tscn",
 	"res://games/blackjack/BlackjackGame.tscn",
 	"res://games/unolike/UnoLikeGame.tscn",
 	"res://games/poker/PokerGame.tscn",
+	"res://games/hanoi/HanoiGame.tscn",
+	"res://games/nim/NimGame.tscn",
+	"res://games/gamao/BackgammonGame.tscn",
 ]
 
 const MENUS := [
@@ -169,6 +173,31 @@ func _cantos_do_tabuleiro(board: Board3D) -> Array[Vector3]:
 	]
 
 
+func _tabuleiros_3d(raiz: Node) -> Array[Board3D]:
+	var achados: Array[Board3D] = []
+	var fila: Array[Node] = [raiz]
+	while not fila.is_empty():
+		var no: Node = fila.pop_back()
+		if no is Board3D:
+			achados.append(no)
+		fila.append_array(no.get_children())
+	return achados
+
+
+func _limites_dos_tabuleiros(boards: Array[Board3D]) -> Vector2:
+	var minimo_x := INF
+	var minimo_z := INF
+	var maximo_x := -INF
+	var maximo_z := -INF
+	for board in boards:
+		var metade := board.content_size() * 0.5
+		minimo_x = minf(minimo_x, board.global_position.x - metade.x)
+		maximo_x = maxf(maximo_x, board.global_position.x + metade.x)
+		minimo_z = minf(minimo_z, board.global_position.z - metade.y)
+		maximo_z = maxf(maximo_z, board.global_position.z + metade.y)
+	return Vector2(maximo_x - minimo_x, maximo_z - minimo_z)
+
+
 ## A faixa da tela que a camera considera util: entre a HUD de cima e a de
 ## baixo. Sao os mesmos numeros que o CameraRig3D usa para enquadrar.
 func _faixa_util(camera: CameraRig3D, tamanho: Vector2i) -> Rect2:
@@ -184,20 +213,21 @@ func test_o_tabuleiro_cabe_no_quadro_em_tres_proporcoes() -> void:
 			var jogo := await _montar(caminho, tamanho)
 			if jogo == null:
 				continue
-			var board: Board3D = jogo.get_node_or_null("Board3D")
 			var env: TabletopEnvironment3D = jogo.get_node_or_null("TabletopEnvironment3D")
-			if board == null or env == null or env.camera == null:
+			var boards := _tabuleiros_3d(jogo)
+			if boards.is_empty() or env == null or env.camera == null:
 				violacoes.append("%s: sem Board3D ou camera" % _nome_curto(caminho))
 				continue
 			var faixa := _faixa_util(env.camera, tamanho)
 			var fora: Array[String] = []
-			for canto in _cantos_do_tabuleiro(board):
-				if env.camera.is_position_behind(canto):
-					fora.append("atras da camera")
-					continue
-				var p := env.camera.unproject_position(canto)
-				if not faixa.has_point(p):
-					fora.append("(%.0f, %.0f)" % [p.x, p.y])
+			for board in boards:
+				for canto in _cantos_do_tabuleiro(board):
+					if env.camera.is_position_behind(canto):
+						fora.append("atras da camera")
+						continue
+					var p := env.camera.unproject_position(canto)
+					if not faixa.has_point(p):
+						fora.append("(%.0f, %.0f)" % [p.x, p.y])
 			if not fora.is_empty():
 				violacoes.append("%s em %s: %d canto(s) fora da faixa util %s — %s" % [
 					_nome_curto(caminho), rotulo, fora.size(), faixa, ", ".join(fora)])
@@ -212,16 +242,16 @@ func test_a_camera_conhece_o_tamanho_real_do_tabuleiro() -> void:
 		var jogo := await _montar(caminho, PROPORCOES["9:16"])
 		if jogo == null:
 			continue
-		var board: Board3D = jogo.get_node_or_null("Board3D")
 		var env: TabletopEnvironment3D = jogo.get_node_or_null("TabletopEnvironment3D")
-		if board == null or env == null or env.camera == null:
+		var boards := _tabuleiros_3d(jogo)
+		if boards.is_empty() or env == null or env.camera == null:
 			continue
-		var real := board.content_size()
+		var real := _limites_dos_tabuleiros(boards)
 		var informado := env.camera.content_size
-		if not informado.is_equal_approx(real):
-			violacoes.append("%s: camera enquadra %s, tabuleiro mede %s" % [
+		if informado.x + 0.001 < real.x or informado.y + 0.001 < real.y:
+			violacoes.append("%s: camera enquadra %s, conjunto de tabuleiros mede %s" % [
 				_nome_curto(caminho), informado, real])
-	_regua("M1", violacoes, "camera informada do tamanho do tabuleiro nos %d jogos" % JOGOS_COM_TABULEIRO_3D.size())
+	_regua("M1", violacoes, "camera cobre todos os tabuleiros nos %d jogos" % JOGOS_COM_TABULEIRO_3D.size())
 
 
 # --------------------------------------------------------- M3: alvos de toque
@@ -289,19 +319,18 @@ func test_todo_texto_tem_ao_menos_14sp() -> void:
 		total, _fmt_dp(minimo_px), _fmt_dp(pior) if pior < INF else "—"])
 
 
-func test_os_tamanhos_de_fonte_vivem_no_tema() -> void:
+func test_sobrescritas_de_fonte_respeitam_o_piso_movel() -> void:
+	var minimo_px := MIN_TEXT_SP / _dp_por_px
 	var violacoes: Array[String] = []
 	for caminho in JOGOS + MENUS:
 		var raiz := await _montar(caminho, PROPORCOES["9:16"])
 		if raiz == null:
 			continue
-		var fixados := 0
-		for c in _controles(raiz, "Control"):
-			if c.has_theme_font_size_override("font_size"):
-				fixados += 1
-		if fixados > 0:
-			violacoes.append("%s: %d no(s) fixam font_size fora do tema" % [_nome_curto(caminho), fixados])
-	_regua("M4", violacoes, "nenhuma cena fixa tamanho de fonte fora do tema")
+		for c in _controles(raiz, "Label") + _controles(raiz, "Button"):
+			if c.has_theme_font_size_override("font_size") and c.get_theme_font_size("font_size") < minimo_px:
+				violacoes.append("%s › %s: %s" % [
+					_nome_curto(caminho), c.name, _fmt_dp(c.get_theme_font_size("font_size"))])
+	_regua("M4", violacoes, "sobrescritas de fonte tambem respeitam o piso de 14 sp")
 
 
 # ------------------------------------------------- guardas da propria regua

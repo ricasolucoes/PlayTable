@@ -73,7 +73,7 @@ func _setup_column_buttons() -> void:
 		
 	for c in range(COLS):
 		var btn := Button.new()
-		btn.custom_minimum_size = Vector2(CELL_SIZE - 4.0, ROWS * CELL_SIZE + 40.0)
+		btn.custom_minimum_size = Vector2(maxf(CELL_SIZE - 4.0, UIKit.TOQUE_MIN), ROWS * CELL_SIZE + 40.0)
 		btn.flat = true
 		btn.focus_mode = Control.FOCUS_NONE
 		btn.pressed.connect(_on_col_pressed.bind(c))

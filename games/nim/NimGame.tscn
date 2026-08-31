@@ -49,7 +49,6 @@ layout_mode = 2
 
 [node name="NimSumVal" type="Label" parent="UI/TopBar/StatsHBox/NimSumCard"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 14
 text = ""
 horizontal_alignment = 1
 vertical_alignment = 1
@@ -60,7 +59,6 @@ layout_mode = 2
 
 [node name="TurnsVal" type="Label" parent="UI/TopBar/StatsHBox/TurnsCard"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 14
 text = "0"
 horizontal_alignment = 1
 vertical_alignment = 1
@@ -71,7 +69,6 @@ layout_mode = 2
 
 [node name="ModeVal" type="Label" parent="UI/TopBar/StatsHBox/ModeCard"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 14
 text = ""
 horizontal_alignment = 1
 vertical_alignment = 1
@@ -90,7 +87,6 @@ grow_horizontal = 2
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 0.92, 0.6, 1)
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.8)
-theme_override_font_sizes/font_size = 16
 text = "NIM_YOUR_TURN_LONG"
 horizontal_alignment = 1
 autowrap_mode = 2
@@ -170,31 +166,30 @@ theme_override_constants/separation = 8
 
 [node name="TakeLabel" type="Label" parent="UI/TakeControls"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 15
 text = ""
 
 [node name="BtnTake1" type="Button" parent="UI/TakeControls"]
-custom_minimum_size = Vector2(46, 44)
+custom_minimum_size = Vector2(88.0, 88.0)
 layout_mode = 2
 text = "1"
 
 [node name="BtnTake2" type="Button" parent="UI/TakeControls"]
-custom_minimum_size = Vector2(46, 44)
+custom_minimum_size = Vector2(88.0, 88.0)
 layout_mode = 2
 text = "2"
 
 [node name="BtnTake3" type="Button" parent="UI/TakeControls"]
-custom_minimum_size = Vector2(46, 44)
+custom_minimum_size = Vector2(88.0, 88.0)
 layout_mode = 2
 text = "3"
 
 [node name="BtnTakeAll" type="Button" parent="UI/TakeControls"]
-custom_minimum_size = Vector2(80, 44)
+custom_minimum_size = Vector2(88.0, 88.0)
 layout_mode = 2
 text = "NIM_BTN_ALL"
 
 [node name="BtnConfirm" type="Button" parent="UI/TakeControls"]
-custom_minimum_size = Vector2(130, 44)
+custom_minimum_size = Vector2(130.0, 88.0)
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 0.95, 0.4, 1)
 text = "BTN_CONFIRM_ICON"
@@ -215,27 +210,27 @@ alignment = 1
 theme_override_constants/separation = 8
 
 [node name="BtnUndo" type="Button" parent="UI/Actions"]
-custom_minimum_size = Vector2(85, 48)
+custom_minimum_size = Vector2(88.0, 88.0)
 layout_mode = 2
 text = "BTN_BACK_ICON"
 
 [node name="BtnHint" type="Button" parent="UI/Actions"]
-custom_minimum_size = Vector2(85, 48)
+custom_minimum_size = Vector2(88.0, 88.0)
 layout_mode = 2
 text = "BTN_HINT_ICON"
 
 [node name="BtnModeToggle" type="Button" parent="UI/Actions"]
-custom_minimum_size = Vector2(100, 48)
+custom_minimum_size = Vector2(100.0, 88.0)
 layout_mode = 2
 text = "NIM_BTN_VS_AI"
 
 [node name="BtnRuleToggle" type="Button" parent="UI/Actions"]
-custom_minimum_size = Vector2(100, 48)
+custom_minimum_size = Vector2(100.0, 88.0)
 layout_mode = 2
 text = "NIM_BTN_MISERE"
 
 [node name="BtnRestart" type="Button" parent="UI/Actions"]
-custom_minimum_size = Vector2(95, 48)
+custom_minimum_size = Vector2(95.0, 88.0)
 layout_mode = 2
 text = "BTN_RESET_ICON"
 
@@ -280,31 +275,27 @@ alignment = 1
 [node name="ResultTitle" type="Label" parent="ResultModal/Panel/VBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 0.85, 0.2, 1)
-theme_override_font_sizes/font_size = 24
 text = "NIM_WIN_TITLE"
 horizontal_alignment = 1
 
 [node name="ResultStars" type="Label" parent="ResultModal/Panel/VBox"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 28
 text = "⭐⭐⭐"
 horizontal_alignment = 1
 
 [node name="ResultDetails" type="Label" parent="ResultModal/Panel/VBox"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 15
 text = ""
 horizontal_alignment = 1
 
 [node name="ResultXP" type="Label" parent="ResultModal/Panel/VBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.3, 0.9, 0.4, 1)
-theme_override_font_sizes/font_size = 18
 text = ""
 horizontal_alignment = 1
 
 [node name="BtnRematch" type="Button" parent="ResultModal/Panel/VBox"]
-custom_minimum_size = Vector2(180, 48)
+custom_minimum_size = Vector2(180.0, 88.0)
 layout_mode = 2
 size_flags_horizontal = 4
 text = "BTN_RESTART_ICON"

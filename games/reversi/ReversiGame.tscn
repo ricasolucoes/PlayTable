@@ -42,21 +42,18 @@ theme_override_constants/separation = 10
 [node name="LevelLabel" type="Label" parent="UI/VBoxContainer"]
 layout_mode = 2
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.8)
-theme_override_font_sizes/font_size = 20
 text = ""
 horizontal_alignment = 1
 
 [node name="StatusLabel" type="Label" parent="UI/VBoxContainer"]
 layout_mode = 2
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.8)
-theme_override_font_sizes/font_size = 22
 text = "REVERSI_YOUR_TURN"
 horizontal_alignment = 1
 
 [node name="BtnRestart" type="Button" parent="UI/VBoxContainer"]
 visible = false
-custom_minimum_size = Vector2(180, 50)
+custom_minimum_size = Vector2(180.0, 88.0)
 layout_mode = 2
 size_flags_horizontal = 4
-theme_override_font_sizes/font_size = 20
 text = "BTN_RESTART_ICON"

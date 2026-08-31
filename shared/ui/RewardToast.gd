@@ -14,7 +14,7 @@ extends CanvasLayer
 
 const HOLD := 1.7
 const SLIDE := 0.28
-const WIDTH := 420.0
+const WIDTH := 624.0
 
 ## Teto da fila. Uma vitoria boa dispara XP, nivel, missao, maestria, liga e
 ## tres conquistas -- oito cartoes de 2 s cada sao 16 s de aviso sobre um
@@ -79,13 +79,14 @@ func _build() -> void:
 	row.add_child(col)
 
 	_title = Label.new()
-	_title.add_theme_font_size_override("font_size", 21)
+	_title.add_theme_font_size_override("font_size", UIKit.FONTE_MIUDA)
 	_title.add_theme_color_override("font_color", Color(0.99, 0.87, 0.42))
+	_title.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_title.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	col.add_child(_title)
 
 	_detail = Label.new()
-	_detail.add_theme_font_size_override("font_size", 15)
+	_detail.add_theme_font_size_override("font_size", UIKit.FONTE_MIUDA)
 	_detail.add_theme_color_override("font_color", Color(0.84, 0.87, 0.94))
 	_detail.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_detail.mouse_filter = Control.MOUSE_FILTER_IGNORE
