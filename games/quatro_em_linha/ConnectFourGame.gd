@@ -17,6 +17,7 @@ const PIECE_RADIUS = ConnectFourLayout.HOLE_RADIUS
 var board: Grid2D = null
 var is_player_turn: bool = true
 var vs_ai: bool = true
+var is_animating: bool = false
 
 ## Degrau de 1 a 10 do DifficultyManager. Vira orcamento de busca da IA.
 var ai_level: int = DifficultyManager.DEFAULT_LEVEL
@@ -34,6 +35,7 @@ var _started_at: float = 0.0
 @onready var win_modal: ColorRect = $WinModal
 @onready var win_modal_title: Label = $WinModal/Panel/VBox/WinTitle
 @onready var win_modal_sub: Label = $WinModal/Panel/VBox/WinSub
+@onready var btn_mode_toggle: Button = $VBoxContainer/TopBar/BtnModeToggle
 
 ## Centro vertical da linha `row` na area de desenho.
 ##
@@ -54,8 +56,12 @@ func _ready() -> void:
 	
 	_setup_board_visuals()
 	_setup_column_buttons()
+	btn_mode_toggle.pressed.connect(_on_mode_toggle_pressed)
+	_update_mode_button()
 	_update_turn_ui()
 	win_modal.visible = false
+	_started_at = Time.get_ticks_msec() / 1000.0
+	begin_match("ai" if vs_ai else "versus")
 
 func _setup_board_visuals() -> void:
 	board_back.queue_redraw()
@@ -74,17 +80,20 @@ func _setup_column_buttons() -> void:
 		col_buttons_container.add_child(btn)
 
 func _on_col_pressed(col: int) -> void:
-	if game_over or not is_player_turn:
+	if game_over or is_animating or (vs_ai and not is_player_turn):
 		return
 	if not ConnectFourRules.can_drop(board, col):
 		return
 		
-	_make_move(col, 1)
+	# No modo local, os dois jogadores usam as mesmas colunas e o lado ativo
+	# define a cor da ficha que cai.
+	_make_move(col, 1 if vs_ai or is_player_turn else 2)
 
 func _make_move(col: int, player_id: int) -> void:
 	var row := ConnectFourRules.drop_piece(board, col, player_id)
 	if row < 0:
 		return
+	is_animating = true
 		
 	var piece := PIECE_SCENE.instantiate()
 	piece.is_red = (player_id == 1)
@@ -103,6 +112,7 @@ func _make_move(col: int, player_id: int) -> void:
 	var is_board_full := ConnectFourRules.is_full(board)
 	
 	piece.drop_to(target_y, func():
+		is_animating = false
 		if has_won:
 			_handle_game_won(player_id, win_cells)
 		elif is_board_full:
@@ -166,20 +176,22 @@ func _handle_game_won(winner_id: int, win_cells: Array[Vector2i]) -> void:
 	report_match_result(winner_id == 1, {
 		"time": Time.get_ticks_msec() / 1000.0 - _started_at,
 		"close_call": _pecas_no_tabuleiro() >= COLS * ROWS - 3,
+		"winner": winner_id,
+		"mode": "ai" if vs_ai else "versus",
 	})
 
 	if winner_id == 1:
 		score_p1 += 1
-		set_duel_score(score_p1, score_p2)
-		win_modal_title.text = tr("WIN_TITLE")
-		win_modal_sub.text = tr("CONNECT4_WIN_DESC")
+		_set_score_ui()
+		win_modal_title.text = tr("WIN_TITLE") if vs_ai else tr("CONNECT4_WIN_PLAYER") % 1
+		win_modal_sub.text = tr("CONNECT4_WIN_DESC") if vs_ai else tr("CONNECT4_WIN_PLAYER_DESC") % 1
 		if AudioManager: AudioManager.play_win()
 	else:
 		score_p2 += 1
-		set_duel_score(score_p1, score_p2)
-		win_modal_title.text = tr("CONNECT4_LOSE")
-		win_modal_sub.text = tr("CONNECT4_LOSE_DESC")
-		if AudioManager: AudioManager.play_draw()
+		_set_score_ui()
+		win_modal_title.text = tr("CONNECT4_LOSE") if vs_ai else tr("CONNECT4_WIN_PLAYER") % 2
+		win_modal_sub.text = tr("CONNECT4_LOSE_DESC") if vs_ai else tr("CONNECT4_WIN_PLAYER_DESC") % 2
+		if AudioManager: AudioManager.play_win()
 		
 	# Highlight winning pieces
 	for cell in win_cells:
@@ -193,6 +205,7 @@ func _handle_game_draw() -> void:
 	report_match_result(false, {
 		"draw": true,
 		"time": Time.get_ticks_msec() / 1000.0 - _started_at,
+		"mode": "ai" if vs_ai else "versus",
 	})
 	win_modal_title.text = tr("DRAW_TITLE")
 	win_modal_sub.text = tr("CONNECT4_DRAW_DESC")
@@ -202,12 +215,21 @@ func _handle_game_draw() -> void:
 func _update_turn_ui() -> void:
 	if game_over:
 		return
-	set_duel_score(score_p1, score_p2)
+	_set_score_ui()
 	set_active_side(is_player_turn)
-	if is_player_turn:
+	if not vs_ai:
+		set_status(tr("CONNECT4_PLAYER_TURN") % (1 if is_player_turn else 2))
+	elif is_player_turn:
 		set_status(tr("CONNECT4_YOUR_TURN") + difficulty_suffix())
 	else:
 		set_status(tr("CONNECT4_AI_TURN"))
+
+
+func _set_score_ui() -> void:
+	if vs_ai:
+		set_duel_score(score_p1, score_p2)
+	else:
+		set_duel_score(score_p1, score_p2, "SCORE_PLAYER_1", "SCORE_PLAYER_2")
 
 func _start_new_game() -> void:
 	win_modal.visible = false
@@ -216,13 +238,26 @@ func _start_new_game() -> void:
 		child.queue_free()
 	piece_instances.clear()
 	game_over = false
+	is_animating = false
 	is_player_turn = true
 	ai_level = DifficultyManager.get_level(game_id)
 	_started_at = Time.get_ticks_msec() / 1000.0
-	begin_match()
+	begin_match("ai" if vs_ai else "versus")
 	_update_turn_ui()
 
 
 ## Quantas fichas ja cairam. Usado para reconhecer a partida decidida no fim.
 func _pecas_no_tabuleiro() -> int:
 	return piece_instances.size()
+
+
+func _on_mode_toggle_pressed() -> void:
+	play_click()
+	vs_ai = not vs_ai
+	_update_mode_button()
+	restart_game()
+
+
+func _update_mode_button() -> void:
+	if btn_mode_toggle:
+		btn_mode_toggle.text = tr("CONNECT4_BTN_VS_AI") if vs_ai else tr("CONNECT4_BTN_TWO_PLAYERS")

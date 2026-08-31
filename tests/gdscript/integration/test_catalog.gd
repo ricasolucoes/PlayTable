@@ -96,6 +96,17 @@ func test_cada_entrada_do_catalogo_tem_titulo_icone_e_descricao() -> void:
 		assert_true(def.is_implemented, "%s marcado como implementado" % def.title)
 
 
+func test_velha_e_memoria_oferecem_modo_local() -> void:
+	var velha := GameCatalog.find_by_id("jogo_da_velha")
+	var memoria := GameCatalog.find_by_id("memoria")
+	assert_not_null(velha, "jogo da velha no catalogo")
+	assert_not_null(memoria, "memoria no catalogo")
+	if velha != null:
+		assert_true(velha.has_mode(GameDefinition.Mode.VERSUS), "velha tem 2 jogadores")
+	if memoria != null:
+		assert_true(memoria.has_mode(GameDefinition.Mode.VERSUS), "memoria tem 2 jogadores")
+
+
 ## O nome e a descricao de cada jogo saem do catalogo como CHAVE, e quem mostra
 ## chama display_name()/display_description(). Ate a v0.7.0 o catalogo trazia o
 ## nome escrito em portugues e as chaves GAME_* do CSV nao eram lidas por

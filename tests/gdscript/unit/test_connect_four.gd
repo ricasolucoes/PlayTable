@@ -21,6 +21,27 @@ func _grid() -> Grid2D:
 	return Grid2D.new(ROWS, COLS, 0)
 
 
+func test_modo_local_alterna_os_dois_jogadores() -> void:
+	var jogo = add_child_autofree(GameScene.instantiate())
+	jogo.vs_ai = false
+	jogo._on_col_pressed(0)
+	await wait_seconds(0.9)
+	assert_eq(jogo.board.get_cell(ROWS - 1, 0), 1, "Jogador 1 deixa ficha vermelha")
+	assert_false(jogo.is_player_turn, "a vez passa ao Jogador 2")
+	jogo._on_col_pressed(1)
+	await wait_seconds(0.9)
+	assert_eq(jogo.board.get_cell(ROWS - 1, 1), 2, "Jogador 2 deixa ficha dourada")
+	assert_true(jogo.is_player_turn, "a vez volta ao Jogador 1")
+
+
+func test_catalogo_marca_quatro_em_linha_como_2_jogadores() -> void:
+	var definicao := GameCatalog.find_by_id("quatro_em_linha")
+	assert_not_null(definicao, "quatro em linha existe no catalogo")
+	if definicao != null:
+		assert_true(definicao.has_mode(GameDefinition.Mode.AI), "quatro em linha contra IA")
+		assert_true(definicao.has_mode(GameDefinition.Mode.VERSUS), "quatro em linha local")
+
+
 # ------------------------------------------------------------ ConnectFourRules
 
 func test_peca_cai_ate_o_fundo_da_coluna() -> void:

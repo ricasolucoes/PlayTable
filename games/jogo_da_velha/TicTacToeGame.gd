@@ -23,16 +23,20 @@ var ai_level: int = DifficultyManager.DEFAULT_LEVEL
 @onready var win_modal_sub: Label = $WinModal/Panel/VBox/WinSub
 @onready var strike_line: Line2D = $BoardContainer/StrikeLine
 @onready var level_label: Label = $VBoxContainer/StatusCard/StatusVBox/LevelLabel
+@onready var btn_mode_toggle: Button = $VBoxContainer/TopBar/BtnModeToggle
 
 func _ready() -> void:
 	status_label = $VBoxContainer/StatusCard/StatusVBox/StatusLabel
 	ai_level = DifficultyManager.get_level(game_id)
 	_setup_grid_cells()
+	btn_mode_toggle.pressed.connect(_on_mode_toggle_pressed)
+	_update_mode_button()
 	_update_level_label()
 	_update_turn_ui()
 	win_modal.visible = false
 	strike_line.visible = false
 	_maybe_ai_opens()
+	begin_match("ai" if vs_ai else "versus")
 
 
 func _update_level_label() -> void:
@@ -95,10 +99,13 @@ func _setup_grid_cells() -> void:
 		grid_container.add_child(btn)
 
 func _on_cell_pressed(idx: int) -> void:
-	if game_over or not is_player_turn or board.cells[idx] != 0:
+	if game_over or (vs_ai and not is_player_turn) or board.cells[idx] != 0:
 		return
 		
-	_place_move(idx, 1)
+	# No modo local, a mesma mesa recebe os toques dos dois jogadores. O lado
+	# ativo é determinado pela vez; contra a IA, o humano continua sendo o X.
+	var player_id := 1 if vs_ai or is_player_turn else 2
+	_place_move(idx, player_id)
 
 func _place_move(idx: int, player_id: int) -> void:
 	board.cells[idx] = player_id
@@ -152,15 +159,15 @@ func _handle_game_won(winner_id: int, combo: Array[int]) -> void:
 	if winner_id == 1:
 		score_x += 1
 		set_duel_score(score_x, score_o)
-		win_modal_title.text = tr("TICTACTOE_WIN_X")
-		win_modal_sub.text = tr("TICTACTOE_WIN_X_DESC")
+		win_modal_title.text = tr("TICTACTOE_WIN_X") if vs_ai else tr("TICTACTOE_WIN_PLAYER") % 1
+		win_modal_sub.text = tr("TICTACTOE_WIN_X_DESC") if vs_ai else tr("TICTACTOE_WIN_PLAYER_DESC") % 1
 		if AudioManager: AudioManager.play_win()
 	else:
 		score_o += 1
 		set_duel_score(score_x, score_o)
-		win_modal_title.text = tr("TICTACTOE_WIN_O")
-		win_modal_sub.text = tr("TICTACTOE_WIN_O_DESC")
-		if AudioManager: AudioManager.play_draw()
+		win_modal_title.text = tr("TICTACTOE_WIN_O") if vs_ai else tr("TICTACTOE_WIN_PLAYER") % 2
+		win_modal_sub.text = tr("TICTACTOE_WIN_O_DESC") if vs_ai else tr("TICTACTOE_WIN_PLAYER_DESC") % 2
+		if AudioManager: AudioManager.play_win()
 
 	# O jogo termina por modal, nao por `finish_game()`: a gamificacao precisa
 	# ser publicada a mao.
@@ -180,9 +187,14 @@ func _handle_game_draw() -> void:
 
 func _update_turn_ui() -> void:
 	if game_over: return
-	set_duel_score(score_x, score_o)
+	if vs_ai:
+		set_duel_score(score_x, score_o)
+	else:
+		set_duel_score(score_x, score_o, "SCORE_PLAYER_1", "SCORE_PLAYER_2")
 	set_active_side(is_player_turn)
-	if is_player_turn:
+	if not vs_ai:
+		set_status(tr("TICTACTOE_PLAYER_TURN") % (1 if is_player_turn else 2))
+	elif is_player_turn:
 		set_status(tr("TICTACTOE_YOUR_TURN"))
 	else:
 		set_status(tr("TICTACTOE_AI_TURN"))
@@ -200,3 +212,16 @@ func _start_new_game() -> void:
 		piece.set_winning(false)
 	_update_turn_ui()
 	_maybe_ai_opens()
+	begin_match("ai" if vs_ai else "versus")
+
+
+func _on_mode_toggle_pressed() -> void:
+	play_click()
+	vs_ai = not vs_ai
+	_update_mode_button()
+	restart_game()
+
+
+func _update_mode_button() -> void:
+	if btn_mode_toggle:
+		btn_mode_toggle.text = tr("TICTACTOE_BTN_VS_AI") if vs_ai else tr("TICTACTOE_BTN_TWO_PLAYERS")

@@ -151,6 +151,24 @@ func _novo_jogo() -> Node:
 	return jogo
 
 
+func test_modo_local_alterna_os_dois_jogadores_no_mesmo_tabuleiro() -> void:
+	var jogo := _novo_jogo()
+	jogo._on_cell_pressed(0)
+	assert_eq(jogo.board.cells[0], X, "Jogador 1 joga com X")
+	assert_false(jogo.is_player_turn, "a vez passa ao Jogador 2")
+	jogo._on_cell_pressed(1)
+	assert_eq(jogo.board.cells[1], O, "Jogador 2 joga com O")
+	assert_true(jogo.is_player_turn, "a vez volta ao Jogador 1")
+
+
+func test_catalogo_marca_velha_como_ia_e_2_jogadores() -> void:
+	var definicao := GameCatalog.find_by_id("jogo_da_velha")
+	assert_not_null(definicao, "velha existe no catalogo")
+	if definicao != null:
+		assert_true(definicao.has_mode(GameDefinition.Mode.AI), "velha contra IA")
+		assert_true(definicao.has_mode(GameDefinition.Mode.VERSUS), "velha local")
+
+
 func test_cena_monta_nove_casas() -> void:
 	var jogo := _novo_jogo()
 	assert_eq(jogo.board.cells.size(), 9, "9 casas no modelo")

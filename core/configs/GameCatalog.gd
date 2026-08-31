@@ -8,11 +8,9 @@ extends RefCounted
 
 ## Modos de partida, encurtados para o catálogo caber numa linha por jogo.
 ##
-## Cada jogo é marcado pelo que o seu código realmente faz hoje, não pelo que a
-## caixa promete: só o Nim e o Gamão têm o botão que passa o aparelho para outra
-## pessoa (`is_vs_ai = not is_vs_ai`); no Quatro em Linha, no Jogo da Velha e nas
-## Damas o `vs_ai` nasce ligado e não há como desligá-lo. Os subtítulos antigos
-## anunciavam "2 Jogadores" nos três, e o filtro herdaria a mentira.
+## Cada jogo é marcado pelo que o seu código realmente faz hoje. Os jogos com
+## `DUPLA` exibem uma alternância local na própria mesa, enquanto os demais
+## continuam restritos ao modo indicado.
 const SOLO := GameDefinition.Mode.SOLO
 const IA := GameDefinition.Mode.AI
 const DUPLA := GameDefinition.Mode.VERSUS
@@ -22,9 +20,9 @@ const DUPLA := GameDefinition.Mode.VERSUS
 static func get_board_games() -> Array[GameDefinition]:
 	return [
 		GameDefinition.create("GAME_CONNECT4", "🔴", "res://games/quatro_em_linha/ConnectFourGame.tscn", &"board", "GAME_DESC_CONNECT_FOUR")
-			.tagged("GENRE_STRATEGY", IA),
+			.tagged("GENRE_STRATEGY", IA | DUPLA),
 		GameDefinition.create("GAME_TICTACTOE", "❌", "res://games/jogo_da_velha/TicTacToeGame.tscn", &"board", "GAME_DESC_TIC_TAC_TOE")
-			.tagged("GENRE_CLASSIC", IA),
+			.tagged("GENRE_CLASSIC", IA | DUPLA),
 		GameDefinition.create("GAME_CHECKERS", "⬛", "res://games/damas/CheckersGame.tscn", &"board", "GAME_DESC_CHECKERS")
 			.tagged("GENRE_CLASSIC", IA),
 		GameDefinition.create("GAME_BATTLESHIP", "🚢", "res://games/batalha_naval/BattleshipGame.tscn", &"board", "GAME_DESC_BATTLESHIP")

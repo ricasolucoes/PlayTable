@@ -41,6 +41,11 @@ custom_minimum_size = Vector2(110, 54)
 layout_mode = 2
 text = "BTN_RESET"
 
+[node name="BtnModeToggle" type="Button" parent="VBoxContainer/TopBar"]
+custom_minimum_size = Vector2(150.0, 88.0)
+layout_mode = 2
+text = "TICTACTOE_BTN_VS_AI"
+
 [node name="StatusCard" type="PanelContainer" parent="VBoxContainer"]
 layout_mode = 2
 
