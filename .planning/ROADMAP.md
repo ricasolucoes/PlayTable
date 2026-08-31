@@ -27,6 +27,136 @@
 - [x] **18. Uno-like (Cartas das Cores)**: Baralho com 4 cores + cartas de ação (Pular, Inverter, +2, Curinga, +4), seletor de cor e IA oponente (`games/unolike/`).
 - [x] **19. Poker Simplificado (Video Poker / 5-Card Draw)**: Avaliador de mãos de poker oficiais, seleção de cartas para MANTER (HOLD), troca de cartas e tabela de pagamentos (`games/poker/`).
 
+### Phase 1: Discovery e Auditoria
+
+**Goal:** Realizar o mapeamento completo do projeto e preparar terreno.
+**Requirements**: Ler repositório, documentar infra atual (Godot, Android, build, APIs), não criar sistemas paralelos desnecessários, registrar compatibilidade em /docs/google-play/current-requirements.md e gerar entregável Fase 0. (Ver arquivo `REQUIREMENTS.md` na pasta da fase)
+**Depends on:** Phase 0
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd-plan-phase 1 to break down)
+
+### Phase 2: Fundação Gamification Service
+
+**Goal:** Criar a base arquitetural e Event Bus da gamificação.
+**Requirements**: Criar/refatorar módulo Gamification (Progression, Quests, Rewards). Implementar Game Domain Events para desacoplar da gameplay. Preparar base de Analytics, Persistência e Feature Flags. (Ver arquivo `REQUIREMENTS.md` na pasta da fase)
+**Depends on:** Phase 1
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd-plan-phase 2 to break down)
+
+### Phase 3: Play Games Services v2
+
+**Goal:** Implementar Google Play Games Services v2.
+**Requirements**: Login automático, tratamento assíncrono, fallback offline, idempotência, reconexão, gerenciamento de contas (Recall API, sync device-to-device). (Ver arquivo `REQUIREMENTS.md` na pasta da fase)
+**Depends on:** Phase 2
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd-plan-phase 3 to break down)
+
+### Phase 4: Achievements
+
+**Goal:** Criar sistema de Achievements.
+**Requirements**: Catálogo de 40 a 60 conquistas (Progressão, Habilidade, Segredos, etc), focar em 4 conquistas alcançáveis na 1ª hora, criar /docs/google-play/achievement-matrix.md e feedback visual elegante. (Ver arquivo `REQUIREMENTS.md` na pasta da fase)
+**Depends on:** Phase 3
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd-plan-phase 4 to break down)
+
+### Phase 5: Game Stats
+
+**Goal:** Implementar API moderna de Game Stats.
+**Requirements**: Enviar stats de progressão e eventos relevantes, gerar CSVs para o Play Console (ProgressionStatConfig, etc), evitar lixo analítico e criar /docs/google-play/game-stats-schema.md. (Ver arquivo `REQUIREMENTS.md` na pasta da fase)
+**Depends on:** Phase 4
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd-plan-phase 5 to break down)
+
+### Phase 6: Gamificação avançada (XP, Quests, Streaks)
+
+**Goal:** Implementar XP, Levels, Quests, Streaks.
+**Requirements**: Sistema Global de XP, Leveling progressivo, Cadeias de Missões baseadas em eventos, Streak System inteligente, Loop Diário/Semanal, Coleções e Sistema de Retorno (Comeback). (Ver arquivo `REQUIREMENTS.md` na pasta da fase)
+**Depends on:** Phase 5
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd-plan-phase 6 to break down)
+
+### Phase 7: Social (Leaderboards, Friends)
+
+**Goal:** Integrar Leaderboards e recursos Sociais.
+**Requirements**: Criar rankings globais/locais, loop de engajamento social, desafios comunitários, e ligas competitivas, preparando-se para recursos do Gamer Profile e Social Challenges. (Ver arquivo `REQUIREMENTS.md` na pasta da fase)
+**Depends on:** Phase 6
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd-plan-phase 7 to break down)
+
+### Phase 8: LiveOps e Configurações Dinâmicas
+
+**Goal:** Criar sistemas Server-Driven e LiveOps.
+**Requirements**: Suporte a Seasons, daily/weekly quests, Multipliers, feature flags e configurações dinâmicas sem atualização do App, permitindo dificuldade dinâmica e recomendações. (Ver arquivo `REQUIREMENTS.md` na pasta da fase)
+**Depends on:** Phase 7
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd-plan-phase 8 to break down)
+
+### Phase 9: Sidekick Integration
+
+**Goal:** Preparar Play Games Sidekick Integration.
+**Requirements**: AAB obrigatório, testar Overlay Sidekick extensivamente (fullscreen, gestos, etc) sem quebrar controles, preparar design para Gemini/Game Tips, Play Pass e Play Points. Documentar integração. (Ver arquivo `REQUIREMENTS.md` na pasta da fase)
+**Depends on:** Phase 8
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd-plan-phase 9 to break down)
+
+### Phase 10: Segurança e Anti-cheat
+
+**Goal:** Implementar Segurança e Anti-cheat.
+**Requirements**: Não confiar cegamente no cliente, implementar validações (idempotência, rate limiting, anti-cheat, validações backend, Play Integrity). Resolver confiltos de Cloud Save corretamente. (Ver arquivo `REQUIREMENTS.md` na pasta da fase)
+**Depends on:** Phase 9
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd-plan-phase 10 to break down)
+
+### Phase 11: QA e Testes de Sincronização
+
+**Goal:** QA, Sincronização e Offline.
+**Requirements**: Criar testes de Autenticação, Offline-first, Achievements e Rewards, reinstalação, dupla validação, filas locais com sync posterior, testando na matriz mínima de dispositivos (com e sem Sidekick). (Ver arquivo `REQUIREMENTS.md` na pasta da fase)
+**Depends on:** Phase 10
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd-plan-phase 11 to break down)
+
+### Phase 12: Performance e Otimização
+
+**Goal:** Auditar Performance e Android Quality.
+**Requirements**: Garantir FPS, memory, battery, startup. Evitar chamadas pesadas por frame (batch, event-driven), corrigir ANRs e verificar documentação atual do Level Up Quality. (Ver arquivo `REQUIREMENTS.md` na pasta da fase)
+**Depends on:** Phase 11
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd-plan-phase 12 to break down)
+
+### Phase 13: Release e Rollout
+
+**Goal:** Release, Rollout e Console Checklist.
+**Requirements**: Lançamento em faixas (Internal -> Closed -> Production), definir métricas de observabilidade, criar /docs/google-play/play-console-checklist.md e preencher Matriz de Compatibilidade Final 100%. (Ver arquivo `REQUIREMENTS.md` na pasta da fase)
+**Depends on:** Phase 12
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd-plan-phase 13 to break down)
+
 ---
 
 ## Estrutura Core e Menus
