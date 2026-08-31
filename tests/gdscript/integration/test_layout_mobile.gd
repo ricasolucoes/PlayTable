@@ -256,6 +256,21 @@ func test_a_camera_conhece_o_tamanho_real_do_tabuleiro() -> void:
 
 # --------------------------------------------------------- M3: alvos de toque
 
+## Alvo posicionado projetando um ponto do mundo com `unproject_position` tem o
+## tamanho ditado pela geometria, nao pelo dedo: no Gamao sao doze pontas
+## atravessando 720 px, ~50 px cada, e engorda-las ate 88 px faria cada uma
+## roubar metade da vizinha. O jogo que precisar disso marca o container com
+## `alvo_projetado` e assume a saida do CLAUDE.md: mandar o toque para a casa
+## mais proxima, em vez de exigir que ela esteja exatamente sob o dedo.
+func _alvo_projetado(c: Control) -> bool:
+	var n: Node = c
+	while n != null:
+		if n.has_meta("alvo_projetado"):
+			return true
+		n = n.get_parent()
+	return false
+
+
 func test_todo_alvo_de_toque_tem_ao_menos_48dp() -> void:
 	var minimo_px := MIN_TOUCH_DP / _dp_por_px
 	var violacoes: Array[String] = []
@@ -270,6 +285,8 @@ func test_todo_alvo_de_toque_tem_ao_menos_48dp() -> void:
 		# por pai, com a menor medida entre os irmaos.
 		var por_pai := {}
 		for b in botoes:
+			if _alvo_projetado(b):
+				continue
 			var chave := b.get_parent().get_path()
 			var lado := minf(b.size.x, b.size.y)
 			if lado <= 0.0:

@@ -22,11 +22,14 @@ func _notification(what: int) -> void:
 	if what != NOTIFICATION_APPLICATION_FOCUS_OUT and what != NOTIFICATION_APPLICATION_FOCUS_IN:
 		return
 	# O OS pode notificar foco antes de este autoload entrar na SceneTree.
-	# Nessa janela nao ha arvore para pausar ainda.
-	var scene_tree := get_tree()
-	if scene_tree == null:
+	# Nessa janela nao ha arvore para pausar ainda. A pergunta e
+	# `is_inside_tree()` e nao `get_tree() == null` porque o proprio `get_tree()`
+	# imprime "Parameter data.tree is null" antes de devolver null: com a
+	# segunda forma o travamento some, mas o erro continua na saida de toda
+	# abertura.
+	if not is_inside_tree():
 		return
-	scene_tree.paused = what == NOTIFICATION_APPLICATION_FOCUS_OUT
+	get_tree().paused = what == NOTIFICATION_APPLICATION_FOCUS_OUT
 
 func goto_scene(path: String) -> void:
 	overlay.mouse_filter = Control.MOUSE_FILTER_STOP

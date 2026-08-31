@@ -359,6 +359,11 @@ func _setup_touch_overlays() -> void:
 	touch_targets.clear()
 
 	touch_buttons_container.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	# Estes alvos sao dimensionados pela projecao das pontas, e nao pelo dedo:
+	# doze pontas atravessam 720 px de tela, o que da ~50 px cada uma e nunca os
+	# 88 px do minimo de toque. A regua de layout le esta marca para nao cobrar
+	# de um alvo projetado um tamanho que a geometria do tabuleiro nao permite.
+	touch_buttons_container.set_meta("alvo_projetado", true)
 
 	for pt in range(1, 25):
 		touch_targets[pt] = _create_touch_button(pt, "%d" % pt)
@@ -373,11 +378,15 @@ func _setup_touch_overlays() -> void:
 	_refresh_touch_overlays.call_deferred()
 
 
+## O rotulo vai para o `tooltip_text`, e nao para dentro do botao: a ponta mede
+## ~50 px de largura na tela, e o unico tamanho de fonte que cabia ali eram os
+## 13 px de antes -- metade do piso de 14 sp e ilegivel a meio metro do rosto.
+## O contorno do alvo ja diz onde tocar, e o numero da ponta esta desenhado no
+## proprio tabuleiro 3D.
 func _create_touch_button(pt: int, label: String) -> Button:
 	var btn := Button.new()
 	btn.focus_mode = Control.FOCUS_NONE
-	btn.text = label
-	btn.add_theme_font_size_override("font_size", 13)
+	btn.tooltip_text = label
 	btn.mouse_filter = Control.MOUSE_FILTER_STOP
 	btn.pressed.connect(func(): _on_position_touched(pt))
 	touch_buttons_container.add_child(btn)

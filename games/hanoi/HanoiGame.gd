@@ -167,7 +167,7 @@ func _setup_difficulty_buttons() -> void:
 	for d in range(Rules.MIN_DISKS, Rules.MAX_DISKS + 1):
 		var btn := Button.new()
 		btn.text = tr("HANOI_DISC_COUNT") % d
-		btn.custom_minimum_size = Vector2(85, 42)
+		btn.custom_minimum_size = Vector2(85, UIKit.TOQUE_MIN)
 		btn.focus_mode = Control.FOCUS_NONE
 		UIKit.rolavel(btn)
 		btn.pressed.connect(_on_difficulty_selected.bind(d))

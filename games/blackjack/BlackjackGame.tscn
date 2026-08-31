@@ -58,18 +58,24 @@ alignment = 1
 [node name="BtnHit" type="Button" parent="UI/Buttons"]
 custom_minimum_size = Vector2(160.0, 88.0)
 layout_mode = 2
+size_flags_horizontal = 3
 text = "BLACKJACK_BTN_HIT"
+clip_text = true
 
 [node name="BtnStand" type="Button" parent="UI/Buttons"]
 custom_minimum_size = Vector2(160.0, 88.0)
 layout_mode = 2
+size_flags_horizontal = 3
 text = "BLACKJACK_BTN_STAND"
+clip_text = true
 
 [node name="BtnRestart" type="Button" parent="UI/Buttons"]
 visible = false
 custom_minimum_size = Vector2(180.0, 88.0)
 layout_mode = 2
+size_flags_horizontal = 3
 text = "BTN_NEW_ROUND_ICON"
+clip_text = true
 
 [connection signal="pressed" from="UI/Buttons/BtnHit" to="." method="_on_btn_hit_pressed"]
 [connection signal="pressed" from="UI/Buttons/BtnStand" to="." method="_on_btn_stand_pressed"]
