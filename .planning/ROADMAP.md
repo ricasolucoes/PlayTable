@@ -32,10 +32,13 @@
 **Goal:** Realizar o mapeamento completo do projeto e preparar terreno.
 **Requirements**: Ler repositório, documentar infra atual (Godot, Android, build, APIs), não criar sistemas paralelos desnecessários, registrar compatibilidade em /docs/google-play/current-requirements.md e gerar entregável Fase 0. (Ver arquivo `REQUIREMENTS.md` na pasta da fase)
 **Depends on:** Phase 0
-**Plans:** 0 plans
+**Plans:** 4 plans
 
 Plans:
-- [ ] TBD (run /gsd-plan-phase 1 to break down)
+- [ ] 01-01-PLAN.md — Ferramenta de rastreabilidade (`scripts/audit_traceability.sh`), tenets do PROJECT.md e fase 7.1 no roadmap
+- [ ] 01-02-PLAN.md — `docs/google-play/current-requirements.md` reescrito contra o código real
+- [ ] 01-03-PLAN.md — `docs/server/api-contract.md` e correção dos documentos desatualizados
+- [ ] 01-04-PLAN.md — `docs/google-play/compatibility-audit.md`, o entregável final, e o CHANGELOG
 
 ### Phase 2: Fundação Gamification Service
 
