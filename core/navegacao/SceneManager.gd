@@ -19,12 +19,14 @@ func _ready() -> void:
 	get_tree().set_auto_accept_quit(false)
 
 func _notification(what: int) -> void:
-	if what == NOTIFICATION_APPLICATION_FOCUS_OUT:
-		# Sidekick overlay abriu ou usuário saiu do app
-		get_tree().paused = true
-	elif what == NOTIFICATION_APPLICATION_FOCUS_IN:
-		# Sidekick fechado, retorna pro game
-		get_tree().paused = false
+	if what != NOTIFICATION_APPLICATION_FOCUS_OUT and what != NOTIFICATION_APPLICATION_FOCUS_IN:
+		return
+	# O OS pode notificar foco antes de este autoload entrar na SceneTree.
+	# Nessa janela nao ha arvore para pausar ainda.
+	var scene_tree := get_tree()
+	if scene_tree == null:
+		return
+	scene_tree.paused = what == NOTIFICATION_APPLICATION_FOCUS_OUT
 
 func goto_scene(path: String) -> void:
 	overlay.mouse_filter = Control.MOUSE_FILTER_STOP
