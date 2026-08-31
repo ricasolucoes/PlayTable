@@ -41,6 +41,12 @@ custom_minimum_size = Vector2(110, 54)
 layout_mode = 2
 text = "BTN_RESET"
 
+[node name="BtnModeToggle" type="Button" parent="VBoxContainer/TopBar"]
+custom_minimum_size = Vector2(150.0, 88.0)
+layout_mode = 2
+text = "MEMORY_BTN_TWO_PLAYERS"
+clip_text = true
+
 [node name="StatusCard" type="PanelContainer" parent="VBoxContainer"]
 layout_mode = 2
 
@@ -50,11 +56,16 @@ theme_override_font_sizes/font_size = 22
 text = "MEMORY_START"
 horizontal_alignment = 1
 
-[node name="CenterContainer" type="CenterContainer" parent="VBoxContainer"]
+[node name="ScrollContainer" type="ScrollContainer" parent="VBoxContainer"]
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="Grid" type="GridContainer" parent="VBoxContainer/CenterContainer"]
+[node name="CenterContainer" type="CenterContainer" parent="VBoxContainer/ScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="Grid" type="GridContainer" parent="VBoxContainer/ScrollContainer/CenterContainer"]
 layout_mode = 2
 theme_override_constants/h_separation = 16
 theme_override_constants/v_separation = 16

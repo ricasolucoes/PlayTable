@@ -16,6 +16,10 @@ enum CardSymbol {
 	KEY
 }
 
+## Escala base maior que a arte anterior. Ela ainda encolhe em tabuleiros com
+## muitas fileiras para preservar a moldura e a area clicavel.
+const ICON_SCALE := 1.22
+
 @export var symbol_type: CardSymbol = CardSymbol.CROWN:
 	set(value):
 		symbol_type = value
@@ -43,6 +47,11 @@ func _ready() -> void:
 	custom_minimum_size = Vector2(130, 175)
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	gui_input.connect(_on_gui_input)
+
+
+func set_card_size(card_size: Vector2) -> void:
+	custom_minimum_size = card_size
+	queue_redraw()
 
 func _on_gui_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
@@ -156,31 +165,82 @@ func _draw_card_front(w: float, h: float) -> void:
 	var gold_trim := Color(0.78, 0.64, 0.32, 0.6)
 	draw_rect(Rect2(inset, inset, w - inset * 2, h - inset * 2), gold_trim, false, 1.5)
 	
-	# Center Icon Background Medallion
+	# Center Icon Background Medallion. A escala amplia os simbolos no tabuleiro
+	# atual e acompanha cartas menores quando entram mais fileiras.
 	var center := Vector2(w * 0.5, h * 0.5)
-	draw_circle(center + Vector2(0, 2), 44.0, Color(0.0, 0.0, 0.0, 0.06))
-	draw_circle(center, 42.0, Color(0.92, 0.90, 0.85))
-	draw_circle(center, 40.0, Color(0.96, 0.95, 0.92))
-	draw_arc(center, 40.0, 0, TAU, 32, gold_trim, 1.2, true)
+	var icon_scale := clampf(minf(w / 130.0, h / 175.0) * ICON_SCALE, 0.75, 1.35)
+	draw_set_transform(center, 0.0, Vector2.ONE * icon_scale)
+	draw_circle(Vector2(0, 2), 44.0, Color(0.0, 0.0, 0.0, 0.06))
+	draw_circle(Vector2.ZERO, 42.0, Color(0.92, 0.90, 0.85))
+	draw_circle(Vector2.ZERO, 40.0, Color(0.96, 0.95, 0.92))
+	draw_arc(Vector2.ZERO, 40.0, 0, TAU, 32, gold_trim, 1.2, true)
 	
 	# Draw specific symbol
 	match symbol_type:
 		CardSymbol.CROWN:
-			_draw_crown(center)
+			_draw_crown(Vector2.ZERO)
 		CardSymbol.RUBY:
-			_draw_ruby(center)
+			_draw_ruby(Vector2.ZERO)
 		CardSymbol.EMERALD:
-			_draw_emerald(center)
+			_draw_emerald(Vector2.ZERO)
 		CardSymbol.SHIELD:
-			_draw_shield(center)
+			_draw_shield(Vector2.ZERO)
 		CardSymbol.STAR:
-			_draw_star(center)
+			_draw_star(Vector2.ZERO)
 		CardSymbol.CHEST:
-			_draw_chest(center)
+			_draw_chest(Vector2.ZERO)
 		CardSymbol.CLOVER:
-			_draw_clover(center)
+			_draw_clover(Vector2.ZERO)
 		CardSymbol.KEY:
-			_draw_key(center)
+			_draw_key(Vector2.ZERO)
+		_:
+			_draw_extra_symbol(Vector2.ZERO, int(symbol_type))
+	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
+
+
+func _draw_extra_symbol(c: Vector2, symbol_id: int) -> void:
+	var variant := symbol_id - 8
+	var color := Color.from_hsv(fmod(float(variant) * 0.137, 1.0), 0.78, 0.92)
+	var dark := color.darkened(0.32)
+	match variant % 10:
+		0: # Compass
+			draw_circle(c, 23.0, color)
+			draw_line(c + Vector2(-18, 18), c + Vector2(18, -18), Color.WHITE, 4.0)
+			draw_line(c + Vector2(-18, -18), c + Vector2(18, 18), dark, 4.0)
+			draw_circle(c, 5.0, Color.WHITE)
+		1: # Lantern
+			draw_rect(Rect2(c.x - 18, c.y - 14, 36, 30), color, true)
+			draw_colored_polygon(PackedVector2Array([c + Vector2(-22, -14), c + Vector2(22, -14), c + Vector2(13, -24), c + Vector2(-13, -24)]), dark)
+			draw_rect(Rect2(c.x - 8, c.y - 8, 16, 16), Color(1.0, 0.9, 0.35), true)
+		2: # Lua
+			draw_circle(c, 25.0, color)
+			draw_circle(c + Vector2(10, -8), 23.0, Color(0.96, 0.95, 0.92))
+		3: # Sol
+			draw_circle(c, 17.0, color)
+			for i in range(8):
+				var a := float(i) * TAU / 8.0
+				draw_line(c + Vector2(cos(a), sin(a)) * 23.0, c + Vector2(cos(a), sin(a)) * 31.0, dark, 4.0)
+		4: # Ancora
+			draw_circle(c + Vector2(0, -14), 9.0, color, false, 5.0)
+			draw_line(c + Vector2(0, -5), c + Vector2(0, 22), color, 6.0)
+			draw_line(c + Vector2(-20, 10), c + Vector2(20, 10), color, 6.0)
+			draw_arc(c + Vector2(0, 3), 24.0, 0.15, PI - 0.15, 20, color, 5.0, true)
+		5: # Pena
+			draw_colored_polygon(PackedVector2Array([c + Vector2(0, -28), c + Vector2(20, -6), c + Vector2(3, 25), c + Vector2(-8, 4)]), color)
+			draw_line(c + Vector2(-8, 28), c + Vector2(9, -17), dark, 4.0)
+		6: # Sino
+			draw_colored_polygon(PackedVector2Array([c + Vector2(-22, 16), c + Vector2(22, 16), c + Vector2(15, -5), c + Vector2(9, -18), c + Vector2(-9, -18), c + Vector2(-15, -5)]), color)
+			draw_circle(c + Vector2(0, 22), 6.0, dark)
+		7: # Flor
+			for i in range(5):
+				var a := float(i) * TAU / 5.0
+				draw_circle(c + Vector2(cos(a), sin(a)) * 14.0, 12.0, color)
+			draw_circle(c, 9.0, Color(1.0, 0.82, 0.18))
+		8: # Diamante
+			draw_colored_polygon(PackedVector2Array([c + Vector2(0, -29), c + Vector2(24, 0), c + Vector2(0, 29), c + Vector2(-24, 0)]), color)
+			draw_line(c + Vector2(-24, 0), c, Color.WHITE, 3.0)
+		9: # Montanha
+			draw_colored_polygon(PackedVector2Array([c + Vector2(-30, 22), c + Vector2(-7, -22), c + Vector2(4, -4), c + Vector2(14, -16), c + Vector2(30, 22)]), color)
 
 func _draw_crown(c: Vector2) -> void:
 	var pts = [

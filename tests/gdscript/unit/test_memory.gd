@@ -7,6 +7,10 @@ extends GutTest
 const RulesScript = preload("res://games/memoria/MemoryRules.gd")
 const GameScene = preload("res://games/memoria/MemoryGame.tscn")
 
+func before_each() -> void:
+	# Cada teste começa na abertura atual, sem depender do save local do jogador.
+	DifficultyManager.set_level("memoria", DifficultyManager.DEFAULT_LEVEL)
+
 # ---------------------------------------------------------------- MemoryRules
 
 ## MemoryRules falava de Card e de custom_data["pair_id"], um modelo que
@@ -32,6 +36,51 @@ func test_total_zero_nao_vence() -> void:
 func test_total_padrao_e_o_da_partida() -> void:
 	assert_eq(RulesScript.TOTAL_PAIRS, 8, "oito pares por partida")
 	assert_true(RulesScript.is_game_won(8), "o total padrao vale sem passar o segundo argumento")
+
+func test_niveis_aumentam_cartas_e_fileiras() -> void:
+	var anterior := RulesScript.board_size_for_level(3)
+	for nivel in range(4, DifficultyManager.MAX_LEVEL + 1):
+		var atual := RulesScript.board_size_for_level(nivel)
+		assert_true(atual.x * atual.y > anterior.x * anterior.y, "nivel %d tem mais cartas" % nivel)
+		assert_true(atual.y >= anterior.y, "nivel %d nao reduz fileiras" % nivel)
+		anterior = atual
+
+func test_baralho_da_proxima_vitoria_fica_maior() -> void:
+	var jogo = add_child_autofree(GameScene.instantiate())
+	var nivel: int = int(jogo.difficulty_level)
+	var cartas_atuais: int = jogo.cards.size()
+	var fileiras_atuais: int = jogo.cards.size() / jogo.grid_container.columns
+	jogo._handle_game_won()
+	var proximo = add_child_autofree(GameScene.instantiate())
+	assert_eq(DifficultyManager.get_level("memoria"), nivel + 1, "vitoria sobe a dificuldade")
+	assert_true(proximo.cards.size() > cartas_atuais, "proxima partida tem mais cartas")
+	assert_true(proximo.cards.size() / proximo.grid_container.columns >= fileiras_atuais,
+		"proxima partida nao reduz fileiras")
+
+func test_nivel_maximo_monta_os_28_pares_e_os_simbolos_novos() -> void:
+	DifficultyManager.set_level("memoria", DifficultyManager.MAX_LEVEL)
+	var jogo = add_child_autofree(GameScene.instantiate())
+	assert_eq(jogo.cards.size(), 56, "nivel maximo tem 56 cartas")
+	assert_eq(jogo.TOTAL_PAIRS, 28, "nivel maximo tem 28 pares")
+	assert_eq(jogo.grid_container.columns, 7, "nivel maximo tem 7 colunas")
+	var simbolos := {}
+	for carta in jogo.cards:
+		simbolos[carta.symbol_type] = simbolos.get(carta.symbol_type, 0) + 1
+	assert_eq(simbolos.size(), 28, "nivel maximo tem 28 simbolos distintos")
+	for simbolo in simbolos:
+		assert_eq(simbolos[simbolo], 2, "simbolo %s aparece 2 vezes" % str(simbolo))
+	# Renderiza um simbolo adicional para cobrir o caminho de desenho dos novos
+	# pares, e nao apenas a montagem do baralho.
+	for carta in jogo.cards:
+		if int(carta.symbol_type) >= 8:
+			carta.is_face_up = true
+			break
+	await wait_process_frames(2)
+
+func test_classificacao_local_compara_os_pares_de_cada_jogador() -> void:
+	assert_eq(RulesScript.winner_for_scores(4, 2), 1, "Jogador 1 tem mais pares")
+	assert_eq(RulesScript.winner_for_scores(2, 4), 2, "Jogador 2 tem mais pares")
+	assert_eq(RulesScript.winner_for_scores(3, 3), 0, "mesmo numero de pares e empate")
 
 # ----------------------------------------------------------------- MemoryGame
 
@@ -65,6 +114,26 @@ func test_primeira_carta_clicada_vira_a_selecionada() -> void:
 	jogo._on_card_clicked(jogo.cards[0])
 	assert_eq(jogo.first_card, jogo.cards[0], "primeira carta guardada")
 	assert_eq(jogo.moves_count, 0, "jogada so conta no par")
+
+func test_modo_local_mostra_placar_dos_dois_jogadores() -> void:
+	var jogo = add_child_autofree(GameScene.instantiate())
+	jogo.is_local_multiplayer = true
+	jogo._start_new_game()
+	assert_eq(jogo.current_player, 1, "Jogador 1 começa")
+	assert_eq(jogo.player_one_pairs, 0, "placar do Jogador 1 zerado")
+	assert_eq(jogo.player_two_pairs, 0, "placar do Jogador 2 zerado")
+
+
+func test_modo_local_passa_a_vez_depois_de_um_par_errado() -> void:
+	var jogo = add_child_autofree(GameScene.instantiate())
+	jogo.is_local_multiplayer = true
+	jogo._start_new_game()
+	var duas := _diferentes_de(jogo)
+	jogo._on_card_clicked(duas[0])
+	jogo._on_card_clicked(duas[1])
+	await wait_seconds(1.2)
+	assert_eq(jogo.current_player, 2, "erro passa a vez ao Jogador 2")
+	assert_eq(jogo.player_one_pairs, 0, "erro não pontua")
 
 func test_clicar_duas_vezes_na_mesma_carta_e_ignorado() -> void:
 	var jogo = add_child_autofree(GameScene.instantiate())

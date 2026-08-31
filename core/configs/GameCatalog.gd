@@ -60,7 +60,7 @@ static func get_card_games() -> Array[GameDefinition]:
 		GameDefinition.create("GAME_SPIDER", "🕷️", "res://games/paciencia_spider/SpiderGame.tscn", &"cards", "GAME_DESC_SPIDER")
 			.tagged("GENRE_PATIENCE", SOLO),
 		GameDefinition.create("GAME_MEMORY", "🧠", "res://games/memoria/MemoryGame.tscn", &"cards", "GAME_DESC_MEMORY")
-			.tagged("GENRE_MEMORY", SOLO),
+			.tagged("GENRE_MEMORY", SOLO | DUPLA),
 		GameDefinition.create("GAME_BLACKJACK", "🂡", "res://games/blackjack/BlackjackGame.tscn", &"cards", "GAME_DESC_BLACKJACK")
 			.tagged("GENRE_CASINO", IA),
 		GameDefinition.create("GAME_UNOLIKE", "🌈", "res://games/unolike/UnoLikeGame.tscn", &"cards", "GAME_DESC_UNO_LIKE")
