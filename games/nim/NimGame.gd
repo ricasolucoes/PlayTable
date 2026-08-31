@@ -124,6 +124,7 @@ func _setup_ui_events() -> void:
 		# presets em português. Com o nome traduzido erraria em todo idioma.
 		btn.set_meta("preset", p_key)
 		btn.custom_minimum_size = Vector2(100, 38)
+		UIKit.rolavel(btn)
 		btn.pressed.connect(func(): _on_preset_selected(p_key))
 		preset_buttons_container.add_child(btn)
 		
@@ -133,6 +134,7 @@ func _setup_ui_events() -> void:
 		var btn := Button.new()
 		btn.text = tr(DifficultyManager.tier_name(d))
 		btn.custom_minimum_size = Vector2(78, 36)
+		UIKit.rolavel(btn)
 		btn.pressed.connect(func(): _on_difficulty_selected(d))
 		diff_buttons_container.add_child(btn)
 
@@ -353,6 +355,7 @@ func _rebuild_heap_ui_buttons() -> void:
 		btn.text = tr("NIM_HEAP_COUNT") % [65 + h, count]
 		btn.custom_minimum_size = Vector2(110, 48)
 		btn.disabled = (count <= 0)
+		UIKit.rolavel(btn)
 		btn.pressed.connect(func(): _on_heap_selected(heap_idx))
 		heap_buttons_container.add_child(btn)
 		

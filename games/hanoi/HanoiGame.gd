@@ -169,6 +169,7 @@ func _setup_difficulty_buttons() -> void:
 		btn.text = tr("HANOI_DISC_COUNT") % d
 		btn.custom_minimum_size = Vector2(85, 42)
 		btn.focus_mode = Control.FOCUS_NONE
+		UIKit.rolavel(btn)
 		btn.pressed.connect(_on_difficulty_selected.bind(d))
 		diff_buttons_container.add_child(btn)
 

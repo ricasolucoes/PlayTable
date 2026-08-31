@@ -178,6 +178,10 @@ func _create_game_card(game: GameDefinition) -> Button:
 	btn.custom_minimum_size = Vector2(0, ALTURA_CARTAO)
 	btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	btn.focus_mode = Control.FOCUS_NONE
+	# O cartão cobre a linha inteira, e dezenove deles cobrem toda a área de
+	# rolagem: em `MOUSE_FILTER_STOP` não sobra um pixel por onde o dedo alcance
+	# o ScrollContainer, e a lista só rolava na roda do mouse.
+	UIKit.rolavel(btn)
 	btn.add_theme_stylebox_override("normal", _sombra_cartao(accent, false))
 	btn.add_theme_stylebox_override("hover", _sombra_cartao(accent, true))
 	btn.add_theme_stylebox_override("pressed", _sombra_cartao(accent, false))
@@ -346,6 +350,7 @@ func _cartao_vazio() -> Control:
 	var limpar := Button.new()
 	limpar.text = tr("FILTER_CLEAR")
 	limpar.custom_minimum_size = Vector2(0, TOQUE_MIN)
+	UIKit.rolavel(limpar)
 	limpar.add_theme_font_size_override("font_size", FONTE_OPCAO)
 	limpar.pressed.connect(_on_limpar_filtros)
 	caixa.add_child(limpar)

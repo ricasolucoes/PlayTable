@@ -115,7 +115,32 @@ static func botao(texto: String, tamanho: int = FONTE_CORPO) -> Button:
 	b.text = texto
 	b.custom_minimum_size = Vector2(0, TOQUE_MIN)
 	b.add_theme_font_size_override("font_size", tamanho)
+	rolavel(b)
 	return b
+
+
+## Deixa o toque atravessar o controle a caminho do ScrollContainer que o
+## contém. Sem isto uma lista de botões não rola no dedo.
+##
+## `Button` nasce em `MOUSE_FILTER_STOP`, e `STOP` interrompe a subida do
+## evento pela árvore: o `InputEventScreenTouch` do dedo e os
+## `InputEventScreenDrag` que vêm atrás morrem no botão, e o `ScrollContainer`
+## — que é quem faz o arrasto virar rolagem — nunca os vê. A roda do mouse
+## continua rolando porque o Godot deixa evento de roda subir mesmo por cima de
+## um filho que para o resto; foi por isso que o defeito atravessou o
+## computador sem aparecer, e só o telefone o mostrou.
+##
+## `PASS` entrega o evento ao controle *e* segue subindo. O clique continua
+## valendo, e um arrasto não vira clique por engano: quando a rolagem passa da
+## zona morta, o `ScrollContainer` propaga `NOTIFICATION_SCROLL_BEGIN` e o
+## próprio `BaseButton` desarma o toque pendente (medido: com o aviso, `pressed`
+## não dispara ao soltar; sem ele, dispara).
+##
+## Só vale para quem trata o próprio toque sem `accept_event()` — quem aceita o
+## evento o consome de qualquer jeito, e aí a rolagem precisa de outra saída.
+static func rolavel(c: Control) -> Control:
+	c.mouse_filter = Control.MOUSE_FILTER_PASS
+	return c
 
 
 ## Linha "rótulo à esquerda, valor à direita" -- o formato de toda estatística.
