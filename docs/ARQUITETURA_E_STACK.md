@@ -12,7 +12,7 @@ O projeto foi projetado para permitir que múltiplos jogos convivam de forma har
 Jogos/
 ├── core/                  # Módulos fundamentais do sistema operacional do aplicativo
 │   ├── configs/           # Configurações globais (áudio, vibração, tema)
-│   ├── estatisticas/      # Persistência de histórico de partidas, vitórias e derrotas
+│   ├── services/          # PlayerProfile.per_game guarda histórico de partidas, vitórias e derrotas
 │   ├── navegacao/         # SceneManager: orquestrador de transição de cenas e telas
 │   ├── save/              # SaveManager: wrapper de persistência local (ConfigFile / JSON)
 │   └── telas/             # Menu Principal e Menus de Categorias (Tabuleiro, Cartas)

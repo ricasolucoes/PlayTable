@@ -2,7 +2,7 @@ extends Node
 
 ## Motor de conquistas orientado a dados.
 ##
-## O catalogo vive em `core/configs/achievements.json` -- 50 conquistas
+## O catalogo vive em `core/configs/achievements.json` -- 55 conquistas
 ## cobrindo os 19 jogos, progressao, persistencia, colecao e segredos. Esta
 ## classe nao sabe o nome de nenhuma delas: le a regra, calcula o valor atual,
 ## compara com o alvo. Adicionar conquista e editar JSON.

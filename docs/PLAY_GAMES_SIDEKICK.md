@@ -54,15 +54,15 @@ O **Play Games Sidekick** é o **overlay (painel flutuante de sobreposição) in
 
 No PlayTable, a integração com o Play Games e o Sidekick foi estruturada em três camadas com **total isolamento e segurança** para preservar o funcionamento offline e as compilações independentes (F-Droid):
 
-### A. Dependências Gradle (`android/build/build.gradle`)
-Adicionados os SDKs oficiais:
-```groovy
-dependencies {
-    // Google Play Games Services (PGS v2) & Play Games Sidekick Overlay SDK
-    implementation "com.google.android.play:sidekick:1.0.16"
-    implementation "com.google.android.gms:play-services-games-v2:20.1.2"
-}
+### A. Dependências Gradle (`android/pgs/gradle_deps.txt`)
+O arquivo real de dependências é `android/pgs/gradle_deps.txt`, com só estas duas linhas — nada de `build.gradle` editado à mão:
+```text
+com.google.android.gms:play-services-games-v2:20.1.2
+com.google.android.gms:play-services-auth:21.2.0
 ```
+O SDK entra pela propriedade oficial `-Pplugins_remote_binaries` do exportador Gradle do Godot (usada em `build_apk.sh` e `build_aab.sh`), que lê justamente esse arquivo.
+
+A dependência `com.google.android.play:sidekick` **não** está na lista, e não precisa estar: pela documentação oficial atual (<https://developer.android.com/games/pgs/play-games-sidekick-sdk>), em **AAB** o Sidekick é adicionado automaticamente ao marcar "Add Play Games Sidekick to app bundles" no Play Console — é esse o caminho escolhido aqui, publicado por `build_aab.sh`. Ela só seria necessária no caminho de publicação por APK, que também exige o formulário de registro do Google (1 a 2 semanas de aprovação).
 
 ### B. Metadados do Manifesto (`android/build/src/main/AndroidManifest.xml`)
 Adicionada a referência ao ID de projeto do Play Games:

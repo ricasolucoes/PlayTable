@@ -3,7 +3,7 @@
 ## 1. Escopo de Validação Android
 O suporte final à Gamificação Event-Driven e Lifecycle requer testes nos seguintes cenários antes da promoção do AAB de *Internal* para *Production*:
 
-- [ ] **Android 12- (Aparelhos Legados)**: Validar se o jogo executa as rotinas diárias e fallback de UI da `AchievementUI.gd` sem crashar, ignorando as chamadas exclusivas do Sidekick.
+- [ ] **Android 12- (Aparelhos Legados)**: Validar que o `RewardToast` (`shared/ui/RewardToast.gd`) mostra XP, nível, conquista, missão, maestria, liga e sequência normalmente, ignorando as chamadas exclusivas do Sidekick.
 - [ ] **Android 13+ (Sidekick Elegível)**: Validar o Swipe nativo do Play Games.
   - O Godot deve acionar o `NOTIFICATION_APPLICATION_FOCUS_OUT`.
   - A música (`AudioManager`) deve ser suprimida ou tratada conforme a necessidade.
