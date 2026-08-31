@@ -34,7 +34,7 @@ var ai_level: int = DifficultyManager.DEFAULT_LEVEL
 ## Ela nunca le `player_grid`.
 var ai_memoria: Dictionary = {}
 
-@onready var radar_board: Board3D = $RadarBoard
+@onready var radar_board: Board3D = $Board3D
 @onready var fleet_board: Board3D = $FleetBoard
 @onready var level_label: Label = $UI/VBoxContainer/LevelLabel
 

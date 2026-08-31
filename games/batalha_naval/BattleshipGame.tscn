@@ -15,7 +15,7 @@ script = ExtResource("1_script")
 
 [node name="TabletopEnvironment3D" parent="." instance=ExtResource("2_env")]
 
-[node name="RadarBoard" parent="." instance=ExtResource("3_board")]
+[node name="Board3D" parent="." instance=ExtResource("3_board")]
 
 [node name="FleetBoard" parent="." instance=ExtResource("3_board")]
 
