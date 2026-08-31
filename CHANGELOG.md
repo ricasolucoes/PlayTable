@@ -4,6 +4,15 @@
 
 ## [Unreleased](https://github.com/ricasolucoes/PlayTable/compare/v0.7.0...develop)
 
+### 🔧 Técnico
+
+- [x] **Auditoria de compatibilidade com o Google Play (Fase 1)** — o achado que muda o plano das onze fases seguintes: a ponte com o Play Games Services v2 já existe, completa, em `android/pgs/java/org/playtable/pgs/PlayTablePGS.java` (446 linhas, plugin Godot v2, APIs não depreciadas). O que trava não é código, são os 69 ids vazios em `core/configs/play_games_ids.json`. A auditoria reclassifica as fases 3, 4 e boa parte da 9 de engenharia para configuração no Play Console
+- [x] **`docs/google-play/current-requirements.md` reescrito** — 19 requisitos oficiais, cada um com fonte, impacto, situação conferida no código, arquivo responsável, status e confiança. O texto anterior dava o Cloud Save como só local e o catálogo de conquistas como "~16"; são 55, e o Cloud Save faz merge campo a campo
+- [x] **`scripts/audit_traceability.sh`** — auditoria sem endereço não serve para planejar. O script reprova linha de tabela sem `arquivo:linha`, sem `https://` e sem o marcador de ausência, confere que os 31 tópicos de descoberta foram cobertos, e guarda os dois documentos de planejamento contra regressão
+- [x] **Tenets do `PROJECT.md` corrigidos** — o texto dizia "sem servidores, sem contas" enquanto o roadmap planejava Play Games e servidor próprio. Agora descreve as três camadas: a local, completa e sempre disponível; o Play Games, opcional; e o servidor `playtable.ricasolucoes.com.br`, opcional e fora deste repositório
+- [x] **Fase 7.1 (Multiplayer Online) no roadmap** — jogar com amigos não estava em nenhuma das 13 fases. Entrou entre a Social e a de LiveOps, sem renumerar nada
+- [x] **`docs/server/api-contract.md`** — as regras que qualquer endpoint futuro herda, escritas antes de o servidor existir: endereço versionado, identidade vinda do Play Games ou de um id anônimo de instalação, idempotência em toda mutação, e a regra que mais importa — servidor fora do ar é estado normal, cai em fila e não vira erro na cara do jogador
+
 ---
 
 ## [v0.7.0 (2026-08-31)](https://github.com/ricasolucoes/PlayTable/compare/v0.6.0...v0.7.0)
