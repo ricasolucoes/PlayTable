@@ -18,8 +18,8 @@ if [ -f "$KEYSTORE_PW_FILE" ]; then
     KEYSTORE_PASSWORD="$(cat "$KEYSTORE_PW_FILE" | tr -d '\n\r')"
 fi
 
-VERSION_CODE="${EXPORT_VERSION_CODE:-11}"
-VERSION_NAME="${EXPORT_VERSION_NAME:-0.6.0}"
+VERSION_CODE="${EXPORT_VERSION_CODE:-12}"
+VERSION_NAME="${EXPORT_VERSION_NAME:-0.7.0}"
 
 # Mesma resolucao do build_apk.sh: versao conferida contra .godot-version e
 # contra a engine do modelo Android, senao o AAB publicado crasha no boot.

@@ -30,8 +30,8 @@ fi
 # no primeiro quadro, sem erro nenhum durante a compilacao.
 GODOT_BIN="$("$PROJECT_DIR/scripts/godot_bin.sh")"
 
-VERSION_CODE="${EXPORT_VERSION_CODE:-11}"
-VERSION_NAME="${EXPORT_VERSION_NAME:-0.6.0}"
+VERSION_CODE="${EXPORT_VERSION_CODE:-12}"
+VERSION_NAME="${EXPORT_VERSION_NAME:-0.7.0}"
 
 echo "=> PlayTable :: Exportando assets do Godot ($VERSION_NAME - code $VERSION_CODE)..."
 TEMP_ZIP="/tmp/playtable_assets_$$.zip"
