@@ -13,6 +13,7 @@ Este documento cataloga todos os jogos potenciais do ecossistema **Jogos de Mesa
 | **Reversi (Othello)** | Tabuleiro | Média | Godot | ✅ **Implementado** | [`games/reversi/`](../games/reversi/) |
 | **Dominó** | Tabuleiro/Mesa | Média | Godot | ✅ **Implementado** | [`games/domino/`](../games/domino/) |
 | **Solitário (Paciência)** | Cartas | Média | Godot | ✅ **Implementado** | [`games/solitario/`](../games/solitario/) |
+| **Paciência Spider** | Cartas | Média/Alta | Godot | ✅ **Implementado** | [`games/paciencia_spider/`](../games/paciencia_spider/) |
 
 ### Detalhamento das Recomendações:
 

@@ -1,0 +1,176 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://games/paciencia_spider/SpiderGame.gd" id="1_script"]
+[ext_resource type="PackedScene" path="res://shared/3d/TabletopEnvironment3D.tscn" id="2_env"]
+
+[node name="SpiderGame" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("1_script")
+
+[node name="TabletopEnvironment3D" parent="." instance=ExtResource("2_env")]
+
+[node name="CardsRoot" type="Node3D" parent="."]
+
+[node name="UI" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="UI"]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_left = 24.0
+offset_top = 134.0
+offset_right = -24.0
+offset_bottom = 430.0
+grow_horizontal = 2
+theme_override_constants/separation = 10
+
+[node name="Header" type="HBoxContainer" parent="UI/VBoxContainer"]
+layout_mode = 2
+
+[node name="StatusLabel" type="Label" parent="UI/VBoxContainer/Header"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "SPIDER_HINT"
+clip_text = true
+
+[node name="BtnRestart" type="Button" parent="UI/VBoxContainer/Header"]
+custom_minimum_size = Vector2(100.0, 88.0)
+layout_mode = 2
+text = "BTN_RESET_ICON"
+clip_text = true
+
+[node name="Controls" type="HBoxContainer" parent="UI/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="ModeOption" type="OptionButton" parent="UI/VBoxContainer/Controls"]
+custom_minimum_size = Vector2(150, 88)
+layout_mode = 2
+clip_text = true
+
+[node name="BtnDaily" type="Button" parent="UI/VBoxContainer/Controls"]
+custom_minimum_size = Vector2(165.0, 88.0)
+layout_mode = 2
+text = "SPIDER_DAILY"
+clip_text = true
+
+[node name="BtnUndo" type="Button" parent="UI/VBoxContainer/Controls"]
+custom_minimum_size = Vector2(105.0, 88.0)
+layout_mode = 2
+text = "SPIDER_UNDO_BUTTON"
+clip_text = true
+
+[node name="BtnHint" type="Button" parent="UI/VBoxContainer/Controls"]
+custom_minimum_size = Vector2(100.0, 88.0)
+layout_mode = 2
+text = "SPIDER_HINT_BUTTON"
+clip_text = true
+
+[node name="StockRow" type="HBoxContainer" parent="UI/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="BtnStock" type="Button" parent="UI/VBoxContainer/StockRow"]
+custom_minimum_size = Vector2(140.0, 88.0)
+layout_mode = 2
+text = "SPIDER_STOCK"
+clip_text = true
+
+[node name="Progress" type="Label" parent="UI/VBoxContainer/StockRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.92, 0.79, 0.42, 1)
+vertical_alignment = 1
+clip_text = true
+
+[node name="Tableau" type="GridContainer" parent="UI"]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 20.0
+offset_top = -500.0
+offset_right = -20.0
+offset_bottom = -90.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_constants/h_separation = 4
+theme_override_constants/v_separation = 4
+columns = 5
+
+[node name="Col0" type="Button" parent="UI/Tableau"]
+custom_minimum_size = Vector2(88.0, 170.0)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+clip_text = true
+[node name="Col1" type="Button" parent="UI/Tableau"]
+custom_minimum_size = Vector2(88.0, 170.0)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+clip_text = true
+[node name="Col2" type="Button" parent="UI/Tableau"]
+custom_minimum_size = Vector2(88.0, 170.0)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+clip_text = true
+[node name="Col3" type="Button" parent="UI/Tableau"]
+custom_minimum_size = Vector2(88.0, 170.0)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+clip_text = true
+[node name="Col4" type="Button" parent="UI/Tableau"]
+custom_minimum_size = Vector2(88.0, 170.0)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+clip_text = true
+[node name="Col5" type="Button" parent="UI/Tableau"]
+custom_minimum_size = Vector2(88.0, 170.0)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+clip_text = true
+[node name="Col6" type="Button" parent="UI/Tableau"]
+custom_minimum_size = Vector2(88.0, 170.0)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+clip_text = true
+[node name="Col7" type="Button" parent="UI/Tableau"]
+custom_minimum_size = Vector2(88.0, 170.0)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+clip_text = true
+[node name="Col8" type="Button" parent="UI/Tableau"]
+custom_minimum_size = Vector2(88.0, 170.0)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+clip_text = true
+[node name="Col9" type="Button" parent="UI/Tableau"]
+custom_minimum_size = Vector2(88.0, 170.0)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+clip_text = true
+
+[connection signal="pressed" from="UI/VBoxContainer/Header/BtnRestart" to="." method="_on_btn_restart_pressed"]

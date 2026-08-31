@@ -1,6 +1,6 @@
 # PlayTable
 
-Bem-vindo ao repositório do **PlayTable** — um aplicativo unificado, gratuito, open source, internacionalizado (i18n) e 100% livre de anúncios que reúne uma coleção de **18 minijogos clássicos de tabuleiro e cartas** em uma experiência polida para dispositivos móveis e desktop (Godot 4.7.2 Engine).
+Bem-vindo ao repositório do **PlayTable** — um aplicativo unificado, gratuito, open source, internacionalizado (i18n) e 100% livre de anúncios que reúne uma coleção de **20 minijogos clássicos de tabuleiro e cartas** em uma experiência polida para dispositivos móveis e desktop (Godot 4.7.2 Engine).
 
 ---
 
@@ -11,11 +11,11 @@ Bem-vindo ao repositório do **PlayTable** — um aplicativo unificado, gratuito
 3. **Internacionalização Nativa (i18n):** Suporte nativo a múltiplos idiomas (Português, Inglês, Espanhol) com troca dinâmica em tempo de execução.
 4. **Sem Anúncios (Zero Ads):** Zero propagandas, sem banners, sem intersticiais e sem SDKs de rastreamento.
 5. **Sem Sistema de Contas/Login:** Sem telemetria predatória e sem cadastro. Configurações e estatísticas salvas 100% localmente.
-6. **Sem Compras no App (Zero IAP):** Todos os 18 jogos liberados nativamente, sem paywalls ou microtransações.
+6. **Sem Compras no App (Zero IAP):** Todos os 20 jogos liberados nativamente, sem paywalls ou microtransações.
 
 ---
 
-## 🎮 Catálogo dos 18 Jogos Implementados
+## 🎮 Catálogo dos 20 Jogos Implementados
 
 ### 🎲 Jogos de Tabuleiro (13 Jogos)
 | Jogo | Complexidade | Destaques | Localização |
@@ -34,10 +34,11 @@ Bem-vindo ao repositório do **PlayTable** — um aplicativo unificado, gratuito
 | **Torres de Hanói** | Baixa | 3 a 8 discos 3D, física em arco, solver automático, undo e gamificação | [`games/hanoi/`](games/hanoi/) |
 | **Jogo de Nim** | Baixa | 3 a 5 pilhas de gemas 3D, IA Teorema de Bouton, Normal e Misère | [`games/nim/`](games/nim/) |
 
-### 🃏 Jogos de Cartas (5 Jogos)
+### 🃏 Jogos de Cartas (6 Jogos)
 | Jogo | Complexidade | Destaques | Localização |
 | :--- | :--- | :--- | :--- |
 | **Paciência Klondike** | Média | 7 colunas no tableau, 4 fundações, monte/descarte e auto-mover | [`games/paciencia/`](games/paciencia/) |
+| **Paciência Spider** | Média/Alta | 2 baralhos, 10 colunas, 1 a 4 naipes, desafios diários, coroas e troféus | [`games/paciencia_spider/`](games/paciencia_spider/) |
 | **Jogo da Memória** | Baixa | Cartas com emojis, animação 3D de flip e contador de jogadas | [`games/memoria/`](games/memoria/) |
 | **21 (Blackjack)** | Baixa | Dealer com parada no 17, fichas/apostas e botão Dobrar | [`games/blackjack/`](games/blackjack/) |
 | **Cartas das Cores (Uno)** | Média | 4 cores, cartas de ação (Pular, Inverter, +2, +4, Curinga) e IA | [`games/unolike/`](games/unolike/) |
@@ -51,17 +52,17 @@ Bem-vindo ao repositório do **PlayTable** — um aplicativo unificado, gratuito
 /
 ├── core/                  # Sistemas comuns vitais do aplicativo
 │   ├── i18n/              # LocaleManager e catálogo de traduções (translations.csv)
-│   ├── telas/             # MainMenu, MenuTabuleiro (11 jogos) e MenuCartas (5 jogos)
+│   ├── telas/             # MainMenu, MenuTabuleiro (14 jogos) e MenuCartas (6 jogos)
 │   ├── navegacao/         # SceneManager: Transições suaves entre telas/cenas
 │   ├── configs/           # Temas (Claro/Escuro), volume de sons, etc.
 │   └── save/              # SaveManager: Armazenamento e persistência local JSON
 ├── shared/                # Componentes visuais e lógica reaproveitável
 │   ├── pecas/             # Componentes de peões e peças
 │   └── theme/             # Tema global (MainTheme.tres)
-├── games/                 # Módulos dos 16 jogos isolados (Regras, IAs, Lógicas únicas)
+├── games/                 # Módulos dos 20 jogos isolados (Regras, IAs, Lógicas únicas)
 └── tests/                 # Suíte GUT rodando contra o GDScript de produção
     ├── gdscript/unit/     # Um arquivo por jogo, mais núcleo e i18n
-    └── gdscript/integration/  # Catálogo: instancia as 16 cenas de verdade
+    └── gdscript/integration/  # Catálogo: instancia as 20 cenas de verdade
 ```
 
 ---
