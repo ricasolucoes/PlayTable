@@ -19,11 +19,11 @@ Três camadas, duas opcionais (ver `.planning/PROJECT.md`):
 
 ### Phase 1: Discovery e Auditoria
 
-- [ ] **REQ-1-LER-REPO**: Ler o repositório inteiro e estabelecer sua arquitetura real, no código e não na documentação.
-- [ ] **REQ-1-DOC-INFRA**: Documentar os ~31 tópicos de descoberta (engine, build, package id, auth, save, progressão, XP, ranking, conquistas, missões, eventos, temporadas, recompensas, analytics, notificações, compras, monetização, anti-cheat, sincronização, offline, entre outros), cada um com `arquivo:linha`.
-- [ ] **REQ-1-NAO-DUPLICAR**: Identificar o que já existe e é reaproveitável; não criar sistema paralelo ao que já roda.
-- [ ] **REQ-1-CURRENT-REQUIREMENTS**: Reescrever `docs/google-play/current-requirements.md` contra a documentação oficial vigente do Google, com fonte, impacto, situação verificada, arquivo, status e confiança.
-- [ ] **REQ-1-COMPATIBILITY-AUDIT**: Entregar `docs/google-play/compatibility-audit.md` — o entregável final ("Fase 0").
+- [x] **REQ-1-LER-REPO**: Ler o repositório inteiro e estabelecer sua arquitetura real, no código e não na documentação.
+- [x] **REQ-1-DOC-INFRA**: Documentar os ~31 tópicos de descoberta (engine, build, package id, auth, save, progressão, XP, ranking, conquistas, missões, eventos, temporadas, recompensas, analytics, notificações, compras, monetização, anti-cheat, sincronização, offline, entre outros), cada um com `arquivo:linha`.
+- [x] **REQ-1-NAO-DUPLICAR**: Identificar o que já existe e é reaproveitável; não criar sistema paralelo ao que já roda.
+- [x] **REQ-1-CURRENT-REQUIREMENTS**: Reescrever `docs/google-play/current-requirements.md` contra a documentação oficial vigente do Google, com fonte, impacto, situação verificada, arquivo, status e confiança.
+- [x] **REQ-1-COMPATIBILITY-AUDIT**: Entregar `docs/google-play/compatibility-audit.md` — o entregável final ("Fase 0").
 
 ### Phase 2: Fundação Gamification Service
 
@@ -121,11 +121,11 @@ Três camadas, duas opcionais (ver `.planning/PROJECT.md`):
 
 | REQ-ID | Fase | Status |
 |--------|------|--------|
-| REQ-1-LER-REPO | Phase 1 | Pending |
-| REQ-1-DOC-INFRA | Phase 1 | Pending |
-| REQ-1-NAO-DUPLICAR | Phase 1 | Pending |
-| REQ-1-CURRENT-REQUIREMENTS | Phase 1 | Pending |
-| REQ-1-COMPATIBILITY-AUDIT | Phase 1 | Pending |
+| REQ-1-LER-REPO | Phase 1 | Complete |
+| REQ-1-DOC-INFRA | Phase 1 | Complete |
+| REQ-1-NAO-DUPLICAR | Phase 1 | Complete |
+| REQ-1-CURRENT-REQUIREMENTS | Phase 1 | Complete |
+| REQ-1-COMPATIBILITY-AUDIT | Phase 1 | Complete |
 | REQ-2-MODULO | Phase 2 | Pending |
 | REQ-2-EVENTOS | Phase 2 | Pending |
 | REQ-2-BASE | Phase 2 | Pending |
