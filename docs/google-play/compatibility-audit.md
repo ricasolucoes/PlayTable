@@ -95,7 +95,7 @@ Uma linha por fase do `.planning/ROADMAP.md`, as 13 originais mais a 7.1 inserid
 
 ## 5. Débito técnico e conflitos
 
-Onze itens vieram da pesquisa desta fase (seção 4 de `01-RESEARCH.md`); o décimo segundo foi encontrado durante a escrita deste documento e não estava em nenhum plano anterior. Nove dos doze já foram corrigidos pelos planos 01-01 a 01-03; dois ficam abertos para uma fase futura específica.
+Onze itens vieram da pesquisa desta fase (seção 4 de `01-RESEARCH.md`); o décimo segundo foi encontrado durante a escrita deste documento e o décimo terceiro durante o portão final de testes. Nove dos treze já foram corrigidos pelos planos 01-01 a 01-03; três ficam abertos para uma fase futura específica.
 
 | # | Conflito ou débito | Evidência (arquivo:linha) | Risco | Situação |
 |---|---|---|---|---|
@@ -111,6 +111,7 @@ Onze itens vieram da pesquisa desta fase (seção 4 de `01-RESEARCH.md`); o déc
 | 10 | `docs/google-play/game-stats/` versiona `.csv.import` e `.translation` binários, gerados pelo importador do Godot porque todo `.csv` na árvore do projeto vira recurso de Tradução por padrão | `docs/google-play/game-stats/PlayerGameEvent.csv.import` | Baixo | Aberto — fase 5 (revisar a configuração de importação antes de gerar os CSVs definitivos) |
 | 11 | Nenhuma fase do `ROADMAP.md` cobria Multiplayer Online | `.planning/ROADMAP.md` | Alto | Corrigido nesta fase (`.planning/ROADMAP.md`, fase 7.1 inserida no plano 01-01) |
 | 12 | `.planning/ROADMAP.md:3` ainda lê "Coleção Completa de Jogos Offline (19 Jogos)" e a lista de tabuleiro para em 14 itens, sem a Spider — mas `games/` tem 20 diretórios, incluindo `paciencia_spider` (adicionado no commit `bfff3bb`) | `.planning/ROADMAP.md:3`, `games/paciencia_spider/` | Baixo | Aberto — quem next tocar o roadmap corrige a contagem e a lista |
+| 13 | A suíte GUT não é determinística: duas execuções do mesmo commit deram 562/562 e 560/562. Falharam `test_turno_da_ia.gd:47` (`a vez voltou para o jogador`, do reversi — dependente de tempo) e `test_difficulty.gd:197-198` (`[3] expected to equal [2]: dois pagamentos`, `[300] expected to equal [200]` — um pagamento de XP a mais, o que indica estado vazando entre testes) | `tests/gdscript/integration/test_turno_da_ia.gd:47`, `tests/gdscript/unit/test_difficulty.gd:197` | Alto | Aberto — fase 11 (QA). Uma suíte que muda de resultado sem mudar código não serve de portão de regressão: reprovação vira ruído e ninguém investiga |
 
 ## 6. Conclusão e recomendação de sequenciamento
 

@@ -12,6 +12,7 @@
 - [x] **Tenets do `PROJECT.md` corrigidos** — o texto dizia "sem servidores, sem contas" enquanto o roadmap planejava Play Games e servidor próprio. Agora descreve as três camadas: a local, completa e sempre disponível; o Play Games, opcional; e o servidor `playtable.ricasolucoes.com.br`, opcional e fora deste repositório
 - [x] **Fase 7.1 (Multiplayer Online) no roadmap** — jogar com amigos não estava em nenhuma das 13 fases. Entrou entre a Social e a de LiveOps, sem renumerar nada
 - [x] **`docs/server/api-contract.md`** — as regras que qualquer endpoint futuro herda, escritas antes de o servidor existir: endereço versionado, identidade vinda do Play Games ou de um id anônimo de instalação, idempotência em toda mutação, e a regra que mais importa — servidor fora do ar é estado normal, cai em fila e não vira erro na cara do jogador
+- [x] **A suíte de testes não é determinística** — o portão final da fase rodou a suíte duas vezes no mesmo commit e obteve 562/562 numa e 560/562 na outra. Falharam o turno do reversi (`test_turno_da_ia.gd:47`) e o multiplicador de XP (`test_difficulty.gd:197-198`, um pagamento a mais que o esperado). Nenhuma das duas vem desta fase — só uma linha de comentário em GDScript foi tocada. Registrado como débito aberto para a fase 11: suíte que muda de resultado sem mudar código não serve de portão de regressão
 
 ---
 
