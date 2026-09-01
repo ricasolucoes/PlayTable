@@ -35,10 +35,10 @@
 **Plans:** 4/4 plans complete
 
 Plans:
-- [ ] 01-01-PLAN.md — Ferramenta de rastreabilidade (`scripts/audit_traceability.sh`), tenets do PROJECT.md e fase 7.1 no roadmap
-- [ ] 01-02-PLAN.md — `docs/google-play/current-requirements.md` reescrito contra o código real
-- [ ] 01-03-PLAN.md — `docs/server/api-contract.md` e correção dos documentos desatualizados
-- [ ] 01-04-PLAN.md — `docs/google-play/compatibility-audit.md`, o entregável final, e o CHANGELOG
+- [x] 01-01-PLAN.md — Ferramenta de rastreabilidade (`scripts/audit_traceability.sh`), tenets do PROJECT.md e fase 7.1 no roadmap
+- [x] 01-02-PLAN.md — `docs/google-play/current-requirements.md` reescrito contra o código real
+- [x] 01-03-PLAN.md — `docs/server/api-contract.md` e correção dos documentos desatualizados
+- [x] 01-04-PLAN.md — `docs/google-play/compatibility-audit.md`, o entregável final, e o CHANGELOG
 
 ### Phase 2: Fundação Gamification Service
 
