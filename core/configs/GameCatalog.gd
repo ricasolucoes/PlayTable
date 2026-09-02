@@ -39,6 +39,8 @@ static func get_board_games() -> Array[GameDefinition]:
 			.tagged("GENRE_PUZZLE", SOLO),
 		GameDefinition.create("GAME_MINESWEEPER", "💣", "res://games/campo_minado/MinesweeperGame.tscn", &"board", "GAME_DESC_MINESWEEPER")
 			.tagged("GENRE_LOGIC", SOLO),
+		GameDefinition.create("GAME_SUDOKU", "🔢", "res://games/sudoku/SudokuGame.tscn", &"board", "GAME_DESC_SUDOKU")
+			.tagged("GENRE_LOGIC", SOLO),
 		GameDefinition.create("GAME_DOMINO", "🁣", "res://games/domino/DominoGame.tscn", &"board", "GAME_DESC_DOMINO")
 			.tagged("GENRE_CLASSIC", IA),
 		GameDefinition.create("GAME_HANOI", "🗼", "res://games/hanoi/HanoiGame.tscn", &"board", "GAME_DESC_HANOI")
@@ -47,6 +49,9 @@ static func get_board_games() -> Array[GameDefinition]:
 			.tagged("GENRE_STRATEGY", IA | DUPLA),
 		GameDefinition.create("GAME_GAMAO", "🎲", "res://games/gamao/BackgammonGame.tscn", &"board", "GAME_DESC_BACKGAMMON")
 			.tagged("GENRE_STRATEGY", IA | DUPLA),
+		GameDefinition.create("GAME_NUMBER_PATH", "🛣️", "res://games/caminho_numerico/NumberPathGame.tscn", &"board", "GAME_DESC_NUMBER_PATH")
+			.tagged("GENRE_PUZZLE", SOLO)
+			.locked_until(2),
 	]
 
 

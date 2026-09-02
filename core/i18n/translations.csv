@@ -727,3 +727,13 @@ ACH_COMEBACK_NAME,"De volta ao jogo","Welcome Back","De vuelta al juego"
 "NIM_BTN_NORMAL","⭐ Normal","⭐ Normal","⭐ Normal"
 "POKER_HOLD_MARK","RETER","HOLD","CONSERVAR"
 "UNO_AI_TURN_AGAIN","IA joga novamente!","The AI plays again!","¡La IA juega otra vez!"
+GAME_NUMBER_PATH,Caminho Numérico,Number Path,Camino Numérico
+GAME_DESC_NUMBER_PATH,Conecte os números em ordem e preencha o tabuleiro!,Connect the numbers in order and fill the board!,¡Conecta los números en orden y llena el tablero!
+GAME_LOCKED_LEVEL,Desbloqueia no nível,Unlocks at level,Se desbloquea en el nivel
+GAME_DESC_SUDOKU,"O clássico quebra-cabeça de lógica","The classic logic puzzle","El clásico rompecabezas de lógica"
+SUDOKU_NOTES_ON,"Anotações: LIGADO","Notes: ON","Notas: ENCENDIDO"
+SUDOKU_NOTES_OFF,"Anotações: DESLIG.","Notes: OFF","Notas: APAGADO"
+SUDOKU_START,"Iniciando Sudoku...","Starting Sudoku...","Iniciando Sudoku..."
+SUDOKU_PLAYING,"Preencha todos os espaços!","Fill all the spaces!","¡Llena todos los espacios!"
+SUDOKU_WIN,"Resolvido!","Solved!","¡Resuelto!"
+SUDOKU_WIN_DESC,"Você completou o Sudoku.","You completed the Sudoku.","Has completado el Sudoku."
