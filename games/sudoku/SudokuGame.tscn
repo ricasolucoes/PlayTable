@@ -1,0 +1,163 @@
+[gd_scene load_steps=4 format=3 uid="uid://sudokugame"]
+
+[ext_resource type="Script" path="res://games/sudoku/SudokuGame.gd" id="1_script"]
+[ext_resource type="PackedScene" uid="uid://tabletopbg01" path="res://shared/ui/TabletopBackground.tscn" id="2_bg"]
+[ext_resource type="Theme" uid="uid://cxq6a87e8qf1b" path="res://shared/theme/MainTheme.tres" id="3_theme"]
+
+[node name="SudokuGame" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = ExtResource("3_theme")
+script = ExtResource("1_script")
+
+[node name="TabletopBackground" parent="." instance=ExtResource("2_bg")]
+layout_mode = 1
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 24.0
+offset_top = 134.0
+offset_right = -24.0
+offset_bottom = -36.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 18
+
+[node name="TopBar" type="HBoxContainer" parent="VBoxContainer"]
+alignment = 2
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="BtnRestart" type="Button" parent="VBoxContainer/TopBar"]
+custom_minimum_size = Vector2(110.0, 88.0)
+layout_mode = 2
+text = "BTN_RESET"
+
+[node name="BtnNotes" type="Button" parent="VBoxContainer/TopBar"]
+custom_minimum_size = Vector2(150.0, 88.0)
+layout_mode = 2
+toggle_mode = true
+text = "SUDOKU_NOTES_OFF"
+
+[node name="StatusCard" type="PanelContainer" parent="VBoxContainer"]
+layout_mode = 2
+
+[node name="StatusVBox" type="VBoxContainer" parent="VBoxContainer/StatusCard"]
+layout_mode = 2
+theme_override_constants/separation = 2
+
+[node name="StatusLabel" type="Label" parent="VBoxContainer/StatusCard/StatusVBox"]
+layout_mode = 2
+text = "SUDOKU_START"
+horizontal_alignment = 1
+
+[node name="LevelLabel" type="Label" parent="VBoxContainer/StatusCard/StatusVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.96, 0.8, 0.36, 1)
+text = ""
+horizontal_alignment = 1
+
+[node name="BoardContainer" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_top = 10.0
+offset_bottom = 10.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="MainGrid" type="GridContainer" parent="BoardContainer"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -270.0
+offset_top = -270.0
+offset_right = 270.0
+offset_bottom = 270.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/h_separation = 6
+theme_override_constants/v_separation = 6
+columns = 3
+
+[node name="NumberPad" type="GridContainer" parent="."]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -140.0
+offset_bottom = -32.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_constants/h_separation = 8
+theme_override_constants/v_separation = 8
+columns = 5
+alignment = 1
+
+[node name="WinModal" type="ColorRect" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.75)
+
+[node name="Panel" type="PanelContainer" parent="WinModal"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -220.0
+offset_top = -140.0
+offset_right = 220.0
+offset_bottom = 140.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBox" type="VBoxContainer" parent="WinModal/Panel"]
+layout_mode = 2
+theme_override_constants/separation = 16
+alignment = 1
+
+[node name="WinTitle" type="Label" parent="WinModal/Panel/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.35, 1)
+text = "WIN_TITLE"
+horizontal_alignment = 1
+
+[node name="WinSub" type="Label" parent="WinModal/Panel/VBox"]
+layout_mode = 2
+text = "SUDOKU_WIN_DESC"
+horizontal_alignment = 1
+autowrap_mode = 2
+
+[node name="Spacer" type="Control" parent="WinModal/Panel/VBox"]
+custom_minimum_size = Vector2(0, 10)
+layout_mode = 2
+
+[node name="BtnPlayAgain" type="Button" parent="WinModal/Panel/VBox"]
+custom_minimum_size = Vector2(88.0, 88.0)
+layout_mode = 2
+text = "BTN_RESTART"
+
+[connection signal="pressed" from="VBoxContainer/TopBar/BtnRestart" to="." method="_on_restart_pressed"]
+[connection signal="toggled" from="VBoxContainer/TopBar/BtnNotes" to="." method="_on_btn_notes_toggled"]
+[connection signal="pressed" from="WinModal/Panel/VBox/BtnPlayAgain" to="." method="_on_restart_pressed"]
