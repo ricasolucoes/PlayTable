@@ -257,6 +257,28 @@ func _create_game_card(game: GameDefinition) -> Button:
 	tag.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	textos.add_child(tag)
 
+	var is_locked = false
+	if PlayerProfile != null and PlayerProfile.level < game.unlock_level:
+		is_locked = true
+		fundo.modulate = Color(0.4, 0.4, 0.4, 1.0)
+		
+		var cadeado_box := HBoxContainer.new()
+		cadeado_box.alignment = BoxContainer.ALIGNMENT_END
+		cadeado_box.add_theme_constant_override("separation", 8)
+		cadeado_box.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		textos.add_child(cadeado_box)
+		
+		var cadeado_icon := Label.new()
+		cadeado_icon.text = "🔒"
+		cadeado_icon.add_theme_font_size_override("font_size", FONTE_TAG)
+		cadeado_box.add_child(cadeado_icon)
+		
+		var cadeado_texto := Label.new()
+		cadeado_texto.text = tr("LEVEL") + " " + str(game.unlock_level)
+		cadeado_texto.add_theme_font_size_override("font_size", FONTE_TAG)
+		cadeado_texto.add_theme_color_override("font_color", Color(1.0, 0.4, 0.4))
+		cadeado_box.add_child(cadeado_texto)
+
 	# A moldura entra por último e por dentro do recorte: desenhada pelo botão
 	# ela ficaria atrás da arte, que cobre o cartão inteiro.
 	var moldura := Panel.new()
@@ -588,6 +610,10 @@ func _on_limpar_filtros() -> void:
 
 func _on_game_pressed(game: GameDefinition) -> void:
 	play_click()
+	if PlayerProfile != null and PlayerProfile.level < game.unlock_level:
+		if GameEventBus: GameEventBus.toast_requested.emit(tr("GAME_LOCKED_LEVEL") + " " + str(game.unlock_level), 2.0)
+		return
+
 	if game.is_implemented and ResourceLoader.exists(game.scene_path):
 		SceneManager.goto_scene(game.scene_path)
 	else:

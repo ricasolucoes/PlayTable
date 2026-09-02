@@ -29,6 +29,9 @@ extends Resource
 ## Whether this game is fully implemented (false = shows GenericGame placeholder)
 @export var is_implemented: bool = true
 
+## Nível necessário para desbloquear o jogo.
+@export var unlock_level: int = 1
+
 ## Como se joga uma partida. É bandeira, e não escolha única, porque um jogo
 ## pode ser mais de um: o Gamão e o Nim valem contra a IA e contra outra pessoa
 ## no mesmo aparelho, e o cartão do menu precisa dizer os dois.
@@ -64,6 +67,12 @@ static func create(p_title: String, p_icon: String, p_scene_path: String, p_cate
 func tagged(p_genre: String, p_modes: int) -> GameDefinition:
 	genre = p_genre
 	modes = p_modes
+	return self
+
+
+## Define o nível mínimo para desbloquear este jogo.
+func locked_until(level: int) -> GameDefinition:
+	unlock_level = level
 	return self
 
 
