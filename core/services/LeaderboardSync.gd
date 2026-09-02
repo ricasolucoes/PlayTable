@@ -16,8 +16,9 @@ const METRICAS := {
 	"campo_minado": {"campo": "time",  "key": "LB_MINESWEEPER_TIME", "invert": true,  "escala": 1000},
 	"memoria":      {"campo": "moves", "key": "LB_MEMORY_MOVES",     "invert": true,  "escala": 1},
 	"hanoi":        {"campo": "moves", "key": "LB_HANOI_MOVES",      "invert": true,  "escala": 1},
-	"solitario":    {"campo": "pegs",  "key": "LB_SOLITAIRE_PEGS",   "invert": true,  "escala": 1},
-	"poker":        {"campo": "score", "key": "LB_POKER_BANKROLL",   "invert": false, "escala": 1},
+	"solitario":        {"campo": "pegs",  "key": "LB_SOLITAIRE_PEGS",   "invert": true,  "escala": 1},
+	"poker":            {"campo": "score", "key": "LB_POKER_BANKROLL",   "invert": false, "escala": 1},
+	"caminho_numerico": {"campo": "score", "key": "LB_NUMBER_PATH_SCORE", "invert": false, "escala": 1},
 }
 
 

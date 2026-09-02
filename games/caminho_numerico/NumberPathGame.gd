@@ -1,148 +1,141 @@
 class_name NumberPathGame
 extends BaseGame
 
-@onready var num_board: NumberPathBoard = $VBoxContainer/CenterContainer/NumberPathBoard
-@onready var level_label: Label = $VBoxContainer/BottomBar/LevelLabel
-@onready var top_bar_voltar: Button = $VBoxContainer/TopBar/BtnVoltar
-@onready var top_bar_restart: Button = $VBoxContainer/TopBar/BtnRestart
-@onready var top_bar_status: Label = $VBoxContainer/TopBar/StatusLabel
+## Controlador principal da cena de Caminho Numérico.
+##
+## Gerencia a progressão de fases, temporizador de conclusão, pontuação acumulada,
+## integração com BaseGame, GameTopBar, PlayerProfile e LeaderboardSync.
+
+@onready var num_board: NumberPathBoard = $UI/VBoxContainer/CenterContainer/NumberPathBoard
+@onready var status_lbl: Label = $UI/VBoxContainer/StatusBox/StatusLabel
+@onready var substatus_lbl: Label = $UI/VBoxContainer/StatusBox/SubStatusLabel
+@onready var btn_restart_node: Button = $UI/VBoxContainer/BottomBar/BtnRestart
+@onready var btn_hint_node: Button = $UI/VBoxContainer/BottomBar/BtnHint
 
 var current_level: int = 1
-var base_xp: int = 50
+var total_score: int = 0
+var level_start_ticks: int = 0
+var current_puzzle: Dictionary = {}
+var is_transitioning: bool = false
+
 
 func _ready() -> void:
-	status_label = top_bar_status
-	btn_restart = top_bar_restart
-	
-	if top_bar_restart:
-		top_bar_restart.pressed.connect(_start_new_game)
-	if top_bar_voltar:
-		top_bar_voltar.pressed.connect(_on_btn_voltar_pressed)
-	
+	status_label = status_lbl
+	btn_restart = btn_restart_node
+
+	if btn_restart_node:
+		btn_restart_node.pressed.connect(_on_restart_pressed)
+	if btn_hint_node:
+		btn_hint_node.pressed.connect(_on_btn_hint_pressed)
+
 	if num_board:
 		num_board.level_completed.connect(_on_level_completed)
-		
+		num_board.mistake_made.connect(_on_mistake_made)
+		num_board.path_updated.connect(_on_path_updated)
+
 	_start_new_game()
+	begin_match()
+
 
 func _start_new_game() -> void:
-	if status_label:
-		status_label.text = tr("GAME_DESC_NUMBER_PATH")
-	if level_label:
-		level_label.text = tr("LEVEL") + " " + str(current_level)
-		
-	_generate_and_setup_puzzle()
+	game_over = false
+	is_transitioning = false
+	level_start_ticks = Time.get_ticks_msec()
 
-func _generate_and_setup_puzzle() -> void:
-	# Level 1-2: 3x3
-	# Level 3-4: 4x4
-	# Level 5+: 5x5
-	var size = 3
-	var num_clues = 4
-	
-	if current_level >= 5:
-		size = 5
-		num_clues = 6 + (current_level - 5) / 2
-		num_clues = mini(num_clues, 15)
-	elif current_level >= 3:
-		size = 4
-		num_clues = 5
-		
-	var puzzle = _generate_path(size, size, num_clues)
+	# Gera puzzle proporcional ao nível
+	current_puzzle = NumberPathGenerator.generate_level(current_level)
+
 	if num_board:
-		num_board.setup_puzzle(size, size, puzzle)
+		num_board.setup_puzzle(current_puzzle["width"], current_puzzle["height"], current_puzzle)
 
-func _generate_path(w: int, h: int, clues_count: int) -> Dictionary:
-	var total_cells = w * h
-	var path: Array[Vector2i] = []
-	var grid = []
-	for y in range(h):
-		grid.append([])
-		for x in range(w):
-			grid[y].append(false)
-			
-	# Start cell
-	var start_x = randi() % w
-	var start_y = randi() % h
-	# For odd sizes, to guarantee a path, start on majority parity
-	if (w * h) % 2 != 0:
-		while (start_x + start_y) % 2 != 0:
-			start_x = randi() % w
-			start_y = randi() % h
-			
-	var found = _dfs(start_x, start_y, w, h, grid, path)
-	if not found:
-		# Fallback to simple snake if DFS fails
-		path.clear()
-		for y in range(h):
-			var rx = range(w) if y % 2 == 0 else range(w - 1, -1, -1)
-			for x in rx:
-				path.append(Vector2i(x, y))
-				
-	# Pick clues
-	var clues = {}
-	clues[path[0]] = 1
-	clues[path.back()] = clues_count
-	
-	if clues_count > 2:
-		var available_indices = range(1, total_cells - 1)
-		available_indices.shuffle()
-		var chosen_indices = available_indices.slice(0, clues_count - 2)
-		chosen_indices.sort()
-		
-		for i in range(chosen_indices.size()):
-			clues[path[chosen_indices[i]]] = i + 2
-			
-	return clues
+	_update_header()
 
-func _dfs(x: int, y: int, w: int, h: int, grid: Array, path: Array[Vector2i]) -> bool:
-	path.append(Vector2i(x, y))
-	grid[y][x] = true
-	
-	if path.size() == w * h:
-		return true
-		
-	var neighbors = []
-	var dirs = [Vector2i(-1, 0), Vector2i(1, 0), Vector2i(0, -1), Vector2i(0, 1)]
-	for dir in dirs:
-		var nx = x + dir.x
-		var ny = y + dir.y
-		if nx >= 0 and nx < w and ny >= 0 and ny < h and not grid[ny][nx]:
-			# count free neighbors
-			var deg = 0
-			for d2 in dirs:
-				var nnx = nx + d2.x
-				var nny = ny + d2.y
-				if nnx >= 0 and nnx < w and nny >= 0 and nny < h and not grid[nny][nnx]:
-					deg += 1
-			neighbors.append({"deg": deg, "r": randf(), "pos": Vector2i(nx, ny)})
-			
-	# Sort by degree (Warnsdorff's heuristic)
-	neighbors.sort_custom(func(a, b):
-		if a.deg != b.deg: return a.deg < b.deg
-		return a.r < b.r
-	)
-	
-	for n in neighbors:
-		if _dfs(n.pos.x, n.pos.y, w, h, grid, path):
-			return true
-			
-	grid[y][x] = false
-	path.pop_back()
-	return false
+
+func _update_header() -> void:
+	if status_lbl:
+		status_lbl.text = tr("GAME_DESC_NUMBER_PATH")
+
+	if substatus_lbl:
+		var grid_desc := "%dx%d" % [current_puzzle.get("width", 3), current_puzzle.get("height", 3)]
+		var clues_num: int = current_puzzle.get("clues_count", 4)
+		substatus_lbl.text = "%s %d  •  %s  •  %d %s%s" % [
+			tr("LEVEL"),
+			current_level,
+			grid_desc,
+			clues_num,
+			tr("NUMBER_PATH_CLUES"),
+			difficulty_suffix()
+		]
+
+	set_counters([
+		{"value": str(current_level), "label": "LEVEL"},
+		{"value": str(total_score), "label": "SCORE"},
+	])
+
+
+func _on_path_updated(_path: Array[Vector2i]) -> void:
+	if num_board and num_board.model:
+		var progress := int(num_board.model.get_progress_ratio() * 100.0)
+		var next_info := num_board.model.get_next_clue_info()
+		if not next_info.is_empty() and status_lbl and not num_board.model.is_completed:
+			status_lbl.text = tr("NUMBER_PATH_CONNECT") % [
+				num_board.model.get_current_target() - 1,
+				num_board.model.get_current_target()
+			]
+
+
+func _on_mistake_made(_cell: Vector2i) -> void:
+	if AudioManager:
+		AudioManager.play_click()
+
+
+func _on_btn_hint_pressed() -> void:
+	if game_over or is_transitioning or num_board == null or num_board.model == null:
+		return
+
+	var hint_step := num_board.model.get_hint_next_step()
+	if hint_step != Vector2i(-1, -1):
+		num_board.model.extend_to(hint_step)
+	else:
+		if status_lbl:
+			status_lbl.text = tr("NUMBER_PATH_HINT_BACKTRACK")
+
 
 func _on_level_completed() -> void:
-	if status_label:
-		status_label.text = tr("LABEL_YOU_WON")
-		
+	if is_transitioning:
+		return
+	is_transitioning = true
+
+	var elapsed_secs := (Time.get_ticks_msec() - level_start_ticks) / 1000.0
+	var mistakes := num_board.model.mistakes_count if num_board.model else 0
+	var hints := num_board.model.hints_used if num_board.model else 0
+
+	var score_data := NumberPathScoring.calculate_score(
+		current_puzzle.get("width", 3),
+		current_puzzle.get("height", 3),
+		current_puzzle.get("clues_count", 4),
+		elapsed_secs,
+		mistakes,
+		hints
+	)
+
+	total_score += int(score_data["score"])
+	score_data["total_score"] = total_score
+	score_data["level"] = current_level
+
+	_update_header()
+
+	if status_lbl:
+		status_lbl.text = tr("NUMBER_PATH_WIN") + "  +" + str(score_data["score"]) + " pts"
+
 	if AudioManager:
 		AudioManager.play_victory()
-		
-	if GameEventBus:
-		GameEventBus.match_finished.emit("caminho_numerico", true)
-		GameEventBus.xp_gained.emit(base_xp + current_level * 10, "number_path_win")
-		
+
+	# Registra a vitória e pontuação na infraestrutura de gamificação
+	finish_game(tr("NUMBER_PATH_WIN"), true, score_data)
+
 	current_level += 1
-	
-	# Wait a bit then next level
-	var t = get_tree().create_timer(1.5)
-	t.timeout.connect(_start_new_game)
+
+	# Pequena pausa antes de carregar o próximo nível
+	var timer := get_tree().create_timer(1.8)
+	timer.timeout.connect(_start_new_game)
