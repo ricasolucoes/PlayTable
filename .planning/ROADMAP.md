@@ -45,10 +45,14 @@ Plans:
 **Goal:** Criar a base arquitetural e Event Bus da gamificação.
 **Requirements**: Criar/refatorar módulo Gamification (Progression, Quests, Rewards). Implementar Game Domain Events para desacoplar da gameplay. Preparar base de Analytics, Persistência e Feature Flags. (Ver arquivo `REQUIREMENTS.md` na pasta da fase)
 **Depends on:** Phase 1
-**Plans:** 0 plans
+**Plans:** 5 plans
 
 Plans:
-- [ ] TBD (run /gsd-plan-phase 2 to break down)
+- [ ] 02-01-PLAN.md — `OfflineQueue` extraída do Play Games, `PlayerProfile.export_snapshot()` e o arquivo GUT da fase (REQ-2-MODULO)
+- [ ] 02-02-PLAN.md — `domain_event`, sessão, `flags_changed` e o contrato de `match_completed` validado (REQ-2-EVENTOS)
+- [ ] 02-03-PLAN.md — feature flags em três camadas, `share_stats` e `docs/gamification/feature-flags.md` (REQ-2-BASE)
+- [ ] 02-04-PLAN.md — `AnalyticsManager` local: allowlist, JSONL diário, rotação e `register_sink()` (REQ-2-BASE)
+- [ ] 02-05-PLAN.md — `docs/gamification/` (README + domain-events), CHANGELOG e portão final da suíte (REQ-2-MODULO, REQ-2-EVENTOS)
 
 ### Phase 3: Play Games Services v2
 
