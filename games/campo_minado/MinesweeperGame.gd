@@ -1,4 +1,4 @@
-extends GridGame
+extends BaseGame
 
 ## MinesweeperGame: Campo Minado 3D com Teclas Mecânicas Táteis, Pinos de Bandeira e Minas Explosivas
 
@@ -6,8 +6,6 @@ var grid_data: Grid2D
 var first_click: bool = true
 var is_flag_mode: bool = false
 var game_won: bool = false
-var elapsed_time: float = 0.0
-var timer_active: bool = false
 
 var tiles_3d: Dictionary = {}
 var flags_3d: Dictionary = {}
@@ -16,10 +14,12 @@ var flags_3d: Dictionary = {}
 ## -- e a unica alavanca de dificuldade que o Campo Minado tem.
 var total_minas: int = MinesweeperRules.TOTAL_MINES
 
+@onready var game_shell: GameShell = $GameShell
+@onready var game_timer: GameTimer = game_shell.timer
 @onready var board_3d: Board3D = $Board3D
 @onready var flags_root: Node3D = $FlagsRoot
 @onready var btn_mode: Button = $UI/Controls/BtnMode
-@onready var btn_smiley: Button = $UI/VBoxContainer/Header/BtnSmiley
+@onready var btn_smiley: Button = $UI/Controls/BtnSmiley
 
 const NUMBER_COLORS = [
 	Color(0, 0, 0, 0),
@@ -35,7 +35,10 @@ const NUMBER_COLORS = [
 
 func _ready() -> void:
 	env_3d = $TabletopEnvironment3D
-	status_label = $UI/VBoxContainer/StatusLabel
+	status_label = game_shell.status_label
+	btn_restart = game_shell.btn_restart
+	game_shell.restart_requested.connect(_on_btn_smiley_pressed)
+	game_timer.time_changed.connect(func(_sec: int): _pintar_placar())
 	board_3d.setup_board(MinesweeperRules.ROWS, MinesweeperRules.COLS, 0.75, "slate_grid")
 	# O toque entra pelo proprio tabuleiro: a casa tocada e a casa desenhada.
 	# A grade 2D de botoes que ficava aqui era plana e ancorada no centro da
@@ -44,22 +47,13 @@ func _ready() -> void:
 	fit_table(board_3d.content_size())
 	_start_new_game()
 
-func _process(delta: float) -> void:
-	if timer_active and not game_over and not game_won:
-		var antes := int(elapsed_time)
-		elapsed_time += delta
-		# O cronometro anda em segundos inteiros: repintar a barra a cada quadro
-		# refaria os rotulos sessenta vezes por segundo para nada.
-		if int(elapsed_time) != antes:
-			_pintar_placar()
-
 func _start_new_game() -> void:
 	total_minas = MinesweeperRules.minas_do_degrau(DifficultyManager.get_level(game_id))
 	first_click = true
 	game_over = false
 	game_won = false
-	elapsed_time = 0.0
-	timer_active = false
+	game_timer.reset()
+	game_timer.stop()
 	_pintar_placar()
 	btn_smiley.text = "🙂"
 	set_status(tr("MINESWEEPER_START") + difficulty_suffix())
@@ -86,7 +80,7 @@ func _pintar_placar() -> void:
 		faltam = maxi(0, total_minas - MinesweeperRules.count_flagged(grid_data))
 	set_counters([
 		{"value": "%02d" % faltam, "label": "SCORE_MINES"},
-		{"value": "%03d" % int(elapsed_time), "label": "SCORE_TIME"},
+		{"value": "%03d" % game_timer.get_time(), "label": "SCORE_TIME"},
 	])
 
 func _on_cell_clicked(r: int, c: int) -> void:
@@ -106,7 +100,7 @@ func _on_cell_clicked(r: int, c: int) -> void:
 	if first_click:
 		first_click = false
 		MinesweeperRules.generate_mines(grid_data, r, c, total_minas)
-		timer_active = true
+		game_timer.start()
 		set_status(tr("MINESWEEPER_CLEARED"))
 		
 	if cell["is_mine"]:
@@ -143,9 +137,9 @@ func _sync_revealed_3d() -> void:
 					board_3d.set_cell_state(r, c, Board3D.CellState.LAST_MOVE)
 
 func _trigger_game_over(hit_r: int, hit_c: int) -> void:
-	timer_active = false
+	game_timer.stop()
 	btn_smiley.text = "😵"
-	finish_game(tr("MINESWEEPER_BOOM"), false, {"time": elapsed_time})
+	finish_game(tr("MINESWEEPER_BOOM"), false, {"time": float(game_timer.get_time())})
 	
 	for r in range(MinesweeperRules.ROWS):
 		for c in range(MinesweeperRules.COLS):
@@ -156,12 +150,12 @@ func _trigger_game_over(hit_r: int, hit_c: int) -> void:
 func _check_win_condition() -> void:
 	if MinesweeperRules.check_win(grid_data):
 		game_won = true
-		timer_active = false
+		game_timer.stop()
 		btn_smiley.text = "😎"
 		# O tempo e o que o Campo Minado tem de recorde: alimenta o placar
 		# LB_MINESWEEPER_TIME e a conquista de vitoria rapida.
-		finish_game(tr("MINESWEEPER_WIN") % int(elapsed_time), true,
-			{"time": elapsed_time})
+		finish_game(tr("MINESWEEPER_WIN") % game_timer.get_time(), true,
+			{"time": float(game_timer.get_time())})
 
 func _on_btn_mode_pressed() -> void:
 	is_flag_mode = not is_flag_mode

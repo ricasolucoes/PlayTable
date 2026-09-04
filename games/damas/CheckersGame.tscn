@@ -1,8 +1,9 @@
-[gd_scene load_steps=4 format=3 uid="uid://checkersgameuid"]
+[gd_scene load_steps=5 format=3 uid="uid://checkersgameuid"]
 
 [ext_resource type="Script" path="res://games/damas/CheckersGame.gd" id="1_script"]
 [ext_resource type="PackedScene" uid="uid://tabletopenv3duid" path="res://shared/3d/TabletopEnvironment3D.tscn" id="2_env"]
 [ext_resource type="PackedScene" uid="uid://board3duid" path="res://shared/3d/Board3D.tscn" id="3_board"]
+[ext_resource type="PackedScene" uid="uid://gameshelluid" path="res://shared/ui/GameShell.tscn" id="4_shell"]
 
 [node name="CheckersGame" type="Control"]
 layout_mode = 3
@@ -19,44 +20,4 @@ script = ExtResource("1_script")
 
 [node name="PiecesRoot" type="Node3D" parent="."]
 
-[node name="UI" type="Control" parent="."]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-
-[node name="VBoxContainer" type="VBoxContainer" parent="UI"]
-layout_mode = 1
-anchors_preset = 10
-anchor_right = 1.0
-offset_left = 24.0
-offset_top = 134.0
-offset_right = -24.0
-offset_bottom = 180.0
-grow_horizontal = 2
-theme_override_constants/separation = 10
-
-[node name="LevelLabel" type="Label" parent="UI/VBoxContainer"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.96, 0.8, 0.36, 1)
-theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.8)
-text = ""
-horizontal_alignment = 1
-
-[node name="StatusLabel" type="Label" parent="UI/VBoxContainer"]
-layout_mode = 2
-theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.8)
-text = "CHECKERS_YOUR_TURN"
-horizontal_alignment = 1
-
-[node name="BtnRestart" type="Button" parent="UI/VBoxContainer"]
-visible = false
-custom_minimum_size = Vector2(180.0, 88.0)
-layout_mode = 2
-size_flags_horizontal = 4
-text = "BTN_RESTART_ICON"
-
-[connection signal="pressed" from="UI/VBoxContainer/BtnRestart" to="." method="_on_btn_restart_pressed"]
+[node name="GameShell" parent="." instance=ExtResource("4_shell")]

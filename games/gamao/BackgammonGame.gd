@@ -44,8 +44,6 @@ var valid_destinations: Array[Dictionary] = []
 var is_animating: bool = false
 var has_rolled_dice: bool = false
 var turn_count: int = 0
-var elapsed_time: float = 0.0
-var is_timer_running: bool = false
 
 # Estruturas 3D
 var board_root: Node3D = null
@@ -55,11 +53,9 @@ var dice_nodes: Array[Dice3D] = []
 var checker_nodes: Array[Node3D] = []
 var point_highlight_meshes: Dictionary = {} # pt -> MeshInstance3D
 
-# Referências de Nós UI
-@onready var status_bar_label: Label = $UI/VBoxContainer/StatusLabel
-@onready var turns_label: Label = $UI/TopBar/StatsHBox/TurnsCard/TurnsVal
-@onready var mode_label: Label = $UI/TopBar/StatsHBox/ModeCard/ModeVal
+@onready var shell: GameShell = $GameShell
 
+# Referências de Nós UI
 @onready var dice_container: HBoxContainer = $UI/DiceControls/DiceHBox
 @onready var btn_roll_dice: Button = $UI/DiceControls/BtnRoll
 @onready var btn_end_turn: Button = $UI/DiceControls/BtnEndTurn
@@ -72,31 +68,18 @@ var point_highlight_meshes: Dictionary = {} # pt -> MeshInstance3D
 ## o proprio ponto do tabuleiro na tela.
 var touch_targets: Dictionary = {}
 
-# Modal de Resultado
-@onready var result_modal: Control = $ResultModal
-@onready var result_title: Label = $ResultModal/Panel/VBox/ResultTitle
-@onready var result_stars: Label = $ResultModal/Panel/VBox/ResultStars
-@onready var result_details: Label = $ResultModal/Panel/VBox/ResultDetails
-@onready var result_xp_label: Label = $ResultModal/Panel/VBox/ResultXP
-@onready var btn_rematch: Button = $ResultModal/Panel/VBox/BtnRematch
-
-
 func _ready() -> void:
 	env_3d = get_node_or_null("TabletopEnvironment3D") as TabletopEnvironment3D
-	status_label = status_bar_label
-	btn_restart = $UI/Actions/BtnRestart
+	status_label = shell.status_label
+	btn_restart = shell.btn_restart
+	shell.restart_requested.connect(_on_btn_rematch_pressed)
 	menu_scene_path = BaseGame.MENU_TABULEIRO
-	result_modal.visible = false
 
 	_setup_3d_hierarchy()
 	_setup_ui_events()
 	_setup_touch_overlays()
 	_start_new_game()
 
-
-func _process(delta: float) -> void:
-	if is_timer_running and not game_over:
-		elapsed_time += delta
 
 
 # ---------------------------------------------------------------------------
@@ -340,7 +323,6 @@ func _setup_ui_events() -> void:
 	btn_undo.pressed.connect(_on_btn_undo_pressed)
 	btn_mode_toggle.pressed.connect(_on_btn_mode_toggle_pressed)
 	btn_diff_toggle.pressed.connect(_on_btn_diff_toggle_pressed)
-	btn_rematch.pressed.connect(_on_btn_rematch_pressed)
 
 
 ## Monta a camada de toque sobre o tabuleiro.
@@ -536,8 +518,8 @@ func _start_new_game() -> void:
 	turn_history.clear()
 	move_step_history.clear()
 	turn_count = 0
-	elapsed_time = 0.0
-	is_timer_running = true
+	shell.timer.reset()
+	shell.timer.start()
 	ai_level = DifficultyManager.get_level(game_id)
 	_pintar_degrau()
 
@@ -551,10 +533,8 @@ func _start_new_game() -> void:
 	btn_undo.disabled = true
 	btn_roll_dice.disabled = false
 	btn_roll_dice.show()
-	result_modal.visible = false
 
 	set_status(tr("BACKGAMMON_START"))
-
 
 # ---------------------------------------------------------------------------
 # Sincronização 3D das Peças
@@ -943,7 +923,6 @@ func _on_btn_mode_toggle_pressed() -> void:
 		AudioManager.play_click()
 	is_vs_ai = not is_vs_ai
 	var modo := tr("MODE_VS_AI") if is_vs_ai else tr("MODE_TWO_PLAYERS")
-	mode_label.text = modo
 	btn_mode_toggle.text = tr("MODE_LABEL") % modo
 	_start_new_game()
 
@@ -974,24 +953,20 @@ func _on_btn_diff_toggle_pressed() -> void:
 func _pintar_degrau() -> void:
 	if btn_diff_toggle != null:
 		btn_diff_toggle.text = tr("AI_TIER") % tr(DifficultyManager.tier_name(ai_level))
-	if mode_label != null and is_vs_ai:
-		mode_label.text = "%s • %s" % [tr("MODE_VS_AI"), DifficultyManager.label_for(game_id)]
 
 
 func _on_btn_rematch_pressed() -> void:
 	if AudioManager:
 		AudioManager.play_click()
-	result_modal.visible = false
 	_start_new_game()
 
 
 func _update_ui_stats() -> void:
 	var white_pip := Rules.calculate_pip_count(game_state, Rules.PLAYER_WHITE)
 	var black_pip := Rules.calculate_pip_count(game_state, Rules.PLAYER_BLACK)
-	# O pip vai para a barra de cima: eram dois cartoes de 12 e 14 px, metade do
-	# piso de 14 sp, para o numero que decide a partida inteira.
 	set_duel_score(white_pip, black_pip)
-	turns_label.text = "%d" % turn_count
+	var time_str := "%d:%02d" % [shell.timer.get_time() / 60, shell.timer.get_time() % 60]
+	shell.set_level("T: %d  •  %s  •  %s" % [turn_count, time_str, DifficultyManager.label_for(game_id)])
 
 
 # ---------------------------------------------------------------------------
@@ -1000,12 +975,11 @@ func _update_ui_stats() -> void:
 
 func _handle_game_over(winner: int) -> void:
 	game_over = true
-	is_timer_running = false
+	shell.timer.stop()
 	_clear_all_highlights()
 	btn_roll_dice.hide()
 	btn_end_turn.hide()
 	btn_undo.disabled = true
-	btn_restart.show()
 
 	var win_type := Rules.get_win_type(game_state, winner)
 	var is_player_win := (winner == Rules.PLAYER_WHITE)
@@ -1025,38 +999,10 @@ func _handle_game_over(winner: int) -> void:
 	else:
 		msg = tr("BACKGAMMON_AI_WIN") % win_type_title
 
-	# A gamificacao sai por BaseGame.report_match_result: quem credita o XP,
-	# conta a partida e cuida da streak e o GamificationManager, ouvindo o
-	# barramento. O jogo so diz quanto vale a vitoria neste tabuleiro.
 	var xp_reward: int = (60 * multiplier) if is_player_win else 15
-	report_match_result(is_player_win, {
+	finish_game(msg, is_player_win, {
 		"xp": xp_reward,
 		"win_type": win_type,
 		"turns": turn_count,
-		"time": elapsed_time,
+		"time": shell.timer.get_time(),
 	})
-	finish_game(msg, is_player_win)
-
-	# Modal de Resultado
-	_show_result_modal(is_player_win, win_type_title, xp_reward)
-
-
-func _show_result_modal(is_win: bool, win_type_text: String, xp_earned: int) -> void:
-	result_modal.visible = true
-	result_modal.modulate.a = 0.0
-
-	if is_win:
-		result_title.text = tr("BACKGAMMON_RESULT_WIN")
-		result_stars.text = "⭐⭐⭐"
-		result_details.text = tr("BACKGAMMON_RESULT_DETAILS") % [
-			win_type_text, turn_count, int(elapsed_time) / 60, int(elapsed_time) % 60
-		]
-	else:
-		result_title.text = tr("BACKGAMMON_RESULT_LOSE")
-		result_stars.text = "⭐"
-		result_details.text = tr("BACKGAMMON_RESULT_TURNS") % [win_type_text, turn_count]
-
-	result_xp_label.text = tr("XP_EARNED_PLAIN") % xp_earned
-
-	var tw := create_tween()
-	tw.tween_property(result_modal, "modulate:a", 1.0, 0.4).set_trans(Tween.TRANS_CUBIC)

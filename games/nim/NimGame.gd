@@ -33,8 +33,6 @@ var selected_take_count: int = 1
 var is_animating: bool = false
 var move_history: Array[Dictionary] = [] # [{heap, take, player}]
 var turn_count: int = 0
-var elapsed_time: float = 0.0
-var is_timer_running: bool = false
 
 # Estruturas 3D
 var heap_roots: Array[Node3D] = []
@@ -42,11 +40,17 @@ var piece_nodes: Array[Array] = [] # Array de Array[Node3D] para cada pilha
 var heap_halos: Array[MeshInstance3D] = []
 var discard_tray: Node3D = null
 
+## Carimbo da partida corrente. Todo callback agendado por timer guarda o valor
+## que leu e desiste se ele mudou -- e o que impede a jogada da IA de cair sobre
+## o tabuleiro de outra partida.
+var _geracao: int = 0
+
+## Pecas ainda voando para a cesta. Precisa ser campo do no: o `tween_callback`
+## e uma lambda, e lambda em GDScript captura variavel local POR VALOR -- cada
+## copia contava 1 e o total nunca era atingido com duas pecas ou mais.
+var _tweens_pendentes: int = 0
+
 # Referências de Nós UI
-@onready var status_bar_label: Label = $UI/VBoxContainer/StatusLabel
-@onready var nim_sum_label: Label = $UI/TopBar/StatsHBox/NimSumCard/NimSumVal
-@onready var turns_label: Label = $UI/TopBar/StatsHBox/TurnsCard/TurnsVal
-@onready var mode_label: Label = $UI/TopBar/StatsHBox/ModeCard/ModeVal
 
 @onready var heap_buttons_container: HBoxContainer = $UI/HeapControls/HeapButtons
 @onready var take_controls_container: HBoxContainer = $UI/TakeControls
@@ -63,22 +67,17 @@ var discard_tray: Node3D = null
 @onready var btn_rule_toggle: Button = $UI/Actions/BtnRuleToggle
 @onready var preset_buttons_container: HBoxContainer = $UI/Presets/PresetButtons
 @onready var diff_buttons_container: HBoxContainer = $UI/DiffContainer/DiffButtons
+@onready var shell: GameShell = $UI/GameShell
+@onready var btn_restart_actions: Button = $UI/Actions/BtnRestart
 
-# Modal de Vitória/Fim de Jogo
-@onready var result_modal: Control = $ResultModal
-@onready var result_title: Label = $ResultModal/Panel/VBox/ResultTitle
-@onready var result_stars: Label = $ResultModal/Panel/VBox/ResultStars
-@onready var result_details: Label = $ResultModal/Panel/VBox/ResultDetails
-@onready var result_xp_label: Label = $ResultModal/Panel/VBox/ResultXP
-@onready var btn_rematch: Button = $ResultModal/Panel/VBox/BtnRematch
 
 
 func _ready() -> void:
 	env_3d = get_node_or_null("TabletopEnvironment3D") as TabletopEnvironment3D
-	status_label = status_bar_label
-	btn_restart = $UI/Actions/BtnRestart
+	status_label = shell.status_label
+	btn_restart = shell.btn_restart
 	menu_scene_path = BaseGame.MENU_TABULEIRO
-	result_modal.visible = false
+	shell.restart_requested.connect(_on_btn_rematch_pressed)
 	
 	_setup_ui_events()
 	_setup_3d_tabletop()
@@ -86,9 +85,6 @@ func _ready() -> void:
 	_start_new_game()
 
 
-func _process(delta: float) -> void:
-	if is_timer_running and not game_over:
-		elapsed_time += delta
 
 
 # ---------------------------------------------------------------------------
@@ -101,8 +97,11 @@ func _setup_ui_events() -> void:
 	btn_hint.pressed.connect(_on_btn_hint_pressed)
 	btn_mode_toggle.pressed.connect(_on_btn_mode_toggle_pressed)
 	btn_rule_toggle.pressed.connect(_on_btn_rule_toggle_pressed)
-	btn_rematch.pressed.connect(_on_btn_rematch_pressed)
-	
+
+	# O botao de reiniciar da barra de acoes nao tinha ligacao nenhuma, nem aqui
+	# nem no .tscn: era um alvo de 88 px que nao fazia nada.
+	btn_restart_actions.pressed.connect(_on_btn_rematch_pressed)
+
 	# Botões de retirada rápida
 	btn_take_1.pressed.connect(func(): _set_take_count(1))
 	btn_take_2.pressed.connect(func(): _set_take_count(2))
@@ -199,15 +198,21 @@ func _start_new_game() -> void:
 	heaps = Rules.create_heaps(preset_name)
 	move_history.clear()
 	turn_count = 0
-	elapsed_time = 0.0
-	is_timer_running = true
 	is_animating = false
 	selected_heap = -1
 	selected_take_count = 1
-	
+
+	# Toda partida nova invalida os callbacks com timer da anterior: a IA agenda
+	# a jogada dela para 0,45 s adiante, e nesse intervalo o jogador pode trocar
+	# o preset. Sem esta marca, o callback antigo indexava `heap_roots` com o
+	# indice de um tabuleiro que ja nao existe.
+	_geracao += 1
+
+	shell.timer.reset()
+	shell.timer.start()
+
 	if btn_restart:
 		btn_restart.hide()
-	result_modal.visible = false
 	
 	_build_3d_heaps_and_tokens()
 	_rebuild_heap_ui_buttons()
@@ -471,10 +476,14 @@ func _on_btn_confirm_move_pressed() -> void:
 
 
 func _execute_move_animated(heap_idx: int, take_count: int, player: int) -> void:
+	# A jogada da IA chega por timer: entre o agendamento e aqui o jogador pode
+	# ter trocado o preset, e a pilha de indice `heap_idx` pode nao existir mais.
+	if heap_idx < 0 or heap_idx >= piece_nodes.size():
+		return
+
 	is_animating = true
-	var h_node: Node3D = heap_roots[heap_idx]
 	var pieces_array: Array = piece_nodes[heap_idx]
-	
+
 	# Salva no histórico
 	move_history.append({"heap": heap_idx, "take": take_count, "player": player})
 	Rules.apply_move_inplace(heaps, heap_idx, take_count)
@@ -492,11 +501,17 @@ func _execute_move_animated(heap_idx: int, take_count: int, player: int) -> void
 	_update_hud_stats()
 	
 	# Animação em arco para a cesta de descarte
-	var completed_tweens: int = 0
 	var total_tweens: int = moving_pieces.size()
-	
+	_tweens_pendentes = total_tweens
+
+	# Pilha vazia nao gera tween nenhum, e sem este atalho `is_animating` ficaria
+	# ligado para sempre pelo mesmo caminho da contagem que nunca fecha.
+	if total_tweens == 0:
+		_on_move_animation_finished(player)
+		return
+
 	_play_place_sound()
-	
+
 	for idx in range(total_tweens):
 		var piece: Node3D = moving_pieces[idx]
 		# Reparenta temporariamente para o BoardRoot para movimentação global
@@ -521,9 +536,9 @@ func _execute_move_animated(heap_idx: int, take_count: int, player: int) -> void
 		tw.parallel().tween_property(piece, "rotation_degrees", Vector3(randf_range(-20, 20), randf_range(-180, 180), randf_range(-20, 20)), 0.46)
 		
 		tw.tween_callback(func():
-			completed_tweens += 1
+			_tweens_pendentes -= 1
 			_play_place_sound()
-			if completed_tweens >= total_tweens:
+			if _tweens_pendentes <= 0:
 				_on_move_animation_finished(player)
 		)
 
@@ -557,9 +572,10 @@ func _on_move_animation_finished(last_player: int) -> void:
 
 func _trigger_ai_turn() -> void:
 	# Pequeno timer antes de agir para sensação orgânica de tomada de decisão
+	var geracao := _geracao
 	var timer := get_tree().create_timer(0.65)
 	timer.timeout.connect(func():
-		if game_over or not is_vs_ai or current_turn != Rules.PLAYER_AI:
+		if geracao != _geracao or game_over or not is_vs_ai or current_turn != Rules.PLAYER_AI:
 			return
 		_execute_ai_decision()
 	)
@@ -579,18 +595,22 @@ func _execute_ai_decision() -> void:
 		else:
 			return
 			
-	# Realça a pilha que a IA escolheu
+	# Realça a pilha que a IA escolheu. O clamp e o que impede `_lift_selected_pieces`
+	# de marcar a pilha inteira quando a busca devolve mais do que ha nela.
 	selected_heap = h_idx
-	selected_take_count = take
+	selected_take_count = clampi(take, 1, maxi(1, heaps[h_idx] if h_idx < heaps.size() else 1))
 	_update_heap_halos()
 	_lift_selected_pieces()
 	
 	set_status(tr("NIM_AI_TOOK") % [take, 65 + h_idx])
 	
-	# Anima a retirada após breve destaque
+	# Anima a retirada após breve destaque. A geracao e conferida porque nestes
+	# 0,45 s o jogador pode trocar o preset e refazer as pilhas.
+	var geracao := _geracao
 	var timer := get_tree().create_timer(0.45)
 	timer.timeout.connect(func():
-		if game_over: return
+		if geracao != _geracao or game_over:
+			return
 		_execute_move_animated(h_idx, take, Rules.PLAYER_AI)
 	)
 
@@ -601,27 +621,13 @@ func _execute_ai_decision() -> void:
 
 func _handle_game_over(last_player: int) -> void:
 	game_over = true
-	is_timer_running = false
+	shell.timer.stop()
 	take_controls_container.visible = false
 	
 	var winner: int = Rules.get_winner(last_player, is_misere)
 	var human_won: bool = (winner == Rules.PLAYER_HUMAN)
-	
-	# O degrau ja e pago pelo `xp_scale` que o BaseGame publica: multiplicar de
-	# novo aqui contava a dificuldade duas vezes, e so no Nim.
-	var total_xp: int = 150 if human_won else 30
+	var elapsed = shell.timer.get_time()
 
-	var result: Dictionary = {
-		"winner": winner,
-		"turns": turn_count,
-		"misere": is_misere,
-		"preset": preset_name,
-		"time": elapsed_time,
-	}
-
-	# O Nim publica fatos, nao conquistas: quem decide o que vira conquista e o
-	# catalogo. Daqui saiam tres ids que nao existiam em catalogo nenhum, e o
-	# contador por jogo agora e do PlayerProfile (`per_game`), igual para os 19.
 	var fatos: Array[String] = []
 	if human_won:
 		if is_misere and ai_level >= DifficultyManager.MAX_LEVEL - 1:
@@ -629,12 +635,15 @@ func _handle_game_over(last_player: int) -> void:
 		if preset_name == "pyramid_4":
 			fatos.append("nim_pyramid")
 
-	result["xp"] = total_xp
-	result["flags"] = fatos
-	result["mode"] = "solo" if is_vs_ai else "pass_play"
-	report_match_result(human_won, result)
+	var result: Dictionary = {
+		"turns": turn_count,
+		"misere": is_misere,
+		"preset": preset_name,
+		"time": elapsed,
+		"flags": fatos,
+		"mode": "solo" if is_vs_ai else "pass_play"
+	}
 
-		
 	var audio := _get_audio_mgr()
 	if audio:
 		if human_won:
@@ -642,30 +651,13 @@ func _handle_game_over(last_player: int) -> void:
 		else:
 			audio.play_draw()
 			
-	# Atualiza modal de resultado
 	if is_vs_ai:
 		if human_won:
-			result_title.text = tr("NIM_WIN_TITLE")
-			result_stars.text = "⭐⭐⭐"
-			result_details.text = tr("NIM_WIN_DETAILS") % [
-				tr(DifficultyManager.tier_name(ai_level)), turn_count, _format_time(elapsed_time)
-			]
-			finish_game(tr("NIM_WIN"), true)
+			finish_game(tr("NIM_WIN"), true, result)
 		else:
-			result_title.text = tr("NIM_LOSE_TITLE")
-			result_stars.text = "⭐☆☆"
-			result_details.text = tr("NIM_LOSE_DETAILS") % [
-				turn_count, _format_time(elapsed_time)
-			]
-			finish_game(tr("NIM_LOSE"), false)
+			finish_game(tr("NIM_LOSE"), false, result)
 	else:
-		result_title.text = tr("NIM_LOCAL_WIN_TITLE") % winner
-		result_stars.text = "⭐⭐⭐"
-		result_details.text = tr("NIM_LOCAL_DETAILS") % turn_count
-		finish_game(tr("NIM_LOCAL_WIN") % winner, true)
-		
-	result_xp_label.text = tr("TOAST_XP") % total_xp if human_won else tr("XP_PARTICIPATION") % total_xp
-	reveal_result_modal(result_modal, 0.4)
+		finish_game(tr("NIM_LOCAL_WIN") % winner, true, result)
 
 
 # ---------------------------------------------------------------------------
@@ -763,13 +755,6 @@ func _on_btn_rematch_pressed() -> void:
 # ---------------------------------------------------------------------------
 
 func _update_hud_stats() -> void:
-	var nim_sum: int = Rules.calculate_nim_sum(heaps)
-	nim_sum_label.text = str(nim_sum)
-	turns_label.text = str(turn_count)
-	mode_label.text = "%s (%s)" % [tr("NIM_MODE_MISERE") if is_misere else tr("NIM_MODE_NORMAL"),
-		DifficultyManager.label_for(game_id) if is_vs_ai else tr("NIM_MODE_LOCAL")]
-	# O que resta na mesa e o unico numero que conta para quem esta jogando; o
-	# XOR e a contagem de turnos ficam nos cartoes, que sao leitura de analise.
 	var restam := 0
 	for pilha in heaps:
 		restam += pilha
@@ -789,13 +774,6 @@ func _highlight_active_settings_buttons() -> void:
 
 
 
-func _format_time(seconds: float) -> String:
-	var s: int = int(seconds)
-	var m: int = s / 60
-	var rem_s: int = s % 60
-	return "%02d:%02d" % [m, rem_s]
-
-
 func _play_place_sound() -> void:
 	var audio := _get_audio_mgr()
 	if audio:
@@ -810,10 +788,6 @@ func _play_error_buzz() -> void:
 
 func _get_event_bus() -> Node:
 	return get_node_or_null("/root/GameEventBus")
-
-
-func _get_player_profile() -> Node:
-	return get_node_or_null("/root/PlayerProfile")
 
 
 func _get_audio_mgr() -> Node:
