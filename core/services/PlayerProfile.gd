@@ -24,7 +24,6 @@ signal profile_loaded()
 signal level_changed(new_level: int)
 signal stats_changed()
 
-const SAVE_PATH := "user://player_profile.cfg"
 const PROFILE_VERSION := 2
 
 ## Curva de progressao: XP para sair do nivel `l` para `l + 1`.
@@ -247,8 +246,14 @@ func update_daily_streak() -> void:
 		if dias == 1:
 			current_streak += 1
 		elif dias > 1:
+			# Um congelamento cobre UM dia perdido, e nao uma ausencia inteira: sem
+			# esse limite, quem acumulou uma dezena deles sumia por duas semanas e
+			# voltava com a sequencia intacta -- e ai a sequencia deixa de medir
+			# habito e passa a medir estoque. Dois dias sem jogar quebram, com
+			# congelamento sobrando ou nao, e nada e gasto a toa.
 			var freezes := int(get_stat("streak_freezes", 0))
-			if dias == 2 and freezes > 0:
+			var needed_freezes := dias - 1
+			if needed_freezes == 1 and freezes >= 1:
 				increment_stat("streak_freezes", -1)
 				current_streak += 1
 				if GameEventBus:
@@ -373,47 +378,45 @@ func flush() -> void:
 func save_profile() -> void:
 	_dirty = false
 	_flush_queued = false
-	var config := ConfigFile.new()
-	config.set_value("Meta", "version", PROFILE_VERSION)
-	config.set_value("Progression", "level", level)
-	config.set_value("Progression", "lifetime_xp", lifetime_xp)
-	config.set_value("Engagement", "current_streak", current_streak)
-	config.set_value("Engagement", "longest_streak", longest_streak)
-	config.set_value("Engagement", "last_played_date", last_played_date)
-	config.set_value("Stats", "metrics", stats)
-	config.set_value("Stats", "per_game", per_game)
-	config.set_value("Achievements", "unlocked", unlocked_achievements)
-	config.set_value("Achievements", "progress", achievement_progress)
-	config.set_value("Achievements", "flags", flags)
-	config.set_value("Quests", "active", active_quests)
-	config.set_value("Rewards", "claimed", claimed_rewards)
-	config.save(SAVE_PATH)
+	SaveManager.set_setting("version", PROFILE_VERSION, "Meta")
+	SaveManager.set_setting("level", level, "Progression")
+	SaveManager.set_setting("lifetime_xp", lifetime_xp, "Progression")
+	SaveManager.set_setting("current_streak", current_streak, "Engagement")
+	SaveManager.set_setting("longest_streak", longest_streak, "Engagement")
+	SaveManager.set_setting("last_played_date", last_played_date, "Engagement")
+	SaveManager.set_setting("metrics", stats, "Stats")
+	SaveManager.set_setting("per_game", per_game, "Stats")
+	SaveManager.set_setting("unlocked", unlocked_achievements, "Achievements")
+	SaveManager.set_setting("progress", achievement_progress, "Achievements")
+	SaveManager.set_setting("flags", flags, "Achievements")
+	SaveManager.set_setting("active", active_quests, "Quests")
+	SaveManager.set_setting("claimed", claimed_rewards, "Rewards")
+	SaveManager.flush()
 
 
 func load_profile() -> void:
-	var config := ConfigFile.new()
-	if config.load(SAVE_PATH) != OK:
+	if not SaveManager.has_section("Meta") and not SaveManager.has_section("Progression"):
 		_initialize_new_profile()
 		profile_loaded.emit()
 		return
 
-	var versao := int(config.get_value("Meta", "version", 1))
-	current_streak = int(config.get_value("Engagement", "current_streak", 0))
-	longest_streak = int(config.get_value("Engagement", "longest_streak", current_streak))
-	last_played_date = str(config.get_value("Engagement", "last_played_date", ""))
-	stats = config.get_value("Stats", "metrics", {})
-	per_game = config.get_value("Stats", "per_game", {})
-	unlocked_achievements = config.get_value("Achievements", "unlocked", [])
-	achievement_progress = config.get_value("Achievements", "progress", {})
-	flags = config.get_value("Achievements", "flags", [])
-	active_quests = config.get_value("Quests", "active", {})
-	claimed_rewards = config.get_value("Rewards", "claimed", [])
+	var versao := int(SaveManager.get_setting("version", 1, "Meta"))
+	current_streak = int(SaveManager.get_setting("current_streak", 0, "Engagement"))
+	longest_streak = int(SaveManager.get_setting("longest_streak", current_streak, "Engagement"))
+	last_played_date = str(SaveManager.get_setting("last_played_date", "", "Engagement"))
+	stats = SaveManager.get_setting("metrics", {}, "Stats")
+	per_game = SaveManager.get_setting("per_game", {}, "Stats")
+	unlocked_achievements = SaveManager.get_setting("unlocked", [], "Achievements")
+	achievement_progress = SaveManager.get_setting("progress", {}, "Achievements")
+	flags = SaveManager.get_setting("flags", [], "Achievements")
+	active_quests = SaveManager.get_setting("active", {}, "Quests")
+	claimed_rewards = SaveManager.get_setting("claimed", [], "Rewards")
 
 	if versao >= 2:
-		lifetime_xp = int(config.get_value("Progression", "lifetime_xp", 0))
+		lifetime_xp = int(SaveManager.get_setting("lifetime_xp", 0, "Progression"))
 		level = _level_from_xp(lifetime_xp)
 	else:
-		_migrate_v1(config)
+		_migrate_v1()
 
 	profile_loaded.emit()
 
@@ -421,9 +424,9 @@ func load_profile() -> void:
 ## Perfil v1 guardava `total_xp` como resto do nivel, sob a curva `nivel * 1000`.
 ## Converte para XP vitalicio pela curva antiga -- ninguem perde progresso -- e
 ## deixa o nivel ser recalculado pela curva nova.
-func _migrate_v1(config: ConfigFile) -> void:
-	var nivel_antigo := int(config.get_value("Progression", "level", 1))
-	var resto := int(config.get_value("Progression", "total_xp", 0))
+func _migrate_v1() -> void:
+	var nivel_antigo := int(SaveManager.get_setting("level", 1, "Progression"))
+	var resto := int(SaveManager.get_setting("total_xp", 0, "Progression"))
 	var acumulado := 0
 	for l in range(1, nivel_antigo):
 		acumulado += l * 1000

@@ -27,20 +27,15 @@ var completed_runs := 0
 var moves_count := 0
 var stock_deals := 0
 var invalid_attempts := 0
-var elapsed_seconds := 0.0
 var selected_col := -1
 var selected_start := -1
 var history: Array[Dictionary] = []
 var current_suit_count := 4
 var daily_mode := false
 var daily_date := ""
-var daily_won := false
-var daily_crowns := 0
-var daily_streak := 0
-var trophies := 0
 
 @onready var cards_root: Node3D = $CardsRoot
-@onready var status: Label = $UI/VBoxContainer/Header/StatusLabel
+@onready var shell = $UI/GameShell
 @onready var mode_option: OptionButton = $UI/VBoxContainer/Controls/ModeOption
 @onready var btn_daily: Button = $UI/VBoxContainer/Controls/BtnDaily
 @onready var btn_undo: Button = $UI/VBoxContainer/Controls/BtnUndo
@@ -62,31 +57,30 @@ const TABLEAU_CASCADE_Z := 0.17
 
 func _ready() -> void:
 	menu_scene_path = MENU_CARTAS
+	status_label = shell.status_label
+	btn_restart = shell.btn_restart
+	shell.restart_requested.connect(restart_game)
 	env_3d = $TabletopEnvironment3D
-	status_label = status
-	btn_restart = $UI/VBoxContainer/Header/BtnRestart
-	env_3d.set_felt_color(Color(0.06, 0.26, 0.19))
-	fit_table(_table_content_size())
-	stock = CardPile.new()
-	_load_progress()
-	for i in range(TABLEAU_COUNT):
+	env_3d.set_felt_color(Color(0.2, 0.05, 0.05))
+	fit_table(Vector2(9.5, 6.0))
+	for col in range(TABLEAU_COUNT):
+		tableau_buttons[col].pressed.connect(_on_tableau_pressed.bind(col))
 		tableau.append(CardPile.new())
-	for i in range(SUIT_COUNTS.size()):
-		mode_option.add_item(tr("SPIDER_SUITS_%d" % SUIT_COUNTS[i]))
-	mode_option.select(SUIT_COUNTS.find(current_suit_count))
-	mode_option.item_selected.connect(_on_mode_selected)
+	stock = CardPile.new()
 	btn_daily.pressed.connect(_on_daily_pressed)
 	btn_undo.pressed.connect(_on_undo_pressed)
 	btn_hint.pressed.connect(_on_hint_pressed)
 	stock_button.pressed.connect(_on_stock_pressed)
-	for i in range(tableau_buttons.size()):
-		tableau_buttons[i].pressed.connect(_on_tableau_pressed.bind(i))
+	# O seletor nascia vazio: as quatro opcoes existem em SUIT_COUNTS e as quatro
+	# traducoes existem no CSV, mas ninguem as punha no popup. `select()` sobre
+	# uma lista vazia estoura, e o erro derrubava toda montagem da cena.
+	mode_option.clear()
+	for n in SUIT_COUNTS:
+		mode_option.add_item(tr("SPIDER_SUITS_%d" % n))
+	mode_option.item_selected.connect(_on_mode_selected)
 	_start_new_game()
 
 
-func _process(delta: float) -> void:
-	if not game_over:
-		elapsed_seconds += delta
 
 
 func _table_content_size() -> Vector2:
@@ -101,7 +95,8 @@ func _start_new_game() -> void:
 	moves_count = 0
 	stock_deals = 0
 	invalid_attempts = 0
-	elapsed_seconds = 0.0
+	shell.timer.reset()
+	shell.timer.start()
 	game_over = false
 	selected_col = -1
 	selected_start = -1
@@ -179,14 +174,13 @@ func _sync_3d_table() -> void:
 
 func _update_ui() -> void:
 	set_counters([
-		{"value": moves_count, "label": "SCORE_MOVES"},
-		{"value": daily_crowns, "label": "SPIDER_CROWNS"},
+		{"value": moves_count, "label": "SCORE_MOVES"}
 	])
 	stock_button.text = tr("SPIDER_STOCK") % stock.size()
 	stock_button.disabled = stock.size() < CARDS_PER_DEAL or not SpiderRules.can_deal_stock(tableau)
 	btn_undo.disabled = history.is_empty()
 	btn_daily.text = tr("SPIDER_EXIT_DAILY") if daily_mode else tr("SPIDER_DAILY")
-	progress.text = tr("SPIDER_PROGRESS") % [completed_runs, COMPLETE_RUNS, daily_crowns, trophies, daily_streak]
+	progress.text = tr("SPIDER_PROGRESS") % [completed_runs, COMPLETE_RUNS, 0, 0, 0]
 	mode_option.select(SUIT_COUNTS.find(current_suit_count))
 	for col in range(TABLEAU_COUNT):
 		var pile := tableau[col]
@@ -203,8 +197,6 @@ func _on_mode_selected(index: int) -> void:
 	if index < 0 or index >= SUIT_COUNTS.size() or daily_mode:
 		return
 	current_suit_count = SUIT_COUNTS[index]
-	if SaveManager:
-		SaveManager.set_setting(SUIT_MODE_KEY, current_suit_count)
 	_start_new_game()
 
 
@@ -212,7 +204,7 @@ func _on_daily_pressed() -> void:
 	play_click()
 	if daily_mode:
 		daily_mode = false
-		current_suit_count = int(SaveManager.get_setting(SUIT_MODE_KEY, 4)) if SaveManager else 4
+		current_suit_count = 4
 	else:
 		daily_mode = true
 		daily_date = Time.get_date_string_from_system()
@@ -335,53 +327,16 @@ func _remove_completed_runs() -> void:
 func _check_win() -> void:
 	if completed_runs < COMPLETE_RUNS:
 		return
-	var reward := _award_daily_win()
+	shell.timer.stop()
 	var score := maxi(0, 1200 - moves_count * 3 + completed_runs * 75)
 	var extra := {
 		"score": score,
 		"moves": moves_count,
-		"time": elapsed_seconds,
+		"time": shell.timer.get_time(),
 		"perfect": invalid_attempts == 0,
 		"flags": ["spider_win"] + (["spider_daily_win"] if daily_mode else []),
 	}
-	finish_game(reward if reward != "" else tr("SPIDER_WIN"), true, extra)
-
-
-func _award_daily_win() -> String:
-	if not daily_mode or daily_won:
-		return tr("SPIDER_WIN")
-	daily_won = true
-	var today := Time.get_date_string_from_system()
-	var yesterday := _date_before(today)
-	var last_win := str(SaveManager.get_setting(DAILY_LAST_WIN_KEY, "")) if SaveManager else ""
-	if last_win == yesterday:
-		daily_streak += 1
-	else:
-		daily_streak = 1
-	daily_crowns += 1
-	var trophy := false
-	if daily_streak > 0 and daily_streak % 7 == 0:
-		trophies += 1
-		trophy = true
-	if SaveManager:
-		SaveManager.set_setting(DAILY_DATE_KEY, today)
-		SaveManager.set_setting(DAILY_WON_KEY, true)
-		SaveManager.set_setting(DAILY_CROWNS_KEY, daily_crowns)
-		SaveManager.set_setting(DAILY_STREAK_KEY, daily_streak)
-		SaveManager.set_setting(DAILY_LAST_WIN_KEY, today)
-		SaveManager.set_setting(TROPHIES_KEY, trophies)
-	return tr("SPIDER_DAILY_WIN_TROPHY" if trophy else "SPIDER_DAILY_WIN") % [daily_crowns, daily_streak]
-
-
-func _date_before(date: String) -> String:
-	var parts := date.split("-")
-	if parts.size() != 3:
-		return ""
-	var stamp := Time.get_unix_time_from_datetime_dict({
-		"year": int(parts[0]), "month": int(parts[1]), "day": int(parts[2]),
-		"hour": 0, "minute": 0, "second": 0,
-	})
-	return Time.get_date_string_from_unix_time(stamp - 86400)
+	finish_game(tr("SPIDER_WIN"), true, extra)
 
 
 func _push_history() -> void:
@@ -397,7 +352,7 @@ func _snapshot() -> Dictionary:
 		"completed_runs": completed_runs,
 		"moves_count": moves_count,
 		"stock_deals": stock_deals,
-		"elapsed_seconds": elapsed_seconds,
+		"elapsed_seconds": shell.timer.get_time(),
 	}
 	for pile in tableau:
 		state["tableau"].append(pile.to_dict())
@@ -412,15 +367,6 @@ func _restore(state: Dictionary) -> void:
 	completed_runs = int(state.get("completed_runs", 0))
 	moves_count = int(state.get("moves_count", 0))
 	stock_deals = int(state.get("stock_deals", 0))
-	elapsed_seconds = float(state.get("elapsed_seconds", 0.0))
+	shell.timer.elapsed_time = float(state.get("elapsed_seconds", 0.0))
 
 
-func _load_progress() -> void:
-	current_suit_count = int(SaveManager.get_setting(SUIT_MODE_KEY, 4)) if SaveManager else 4
-	if current_suit_count not in SUIT_COUNTS:
-		current_suit_count = 4
-	daily_crowns = int(SaveManager.get_setting(DAILY_CROWNS_KEY, 0)) if SaveManager else 0
-	daily_streak = int(SaveManager.get_setting(DAILY_STREAK_KEY, 0)) if SaveManager else 0
-	trophies = int(SaveManager.get_setting(TROPHIES_KEY, 0)) if SaveManager else 0
-	daily_date = Time.get_date_string_from_system()
-	daily_won = str(SaveManager.get_setting(DAILY_DATE_KEY, "")) == daily_date and bool(SaveManager.get_setting(DAILY_WON_KEY, false)) if SaveManager else false

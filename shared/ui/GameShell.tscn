@@ -1,0 +1,55 @@
+[gd_scene load_steps=3 format=3 uid="uid://gameshelluid"]
+
+[ext_resource type="Script" path="res://shared/ui/GameShell.gd" id="1_script"]
+[ext_resource type="Script" path="res://shared/ui/GameTimer.gd" id="2_timer"]
+
+[node name="GameShell" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("1_script")
+
+[node name="GameTimer" type="Node" parent="."]
+script = ExtResource("2_timer")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_left = 24.0
+offset_top = 134.0
+offset_right = -24.0
+offset_bottom = 226.0
+grow_horizontal = 2
+theme_override_constants/separation = 8
+mouse_filter = 2
+
+[node name="LevelLabel" type="Label" parent="VBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.96, 0.8, 0.36, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.8)
+theme_override_font_sizes/font_size = 26
+text = ""
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="StatusLabel" type="Label" parent="VBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.8)
+theme_override_font_sizes/font_size = 27
+text = "..."
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="BtnRestart" type="Button" parent="VBoxContainer"]
+visible = false
+custom_minimum_size = Vector2(180, 88)
+layout_mode = 2
+size_flags_horizontal = 4
+text = "BTN_RESTART_ICON"

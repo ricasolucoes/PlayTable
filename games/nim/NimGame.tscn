@@ -153,24 +153,28 @@ theme_override_constants/separation = 8
 custom_minimum_size = Vector2(88.0, 88.0)
 layout_mode = 2
 text = "BTN_BACK_ICON"
+clip_text = true
 
 [node name="BtnHint" type="Button" parent="UI/Actions"]
 custom_minimum_size = Vector2(88.0, 88.0)
 layout_mode = 2
 text = "BTN_HINT_ICON"
+clip_text = true
 
 [node name="BtnModeToggle" type="Button" parent="UI/Actions"]
 custom_minimum_size = Vector2(100.0, 88.0)
 layout_mode = 2
 text = "NIM_BTN_VS_AI"
+clip_text = true
 
 [node name="BtnRuleToggle" type="Button" parent="UI/Actions"]
 custom_minimum_size = Vector2(100.0, 88.0)
 layout_mode = 2
 text = "NIM_BTN_MISERE"
+clip_text = true
 
 [node name="BtnRestart" type="Button" parent="UI/Actions"]
 custom_minimum_size = Vector2(95.0, 88.0)
 layout_mode = 2
 text = "BTN_RESET_ICON"
-
+clip_text = true

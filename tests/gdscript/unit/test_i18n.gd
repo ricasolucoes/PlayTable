@@ -130,9 +130,14 @@ func test_ciclo_percorre_os_tres_idiomas_e_volta() -> void:
 func test_idioma_escolhido_e_persistido() -> void:
 	LocaleManager.set_locale("es")
 	assert_eq(SaveManager.get_setting("locale"), "es", "gravado no SaveManager")
-	SaveManager.settings = {}
-	SaveManager.load_data()
-	assert_eq(SaveManager.get_setting("locale"), "es", "sobrevive a releitura do disco")
+
+	# Le com uma instancia limpa, como um boot novo faria: reler no proprio
+	# autoload nao distingue o que esta no disco do que esta so na memoria.
+	SaveManager.save_data()
+	var novo: Node = load("res://core/save/SaveManager.gd").new()
+	novo.load_data()
+	assert_eq(novo.get_setting("locale"), "es", "sobrevive a releitura do disco")
+	novo.free()
 
 
 # ------------------------------------------------ o codigo e o CSV batem

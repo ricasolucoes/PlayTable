@@ -1,8 +1,9 @@
-[gd_scene load_steps=4 format=3 uid="uid://memorygame01"]
+[gd_scene load_steps=5 format=3 uid="uid://memorygame01"]
 
 [ext_resource type="Script" path="res://games/memoria/MemoryGame.gd" id="1_script"]
 [ext_resource type="PackedScene" uid="uid://tabletopbg01" path="res://shared/ui/TabletopBackground.tscn" id="2_bg"]
 [ext_resource type="Theme" uid="uid://cxq6a87e8qf1b" path="res://shared/theme/MainTheme.tres" id="3_theme"]
+[ext_resource type="PackedScene" uid="uid://gameshelluid" path="res://shared/ui/GameShell.tscn" id="4_shell"]
 
 [node name="MemoryGame" type="Control"]
 layout_mode = 3
@@ -18,43 +19,30 @@ script = ExtResource("1_script")
 layout_mode = 1
 theme_type = 1
 
+[node name="GameShell" parent="." instance=ExtResource("4_shell")]
+layout_mode = 1
+
 [node name="VBoxContainer" type="VBoxContainer" parent="."]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 offset_left = 24.0
-offset_top = 134.0
+offset_top = 230.0
 offset_right = -24.0
 offset_bottom = -36.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_constants/separation = 18
 
-[node name="TopBar" type="HBoxContainer" parent="VBoxContainer"]
-alignment = 2
+[node name="ControlsContainer" type="HBoxContainer" parent="VBoxContainer"]
 layout_mode = 2
-theme_override_constants/separation = 16
+alignment = 1
 
-[node name="BtnRestart" type="Button" parent="VBoxContainer/TopBar"]
-custom_minimum_size = Vector2(110.0, 88.0)
-layout_mode = 2
-text = "BTN_RESET"
-clip_text = true
-
-[node name="BtnModeToggle" type="Button" parent="VBoxContainer/TopBar"]
+[node name="BtnModeToggle" type="Button" parent="VBoxContainer/ControlsContainer"]
 custom_minimum_size = Vector2(150.0, 88.0)
 layout_mode = 2
 text = "MEMORY_BTN_TWO_PLAYERS"
-clip_text = true
-
-[node name="StatusCard" type="PanelContainer" parent="VBoxContainer"]
-layout_mode = 2
-
-[node name="StatusLabel" type="Label" parent="VBoxContainer/StatusCard"]
-layout_mode = 2
-text = "MEMORY_START"
-horizontal_alignment = 1
 clip_text = true
 
 [node name="ScrollContainer" type="ScrollContainer" parent="VBoxContainer"]
@@ -72,55 +60,5 @@ theme_override_constants/h_separation = 16
 theme_override_constants/v_separation = 16
 columns = 4
 
-[node name="WinModal" type="ColorRect" parent="."]
-visible = false
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-color = Color(0, 0, 0, 0.75)
+[connection signal="restart_requested" from="GameShell" to="." method="_on_restart_pressed"]
 
-[node name="Panel" type="PanelContainer" parent="WinModal"]
-layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -220.0
-offset_top = -140.0
-offset_right = 220.0
-offset_bottom = 140.0
-grow_horizontal = 2
-grow_vertical = 2
-
-[node name="VBox" type="VBoxContainer" parent="WinModal/Panel"]
-layout_mode = 2
-theme_override_constants/separation = 16
-alignment = 1
-
-[node name="WinTitle" type="Label" parent="WinModal/Panel/VBox"]
-layout_mode = 2
-theme_override_colors/font_color = Color(1, 0.85, 0.35, 1)
-text = "RESULT_CONGRATS"
-horizontal_alignment = 1
-
-[node name="WinSub" type="Label" parent="WinModal/Panel/VBox"]
-layout_mode = 2
-text = "MEMORY_ALL_PAIRS"
-horizontal_alignment = 1
-autowrap_mode = 2
-
-[node name="Spacer" type="Control" parent="WinModal/Panel/VBox"]
-custom_minimum_size = Vector2(0, 10)
-layout_mode = 2
-
-[node name="BtnPlayAgain" type="Button" parent="WinModal/Panel/VBox"]
-custom_minimum_size = Vector2(88.0, 88.0)
-layout_mode = 2
-text = "BTN_RESTART"
-
-[connection signal="pressed" from="VBoxContainer/TopBar/BtnRestart" to="." method="_on_restart_pressed"]
-[connection signal="pressed" from="WinModal/Panel/VBox/BtnPlayAgain" to="." method="_on_restart_pressed"]

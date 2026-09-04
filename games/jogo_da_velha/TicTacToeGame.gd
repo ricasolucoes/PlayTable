@@ -18,30 +18,26 @@ var piece_nodes: Array[Node2D] = []
 var ai_level: int = DifficultyManager.DEFAULT_LEVEL
 
 @onready var grid_container: GridContainer = $BoardContainer/Grid
-@onready var win_modal: ColorRect = $WinModal
-@onready var win_modal_title: Label = $WinModal/Panel/VBox/WinTitle
-@onready var win_modal_sub: Label = $WinModal/Panel/VBox/WinSub
 @onready var strike_line: Line2D = $BoardContainer/StrikeLine
-@onready var level_label: Label = $VBoxContainer/StatusCard/StatusVBox/LevelLabel
-@onready var btn_mode_toggle: Button = $VBoxContainer/TopBar/BtnModeToggle
+@onready var btn_mode_toggle: Button = $UI/TopActions/BtnModeToggle
+@onready var shell: GameShell = $GameShell
 
 func _ready() -> void:
-	status_label = $VBoxContainer/StatusCard/StatusVBox/StatusLabel
+	status_label = shell.status_label
+	btn_restart = shell.btn_restart
+	shell.restart_requested.connect(_on_restart_pressed)
 	ai_level = DifficultyManager.get_level(game_id)
 	_setup_grid_cells()
-	btn_mode_toggle.pressed.connect(_on_mode_toggle_pressed)
 	_update_mode_button()
 	_update_level_label()
 	_update_turn_ui()
-	win_modal.visible = false
 	strike_line.visible = false
 	_maybe_ai_opens()
 	begin_match("ai" if vs_ai else "versus")
 
 
 func _update_level_label() -> void:
-	if level_label:
-		level_label.text = DifficultyManager.label_for(game_id)
+	pass
 
 
 ## Do degrau 8 em diante quem abre a partida e a IA.
@@ -59,22 +55,6 @@ func _maybe_ai_opens() -> void:
 	if is_inside_tree():
 		_do_ai_turn()
 
-
-## Fecha a partida na escada e avisa na tela quando o degrau andou.
-##
-## Quem move a escada e `report_match_result()`, no BaseGame -- todo jogo anda
-## nela, tenha IA ou nao. Aqui so se le o degrau novo, que so existe depois
-## daquela chamada.
-func _close_ladder(player_won: bool, was_draw: bool) -> void:
-	var antes := DifficultyManager.get_level(game_id)
-	report_match_result(player_won, {"ai_level": ai_level, "draw": was_draw})
-
-	var depois := DifficultyManager.get_level(game_id)
-	ai_level = depois
-	_update_level_label()
-	var aviso := DifficultyManager.change_notice(depois, depois - antes)
-	if aviso != "":
-		win_modal_sub.text += "\n" + aviso
 
 func _setup_grid_cells() -> void:
 	for child in grid_container.get_children():
@@ -156,34 +136,25 @@ func _handle_game_won(winner_id: int, combo: Array[int]) -> void:
 	for idx in combo:
 		piece_nodes[idx].set_winning(true)
 		
+	var msg := ""
 	if winner_id == 1:
 		score_x += 1
 		set_duel_score(score_x, score_o)
-		win_modal_title.text = tr("TICTACTOE_WIN_X") if vs_ai else tr("TICTACTOE_WIN_PLAYER") % 1
-		win_modal_sub.text = tr("TICTACTOE_WIN_X_DESC") if vs_ai else tr("TICTACTOE_WIN_PLAYER_DESC") % 1
+		msg = tr("TICTACTOE_WIN_X") if vs_ai else tr("TICTACTOE_WIN_PLAYER") % 1
 		if AudioManager: AudioManager.play_win()
 	else:
 		score_o += 1
 		set_duel_score(score_x, score_o)
-		win_modal_title.text = tr("TICTACTOE_WIN_O") if vs_ai else tr("TICTACTOE_WIN_PLAYER") % 2
-		win_modal_sub.text = tr("TICTACTOE_WIN_O_DESC") if vs_ai else tr("TICTACTOE_WIN_PLAYER_DESC") % 2
+		msg = tr("TICTACTOE_WIN_O") if vs_ai else tr("TICTACTOE_WIN_PLAYER") % 2
 		if AudioManager: AudioManager.play_win()
 
-	# O jogo termina por modal, nao por `finish_game()`: a gamificacao precisa
-	# ser publicada a mao.
 	var venceu := winner_id == 1
-	_close_ladder(venceu, false)
-	if venceu and env_3d != null:
-		env_3d.celebrate_win()
-	reveal_result_modal(win_modal)
+	finish_game(msg, venceu, {"ai_level": ai_level, "draw": false})
 
 func _handle_game_draw() -> void:
 	game_over = true
-	win_modal_title.text = tr("DRAW_TITLE")
-	win_modal_sub.text = tr("TICTACTOE_DRAW_DESC")
 	if AudioManager: AudioManager.play_draw()
-	_close_ladder(false, true)
-	reveal_result_modal(win_modal)
+	finish_game(tr("DRAW_TITLE"), false, {"ai_level": ai_level, "draw": true})
 
 func _update_turn_ui() -> void:
 	if game_over: return
@@ -192,6 +163,9 @@ func _update_turn_ui() -> void:
 	else:
 		set_duel_score(score_x, score_o, "SCORE_PLAYER_1", "SCORE_PLAYER_2")
 	set_active_side(is_player_turn)
+	
+	shell.set_level(DifficultyManager.label_for(game_id))
+	
 	if not vs_ai:
 		set_status(tr("TICTACTOE_PLAYER_TURN") % (1 if is_player_turn else 2))
 	elif is_player_turn:
@@ -200,7 +174,6 @@ func _update_turn_ui() -> void:
 		set_status(tr("TICTACTOE_AI_TURN"))
 
 func _start_new_game() -> void:
-	win_modal.visible = false
 	ai_level = DifficultyManager.get_level(game_id)
 	_update_level_label()
 	board.fill(0)

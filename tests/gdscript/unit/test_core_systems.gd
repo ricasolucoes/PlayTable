@@ -10,17 +10,26 @@ extends GutTest
 
 # ------------------------------------------------------------------ SaveManager
 
-func before_each() -> void:
-	_backup_settings = SaveManager.settings.duplicate(true)
-
-func after_each() -> void:
-	SaveManager.settings = _backup_settings
-	SaveManager.save_data()
+## Chaves que estes testes mexem. O SaveManager deixou de expor o dicionario
+## `settings` -- passou a guardar tudo num ConfigFile privado -- entao o backup
+## e feito pela mesma porta que o jogo usa, e nao pelo campo interno.
+const CHAVES_TOCADAS := ["master_volume", "theme_dark"]
 
 var _backup_settings: Dictionary = {}
 
+func before_each() -> void:
+	_backup_settings.clear()
+	for k in CHAVES_TOCADAS:
+		_backup_settings[k] = SaveManager.get_setting(k)
+
+func after_each() -> void:
+	for k in CHAVES_TOCADAS:
+		SaveManager.set_setting(k, _backup_settings[k])
+	SaveManager.save_data()
+
 func test_configuracoes_padrao() -> void:
-	SaveManager.settings = {"master_volume": 1.0, "theme_dark": true}
+	SaveManager.set_setting("master_volume", 1.0)
+	SaveManager.set_setting("theme_dark", true)
 	assert_eq(SaveManager.get_setting("master_volume"), 1.0, "volume cheio")
 	assert_eq(SaveManager.get_setting("theme_dark"), true, "tema escuro")
 
@@ -31,11 +40,15 @@ func test_chave_inexistente_devolve_o_padrao_pedido() -> void:
 func test_gravar_e_reler_do_disco() -> void:
 	SaveManager.set_setting("master_volume", 0.75)
 	SaveManager.set_setting("theme_dark", false)
-	# Zera a memoria e recarrega do arquivo, como faz um novo boot.
-	SaveManager.settings = {}
-	SaveManager.load_data()
-	assert_eq(SaveManager.get_setting("master_volume"), 0.75, "volume persistido")
-	assert_eq(SaveManager.get_setting("theme_dark"), false, "tema persistido")
+	SaveManager.save_data()
+
+	# Le com uma instancia limpa, que e o que um boot novo faz. Zerar o estado do
+	# autoload em memoria nao provaria nada: o valor poderia estar so na RAM.
+	var novo: Node = load("res://core/save/SaveManager.gd").new()
+	novo.load_data()
+	assert_eq(novo.get_setting("master_volume"), 0.75, "volume persistido")
+	assert_eq(novo.get_setting("theme_dark"), false, "tema persistido")
+	novo.free()
 
 func test_arquivo_de_configuracao_fica_em_user() -> void:
 	SaveManager.set_setting("master_volume", 0.5)

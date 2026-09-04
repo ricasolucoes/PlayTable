@@ -153,24 +153,28 @@ layout_mode = 2
 custom_minimum_size = Vector2(88, 88)
 size_flags_horizontal = 3
 text = "BTN_UNDO_ICON"
+clip_text = true
 
 [node name="BtnHint" type="Button" parent="UI/Actions"]
 layout_mode = 2
 custom_minimum_size = Vector2(88, 88)
 size_flags_horizontal = 3
 text = "BTN_HINT_ICON"
+clip_text = true
 
 [node name="BtnAutoSolve" type="Button" parent="UI/Actions"]
 layout_mode = 2
 custom_minimum_size = Vector2(88, 88)
 size_flags_horizontal = 3
 text = "HANOI_BTN_AUTO"
+clip_text = true
 
 [node name="BtnRestart" type="Button" parent="UI/Actions"]
 layout_mode = 2
 custom_minimum_size = Vector2(88, 88)
 size_flags_horizontal = 3
 text = "BTN_RESET_ICON"
+clip_text = true
 
 [connection signal="pressed" from="UI/PegTouchArea/BtnPegA" to="." method="_on_peg_pressed" binds=[0]]
 [connection signal="pressed" from="UI/PegTouchArea/BtnPegB" to="." method="_on_peg_pressed" binds=[1]]
