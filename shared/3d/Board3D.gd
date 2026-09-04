@@ -22,6 +22,7 @@ enum CellState {
 	INVALID,    ## Recusada agora ha pouco.
 	DISABLED,   ## Fora do jogo (buracos, casas mortas).
 	HIGHLIGHT,  ## Destaque neutro definido pelo jogo.
+	REVEALED,   ## Casa aberta e sem nada a assinalar (Campo Minado).
 }
 
 @export var rows: int = 8
@@ -124,8 +125,13 @@ func _build_markers() -> void:
 	var ring := TorusMesh.new()
 	ring.inner_radius = cell_size * 0.26
 	ring.outer_radius = cell_size * 0.34
-	ring.rings = 4
-	ring.ring_segments = Quality3D.radial_segments(20)
+	# `rings` sao as fatias EM VOLTA do anel; `ring_segments`, as arestas da secao
+	# do tubo. Estavam trocados: com 4 fatias em volta o anel deixa de ser redondo
+	# e sai um quadrado rodado -- o "losango" que aparecia no Campo Minado -- e os
+	# 20 segmentos de detalhe iam para a secao, que ninguem ve de cima. E o mesmo
+	# engano que `Explosion3D` documenta em `_spawn_ring`.
+	ring.rings = Quality3D.radial_segments(28)
+	ring.ring_segments = 6
 
 	_mm_marker = MultiMeshInstance3D.new()
 	var mm := MultiMesh.new()
@@ -135,14 +141,11 @@ func _build_markers() -> void:
 	mm.instance_count = rows * cols
 	mm.visible_instance_count = 0
 	_mm_marker.multimesh = mm
-	var mat := StandardMaterial3D.new()
-	mat.vertex_color_use_as_albedo = true
-	mat.albedo_color = Color.WHITE
-	mat.emission_enabled = true
-	mat.emission = Color.WHITE
-	mat.emission_energy_multiplier = 0.7
-	mat.roughness = 0.45
-	_mm_marker.material_override = mat
+	# A emissao tem de vir da cor da INSTANCIA. Com um StandardMaterial3D isso nao
+	# e possivel: `vertex_color_use_as_albedo` alimenta so o albedo, e a emissao
+	# ficava presa em `Color.WHITE` -- todo marcador brilhava branco, qualquer que
+	# fosse o estado, e o glow do ambiente ainda espalhava esse branco por cima.
+	_mm_marker.material_override = StateShader3D.marker()
 	_mm_marker.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	cells_root.add_child(_mm_marker)
 
@@ -276,9 +279,25 @@ func is_valid_cell(r: int, c: int) -> bool:
 # ---------------------------------------------------------------------------
 
 func set_cell_state(r: int, c: int, state: int) -> void:
+	stage_cell_state(r, c, state)
+	commit_states()
+
+
+## Anota o estado da casa sem redesenhar nada.
+##
+## Existe para quem mexe em muitas casas de uma vez: `_refresh_all_instances()`
+## reescreve os buffers das `rows * cols` casas, e chama-lo por casa custa o
+## quadrado do tabuleiro. O alastramento do Campo Minado abre dezenas de casas
+## num clique -- eram ate 10 000 escritas onde bastam 100. Feche com
+## `commit_states()`.
+func stage_cell_state(r: int, c: int, state: int) -> void:
 	if not is_valid_cell(r, c):
 		return
 	_states[r * cols + c] = state
+
+
+## Desenha o que `stage_cell_state()` anotou.
+func commit_states() -> void:
 	_refresh_all_instances()
 
 ## Limpa todos os estados de uma vez. Uma unica reconstrucao dos buffers,
@@ -310,15 +329,8 @@ func set_cell_disabled(r: int, c: int, disabled: bool) -> void:
 		_states[r * cols + c] = CellState.NORMAL
 	_refresh_all_instances()
 
-## Compatibilidade com a API antiga.
-func highlight_cell(r: int, c: int, color: Color = Tokens3D.COLOR_VALID) -> void:
-	var state := CellState.HIGHLIGHT
-	if color.is_equal_approx(Tokens3D.COLOR_SELECTED):
-		state = CellState.SELECTED
-	elif color.is_equal_approx(Tokens3D.COLOR_VALID):
-		state = CellState.VALID
-	set_cell_state(r, c, state)
-
+## Devolve a casa ao estado neutro. Para o tabuleiro inteiro use `clear_states()`,
+## que faz o mesmo numa reconstrucao so.
 func reset_cell_material(r: int, c: int) -> void:
 	set_cell_state(r, c, CellState.NORMAL)
 
@@ -334,6 +346,10 @@ func _state_tint(state: int) -> Color:
 			return Tokens3D.COLOR_INVALID.lerp(Color.WHITE, 0.30)
 		CellState.HIGHLIGHT:
 			return Tokens3D.COLOR_HINT.lerp(Color.WHITE, 0.40)
+		CellState.REVEALED:
+			# Casa aberta e o fundo do jogo, nao um aviso: so clareia a ardosia para
+			# ela se separar do que ainda esta por cavar.
+			return Color(1.20, 1.20, 1.24)
 		CellState.DISABLED:
 			return Color(0.42, 0.42, 0.44)
 		_:
@@ -382,7 +398,7 @@ func _refresh_all_instances() -> void:
 
 			var marker_col := _state_marker_color(state)
 			if marker_col.a > 0.0:
-				var m_pos := get_cell_position_3d(r, c, Tokens3D.TILE_THICKNESS + 0.012)
+				var m_pos := get_cell_position_3d(r, c, Tokens3D.TILE_THICKNESS + 0.02)
 				_mm_marker.multimesh.set_instance_transform(
 					marker_i, Transform3D(Basis.IDENTITY.scaled(Vector3(1.0, 0.5, 1.0)), m_pos))
 				_mm_marker.multimesh.set_instance_color(marker_i, marker_col)

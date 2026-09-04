@@ -1,4 +1,4 @@
-extends GridGame
+extends BaseGame
 
 ## SenetGame: Senet 3D do Antigo Egito com Tabuleiro Entalhado 3x10 e Peças Conoidais em Ouro/Obsidiana
 
@@ -90,12 +90,12 @@ func _start_new_game() -> void:
 func _sync_pieces_3d() -> void:
 	for p in pieces_root.get_children(): p.queue_free()
 	pieces_3d.clear()
-	
+	board_3d.clear_states()
+
 	for sq in range(1, 31):
 		var val = board[sq]
 		var rc := _get_square_row_col(sq)
-		board_3d.reset_cell_material(rc.x, rc.y)
-		
+
 		if val != 0:
 			var piece := preload("res://shared/3d/Token3D.tscn").instantiate()
 			piece.token_type = "pawn"
@@ -126,9 +126,10 @@ func _on_btn_cast_sticks_pressed() -> void:
 			_handle_end_of_turn()
 		else:
 			set_status(tr("SENET_PICK_PIECE") % current_throw)
+			var origens: Array = []
 			for m in valid_moves:
-				var rc := _get_square_row_col(m["from"])
-				board_3d.highlight_cell(rc.x, rc.y, Color(0.2, 0.85, 0.4))
+				origens.append(_get_square_row_col(m["from"]))
+			board_3d.set_cells_state(origens, Board3D.CellState.VALID)
 	else:
 		_play_ai_move()
 

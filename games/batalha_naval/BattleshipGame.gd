@@ -36,7 +36,8 @@ var ai_memoria: Dictionary = {}
 
 @onready var radar_board: Board3D = $Board3D
 @onready var fleet_board: Board3D = $FleetBoard
-@onready var level_label: Label = $UI/VBoxContainer/LevelLabel
+@onready var game_shell: GameShell = $GameShell
+@onready var level_label: Label = game_shell.level_label
 
 ## Pinos e cascos de cada mapa, para limpar entre partidas.
 var _radar_marks: Node3D
@@ -48,8 +49,9 @@ var _player_hull_nodes: Dictionary = {}   # indice do navio -> MeshInstance3D
 
 func _ready() -> void:
 	env_3d = $TabletopEnvironment3D
-	status_label = $UI/VBoxContainer/StatusLabel
-	btn_restart = $UI/VBoxContainer/BtnRestart
+	status_label = game_shell.status_label
+	btn_restart = game_shell.btn_restart
+	game_shell.restart_requested.connect(_on_btn_restart_pressed)
 	env_3d.apply_theme(GameTheme3D.steel_blue())
 	ai_level = DifficultyManager.get_level(game_id)
 
@@ -133,10 +135,8 @@ func _start_new_game() -> void:
 			c.queue_free()
 	_player_hull_nodes.clear()
 
-	for r in range(GRID):
-		for c in range(GRID):
-			radar_board.reset_cell_material(r, c)
-			fleet_board.reset_cell_material(r, c)
+	radar_board.clear_states()
+	fleet_board.clear_states()
 
 	# A frota aliada fica a vista o tempo todo: e o mapa que o jogador consulta.
 	for i in player_ships.size():

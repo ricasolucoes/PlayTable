@@ -1,4 +1,4 @@
-extends GridGame
+extends BaseGame
 
 ## ReversiGame: Reversi 3D com Tabuleiro em Feltro Esmeralda e Animação 3D de Virada de Discos
 
@@ -40,9 +40,9 @@ func _sync_pieces_3d() -> void:
 	
 	var black_count: int = 0
 	var white_count: int = 0
+	board_3d.clear_states()
 	for r in range(8):
 		for c in range(8):
-			board_3d.reset_cell_material(r, c)
 			var val: int = grid_data.get_cell(r, c)
 			if val != 0:
 				var piece := preload("res://shared/3d/Token3D.tscn").instantiate()
@@ -58,22 +58,36 @@ func _sync_pieces_3d() -> void:
 	_pintar_placar(black_count, white_count)
 	_highlight_valid_moves()
 
+## Acende as casas onde o jogador pode pousar uma peca.
+##
+## Antes isto passava uma cor solta a `highlight_cell`, que decide o estado
+## comparando a cor com as constantes: `Color(0.2, 0.8, 0.4)` nao casava com
+## `Tokens3D.COLOR_VALID` (0.24, 0.78, 0.46) e caia em HIGHLIGHT -- tom palido
+## e, pior, sem o anel de acessibilidade. Sobre feltro verde nao se via nada, e
+## era por isso que dava para clicar na tela toda sem conseguir jogar.
+##
+## Em lote tambem: casa a casa, cada chamada reconstruia os buffers de MultiMesh
+## das 64 casas.
 func _highlight_valid_moves() -> void:
-	for r in range(8):
-		for c in range(8):
-			board_3d.reset_cell_material(r, c)
-			
-	if is_player_turn and not game_over:
-		var valids := ReversiRules.get_valid_moves(grid_data, 1)
-		for pos in valids:
-			board_3d.highlight_cell(pos.x, pos.y, Color(0.2, 0.8, 0.4))
+	board_3d.clear_states()
+	if not is_player_turn or game_over:
+		return
+	var destinos: Array = []
+	destinos.assign(ReversiRules.get_valid_moves(grid_data, 1))
+	board_3d.set_cells_state(destinos, Board3D.CellState.VALID)
 
 func _on_cell_clicked(r: int, c: int) -> void:
 	if game_over or not is_player_turn: return
 	
 	var pos := Vector2i(r, c)
 	var flipped := ReversiRules.get_flipped_pieces(grid_data, pos, 1)
-	if flipped.size() == 0: return
+	if flipped.size() == 0:
+		# Recusar calado e o que faz o jogo parecer quebrado: quem nao conhece a
+		# regra do flanqueio conclui que o toque nao esta chegando.
+		set_status(tr("REVERSI_INVALID"))
+		if AudioManager:
+			AudioManager.play_draw()
+		return
 	
 	# Jogada do jogador
 	grid_data.set_cell(r, c, 1)

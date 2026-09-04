@@ -1,4 +1,4 @@
-extends GridGame
+extends BaseGame
 
 ## CheckersGame: Damas com Tabuleiro 3D em Nogueira, Peças de Marfim/Obsidiana e Coroas Douradas
 
@@ -14,12 +14,14 @@ var ai_level: int = DifficultyManager.DEFAULT_LEVEL
 
 @onready var board_3d: Board3D = $Board3D
 @onready var pieces_root: Node3D = $PiecesRoot
-@onready var level_label: Label = $UI/VBoxContainer/LevelLabel
+@onready var game_shell: GameShell = $GameShell
+@onready var level_label: Label = game_shell.level_label
 
 func _ready() -> void:
 	env_3d = $TabletopEnvironment3D
-	status_label = $UI/VBoxContainer/StatusLabel
-	btn_restart = $UI/VBoxContainer/BtnRestart
+	status_label = game_shell.status_label
+	btn_restart = game_shell.btn_restart
+	game_shell.restart_requested.connect(_on_btn_restart_pressed)
 	ai_level = DifficultyManager.get_level(game_id)
 	env_3d.apply_theme(_build_theme())
 	board_3d.setup_board(CheckersRules.ROWS, CheckersRules.COLS, 0.75, "wood_checkered")
@@ -197,19 +199,19 @@ func _execute_player_move(from_pos: Vector2i, move_dict: Dictionary) -> void:
 	if piece_3d and not era_dama and _is_queen(to_pos):
 		piece_3d.promote_queen()
 		
-	for row in range(CheckersRules.ROWS):
-		for col in range(CheckersRules.COLS):
-			board_3d.reset_cell_material(row, col)
-			
+	board_3d.clear_states()
+
 	if captured_pos != Vector2i(-1, -1):
 		var further_captures := CheckersRules.get_captures_for_piece(grid_data, to_pos)
 		if further_captures.size() > 0:
 			continuing_capture_pos = to_pos
 			selected_pos = to_pos
 			valid_moves = further_captures
-			board_3d.highlight_cell(to_pos.x, to_pos.y, Color(0.9, 0.75, 0.2))
-			for vm in valid_moves:
-				board_3d.highlight_cell(vm["to"].x, vm["to"].y, Color(0.2, 0.8, 0.4))
+			# `_show_selection` ja pinta origem e destinos pelos estados certos.
+			# Aqui a cena voltava a API por cor, cuja comparacao nao casava, e o
+			# realce sumia justamente na captura multipla -- a jogada em que mais
+			# se precisa ver para onde a peca ainda pode ir.
+			_show_selection(to_pos)
 			set_status(tr("CHECKERS_MUST_CHAIN"))
 			return
 			

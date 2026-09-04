@@ -214,7 +214,7 @@ func test_vitoria_anuncia_o_tempo_no_rotulo() -> void:
 	var jogo = add_child_autofree(GameScene.instantiate())
 	_minas_em(jogo.grid_data, [[0, 0]])
 	RulesScript.reveal_cell(jogo.grid_data, 8, 8)
-	jogo.elapsed_time = 42.0
+	jogo.game_timer.elapsed_time = 42.0
 	jogo._check_win_condition()
 	assert_true(jogo.game_won, "partida vencida")
 	assert_string_contains(jogo.status_label.text, "100%", "o texto sobreviveu a formatacao")

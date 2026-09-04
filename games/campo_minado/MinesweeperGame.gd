@@ -21,6 +21,12 @@ var total_minas: int = MinesweeperRules.TOTAL_MINES
 @onready var btn_mode: Button = $UI/Controls/BtnMode
 @onready var btn_smiley: Button = $UI/Controls/BtnSmiley
 
+## Cor de cada contagem, na convencao do Campo Minado desde sempre.
+##
+## Esta tabela existia no arquivo e nao era lida por ninguem: os numeros nunca
+## chegavam a ser desenhados. A casa com uma mina em volta e a casa com tres
+## recebiam o mesmo tom, e sem a contagem nao ha o que deduzir -- o jogo nao
+## tinha como ser jogado.
 const NUMBER_COLORS = [
 	Color(0, 0, 0, 0),
 	Color(0.2, 0.6, 1.0),   # 1 Azul
@@ -33,6 +39,10 @@ const NUMBER_COLORS = [
 	Color(0.6, 0.6, 0.6)    # 8 Cinza
 ]
 
+## Numeros ja na mesa, por casa. Reaproveitados entre partidas.
+var numbers_3d: Dictionary = {}
+var numbers_root: Node3D = null
+
 func _ready() -> void:
 	env_3d = $TabletopEnvironment3D
 	status_label = game_shell.status_label
@@ -44,6 +54,17 @@ func _ready() -> void:
 	# A grade 2D de botoes que ficava aqui era plana e ancorada no centro da
 	# tela, e nao coincidia com o tabuleiro em perspectiva.
 	board_3d.cell_clicked.connect(_on_cell_clicked)
+
+	# Ardosia e um tabuleiro, nao mesa de carteado: sem tema proprio a cena herda
+	# o `casino_green`, cujo teto de inclinacao de camera e 56 graus para a face
+	# da carta nao achatar. Em retrato quem manda e a largura, e esse teto deixava
+	# o tabuleiro menor do que a tela comporta.
+	env_3d.apply_theme(GameTheme3D.stone_gallery())
+
+	numbers_root = Node3D.new()
+	numbers_root.name = "NumbersRoot"
+	add_child(numbers_root)
+
 	fit_table(board_3d.content_size())
 	_start_new_game()
 
@@ -60,11 +81,13 @@ func _start_new_game() -> void:
 	
 	for f in flags_root.get_children(): f.queue_free()
 	flags_3d.clear()
+
+	if numbers_root:
+		for n in numbers_root.get_children(): n.queue_free()
+	numbers_3d.clear()
 	
-	for r in range(MinesweeperRules.ROWS):
-		for c in range(MinesweeperRules.COLS):
-			board_3d.reset_cell_material(r, c)
-			
+	board_3d.clear_states()
+
 	grid_data = MinesweeperRules.create_empty_grid()
 	_update_header_mines()
 
@@ -125,16 +148,52 @@ func _update_flag_3d(r: int, c: int, is_flagged: bool) -> void:
 			flags_3d[pos].queue_free()
 			flags_3d.erase(pos)
 
+## Poe na mesa o que o tabuleiro ja revelou: o tom da casa aberta e, onde ha
+## minas em volta, o algarismo.
+##
+## Casa aberta agora e `REVEALED`. Antes a casa vazia recebia `LAST_MOVE`, que
+## ganha o anel de aviso: o alastramento do primeiro clique abre dezenas delas
+## de uma vez, e a tela enchia de aneis acesos que nao queriam dizer nada.
+## `HIGHLIGHT` na casa numerada tinha o problema oposto -- destacava sem
+## informar, porque o numero nunca era desenhado.
 func _sync_revealed_3d() -> void:
 	for r in range(MinesweeperRules.ROWS):
 		for c in range(MinesweeperRules.COLS):
 			var cell: Dictionary = grid_data.get_cell(r, c)
-			if cell["is_revealed"]:
-				var count = cell["adjacent_mines"]
-				if count > 0:
-					board_3d.set_cell_state(r, c, Board3D.CellState.HIGHLIGHT)
-				else:
-					board_3d.set_cell_state(r, c, Board3D.CellState.LAST_MOVE)
+			if not cell["is_revealed"]:
+				continue
+			board_3d.stage_cell_state(r, c, Board3D.CellState.REVEALED)
+			_mostrar_numero(r, c, int(cell["adjacent_mines"]))
+	board_3d.commit_states()
+
+
+## Desenha (ou apaga) o algarismo de uma casa aberta.
+##
+## `Label3D` deitado sobre a casa, com contorno preto: a leitura tem de sair a
+## meio metro do rosto, num quadrado de ~63 px. Casa com zero minas em volta nao
+## mostra nada -- e o que separa visualmente a regiao limpa do resto.
+func _mostrar_numero(r: int, c: int, count: int) -> void:
+	var pos := Vector2i(r, c)
+	if count <= 0:
+		if numbers_3d.has(pos):
+			numbers_3d[pos].queue_free()
+			numbers_3d.erase(pos)
+		return
+	if numbers_3d.has(pos):
+		return
+	var rotulo := Label3D.new()
+	rotulo.text = str(count)
+	rotulo.font_size = 96
+	rotulo.pixel_size = 0.0045
+	rotulo.outline_size = 20
+	rotulo.outline_modulate = Color(0.04, 0.05, 0.07, 0.9)
+	rotulo.modulate = NUMBER_COLORS[clampi(count, 1, NUMBER_COLORS.size() - 1)]
+	rotulo.billboard = BaseMaterial3D.BILLBOARD_DISABLED
+	rotulo.no_depth_test = false
+	rotulo.rotation_degrees = Vector3(-90.0, 0.0, 0.0)
+	rotulo.position = board_3d.get_cell_position_3d(r, c, Tokens3D.TILE_THICKNESS + 0.03)
+	numbers_root.add_child(rotulo)
+	numbers_3d[pos] = rotulo
 
 func _trigger_game_over(hit_r: int, hit_c: int) -> void:
 	game_timer.stop()
