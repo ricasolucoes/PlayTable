@@ -5,15 +5,34 @@ extends BaseGame
 const PLAYER_NAMES = ["LUDO_P_RED", "LUDO_P_BLUE", "LUDO_P_GREEN", "LUDO_P_YELLOW"]
 const PLAYER_MAT_NAMES = ["plastic_red", "plastic_blue", "plastic_green", "plastic_yellow"]
 const START_OFFSETS = [0, 7, 14, 21]
+
+## Cor de cada base. O codigo pintava os quatro quadrantes de cinza enquanto o
+## comentario dizia "Vermelho/Azul/Verde/Amarelo": sem cor, quem joga nao acha
+## a propria base nem entende de onde os peoes saem.
+const QUAD_COLORS := [
+	Color(0.72, 0.18, 0.16),
+	Color(0.16, 0.36, 0.72),
+	Color(0.18, 0.56, 0.28),
+	Color(0.86, 0.70, 0.14),
+]
 const TRACK_LENGTH = 28
-const PAWNS_PER_PLAYER = 2
+const PAWNS_PER_PLAYER = 4
+
+## Quantas vezes se rola o dado quando TODOS os peoes estao na base. E a regra
+## oficial, e nao um favor: sair da base exige 6, entao com uma tirada so o
+## jogador via "sem jogadas" em 5 de 6 rodadas de abertura e o tabuleiro nao se
+## mexia -- que foi exatamente o defeito relatado.
+const TENTATIVAS_NA_BASE = 3
 
 var players_pawns = [
-	[-1, -1], # Jogador
-	[-1, -1], # IA Azul
-	[-1, -1], # IA Verde
-	[-1, -1]  # IA Amarelo
+	[-1, -1, -1, -1], # Jogador
+	[-1, -1, -1, -1], # IA Azul
+	[-1, -1, -1, -1], # IA Verde
+	[-1, -1, -1, -1]  # IA Amarelo
 ]
+
+## Tiradas que ainda restam nesta vez, para a regra das tentativas na base.
+var tentativas_restantes: int = 1
 
 var current_turn: int = 0
 var last_roll: int = 0
@@ -28,11 +47,13 @@ var pawns_3d = [[], [], [], []]
 @onready var dice_3d: Dice3D = $Dice3D
 @onready var btn_dice: Button = $UI/DiceArea/BtnDice
 @onready var pawn_buttons_container: HBoxContainer = $UI/PawnSelectionArea/PawnButtons
+@onready var shell: GameShell = $GameShell
 
 func _ready() -> void:
 	env_3d = $TabletopEnvironment3D
-	status_label = $UI/VBoxContainer/StatusLabel
-	btn_restart = $UI/Actions/BtnRestart
+	status_label = shell.status_label
+	btn_restart = shell.btn_restart
+	shell.restart_requested.connect(_on_btn_restart_pressed)
 	ai_level = DifficultyManager.get_level(game_id)
 	_setup_3d_ludo_board()
 	_setup_3d_pawns()
@@ -67,7 +88,7 @@ func _setup_3d_ludo_board() -> void:
 		q_box.size = Vector3(2.4, 0.02, 2.4)
 		q_mesh.mesh = q_box
 		q_mesh.position = quad_offsets[p]
-		q_mesh.material_override = MaterialFactory3D.get_plastic(Color(0.2, 0.2, 0.2), false)
+		q_mesh.material_override = MaterialFactory3D.get_plastic(QUAD_COLORS[p], false)
 		board_root.add_child(q_mesh)
 
 func _setup_3d_pawns() -> void:
@@ -122,13 +143,16 @@ func _start_new_game() -> void:
 	can_roll = true
 	ai_level = DifficultyManager.get_level(game_id)
 	btn_restart.hide()
+	shell.timer.reset()
+	shell.timer.start()
 	
 	players_pawns = [
-		[-1, -1],
-		[-1, -1],
-		[-1, -1],
-		[-1, -1]
+		[-1, -1, -1, -1],
+		[-1, -1, -1, -1],
+		[-1, -1, -1, -1],
+		[-1, -1, -1, -1]
 	]
+	tentativas_restantes = TENTATIVAS_NA_BASE
 	
 	dice_3d.position = Vector3(0, 0.35, 0)
 	dice_3d.set_value_immediate(6)
@@ -153,7 +177,9 @@ func _pintar_placar() -> void:
 		melhor_ia = maxi(melhor_ia, em_casa.call(p))
 	set_duel_score("%d/%d" % [em_casa.call(0), PAWNS_PER_PLAYER],
 		"%d/%d" % [melhor_ia, PAWNS_PER_PLAYER])
-
+	
+	var time_str := "%02d:%02d" % [shell.timer.get_time() / 60, shell.timer.get_time() % 60]
+	shell.set_level(DifficultyManager.label_for(game_id) + "  •  " + time_str)
 
 func _sync_pawns_positions(immediate: bool = false) -> void:
 	_pintar_placar()
@@ -185,16 +211,41 @@ func _on_dice_roll_finished(val: int) -> void:
 	else:
 		_handle_ai_roll(last_roll)
 
-func _handle_player_roll(roll: int) -> void:
+## Peoes do jogador que podem andar com este dado. Base so sai no 6, e o peao
+## que ja anda nao pode passar da casa 32.
+func _movable_pawns(p: int, roll: int) -> Array:
 	var movable: Array = []
 	for idx in range(PAWNS_PER_PLAYER):
-		var pos = players_pawns[0][idx]
+		var pos = players_pawns[p][idx]
 		if pos == -1 and roll == 6: movable.append(idx)
 		elif pos >= 0 and pos + roll <= 32: movable.append(idx)
-		
+	return movable
+
+
+## Verdadeiro quando os quatro peoes do lado ainda estao na base -- e so nesse
+## caso a regra das tres tiradas vale.
+func _todos_na_base(p: int) -> bool:
+	for idx in range(PAWNS_PER_PLAYER):
+		if players_pawns[p][idx] != -1:
+			return false
+	return true
+
+
+func _handle_player_roll(roll: int) -> void:
+	var movable: Array = _movable_pawns(0, roll)
+
 	if movable.is_empty():
+		# Tudo na base e o dado nao deu 6: a regra oficial da mais uma tirada,
+		# ate tres. Sem isto a abertura travava rodada apos rodada sem que nada
+		# se mexesse na tela.
+		tentativas_restantes -= 1
+		if _todos_na_base(0) and tentativas_restantes > 0:
+			set_status(tr("LUDO_TRY_AGAIN") % [roll, tentativas_restantes])
+			can_roll = true
+			btn_dice.disabled = false
+			return
 		set_status(tr("NO_MOVES_WITH") % roll)
-		await get_tree().create_timer(0.8).timeout
+		await get_tree().create_timer(0.9).timeout
 		_next_turn()
 	elif movable.size() == 1:
 		_move_player_pawn(movable[0], roll)
@@ -203,13 +254,25 @@ func _handle_player_roll(roll: int) -> void:
 		for c in pawn_buttons_container.get_children(): c.queue_free()
 		for idx in movable:
 			var btn := Button.new()
-			btn.custom_minimum_size = Vector2(140, 50)
+			# 50 px de altura ficava abaixo do alvo minimo de toque do projeto.
+			btn.custom_minimum_size = Vector2(140, UIKit.TOQUE_MIN)
 			btn.text = tr("LUDO_MOVE_PAWN") % (idx + 1)
 			btn.pressed.connect(_on_pawn_choice_selected.bind(idx, roll))
 			pawn_buttons_container.add_child(btn)
+		# "Peao 1" e "Peao 2" nao dizem qual e qual no tabuleiro: o peao que pode
+		# andar levanta, e ai o numero do botao tem a quem se referir.
+		_levantar_peoes(movable)
+
+## Levanta os peoes do jogador que podem andar e baixa o resto.
+func _levantar_peoes(indices: Array) -> void:
+	for idx in range(PAWNS_PER_PLAYER):
+		var pawn = pawns_3d[0][idx]
+		if pawn and pawn.has_method("set_lift"):
+			pawn.set_lift(Tokens3D.LIFT_SELECTED if idx in indices else 0.0)
 
 func _on_pawn_choice_selected(pawn_idx: int, roll: int) -> void:
 	for c in pawn_buttons_container.get_children(): c.queue_free()
+	_levantar_peoes([])
 	_move_player_pawn(pawn_idx, roll)
 
 func _move_player_pawn(idx: int, roll: int) -> void:
@@ -233,6 +296,7 @@ func _next_turn() -> void:
 	current_turn = (current_turn + 1) % 4
 	if current_turn == 0:
 		set_status(tr("LUDO_YOUR_TURN") + difficulty_suffix())
+		tentativas_restantes = TENTATIVAS_NA_BASE
 		can_roll = true
 		btn_dice.disabled = false
 	else:
@@ -288,8 +352,9 @@ func _check_win(p: int) -> bool:
 			all_finished = false
 			break
 	if all_finished:
+		shell.timer.stop()
 		if p == 0:
-			finish_game(tr("LUDO_WIN"), true)
+			finish_game(tr("LUDO_WIN"), true, {"time": shell.timer.get_time(), "xp": 100})
 		else:
 			finish_game(tr("LUDO_LOSE") % tr(PLAYER_NAMES[p]))
 		return true

@@ -58,7 +58,12 @@ func set_value_immediate(val: int) -> void:
 		rotation = FACE_ROTATIONS[current_value]
 
 func roll(target_val: int, duration: float = 0.8) -> void:
+	# Rolagem pedida com o dado ainda no ar: sair calado deixava quem chamou
+	# esperando um sinal que nunca vinha. O Ludo desabilita o botao ANTES de
+	# chamar `roll()` e so o reabilita em `roll_finished` -- sem esta emissao o
+	# botao do dado morria de vez, sem recuperacao possivel na partida.
 	if is_rolling:
+		roll_finished.emit(current_value)
 		return
 	is_rolling = true
 	target_val = clamp(target_val, 1, 6)

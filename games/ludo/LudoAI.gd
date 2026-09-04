@@ -17,7 +17,14 @@ extends RefCounted
 const TRACK_LENGTH := 28
 const RETA_FINAL := 28
 const CHEGADA := 32
-const PEOES := 2
+## Quantos peoes cada lado tem. Deriva do proprio tabuleiro recebido em vez de
+## ser um numero escrito aqui: era `2` enquanto a cena passou a jogar com `4`, e
+## uma constante fora de sincronia faz a IA ignorar metade dos proprios peoes
+## sem erro nenhum aparecer.
+static func _peoes_de(pawns: Array, jogador: int) -> int:
+	if jogador < 0 or jogador >= pawns.size():
+		return 0
+	return (pawns[jogador] as Array).size()
 
 ## Mandar peao adversario para a base vale o caminho inteiro que ele andou.
 const PESO_CAPTURA := 30
@@ -69,7 +76,7 @@ static func casa_absoluta(pos: int, jogador: int, offsets: Array) -> int:
 ## casa 32.
 static func gerar(pawns: Array, jogador: int, dado: int) -> Array[int]:
 	var moveis: Array[int] = []
-	for idx in range(PEOES):
+	for idx in range(_peoes_de(pawns, jogador)):
 		var pos: int = int(pawns[jogador][idx])
 		if pos == -1 and dado == 6:
 			moveis.append(idx)
@@ -93,7 +100,7 @@ static func capturas(pawns: Array, jogador: int, idx: int, dado: int, offsets: A
 	for outro in range(pawns.size()):
 		if outro == jogador:
 			continue
-		for j in range(PEOES):
+		for j in range(_peoes_de(pawns, outro)):
 			var p: int = int(pawns[outro][j])
 			if p >= 0 and p < RETA_FINAL and casa_absoluta(p, outro, offsets) == casa:
 				total += 1
@@ -105,7 +112,7 @@ static func evaluate(pawns: Array, jogador: int, offsets: Array) -> int:
 	var nota := 0
 	for quem in range(pawns.size()):
 		var meu := quem == jogador
-		for idx in range(PEOES):
+		for idx in range(_peoes_de(pawns, quem)):
 			var pos: int = int(pawns[quem][idx])
 			var s := 0
 			if pos == CHEGADA:
@@ -123,7 +130,7 @@ static func evaluate(pawns: Array, jogador: int, offsets: Array) -> int:
 				for outro in range(pawns.size()):
 					if outro == quem:
 						continue
-					for j in range(PEOES):
+					for j in range(_peoes_de(pawns, outro)):
 						var p: int = int(pawns[outro][j])
 						if p < 0 or p >= RETA_FINAL:
 							continue
@@ -162,7 +169,7 @@ static func choose_pawn(pawns: Array, jogador: int, dado: int, offsets: Array, l
 			for outro in range(copia.size()):
 				if outro == jogador:
 					continue
-				for j in range(PEOES):
+				for j in range(_peoes_de(copia, outro)):
 					var p: int = int(copia[outro][j])
 					if p >= 0 and p < RETA_FINAL and casa_absoluta(p, outro, offsets) == casa:
 						copia[outro][j] = -1
