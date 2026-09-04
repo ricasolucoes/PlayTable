@@ -146,7 +146,15 @@ func _setup_3d_tabletop() -> void:
 	# tabuleiro: em retrato quem manda e a largura, a camera quer deitar mais para
 	# aproveitar a altura que sobra, e batia nesse teto. Os outros temas herdam os
 	# 74 graus do padrao.
-	env_3d.apply_theme(GameTheme3D.parlour_walnut())
+	var tema := GameTheme3D.parlour_walnut()
+	# A Torre de Hanoi e o unico jogo da casa cujo conteudo e VERTICAL: o que se
+	# le e a ordem dos discos empilhados, e de cima os discos se escondem uns
+	# atras dos outros. Com a HUD alta desta cena a camera queria deitar ate o
+	# teto de 74 graus e a torre virava tres circulos concentricos. Teto proprio,
+	# baixo, e o que mantem a pilha a vista.
+	tema.camera_tilt = 34.0
+	tema.camera_max_tilt = 42.0
+	env_3d.apply_theme(tema)
 
 	fit_table(Vector2(6.8, 4.0), Vector3(0, 0.8, 0))
 

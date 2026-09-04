@@ -118,16 +118,20 @@ func _get_track_position_3d(p: int, step_val: int, pawn_idx: int) -> Vector3:
 			Vector3(1.8, 0.2, -1.8),
 			Vector3(1.8, 0.2, 1.8)
 		]
-		var offset := Vector3(-0.35 if pawn_idx == 0 else 0.35, 0, 0)
+		var col := pawn_idx % 2
+		var lin := pawn_idx / 2
+		var offset := Vector3(-0.42 + float(col) * 0.84, 0.0, -0.42 + float(lin) * 0.84)
 		return base_centers[p] + offset
 	elif step_val >= 32: # No centro (Vitória)
 		var center_offsets = [
-			Vector3(-0.3, 0.2, 0.3),
-			Vector3(-0.3, 0.2, -0.3),
-			Vector3(0.3, 0.2, -0.3),
-			Vector3(0.3, 0.2, 0.3)
+			Vector3(-0.34, 0.2, 0.34),
+			Vector3(-0.34, 0.2, -0.34),
+			Vector3(0.34, 0.2, -0.34),
+			Vector3(0.34, 0.2, 0.34)
 		]
-		return center_offsets[p]
+		var leque := Vector3(float(pawn_idx % 2) * 0.20 - 0.10, float(pawn_idx) * 0.05,
+			float(pawn_idx / 2) * 0.20 - 0.10)
+		return center_offsets[p] + leque
 	elif step_val >= 28: # Reta final até o centro
 		var dist := (32 - step_val) * 0.45
 		match p:
@@ -165,7 +169,7 @@ func _start_new_game() -> void:
 	dice_3d.set_value_immediate(6)
 	btn_dice.text = tr("LUDO_BTN_ROLL")
 	btn_dice.disabled = false
-	set_status(tr("LUDO_YOUR_TURN") + difficulty_suffix())
+	set_status(tr("LUDO_YOUR_TURN"))
 	_sync_pawns_positions(true)
 
 ## Peoes que chegaram ao centro, o unico placar que o Ludo tem -- e o unico
@@ -302,7 +306,7 @@ func _move_player_pawn(idx: int, roll: int) -> void:
 func _next_turn() -> void:
 	current_turn = (current_turn + 1) % 4
 	if current_turn == 0:
-		set_status(tr("LUDO_YOUR_TURN") + difficulty_suffix())
+		set_status(tr("LUDO_YOUR_TURN"))
 		tentativas_restantes = TENTATIVAS_NA_BASE
 		can_roll = true
 		btn_dice.disabled = false
