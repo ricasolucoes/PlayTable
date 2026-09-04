@@ -81,6 +81,13 @@ func _ready() -> void:
 	
 	_setup_ui_events()
 	_setup_3d_tabletop()
+	# Sem tema proprio a cena herda o `casino_green`, mesa de carteado, cujo teto de
+	# inclinacao de camera e 56 graus para a face da carta nao achatar. Isto aqui e
+	# tabuleiro: em retrato quem manda e a largura, a camera quer deitar mais para
+	# aproveitar a altura que sobra, e batia nesse teto. Os outros temas herdam os
+	# 74 graus do padrao.
+	env_3d.apply_theme(GameTheme3D.parlour_walnut())
+
 	fit_table(Vector2(7.3, 4.9))
 	_start_new_game()
 

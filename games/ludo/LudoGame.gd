@@ -60,6 +60,13 @@ func _ready() -> void:
 	dice_3d.roll_finished.connect(_on_dice_roll_finished)
 	# O tabuleiro tem 6,5 unidades; sem isto a camera usava as 6x6 padrao com a
 	# area util errada e sobrava meia tela de feltro vazio.
+	# Sem tema proprio a cena herda o `casino_green`, mesa de carteado, cujo teto de
+	# inclinacao de camera e 56 graus para a face da carta nao achatar. Isto aqui e
+	# tabuleiro: em retrato quem manda e a largura, a camera quer deitar mais para
+	# aproveitar a altura que sobra, e batia nesse teto. Os outros temas herdam os
+	# 74 graus do padrao.
+	env_3d.apply_theme(GameTheme3D.bright_playroom())
+
 	fit_table(Vector2(6.7, 6.7))
 	_start_new_game()
 

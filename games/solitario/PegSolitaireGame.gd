@@ -1,4 +1,4 @@
-extends GridGame
+extends BaseGame
 
 ## PegSolitaireGame: Resta Um 3D com Tabuleiro Circular Entalhado e Esferas Polidas de Âmbar
 
@@ -38,10 +38,18 @@ func _ready() -> void:
 	btn_restart = $UI/Actions/BtnRestart
 	_setup_3d_circular_board()
 
-	# O tabuleiro tem 6,4 unidades de diametro; sem informar isso a camera
-	# usava o enquadramento padrao de 6x6 e a grade de toque plana, que era
-	# ancorada no centro da tela, nao caia sobre furo nenhum.
-	fit_table(Vector2(6.8, 6.8))
+	# Sem tema proprio a cena herda o `casino_green`, que e mesa de carteado e
+	# trava a inclinacao da camera em 56 graus para a face da carta nao achatar.
+	# Em retrato quem manda e a largura: a camera quer deitar mais para aproveitar
+	# a altura que sobra, batia nesse teto e parava. Nogueira nao mexe no teto e
+	# herda os 74 graus do padrao -- e a madeira certa para um tabuleiro assim.
+	env_3d.apply_theme(GameTheme3D.parlour_walnut())
+
+	# Enquadra a CRUZ jogavel (7 x 0,75 = 5,25 un.) com a folga do disco, e nao o
+	# disco de madeira inteiro: era ele que mandava antes, e sobrava borda de
+	# tabuleiro ocupando largura que as pecas precisavam.
+	var cruz := 7.0 * CELL_SIZE + CELL_SIZE * 0.5
+	fit_table(Vector2(cruz, cruz))
 
 	touch_layer.mouse_filter = Control.MOUSE_FILTER_STOP
 	touch_layer.gui_input.connect(_on_touch_layer_input)
@@ -134,7 +142,15 @@ func _sync_marbles_3d() -> void:
 
 func _update_ui() -> void:
 	var pegs_count := PegSolitaireRules.count_pegs(grid_data)
-	set_counter(pegs_count, "SCORE_PEGS")
+	var celulas: Array = [{"value": pegs_count, "label": "SCORE_PEGS"}]
+
+	# O recorde de partidas anteriores fica ao lado do contador: sem ele nao ha
+	# como saber se a partida de agora esta indo melhor ou pior que a melhor de
+	# todas, que e o unico placar que o Resta Um tem.
+	var melhor := int(PlayerProfile.get_stat("record_solitario", 0)) if PlayerProfile else 0
+	if melhor > 0:
+		celulas.append({"value": melhor, "label": "SCORE_RECORD"})
+	set_counters(celulas)
 
 # ---------------------------------------------------------------------------
 # Toque e arrasto

@@ -28,12 +28,12 @@ var is_animating: bool = false
 var move_history: Array[Dictionary] = []
 
 var move_count: int = 0
-var elapsed_time: float = 0.0
-var is_timer_running: bool = false
 
 var is_auto_solving: bool = false
 var auto_solution_steps: Array[Dictionary] = []
 var auto_step_index: int = 0
+
+@onready var shell: GameShell = $GameShell
 
 @onready var board_root: Node3D = $BoardRoot
 @onready var pegs_root: Node3D = $PegsRoot
@@ -48,34 +48,18 @@ var auto_step_index: int = 0
 @onready var btn_auto_solve: Button = $UI/Actions/BtnAutoSolve
 @onready var diff_buttons_container: HBoxContainer = $UI/VBoxContainer/DifficultyBar/Buttons
 
-@onready var win_modal: Control = $WinModal
-@onready var win_title: Label = $WinModal/Panel/VBox/WinTitle
-@onready var win_stars: Label = $WinModal/Panel/VBox/WinStars
-@onready var win_details: Label = $WinModal/Panel/VBox/WinDetails
-@onready var win_xp_label: Label = $WinModal/Panel/VBox/WinXP
-@onready var btn_next_level: Button = $WinModal/Panel/VBox/BtnNextLevel
-
-
 func _ready() -> void:
 	env_3d = $TabletopEnvironment3D
-	status_label = $UI/VBoxContainer/StatusLabel
-	btn_restart = $UI/Actions/BtnRestart
+	status_label = shell.status_label
+	btn_restart = shell.btn_restart
+	shell.restart_requested.connect(_on_btn_restart_pressed)
 	menu_scene_path = BaseGame.MENU_TABULEIRO
-	win_modal.visible = false
 	
 	_setup_difficulty_buttons()
 	_setup_3d_tabletop()
 	_start_new_game()
-
-
-func _process(delta: float) -> void:
-	if is_timer_running and not game_over:
-		# O relogio anda em segundos inteiros: repintar a barra a cada quadro
-		# reescreveria o mesmo "02:31" sessenta vezes por segundo.
-		var antes := int(elapsed_time)
-		elapsed_time += delta
-		if int(elapsed_time) != antes:
-			_update_time_display()
+	
+	shell.timer.time_changed.connect(func(_sec: int): _update_time_display())
 
 
 # ---------------------------------------------------------------------------
@@ -157,6 +141,13 @@ func _setup_3d_tabletop() -> void:
 		pegs_root.add_child(cap)
 		
 	# Enquadra a câmera na área do jogo
+	# Sem tema proprio a cena herda o `casino_green`, mesa de carteado, cujo teto de
+	# inclinacao de camera e 56 graus para a face da carta nao achatar. Isto aqui e
+	# tabuleiro: em retrato quem manda e a largura, a camera quer deitar mais para
+	# aproveitar a altura que sobra, e batia nesse teto. Os outros temas herdam os
+	# 74 graus do padrao.
+	env_3d.apply_theme(GameTheme3D.parlour_walnut())
+
 	fit_table(Vector2(6.8, 4.0), Vector3(0, 0.8, 0))
 
 
@@ -167,7 +158,8 @@ func _setup_difficulty_buttons() -> void:
 	for d in range(Rules.MIN_DISKS, Rules.MAX_DISKS + 1):
 		var btn := Button.new()
 		btn.text = tr("HANOI_DISC_COUNT") % d
-		btn.custom_minimum_size = Vector2(85, UIKit.TOQUE_MIN)
+		btn.custom_minimum_size = Vector2(150, UIKit.TOQUE_MIN)
+		btn.clip_text = true
 		btn.focus_mode = Control.FOCUS_NONE
 		UIKit.rolavel(btn)
 		btn.pressed.connect(_on_difficulty_selected.bind(d))
@@ -214,12 +206,10 @@ func _start_new_game() -> void:
 	selected_disk_node = null
 	move_history.clear()
 	move_count = 0
-	elapsed_time = 0.0
-	is_timer_running = false
+	shell.timer.reset()
 	
 	if btn_restart != null:
 		btn_restart.hide()
-	win_modal.visible = false
 	_hide_all_halos()
 	
 	disk_count = discos_do_degrau(DifficultyManager.get_level(game_id))
@@ -235,7 +225,6 @@ func _start_new_game() -> void:
 		bus.emit_game_started("hanoi")
 		if bus.has_signal("match_started"):
 			bus.match_started.emit("hanoi", "%d_disks" % disk_count)
-
 
 func _build_3d_disks() -> void:
 	for c in disks_root.get_children(): c.queue_free()
@@ -346,8 +335,8 @@ func _on_peg_pressed(peg_idx: int) -> void:
 	if game_over or is_animating or is_auto_solving:
 		return
 		
-	if not is_timer_running:
-		is_timer_running = true
+	if not shell.timer.active:
+		shell.timer.start()
 		
 	_hide_all_halos()
 	
@@ -590,7 +579,7 @@ func _check_game_over() -> void:
 
 func _handle_game_won() -> void:
 	game_over = true
-	is_timer_running = false
+	shell.timer.stop()
 	_hide_all_halos()
 	
 	var optimal: int = Rules.get_optimal_moves(disk_count)
@@ -613,17 +602,6 @@ func _handle_game_won() -> void:
 	if disk_count >= 7:
 		fatos.append("hanoi_7")
 
-	report_match_result(true, {
-		"flags": fatos,
-		"xp": total_xp,
-		"perfect": is_perfect,
-		"disks": disk_count,
-		"moves": move_count,
-		"optimal_moves": optimal,
-		"stars": stars,
-		"time": elapsed_time,
-	})
-
 	var profile := _get_player_profile()
 	if profile:
 		profile.increment_stat("hanoi_wins")
@@ -635,22 +613,20 @@ func _handle_game_won() -> void:
 			profile.stats["hanoi_stars_%d" % disk_count] = stars
 		profile.save_profile()
 		
-	win_stars.text = _get_stars_string(stars)
-	win_details.text = tr("HANOI_WIN_DETAILS") % [move_count, optimal, _format_time(elapsed_time)]
-	win_xp_label.text = tr("XP_EARNED") % total_xp
-	
-	if disk_count < Rules.MAX_DISKS:
-		btn_next_level.visible = true
-		btn_next_level.text = tr("HANOI_NEXT_LEVEL") % (disk_count + 1)
-	else:
-		btn_next_level.visible = false
-		
 	var audio := _get_audio_mgr()
 	if audio:
 		audio.play_win()
 		
-	finish_game(tr("HANOI_WIN") % disk_count, true)
-	reveal_result_modal(win_modal, 0.4)
+	finish_game(tr("HANOI_WIN") % disk_count, true, {
+		"flags": fatos,
+		"xp": total_xp,
+		"perfect": is_perfect,
+		"disks": disk_count,
+		"moves": move_count,
+		"optimal_moves": optimal,
+		"stars": stars,
+		"time": shell.timer.get_time(),
+	})
 
 
 func _on_btn_next_level_pressed() -> void:
@@ -689,8 +665,9 @@ func _update_time_display() -> void:
 func _pintar_placar() -> void:
 	set_counters([
 		{"value": move_count, "label": "SCORE_PLAYS"},
-		{"value": _format_time(elapsed_time), "label": "SCORE_TIME"},
+		{"value": _format_time(shell.timer.get_time()), "label": "SCORE_TIME"},
 	])
+
 
 
 func _format_time(seconds: float) -> String:

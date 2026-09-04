@@ -12,9 +12,7 @@ var ai_level: int = DifficultyManager.DEFAULT_LEVEL
 @onready var board_root: Node3D = $BoardRoot
 @onready var gems_root: Node3D = $GemsRoot
 @onready var player_pits_container: HBoxContainer = $UI/CenterContainer/VBox/PlayerRow
-@onready var ai_pits_container: HBoxContainer = $UI/CenterContainer/VBox/AIRow
-@onready var player_store_label: Label = $UI/CenterContainer/HBoxStores/PlayerStoreLabel
-@onready var ai_store_label: Label = $UI/CenterContainer/HBoxStores/AIStoreLabel
+@onready var shell: GameShell = $UI/GameShell
 
 const PIT_POSITIONS_3D = {
 	# Jogador (0 a 5): De -2.0 a +2.0 em X, Z = 0.6
@@ -39,13 +37,28 @@ const PIT_POSITIONS_3D = {
 
 const GEM_MATERIALS = ["ruby", "sapphire", "emerald", "amber", "gold"]
 
+## Raio da semente. O padrao do Token3D e 0,36 -- diametro 0,72 numa cova de
+## 0,52 de largura util: uma semente ja transbordava, e seis viravam uma bola.
+const GEM_RADIUS := 0.11
+
+## Quantas sementes uma cova chega a desenhar. Acima disso o numero no botao e
+## que conta, porque vinte esferas numa cova nao se distinguem de dezoito.
+const GEM_MAX_VISIVEL := 12
+
 func _ready() -> void:
 	env_3d = $TabletopEnvironment3D
-	status_label = $UI/VBoxContainer/StatusLabel
-	btn_restart = $UI/VBoxContainer/BtnRestart
+	status_label = shell.status_label
+	btn_restart = shell.btn_restart
 	ai_level = DifficultyManager.get_level(game_id)
 	_setup_3d_mancala_board()
 	_setup_ui_buttons()
+	# Sem tema proprio a cena herda o `casino_green`, mesa de carteado, cujo teto de
+	# inclinacao de camera e 56 graus para a face da carta nao achatar. Isto aqui e
+	# tabuleiro: em retrato quem manda e a largura, a camera quer deitar mais para
+	# aproveitar a altura que sobra, e batia nesse teto. Os outros temas herdam os
+	# 74 graus do padrao.
+	env_3d.apply_theme(GameTheme3D.desert_gold())
+
 	fit_table(Vector2(6.8, 2.4))
 	_start_new_game()
 
@@ -101,7 +114,7 @@ func _sync_gems_3d() -> void:
 	gems_3d.clear()
 	
 	for pit_idx in range(14):
-		var count = pits[pit_idx]
+		var count: int = mini(pits[pit_idx], GEM_MAX_VISIVEL)
 		var pit_pos = PIT_POSITIONS_3D[pit_idx]
 		var gem_list: Array = []
 		for g_i in range(count):
@@ -109,11 +122,19 @@ func _sync_gems_3d() -> void:
 			gem.token_type = "sphere"
 			gem.material_name = GEM_MATERIALS[g_i % GEM_MATERIALS.size()]
 			
-			# Espalha sementes levemente dentro da cova
-			var offset_x := (randf() - 0.5) * (0.4 if (pit_idx == 6 or pit_idx == 13) else 0.22)
-			var offset_z := (randf() - 0.5) * (0.4 if (pit_idx == 6 or pit_idx == 13) else 0.22)
-			var offset_y := 0.05 + (g_i * 0.04)
-			gem.position = pit_pos + Vector3(offset_x, offset_y, offset_z)
+			# Espalhar em espiral de angulo aureo, e nao empilhar: com passo de 0,04
+			# contra esferas de ~0,62 de diametro as sementes se atravessavam e a
+			# cova virava uma bola so. A semente tambem encolheu, senao seis delas
+			# nao cabem numa cova.
+			gem.token_radius = GEM_RADIUS
+			var kalah := pit_idx == 6 or pit_idx == 13
+			var raio: float = (0.46 if kalah else 0.26) * sqrt((float(g_i) + 0.5) / maxf(float(count), 1.0))
+			var theta := float(g_i) * 2.39996
+			var camada := floori(float(g_i) / 8.0)
+			gem.position = pit_pos + Vector3(
+				cos(theta) * raio,
+				0.05 + float(camada) * (GEM_RADIUS * 1.6),
+				sin(theta) * raio)
 			
 			gems_root.add_child(gem)
 			gem_list.append(gem)
@@ -121,12 +142,11 @@ func _sync_gems_3d() -> void:
 
 func _update_ui() -> void:
 	set_duel_score(pits[6], pits[13])
-	player_store_label.text = tr("MANCALA_YOUR_STORE") % pits[6]
-	ai_store_label.text = tr("MANCALA_AI_STORE") % pits[13] + difficulty_suffix()
-	
+	shell.set_level(DifficultyManager.label_for(game_id))
+
 	for i in range(6):
 		var btn := player_pits_container.get_child(i) as Button
-		var count = pits[i]
+		var count: int = pits[i]
 		btn.text = "%d" % count
 		btn.disabled = not is_player_turn or count == 0 or game_over
 

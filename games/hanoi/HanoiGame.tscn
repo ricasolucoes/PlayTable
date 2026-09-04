@@ -2,6 +2,7 @@
 
 [ext_resource type="Script" path="res://games/hanoi/HanoiGame.gd" id="1_script"]
 [ext_resource type="PackedScene" uid="uid://tabletopenv3duid" path="res://shared/3d/TabletopEnvironment3D.tscn" id="2_env"]
+[ext_resource type="PackedScene" uid="uid://gameshelluid" path="res://shared/ui/GameShell.tscn" id="3_shell"]
 
 [node name="HanoiGame" type="Control"]
 layout_mode = 3
@@ -22,6 +23,8 @@ script = ExtResource("1_script")
 
 [node name="DisksRoot" type="Node3D" parent="."]
 
+[node name="GameShell" parent="." instance=ExtResource("3_shell")]
+
 [node name="UI" type="Control" parent="."]
 layout_mode = 1
 anchors_preset = 15
@@ -36,14 +39,14 @@ layout_mode = 1
 anchors_preset = 10
 anchor_right = 1.0
 offset_left = 20.0
-offset_top = 134.0
+offset_top = 184.0
 offset_right = -20.0
 offset_bottom = 250.0
 grow_horizontal = 2
 theme_override_constants/separation = 8
 
 [node name="DifficultyBar" type="ScrollContainer" parent="UI/VBoxContainer"]
-custom_minimum_size = Vector2(0, 48)
+custom_minimum_size = Vector2(0, 96)
 layout_mode = 2
 horizontal_scroll_mode = 1
 vertical_scroll_mode = 0
@@ -97,26 +100,18 @@ layout_mode = 2
 text = "⭐⭐⭐"
 horizontal_alignment = 1
 
-[node name="StatusLabel" type="Label" parent="UI/VBoxContainer"]
-layout_mode = 2
-theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.8)
-text = "HANOI_START"
-horizontal_alignment = 1
-autowrap_mode = 2
-
 [node name="PegTouchArea" type="HBoxContainer" parent="UI"]
 layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -340.0
-offset_top = 80.0
-offset_right = 340.0
-offset_bottom = 200.0
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 16.0
+offset_top = -216.0
+offset_right = -16.0
+offset_bottom = -120.0
 grow_horizontal = 2
-grow_vertical = 2
+grow_vertical = 0
 theme_override_constants/separation = 16
 alignment = 1
 
@@ -145,9 +140,9 @@ anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
 offset_left = 16.0
-offset_top = -84.0
+offset_top = -112.0
 offset_right = -16.0
-offset_bottom = -24.0
+offset_bottom = -16.0
 grow_horizontal = 2
 grow_vertical = 0
 theme_override_constants/separation = 8
@@ -177,72 +172,6 @@ custom_minimum_size = Vector2(88, 88)
 size_flags_horizontal = 3
 text = "BTN_RESET_ICON"
 
-[node name="WinModal" type="ColorRect" parent="."]
-visible = false
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-color = Color(0, 0, 0, 0.75)
-
-[node name="Panel" type="PanelContainer" parent="WinModal"]
-layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -260.0
-offset_top = -220.0
-offset_right = 260.0
-offset_bottom = 220.0
-grow_horizontal = 2
-grow_vertical = 2
-
-[node name="VBox" type="VBoxContainer" parent="WinModal/Panel"]
-layout_mode = 2
-theme_override_constants/separation = 16
-alignment = 1
-
-[node name="WinTitle" type="Label" parent="WinModal/Panel/VBox"]
-layout_mode = 2
-theme_override_colors/font_color = Color(1, 0.85, 0.2, 1)
-text = "HANOI_CHALLENGE_DONE"
-horizontal_alignment = 1
-
-[node name="WinStars" type="Label" parent="WinModal/Panel/VBox"]
-layout_mode = 2
-text = "⭐⭐⭐"
-horizontal_alignment = 1
-
-[node name="WinDetails" type="Label" parent="WinModal/Panel/VBox"]
-layout_mode = 2
-text = ""
-horizontal_alignment = 1
-
-[node name="WinXP" type="Label" parent="WinModal/Panel/VBox"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.2, 1, 0.4, 1)
-text = ""
-horizontal_alignment = 1
-
-[node name="BtnNextLevel" type="Button" parent="WinModal/Panel/VBox"]
-custom_minimum_size = Vector2(88.0, 88.0)
-layout_mode = 2
-text = "HANOI_NEXT_LEVEL_SHORT"
-
-[node name="BtnPlayAgain" type="Button" parent="WinModal/Panel/VBox"]
-custom_minimum_size = Vector2(88.0, 88.0)
-layout_mode = 2
-text = "BTN_RESTART_ICON"
-
-[node name="BtnMenu" type="Button" parent="WinModal/Panel/VBox"]
-custom_minimum_size = Vector2(88.0, 88.0)
-layout_mode = 2
-text = "BTN_MAIN_MENU_ICON"
-
 [connection signal="pressed" from="UI/PegTouchArea/BtnPegA" to="." method="_on_peg_pressed" binds=[0]]
 [connection signal="pressed" from="UI/PegTouchArea/BtnPegB" to="." method="_on_peg_pressed" binds=[1]]
 [connection signal="pressed" from="UI/PegTouchArea/BtnPegC" to="." method="_on_peg_pressed" binds=[2]]
@@ -250,6 +179,3 @@ text = "BTN_MAIN_MENU_ICON"
 [connection signal="pressed" from="UI/Actions/BtnHint" to="." method="_on_btn_hint_pressed"]
 [connection signal="pressed" from="UI/Actions/BtnAutoSolve" to="." method="_on_btn_auto_solve_pressed"]
 [connection signal="pressed" from="UI/Actions/BtnRestart" to="." method="_on_btn_restart_pressed"]
-[connection signal="pressed" from="WinModal/Panel/VBox/BtnNextLevel" to="." method="_on_btn_next_level_pressed"]
-[connection signal="pressed" from="WinModal/Panel/VBox/BtnPlayAgain" to="." method="_on_btn_restart_pressed"]
-[connection signal="pressed" from="WinModal/Panel/VBox/BtnMenu" to="." method="_on_btn_back_pressed"]

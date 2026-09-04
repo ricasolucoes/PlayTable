@@ -11,12 +11,21 @@ extends Node
 ## O recorde local vale por si: o jogador ve seu melhor tempo na tela de perfil
 ## mesmo sem Play Games, sem login e sem rede.
 
-## Metrica de placar por jogo. `invert` marca os placares onde menor e melhor.
+## Metrica de placar por jogo.
+##
+## `invert` marca os placares onde menor e melhor. `exige_vitoria` diz se a
+## metrica so conta em partida vencida -- verdadeiro por padrao, porque perder
+## rapido nao e recorde de tempo.
+##
+## O Resta Um e a excecao, e por isso o campo existe: o placar dele E "quantas
+## pecas sobraram", e a cena so declara vitoria com uma peca. Exigindo vitoria,
+## o unico valor que podia ser gravado era 1 -- ou seja, o recorde nunca existia
+## de fato, e terminar com tres pecas nao deixava marca nenhuma.
 const METRICAS := {
 	"campo_minado": {"campo": "time",  "key": "LB_MINESWEEPER_TIME", "invert": true,  "escala": 1000},
 	"memoria":      {"campo": "moves", "key": "LB_MEMORY_MOVES",     "invert": true,  "escala": 1},
 	"hanoi":        {"campo": "moves", "key": "LB_HANOI_MOVES",      "invert": true,  "escala": 1},
-	"solitario":        {"campo": "pegs",  "key": "LB_SOLITAIRE_PEGS",   "invert": true,  "escala": 1},
+	"solitario":        {"campo": "pegs",  "key": "LB_SOLITAIRE_PEGS",   "invert": true,  "escala": 1, "exige_vitoria": false},
 	"poker":            {"campo": "score", "key": "LB_POKER_BANKROLL",   "invert": false, "escala": 1},
 	"caminho_numerico": {"campo": "score", "key": "LB_NUMBER_PATH_SCORE", "invert": false, "escala": 1},
 }
@@ -25,6 +34,19 @@ const METRICAS := {
 func _ready() -> void:
 	if GameEventBus:
 		GameEventBus.match_completed.connect(_on_match_completed)
+		GameEventBus.pgs_sign_in_changed.connect(_on_pgs_sign_in_changed)
+
+func _on_pgs_sign_in_changed(is_signed_in: bool, _player_name: String) -> void:
+	if is_signed_in and PlayGamesManager:
+		sync_offline_scores()
+
+func sync_offline_scores() -> void:
+	for game_id in METRICAS.keys():
+		var m: Dictionary = METRICAS[game_id]
+		var chave_local := "record_" + str(game_id)
+		var valor := int(PlayerProfile.get_stat(chave_local, 0))
+		if valor > 0:
+			PlayGamesManager.submit_score(str(m["key"]), valor)
 
 
 func _on_match_completed(game_id: String, result: Dictionary) -> void:
@@ -33,7 +55,9 @@ func _on_match_completed(game_id: String, result: Dictionary) -> void:
 	var m: Dictionary = METRICAS[game_id]
 
 	# Metrica de "menor e melhor" so vale em vitoria: perder rapido nao e recorde.
-	if bool(m["invert"]) and not bool(result.get("win", false)):
+	# Salvo onde a propria metrica E o resultado da partida -- ver `exige_vitoria`.
+	if bool(m["invert"]) and bool(m.get("exige_vitoria", true)) \
+			and not bool(result.get("win", false)):
 		return
 	if not result.has(str(m["campo"])):
 		return

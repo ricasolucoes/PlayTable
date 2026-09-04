@@ -21,6 +21,13 @@ func _ready() -> void:
 	board_3d.setup_board(8, 8, 0.75, "reversi_green")
 	# O toque entra pelo proprio tabuleiro: a casa tocada e a casa desenhada.
 	board_3d.cell_clicked.connect(_on_cell_clicked)
+	# Sem tema proprio a cena herda o `casino_green`, mesa de carteado, cujo teto de
+	# inclinacao de camera e 56 graus para a face da carta nao achatar. Isto aqui e
+	# tabuleiro: em retrato quem manda e a largura, a camera quer deitar mais para
+	# aproveitar a altura que sobra, e batia nesse teto. Os outros temas herdam os
+	# 74 graus do padrao.
+	env_3d.apply_theme(GameTheme3D.stone_gallery())
+
 	fit_table(board_3d.content_size())
 	_start_new_game()
 
