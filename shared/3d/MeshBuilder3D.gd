@@ -420,7 +420,9 @@ static func board_slab(size_x: float, size_z: float, thickness: float = Tokens3D
 ## quantidade de geometria com silhueta: quem olha o mapa vê para que lado a
 ## proa aponta.
 ##
-## `length` corre em +X (proa à direita), `beam` em Z, `height` em Y.
+## `length` corre em +X (proa à direita), `beam` em Z, `height` em Y. A UV é
+## planar vista de cima -- (0,0) na popa a bombordo, (1,1) na proa a estibordo --
+## que é a projeção que uma textura de navio top-down vai querer.
 static func ship_hull(length: float, beam: float, height: float) -> ArrayMesh:
 	var key := "hull_%.3f_%.3f_%.3f" % [length, beam, height]
 	if _cache.has(key):
@@ -429,48 +431,45 @@ static func ship_hull(length: float, beam: float, height: float) -> ArrayMesh:
 	var meia_l := length * 0.5
 	var meia_b := beam * 0.5
 	var topo := height
-	# A proa ocupa 30% do comprimento; abaixo disso não se lê de que lado ela
+	# A proa ocupa 30% do comprimento: abaixo disso não se lê de que lado ela
 	# está, e acima o casco vira uma seta em vez de um navio.
-	var proa := meia_l
 	var ombro := meia_l - length * 0.30
-	var popa := -meia_l
 
-	# Contorno do convés, no sentido anti-horário visto de cima.
+	# Contorno do convés, visto de cima.
 	var planta := PackedVector2Array([
-		Vector2(popa, -meia_b * 0.86),
+		Vector2(-meia_l, -meia_b * 0.86),
 		Vector2(ombro, -meia_b),
-		Vector2(proa, -meia_b * 0.10),
-		Vector2(proa, meia_b * 0.10),
+		Vector2(meia_l, -meia_b * 0.10),
+		Vector2(meia_l, meia_b * 0.10),
 		Vector2(ombro, meia_b),
-		Vector2(popa, meia_b * 0.86),
+		Vector2(-meia_l, meia_b * 0.86),
 	])
 
 	var st := SurfaceTool.new()
 	st.begin(Mesh.PRIMITIVE_TRIANGLES)
-
-	# O casco afunila para baixo: fundo a 62% da largura do convés. É o que dá o
-	# chanfro que separa costado de convés sob luz rasante.
 	var n := planta.size()
+
+	# Costado: o casco afunila para 62% da largura no fundo, e é esse chanfro que
+	# separa costado de convés sob luz rasante.
 	for i in range(n):
-		var a := planta[i]
-		var b := planta[(i + 1) % n]
-		var a_topo := Vector3(a.x, topo, a.y)
-		var b_topo := Vector3(b.x, topo, b.y)
-		var a_base := Vector3(a.x * 0.98, 0.0, a.y * 0.62)
-		var b_base := Vector3(b.x * 0.98, 0.0, b.y * 0.62)
-		_quad(st, a_base, b_base, b_topo, a_topo)
+		var a: Vector2 = planta[i]
+		var b: Vector2 = planta[(i + 1) % n]
+		_face_quad(st, length, beam,
+			Vector3(a.x * 0.98, 0.0, a.y * 0.62), Vector3(b.x * 0.98, 0.0, b.y * 0.62),
+			Vector3(b.x, topo, b.y), Vector3(a.x, topo, a.y))
 
-	# Convés e fundo, em leque a partir do centro.
+	# Convés e fundo, em leque a partir do primeiro vértice.
 	for i in range(1, n - 1):
-		st.add_vertex(Vector3(planta[0].x, topo, planta[0].y))
-		st.add_vertex(Vector3(planta[i].x, topo, planta[i].y))
-		st.add_vertex(Vector3(planta[i + 1].x, topo, planta[i + 1].y))
-		st.add_vertex(Vector3(planta[0].x * 0.98, 0.0, planta[0].y * 0.62))
-		st.add_vertex(Vector3(planta[i + 1].x * 0.98, 0.0, planta[i + 1].y * 0.62))
-		st.add_vertex(Vector3(planta[i].x * 0.98, 0.0, planta[i].y * 0.62))
+		var p0: Vector2 = planta[0]
+		var pi: Vector2 = planta[i]
+		var pj: Vector2 = planta[i + 1]
+		_face_tri(st, length, beam, Vector3(p0.x, topo, p0.y),
+			Vector3(pi.x, topo, pi.y), Vector3(pj.x, topo, pj.y))
+		_face_tri(st, length, beam, Vector3(p0.x * 0.98, 0.0, p0.y * 0.62),
+			Vector3(pj.x * 0.98, 0.0, pj.y * 0.62), Vector3(pi.x * 0.98, 0.0, pi.y * 0.62))
 
-	# Superestrutura: um bloco no terço de ré. Sem ela a silhueta ainda é só uma
-	# lasca, e é ela que diz "isto tem uma torre de comando".
+	# Superestrutura no terço de ré. Sem ela a silhueta ainda é só uma lasca, e é
+	# ela que diz "isto tem uma torre de comando".
 	var sc := -length * 0.12
 	var sl := length * 0.16
 	var sb := meia_b * 0.52
@@ -480,14 +479,18 @@ static func ship_hull(length: float, beam: float, height: float) -> ArrayMesh:
 		Vector2(sc + sl, sb), Vector2(sc - sl, sb),
 	])
 	for i in range(4):
-		var a := cantos[i]
-		var b := cantos[(i + 1) % 4]
-		_quad(st, Vector3(a.x, topo, a.y), Vector3(b.x, topo, b.y),
+		var a: Vector2 = cantos[i]
+		var b: Vector2 = cantos[(i + 1) % 4]
+		_face_quad(st, length, beam, Vector3(a.x, topo, a.y), Vector3(b.x, topo, b.y),
 			Vector3(b.x, sh, b.y), Vector3(a.x, sh, a.y))
-	for tri in [[0, 1, 2], [0, 2, 3]]:
-		for idx in tri:
-			st.add_vertex(Vector3(cantos[idx].x, sh, cantos[idx].y))
+	_face_tri(st, length, beam, Vector3(cantos[0].x, sh, cantos[0].y),
+		Vector3(cantos[1].x, sh, cantos[1].y), Vector3(cantos[2].x, sh, cantos[2].y))
+	_face_tri(st, length, beam, Vector3(cantos[0].x, sh, cantos[0].y),
+		Vector3(cantos[2].x, sh, cantos[2].y), Vector3(cantos[3].x, sh, cantos[3].y))
 
+	# Normal e tangente saem do winding, que já está correto. Definir normal só em
+	# algumas faces aborta o commit: o SurfaceTool exige que todo vértice tenha
+	# normal ou que nenhum tenha.
 	st.generate_normals()
 	st.generate_tangents()
 	var mesh: ArrayMesh = st.commit()
@@ -495,10 +498,20 @@ static func ship_hull(length: float, beam: float, height: float) -> ArrayMesh:
 	return mesh
 
 
-## Duas faces de um quadrilátero, com a normal saindo para fora.
-static func _quad(st: SurfaceTool, a: Vector3, b: Vector3, c: Vector3, d: Vector3) -> void:
-	for v in [a, b, c, a, c, d]:
+## Um triângulo com UV planar de cima.
+static func _face_tri(st: SurfaceTool, length: float, beam: float,
+		a: Vector3, b: Vector3, c: Vector3) -> void:
+	for v in [a, b, c]:
+		st.set_uv(Vector2((v.x / maxf(length, 0.0001)) + 0.5, (v.z / maxf(beam, 0.0001)) + 0.5))
 		st.add_vertex(v)
+
+
+## Um quadrilátero, como dois triângulos.
+static func _face_quad(st: SurfaceTool, length: float, beam: float,
+		a: Vector3, b: Vector3, c: Vector3, d: Vector3) -> void:
+	_face_tri(st, length, beam, a, b, c)
+	_face_tri(st, length, beam, a, c, d)
+
 
 # ---------------------------------------------------------------------------
 # Compatibilidade com a API anterior
