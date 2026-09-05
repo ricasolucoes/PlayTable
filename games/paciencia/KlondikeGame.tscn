@@ -1,6 +1,7 @@
 [gd_scene load_steps=3 format=3 uid="uid://klondikegameuid"]
 
 [ext_resource type="Script" path="res://games/paciencia/KlondikeGame.gd" id="1_script"]
+[ext_resource type="PackedScene" uid="uid://gameshelluid" path="res://shared/ui/GameShell.tscn" id="3_shell"]
 [ext_resource type="PackedScene" uid="uid://tabletopenv3duid" path="res://shared/3d/TabletopEnvironment3D.tscn" id="2_env"]
 
 [node name="KlondikeGame" type="Control"]
@@ -25,32 +26,8 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 
-[node name="VBoxContainer" type="VBoxContainer" parent="UI"]
+[node name="GameShell" parent="UI" instance=ExtResource("3_shell")]
 layout_mode = 1
-anchors_preset = 10
-anchor_right = 1.0
-offset_left = 24.0
-offset_top = 134.0
-offset_right = -24.0
-offset_bottom = 180.0
-grow_horizontal = 2
-theme_override_constants/separation = 10
-
-[node name="Header" type="HBoxContainer" parent="UI/VBoxContainer"]
-layout_mode = 2
-
-[node name="StatusLabel" type="Label" parent="UI/VBoxContainer/Header"]
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.8)
-text = "KLONDIKE_DRAG_HINT"
-clip_text = true
-
-[node name="BtnRestart" type="Button" parent="UI/VBoxContainer/Header"]
-custom_minimum_size = Vector2(100.0, 88.0)
-layout_mode = 2
-text = "BTN_RESET_ICON"
-clip_text = true
 
 [node name="TopRow" type="HBoxContainer" parent="UI"]
 layout_mode = 1
@@ -169,4 +146,3 @@ size_flags_horizontal = 3
 text = ""
 clip_text = true
 
-[connection signal="pressed" from="UI/VBoxContainer/Header/BtnRestart" to="." method="_on_btn_restart_pressed"]

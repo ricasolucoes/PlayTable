@@ -15,10 +15,11 @@ var current_bet: int = 5
 var game_phase: String = "bet" # "bet", "hold", "result"
 
 @onready var cards_root: Node3D = $CardsRoot
-@onready var payout_table_label: Label = $UI/VBoxContainer/PayoutTableContainer/PayoutLabel
+@onready var payout_table_label: Label = $UI/PayoutTableContainer/PayoutLabel
 @onready var btn_action: Button = $UI/Controls/BtnAction
 @onready var btn_bet_minus: Button = $UI/Controls/BtnBetMinus
 @onready var btn_bet_plus: Button = $UI/Controls/BtnBetPlus
+@onready var shell: GameShell = $GameShell
 
 const CARD_SPACING_X: float = 0.75
 
@@ -35,7 +36,7 @@ func _ready() -> void:
 	# o game_phase abaixo, e de BaseGame vem so a navegacao de volta.
 	menu_scene_path = MENU_CARTAS
 	env_3d = $TabletopEnvironment3D
-	status_label = $UI/VBoxContainer/StatusLabel
+	status_label = shell.status_label
 	env_3d.set_felt_color(Color(0.2, 0.08, 0.28)) # Feltro Púrpura Imperial
 	# A HUD come 250 px em cima e os controles 120 embaixo. Sem informar isso a
 	# camera usava o enquadramento padrao de 6x6 para uma mao que nao passa de

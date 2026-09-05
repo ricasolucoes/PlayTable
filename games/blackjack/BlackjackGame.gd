@@ -16,14 +16,16 @@ const CARD_PITCH := 0.52
 const ZONE_SIZE := Vector2(3.15, 1.45)
 
 @onready var cards_root: Node3D = $CardsRoot
-@onready var btn_hit: Button = $UI/Buttons/BtnHit
-@onready var btn_stand: Button = $UI/Buttons/BtnStand
+@onready var game_shell: GameShell = $GameShell
+@onready var btn_hit: Button = $ActionButtons/BtnHit
+@onready var btn_stand: Button = $ActionButtons/BtnStand
 
 func _ready() -> void:
 	menu_scene_path = MENU_CARTAS
 	env_3d = $TabletopEnvironment3D
-	status_label = $UI/VBoxContainer/Status
-	btn_restart = $UI/Buttons/BtnRestart
+	status_label = game_shell.status_label
+	btn_restart = game_shell.btn_restart
+	game_shell.restart_requested.connect(_on_btn_restart_pressed)
 	env_3d.set_felt_color(Color(0.06, 0.32, 0.18)) # Verde cassino clássico
 	# A HUD come 210 px em cima e os botoes 120 embaixo; a mesa ocupa o resto.
 	# Sem isto a camera usava o enquadramento padrao de 6x6 unidades e as cartas

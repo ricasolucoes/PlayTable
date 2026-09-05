@@ -27,14 +27,13 @@ const VERTICAL_RESERVE := 300.0
 var _started_at: float = 0.0
 
 @onready var grid_container: GridContainer = $VBoxContainer/ScrollContainer/CenterContainer/Grid
-@onready var win_modal: ColorRect = $WinModal
-@onready var win_modal_title: Label = $WinModal/Panel/VBox/WinTitle
-@onready var win_modal_sub: Label = $WinModal/Panel/VBox/WinSub
-@onready var btn_mode_toggle: Button = $VBoxContainer/TopBar/BtnModeToggle
+@onready var btn_mode_toggle: Button = $VBoxContainer/ControlsContainer/BtnModeToggle
 
 func _ready() -> void:
 	menu_scene_path = MENU_CARTAS
-	status_label = $VBoxContainer/StatusCard/StatusLabel
+	var shell = $GameShell
+	status_label = shell.status_label
+	btn_restart = shell.btn_restart
 	btn_mode_toggle.pressed.connect(_on_mode_toggle_pressed)
 	_update_mode_button()
 	_start_new_game()
@@ -49,7 +48,6 @@ func _start_new_game() -> void:
 	first_card = null
 	second_card = null
 	is_checking = false
-	win_modal.visible = false
 	_started_at = Time.get_ticks_msec() / 1000.0
 	begin_match("versus" if is_local_multiplayer else "solo")
 
@@ -160,14 +158,23 @@ func _check_match() -> void:
 			set_status(tr("MEMORY_FIND_PAIRS"))
 
 func _handle_game_won() -> void:
-	game_over = true
 	if AudioManager: AudioManager.play_win()
 	var winner := 1 if not is_local_multiplayer else MemoryRules.winner_for_scores(player_one_pairs, player_two_pairs)
 	var is_draw := is_local_multiplayer and winner == 0
+	
+	var msg := ""
+	if is_local_multiplayer:
+		if is_draw:
+			msg = tr("MEMORY_LOCAL_DRAW_TITLE") + "\n" + tr("MEMORY_LOCAL_WIN_DESC") % [player_one_pairs, player_two_pairs, moves_count]
+		else:
+			msg = tr("MEMORY_LOCAL_WIN_TITLE") % winner + "\n" + tr("MEMORY_LOCAL_WIN_DESC") % [player_one_pairs, player_two_pairs, moves_count]
+	else:
+		var rating := "⭐⭐⭐"
+		if moves_count > TOTAL_PAIRS + 8: rating = "⭐⭐"
+		if moves_count > TOTAL_PAIRS + 16: rating = "⭐"
+		msg = tr("RESULT_CONGRATS") + "\n" + tr("MEMORY_WIN_DESC") % [TOTAL_PAIRS, moves_count, rating]
 
-	# O Memoria nunca reportou partida: XP, streak, maestria e a conquista de
-	# Memoria Fotografica nao existiam para quem so jogava aqui.
-	report_match_result(not is_draw and winner == 1, {
+	finish_game(msg, not is_draw and winner == 1, {
 		"time": Time.get_ticks_msec() / 1000.0 - _started_at,
 		"moves": moves_count,
 		"perfect": moves_count <= TOTAL_PAIRS + 2,
@@ -175,21 +182,6 @@ func _handle_game_won() -> void:
 		"draw": is_draw,
 		"mode": "versus" if is_local_multiplayer else "solo",
 	})
-
-	if is_local_multiplayer:
-		if is_draw:
-			win_modal_title.text = tr("MEMORY_LOCAL_DRAW_TITLE")
-		else:
-			win_modal_title.text = tr("MEMORY_LOCAL_WIN_TITLE") % winner
-		win_modal_sub.text = tr("MEMORY_LOCAL_WIN_DESC") % [player_one_pairs, player_two_pairs, moves_count]
-	else:
-		win_modal_title.text = tr("RESULT_CONGRATS")
-		var rating := "⭐⭐⭐"
-		if moves_count > TOTAL_PAIRS + 8: rating = "⭐⭐"
-		if moves_count > TOTAL_PAIRS + 16: rating = "⭐"
-		win_modal_sub.text = tr("MEMORY_WIN_DESC") % [TOTAL_PAIRS, moves_count, rating]
-	
-	reveal_result_modal(win_modal)
 
 func _update_ui() -> void:
 	set_counters([

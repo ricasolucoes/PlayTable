@@ -3,6 +3,8 @@
 [ext_resource type="Script" path="res://games/blackjack/BlackjackGame.gd" id="1_script"]
 [ext_resource type="PackedScene" uid="uid://tabletopenv3duid" path="res://shared/3d/TabletopEnvironment3D.tscn" id="2_env"]
 
+[ext_resource type="PackedScene" uid="uid://gameshelluid" path="res://shared/ui/GameShell.tscn" id="3_shell"]
+
 [node name="BlackjackGame" type="Control"]
 layout_mode = 3
 anchors_preset = 15
@@ -16,33 +18,9 @@ script = ExtResource("1_script")
 
 [node name="CardsRoot" type="Node3D" parent="."]
 
-[node name="UI" type="Control" parent="."]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
+[node name="GameShell" parent="." instance=ExtResource("3_shell")]
 
-[node name="VBoxContainer" type="VBoxContainer" parent="UI"]
-layout_mode = 1
-anchors_preset = 10
-anchor_right = 1.0
-offset_left = 24.0
-offset_top = 134.0
-offset_right = -24.0
-offset_bottom = 200.0
-grow_horizontal = 2
-theme_override_constants/separation = 10
-
-[node name="Status" type="Label" parent="UI/VBoxContainer"]
-layout_mode = 2
-theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.8)
-text = "YOUR_TURN_BANG"
-horizontal_alignment = 1
-
-[node name="Buttons" type="HBoxContainer" parent="UI"]
+[node name="ActionButtons" type="HBoxContainer" parent="."]
 layout_mode = 1
 anchors_preset = 12
 anchor_top = 1.0
@@ -54,29 +32,21 @@ grow_horizontal = 2
 grow_vertical = 0
 theme_override_constants/separation = 20
 alignment = 1
+mouse_filter = 2
 
-[node name="BtnHit" type="Button" parent="UI/Buttons"]
+[node name="BtnHit" type="Button" parent="ActionButtons"]
 custom_minimum_size = Vector2(160.0, 88.0)
 layout_mode = 2
 size_flags_horizontal = 3
 text = "BLACKJACK_BTN_HIT"
 clip_text = true
 
-[node name="BtnStand" type="Button" parent="UI/Buttons"]
+[node name="BtnStand" type="Button" parent="ActionButtons"]
 custom_minimum_size = Vector2(160.0, 88.0)
 layout_mode = 2
 size_flags_horizontal = 3
 text = "BLACKJACK_BTN_STAND"
 clip_text = true
 
-[node name="BtnRestart" type="Button" parent="UI/Buttons"]
-visible = false
-custom_minimum_size = Vector2(180.0, 88.0)
-layout_mode = 2
-size_flags_horizontal = 3
-text = "BTN_NEW_ROUND_ICON"
-clip_text = true
-
-[connection signal="pressed" from="UI/Buttons/BtnHit" to="." method="_on_btn_hit_pressed"]
-[connection signal="pressed" from="UI/Buttons/BtnStand" to="." method="_on_btn_stand_pressed"]
-[connection signal="pressed" from="UI/Buttons/BtnRestart" to="." method="_on_btn_restart_pressed"]
+[connection signal="pressed" from="ActionButtons/BtnHit" to="." method="_on_btn_hit_pressed"]
+[connection signal="pressed" from="ActionButtons/BtnStand" to="." method="_on_btn_stand_pressed"]

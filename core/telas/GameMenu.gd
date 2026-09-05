@@ -17,7 +17,7 @@ extends Control
 ## Contrato para quem herda: responder `list_games()` e apontar
 ## `menu_scene_path` para a própria cena.
 
-const GENERIC_GAME := "res://shared/GenericGame.tscn"
+const GENERIC_GAME := "res://shared/ui/PlaceholderScreen.tscn"
 const MAIN_MENU := "res://core/telas/MainMenu.tscn"
 
 ## Altura de um cartão. Três cabem na área de rolagem em 9:16 e o quarto

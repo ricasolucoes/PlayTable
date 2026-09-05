@@ -30,7 +30,7 @@ class VoltaAnotada extends BaseGame:
 
 
 ## Grade de toque que anota a casa tocada.
-class GradeAnotada extends GridGame:
+class GradeAnotada extends BaseGame:
 	var toques: Array[Vector2i] = []
 	var caixa: GridContainer
 
@@ -141,7 +141,7 @@ func test_set_status_sem_rotulo_nao_quebra() -> void:
 
 func test_a_grade_cria_uma_celula_por_casa() -> void:
 	var jogo := _grade()
-	jogo.build_touch_grid(jogo.caixa, 3, 10, Vector2(34, 38), jogo._on_cell)
+	TouchGrid.build_touch_grid(jogo.caixa, 3, 10, Vector2(34, 38), jogo._on_cell)
 
 	assert_eq(jogo.caixa.get_child_count(), 30, "o tabuleiro do Senet tem 3 x 10 casas")
 	for celula in jogo.caixa.get_children():
@@ -153,7 +153,7 @@ func test_a_grade_cria_uma_celula_por_casa() -> void:
 
 func test_o_toque_entrega_linha_e_coluna() -> void:
 	var jogo := _grade()
-	jogo.build_touch_grid(jogo.caixa, 8, 8, Vector2(40, 40), jogo._on_cell)
+	TouchGrid.build_touch_grid(jogo.caixa, 8, 8, Vector2(40, 40), jogo._on_cell)
 
 	(jogo.caixa.get_child(0) as Button).pressed.emit()
 	(jogo.caixa.get_child(2 * 8 + 5) as Button).pressed.emit()
@@ -164,7 +164,7 @@ func test_o_toque_entrega_linha_e_coluna() -> void:
 
 func test_as_casas_que_nao_existem_ficam_desligadas() -> void:
 	var jogo := _grade()
-	jogo.build_touch_grid(jogo.caixa, 7, 7, Vector2(44, 44), jogo._on_cell,
+	TouchGrid.build_touch_grid(jogo.caixa, 7, 7, Vector2(44, 44), jogo._on_cell,
 		PegSolitaireRules.is_valid_cell)
 
 	var desligadas := 0
@@ -179,8 +179,8 @@ func test_as_casas_que_nao_existem_ficam_desligadas() -> void:
 
 func test_remontar_a_grade_nao_empilha_botoes() -> void:
 	var jogo := _grade()
-	jogo.build_touch_grid(jogo.caixa, 3, 3, Vector2(10, 10), jogo._on_cell)
-	jogo.build_touch_grid(jogo.caixa, 3, 3, Vector2(10, 10), jogo._on_cell)
+	TouchGrid.build_touch_grid(jogo.caixa, 3, 3, Vector2(10, 10), jogo._on_cell)
+	TouchGrid.build_touch_grid(jogo.caixa, 3, 3, Vector2(10, 10), jogo._on_cell)
 
 	assert_eq(jogo.caixa.get_child_count(), 9, "a grade antiga sai da arvore na hora")
 

@@ -4,6 +4,7 @@
 [ext_resource type="PackedScene" uid="uid://tabletopbg01" path="res://shared/ui/TabletopBackground.tscn" id="2_bg"]
 [ext_resource type="Script" path="res://games/jogo_da_velha/TicTacToeBoardVisual.gd" id="3_board"]
 [ext_resource type="Theme" uid="uid://cxq6a87e8qf1b" path="res://shared/theme/MainTheme.tres" id="4_theme"]
+[ext_resource type="PackedScene" uid="uid://gameshelluid" path="res://shared/ui/GameShell.tscn" id="5_shell"]
 
 [node name="TicTacToeGame" type="Control"]
 layout_mode = 3
@@ -18,51 +19,33 @@ script = ExtResource("1_script")
 [node name="TabletopBackground" parent="." instance=ExtResource("2_bg")]
 layout_mode = 1
 
-[node name="VBoxContainer" type="VBoxContainer" parent="."]
+[node name="GameShell" parent="." instance=ExtResource("5_shell")]
+
+[node name="UI" type="Control" parent="."]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 24.0
-offset_top = 134.0
-offset_right = -24.0
-offset_bottom = -36.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_constants/separation = 18
+mouse_filter = 2
 
-[node name="TopBar" type="HBoxContainer" parent="VBoxContainer"]
+[node name="TopActions" type="HBoxContainer" parent="UI"]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -170.0
+offset_top = 134.0
+offset_right = -24.0
+offset_bottom = 222.0
+grow_horizontal = 0
 alignment = 2
-layout_mode = 2
-theme_override_constants/separation = 16
 
-[node name="BtnRestart" type="Button" parent="VBoxContainer/TopBar"]
-custom_minimum_size = Vector2(110.0, 88.0)
-layout_mode = 2
-text = "BTN_RESET"
-
-[node name="BtnModeToggle" type="Button" parent="VBoxContainer/TopBar"]
+[node name="BtnModeToggle" type="Button" parent="UI/TopActions"]
 custom_minimum_size = Vector2(150.0, 88.0)
 layout_mode = 2
 text = "TICTACTOE_BTN_VS_AI"
-
-[node name="StatusCard" type="PanelContainer" parent="VBoxContainer"]
-layout_mode = 2
-
-[node name="StatusVBox" type="VBoxContainer" parent="VBoxContainer/StatusCard"]
-layout_mode = 2
-theme_override_constants/separation = 2
-
-[node name="StatusLabel" type="Label" parent="VBoxContainer/StatusCard/StatusVBox"]
-layout_mode = 2
-text = "TICTACTOE_YOUR_TURN"
-horizontal_alignment = 1
-
-[node name="LevelLabel" type="Label" parent="VBoxContainer/StatusCard/StatusVBox"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.96, 0.8, 0.36, 1)
-text = ""
-horizontal_alignment = 1
 
 [node name="BoardContainer" type="Control" parent="."]
 layout_mode = 1
@@ -110,55 +93,4 @@ visible = false
 width = 8.0
 default_color = Color(1, 0.85, 0.25, 0.9)
 
-[node name="WinModal" type="ColorRect" parent="."]
-visible = false
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-color = Color(0, 0, 0, 0.75)
-
-[node name="Panel" type="PanelContainer" parent="WinModal"]
-layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -220.0
-offset_top = -140.0
-offset_right = 220.0
-offset_bottom = 140.0
-grow_horizontal = 2
-grow_vertical = 2
-
-[node name="VBox" type="VBoxContainer" parent="WinModal/Panel"]
-layout_mode = 2
-theme_override_constants/separation = 16
-alignment = 1
-
-[node name="WinTitle" type="Label" parent="WinModal/Panel/VBox"]
-layout_mode = 2
-theme_override_colors/font_color = Color(1, 0.85, 0.35, 1)
-text = "WIN_TITLE"
-horizontal_alignment = 1
-
-[node name="WinSub" type="Label" parent="WinModal/Panel/VBox"]
-layout_mode = 2
-text = "TICTACTOE_WIN_X_DESC"
-horizontal_alignment = 1
-autowrap_mode = 2
-
-[node name="Spacer" type="Control" parent="WinModal/Panel/VBox"]
-custom_minimum_size = Vector2(0, 10)
-layout_mode = 2
-
-[node name="BtnPlayAgain" type="Button" parent="WinModal/Panel/VBox"]
-custom_minimum_size = Vector2(88.0, 88.0)
-layout_mode = 2
-text = "BTN_RESTART"
-
-[connection signal="pressed" from="VBoxContainer/TopBar/BtnRestart" to="." method="_on_restart_pressed"]
-[connection signal="pressed" from="WinModal/Panel/VBox/BtnPlayAgain" to="." method="_on_restart_pressed"]
+[connection signal="pressed" from="UI/TopActions/BtnModeToggle" to="." method="_on_mode_toggle_pressed"]

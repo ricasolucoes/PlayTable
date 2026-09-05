@@ -44,10 +44,12 @@ const TABLEAU_START_Z = -0.7
 const TABLEAU_CASCADE_Z = 0.22
 
 func _ready() -> void:
+	var shell = $UI/GameShell
+	shell.restart_requested.connect(_on_btn_restart_pressed)
+	status_label = shell.status_label
+	btn_restart = shell.btn_restart
 	menu_scene_path = MENU_CARTAS
 	env_3d = $TabletopEnvironment3D
-	status_label = $UI/VBoxContainer/Header/StatusLabel
-	btn_restart = $UI/VBoxContainer/Header/BtnRestart
 	env_3d.set_felt_color(Color(0.06, 0.3, 0.18))
 	# O tabuleiro do Klondike ocupa 5,5 x 5,0 unidades e nasce centrado em zero;
 	# sem informar isso a camera usava as 6x6 padrao com a area util errada e a

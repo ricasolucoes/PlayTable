@@ -33,9 +33,8 @@ var ai_level: int = DifficultyManager.DEFAULT_LEVEL
 ## que nao tem as duas pontas da mesa.
 var ai_memoria: Dictionary = {}
 
+@onready var shell: GameShell = $GameShell
 @onready var table_tiles_root: Node3D = $TableTilesRoot
-@onready var ends_label: Label = $UI/VBoxContainer/EndsLabel
-@onready var ai_info_label: Label = $UI/VBoxContainer/AIInfoLabel
 @onready var player_hand_container: HBoxContainer = $UI/PlayerArea/HandVBox/HandContainer
 @onready var btn_draw: Button = $UI/Actions/BtnDraw
 @onready var btn_pass: Button = $UI/Actions/BtnPass
@@ -44,8 +43,9 @@ var ai_memoria: Dictionary = {}
 
 func _ready() -> void:
 	env_3d = $TabletopEnvironment3D
-	status_label = $UI/VBoxContainer/StatusLabel
-	btn_restart = $UI/Actions/BtnRestart
+	status_label = shell.status_label
+	btn_restart = shell.btn_restart
+	shell.restart_requested.connect(_on_btn_restart_pressed)
 	menu_scene_path = MENU_TABULEIRO
 	_start_new_game()
 
@@ -220,8 +220,7 @@ func _end_marker(tile_pos: Vector3, end_mark: int, span: float) -> MeshInstance3
 
 func _update_ui() -> void:
 	set_duel_score(player_hand.size(), ai_hand.size(), "SCORE_YOURS", "SCORE_AI_CARDS")
-	ai_info_label.text = tr("DOMINO_BONEYARD") % boneyard.size() + difficulty_suffix()
-	ends_label.text = tr("DOMINO_ENDS") % [left_end, right_end]
+	shell.set_level(tr("DOMINO_BONEYARD") % boneyard.size() + difficulty_suffix() + " | " + tr("DOMINO_ENDS") % [left_end, right_end])
 	
 	# Mão do Jogador: pedras desenhadas, nao botoes com o texto "6/---/4".
 	for c in player_hand_container.get_children(): c.queue_free()
@@ -411,8 +410,8 @@ func _check_board_lock() -> void:
 	elif ai_pts < p_pts:
 		_end_game(tr("DOMINO_LOCK_AI_WIN") % [ai_pts, p_pts], false)
 	else:
-		_end_game(tr("DOMINO_LOCK_DRAW") % p_pts, false)
+		_end_game(tr("DOMINO_LOCK_DRAW") % p_pts, false, true)
 
-func _end_game(msg: String, is_player_win: bool) -> void:
-	finish_game(msg, is_player_win)
+func _end_game(msg: String, is_player_win: bool, is_draw: bool = false) -> void:
+	finish_game(msg, is_player_win, {"draw": is_draw})
 	_update_action_buttons()

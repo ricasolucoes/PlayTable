@@ -1,7 +1,8 @@
-[gd_scene load_steps=3 format=3 uid="uid://pokergameuid"]
+[gd_scene load_steps=4 format=3 uid="uid://pokergameuid"]
 
 [ext_resource type="Script" path="res://games/poker/PokerGame.gd" id="1_script"]
 [ext_resource type="PackedScene" uid="uid://tabletopenv3duid" path="res://shared/3d/TabletopEnvironment3D.tscn" id="2_env"]
+[ext_resource type="PackedScene" uid="uid://gameshelluid" path="res://shared/ui/GameShell.tscn" id="3_shell"]
 
 [node name="PokerGame" type="Control"]
 layout_mode = 3
@@ -16,6 +17,8 @@ script = ExtResource("1_script")
 
 [node name="CardsRoot" type="Node3D" parent="."]
 
+[node name="GameShell" parent="." instance=ExtResource("3_shell")]
+
 [node name="UI" type="Control" parent="."]
 layout_mode = 1
 anchors_preset = 15
@@ -25,28 +28,17 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 
-[node name="VBoxContainer" type="VBoxContainer" parent="UI"]
+[node name="PayoutTableContainer" type="PanelContainer" parent="UI"]
 layout_mode = 1
 anchors_preset = 10
 anchor_right = 1.0
 offset_left = 24.0
-offset_top = 134.0
+offset_top = 220.0
 offset_right = -24.0
-offset_bottom = 220.0
+offset_bottom = 280.0
 grow_horizontal = 2
-theme_override_constants/separation = 8
 
-[node name="StatusLabel" type="Label" parent="UI/VBoxContainer"]
-layout_mode = 2
-theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.8)
-text = "POKER_ADJUST_BET"
-horizontal_alignment = 1
-clip_text = true
-
-[node name="PayoutTableContainer" type="PanelContainer" parent="UI/VBoxContainer"]
-layout_mode = 2
-
-[node name="PayoutLabel" type="Label" parent="UI/VBoxContainer/PayoutTableContainer"]
+[node name="PayoutLabel" type="Label" parent="UI/PayoutTableContainer"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.95, 0.82, 0.35, 1)
 text = ""
@@ -68,17 +60,17 @@ theme_override_constants/separation = 16
 alignment = 1
 
 [node name="BtnBetMinus" type="Button" parent="UI/Controls"]
-custom_minimum_size = Vector2(88.0, 88.0)
+custom_minimum_size = Vector2(88, 88)
 layout_mode = 2
 text = "-5"
 
 [node name="BtnAction" type="Button" parent="UI/Controls"]
-custom_minimum_size = Vector2(220.0, 88.0)
+custom_minimum_size = Vector2(220, 88)
 layout_mode = 2
 text = "POKER_BTN_DEAL"
 
 [node name="BtnBetPlus" type="Button" parent="UI/Controls"]
-custom_minimum_size = Vector2(88.0, 88.0)
+custom_minimum_size = Vector2(88, 88)
 layout_mode = 2
 text = "+5"
 

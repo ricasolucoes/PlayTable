@@ -1,10 +1,10 @@
 [gd_scene load_steps=4 format=3 uid="uid://genericgame"]
 
-[ext_resource type="Script" path="res://shared/GenericGame.gd" id="1_script"]
+[ext_resource type="Script" path="res://shared/ui/PlaceholderScreen.gd" id="1_script"]
 [ext_resource type="PackedScene" uid="uid://tabletopbg01" path="res://shared/ui/TabletopBackground.tscn" id="2_bg"]
 [ext_resource type="Theme" uid="uid://cxq6a87e8qf1b" path="res://shared/theme/MainTheme.tres" id="3_theme"]
 
-[node name="GenericGame" type="Control"]
+[node name="PlaceholderScreen" type="Control"]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
