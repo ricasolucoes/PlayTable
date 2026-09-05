@@ -89,14 +89,14 @@ const PESO_CONTAGEM := 5
 ## `tools/_forca_reversi.gd` cobra isso em partida, e `tools/_bench_reversi.gd`
 ## cobra que o degrau 10 caiba na pausa de encenacao.
 const PERFIS := [
-	{"depth": 1, "nos": 100, "erro": 0.75, "ruido": 40},      # 1
-	{"depth": 2, "nos": 180, "erro": 0.50, "ruido": 28},      # 2
-	{"depth": 3, "nos": 320, "erro": 0.34, "ruido": 20},      # 3
-	{"depth": 4, "nos": 550, "erro": 0.22, "ruido": 15},      # 4
-	{"depth": 5, "nos": 900, "erro": 0.14, "ruido": 10},      # 5
-	{"depth": 6, "nos": 1500, "erro": 0.08, "ruido": 7},      # 6
-	{"depth": 8, "nos": 2400, "erro": 0.04, "ruido": 4},      # 7
-	{"depth": 10, "nos": 3800, "erro": 0.015, "ruido": 0},    # 8
+	{"depth": 1, "nos": 100, "erro": 0.45, "ruido": 26},      # 1
+	{"depth": 2, "nos": 180, "erro": 0.32, "ruido": 18},      # 2
+	{"depth": 3, "nos": 320, "erro": 0.20, "ruido": 12},      # 3
+	{"depth": 4, "nos": 550, "erro": 0.12, "ruido": 8},       # 4
+	{"depth": 5, "nos": 900, "erro": 0.07, "ruido": 6},       # 5
+	{"depth": 6, "nos": 1500, "erro": 0.04, "ruido": 4},      # 6
+	{"depth": 8, "nos": 2400, "erro": 0.02, "ruido": 2},      # 7
+	{"depth": 10, "nos": 3800, "erro": 0.01, "ruido": 0},     # 8
 	{"depth": 12, "nos": 5200, "erro": 0.0, "ruido": 0},      # 9
 	{"depth": 16, "nos": 7000, "erro": 0.0, "ruido": 0},      # 10
 ]

@@ -75,15 +75,26 @@ const VITORIA := 1000000
 ## o orcamento dobrando a cada degrau isso vale por construcao.
 ##
 ## `depth` e so um teto de seguranca: quem para a busca e o orcamento.
+## Medido com `tools/_forca_damas.gd` antes e depois desta tabela mudar.
+##
+## A curva anterior sorteava 34% das jogadas no degrau de ENTRADA (o 3), com
+## ruido de 24 sobre uma peca que vale 100 -- ou seja, a IA nao distinguia
+## diferencas de ate um quarto de peca. O resultado media 6 a 4 contra uma IA
+## que nao pensa nada (joga a primeira jogada da lista), e era isso que
+## produzia a peca que anda para lugar nenhum no meio de uma partida
+## equilibrada. Fraco tem de parecer inexperiente, nao aleatorio.
+##
+## A escada continua subindo pelo ORCAMENTO DE NOS, que e o que de fato separa
+## um degrau do outro; erro e ruido agora so temperam os degraus de baixo.
 const PERFIS := [
-	{"depth": 1, "nos": 200, "erro": 0.75, "ruido": 45},      # 1
-	{"depth": 2, "nos": 400, "erro": 0.50, "ruido": 32},      # 2
-	{"depth": 3, "nos": 800, "erro": 0.34, "ruido": 24},      # 3
-	{"depth": 4, "nos": 1500, "erro": 0.22, "ruido": 18},     # 4
-	{"depth": 6, "nos": 2600, "erro": 0.14, "ruido": 12},     # 5
-	{"depth": 8, "nos": 4200, "erro": 0.08, "ruido": 8},      # 6
-	{"depth": 10, "nos": 6500, "erro": 0.04, "ruido": 5},     # 7
-	{"depth": 12, "nos": 9500, "erro": 0.015, "ruido": 0},    # 8
+	{"depth": 1, "nos": 200, "erro": 0.45, "ruido": 30},      # 1
+	{"depth": 2, "nos": 400, "erro": 0.32, "ruido": 22},      # 2
+	{"depth": 3, "nos": 800, "erro": 0.20, "ruido": 15},      # 3
+	{"depth": 4, "nos": 1500, "erro": 0.12, "ruido": 10},     # 4
+	{"depth": 6, "nos": 2600, "erro": 0.07, "ruido": 7},      # 5
+	{"depth": 8, "nos": 4200, "erro": 0.04, "ruido": 5},      # 6
+	{"depth": 10, "nos": 6500, "erro": 0.02, "ruido": 3},     # 7
+	{"depth": 12, "nos": 9500, "erro": 0.01, "ruido": 0},     # 8
 	{"depth": 14, "nos": 13000, "erro": 0.0, "ruido": 0},     # 9
 	{"depth": 16, "nos": 17000, "erro": 0.0, "ruido": 0},     # 10
 ]
