@@ -14,6 +14,11 @@ var ai_level: int = DifficultyManager.DEFAULT_LEVEL
 @onready var player_pits_container: HBoxContainer = $UI/CenterContainer/VBox/PlayerRow
 @onready var shell: GameShell = $UI/GameShell
 
+## Anel sob as covas que dão para semear. O Mancala não tinha afordância nenhuma
+## no tabuleiro: o número no botão dizia QUANTAS sementes havia, e nada dizia
+## quais covas eram suas nem quais estavam jogáveis.
+var halos: CellHalo3D = null
+
 const PIT_POSITIONS_3D = {
 	# Jogador (0 a 5): De -2.0 a +2.0 em X, Z = 0.6
 	0: Vector3(-1.9, 0.08, 0.6),
@@ -52,6 +57,16 @@ func _ready() -> void:
 	ai_level = DifficultyManager.get_level(game_id)
 	_setup_3d_mancala_board()
 	_setup_ui_buttons()
+
+	halos = CellHalo3D.new()
+	$BoardRoot.add_child(halos)
+	# Só as seis covas do jogador ganham anel: as da IA não são tocáveis, e um
+	# anel onde não se pode tocar é ruído, não informação.
+	halos.setup(6, 0.30)
+	var alvos: Array[Vector3] = []
+	for i in range(6):
+		alvos.append(PIT_POSITIONS_3D[i])
+	halos.set_targets(alvos)
 	# Sem tema proprio a cena herda o `casino_green`, mesa de carteado, cujo teto de
 	# inclinacao de camera e 56 graus para a face da carta nao achatar. Isto aqui e
 	# tabuleiro: em retrato quem manda e a largura, a camera quer deitar mais para
@@ -144,11 +159,17 @@ func _update_ui() -> void:
 	set_duel_score(pits[6], pits[13])
 	shell.set_level(DifficultyManager.label_for(game_id))
 
+	var jogaveis: Array = []
 	for i in range(6):
 		var btn := player_pits_container.get_child(i) as Button
 		var count: int = pits[i]
 		btn.text = "%d" % count
-		btn.disabled = not is_player_turn or count == 0 or game_over
+		var pode := is_player_turn and count > 0 and not game_over
+		btn.disabled = not pode
+		if pode:
+			jogaveis.append(i)
+	if halos:
+		halos.light_only(jogaveis)
 
 ## Semeia a cova do jogador. A regra e a mesma que a busca da IA usa: semear,
 ## pular a Kalah do adversario, turno extra e captura moram todos em

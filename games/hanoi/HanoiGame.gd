@@ -35,6 +35,15 @@ var auto_step_index: int = 0
 
 @onready var shell: GameShell = $GameShell
 
+## Toque e arrasto sobre os três pinos, projetados da própria mesa 3D. Antes só
+## havia os três botões: dois toques eram o único jeito de mover um disco, e
+## pegar a peça com o dedo é o gesto que a pessoa tenta primeiro.
+var picker: DragPicker3D = null
+
+## Disco que está sendo arrastado, e de onde ele saiu.
+var _drag_node: Node3D = null
+var _drag_peg: int = -1
+
 @onready var board_root: Node3D = $BoardRoot
 @onready var pegs_root: Node3D = $PegsRoot
 @onready var disks_root: Node3D = $DisksRoot
@@ -157,6 +166,15 @@ func _setup_3d_tabletop() -> void:
 	env_3d.apply_theme(tema)
 
 	fit_table(Vector2(6.8, 4.0), Vector3(0, 0.8, 0))
+
+	picker = DragPicker3D.new()
+	add_child(picker)
+	picker.attach(env_3d, BASE_Y)
+	picker.target_tapped.connect(func(id: Variant) -> void: _on_peg_pressed(int(id)))
+	picker.drag_started.connect(_on_disco_pego)
+	picker.drag_moved.connect(_on_disco_movido)
+	picker.drag_ended.connect(_on_disco_solto)
+	_refazer_alvos_de_toque()
 
 
 func _setup_difficulty_buttons() -> void:
@@ -656,7 +674,10 @@ func _get_peg_name(peg_idx: int) -> String:
 		_: return "Desconhecido"
 
 
+## Reprojeta os alvos de toque junto com o placar: as duas coisas mudam pela
+## mesma razao -- uma jogada aconteceu.
 func _update_ui_stats() -> void:
+	_refazer_alvos_de_toque()
 	var optimal: int = Rules.get_optimal_moves(disk_count)
 	min_moves_label.text = str(optimal)
 	var stars: int = Rules.calculate_stars(move_count, disk_count)
@@ -733,3 +754,87 @@ func _get_player_profile() -> Node:
 
 func _get_audio_mgr() -> Node:
 	return get_node_or_null("/root/AudioManager")
+
+
+# ---------------------------------------------------------------------------
+# Arrastar disco
+# ---------------------------------------------------------------------------
+
+## Onde o dedo pega e solta em cada pino.
+##
+## O alvo fica na altura do TOPO da pilha, e não na base: é lá que está o disco
+## que se pode mover, e mirar na base faria o dedo passar longe numa torre alta.
+func _refazer_alvos_de_toque() -> void:
+	if picker == null or pegs.size() < 3:
+		return
+	var alvos: Dictionary = {}
+	for i in range(3):
+		var pilha: Array = pegs[i]
+		var altura: float = BASE_Y + DISK_HEIGHT * float(maxi(pilha.size(), 1))
+		var base: Vector3 = _get_peg_base_pos(i)
+		alvos[i] = Vector3(base.x, altura, base.z)
+	picker.set_targets(alvos)
+
+
+func _on_disco_pego(id: Variant) -> void:
+	if game_over or is_animating or is_auto_solving:
+		picker.cancel_drag()
+		return
+	var peg: int = int(id)
+	var pilha_peg: Array = pegs[peg]
+	if pilha_peg.is_empty():
+		set_status(tr("HANOI_PEG_EMPTY") % _get_peg_name(peg))
+		_play_error_buzz()
+		picker.cancel_drag()
+		return
+
+	# Sair de um disco já erguido por toque deixaria dois discos no ar.
+	if selected_peg != -1:
+		_on_peg_pressed(selected_peg)
+
+	if not shell.timer.active:
+		shell.timer.start()
+
+	_drag_peg = peg
+	_drag_node = disk_nodes.get(Rules.get_top_disk(pilha_peg))
+	_play_place_sound()
+	_show_peg_halo(peg, Color(1.0, 0.85, 0.2))
+
+
+func _on_disco_movido(_from_id: Variant, over: Variant, world: Vector3) -> void:
+	if _drag_node == null:
+		return
+	# Acompanha o dedo sem tween: tween aqui atrasaria o disco em relação ao
+	# ponto tocado, e o gesto pareceria emperrado.
+	_drag_node.position = Vector3(world.x, BASE_Y + LIFT_Y * 0.5, world.z)
+	_hide_all_halos()
+	_show_peg_halo(_drag_peg, Color(1.0, 0.85, 0.2))
+	if over != null and int(over) != _drag_peg:
+		var destino: int = int(over)
+		var pode: bool = Rules.can_move_disk(pegs, _drag_peg, destino)
+		_show_peg_halo(destino, Tokens3D.COLOR_VALID if pode else Tokens3D.COLOR_INVALID)
+
+
+func _on_disco_solto(from_id: Variant, to: Variant) -> void:
+	var node: Node3D = _drag_node
+	var origem: int = _drag_peg if _drag_peg >= 0 else int(from_id)
+	_drag_node = null
+	_drag_peg = -1
+	_hide_all_halos()
+	if node == null:
+		return
+
+	var destino: int = int(to) if to != null else origem
+	if destino != origem and Rules.can_move_disk(pegs, origem, destino):
+		_execute_move_with_animation(origem, destino, node)
+		return
+
+	if destino != origem:
+		var movendo: int = int(Rules.get_top_disk(pegs[origem]))
+		var alvo: int = int(Rules.get_top_disk(pegs[destino]))
+		set_status(tr("HANOI_INVALID") % [movendo, alvo])
+		_play_error_buzz()
+
+	# Solto fora, ou em pino que não aceita: o disco volta para onde estava.
+	var pilha_origem: Array = pegs[origem]
+	_animate_disk_lower(node, origem, pilha_origem.size() - 1)

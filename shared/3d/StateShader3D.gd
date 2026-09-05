@@ -17,14 +17,17 @@ extends RefCounted
 
 const CODIGO := """
 shader_type spatial;
-render_mode cull_back, shadows_disabled;
+// `unshaded` porque o anel e um sinal de interface, nao um objeto da mesa: sob
+// as tres direcionais o especular lavava a cor para branco em mesa clara --
+// exatamente o defeito que este shader veio corrigir. Sem luz, a cor na tela e
+// a cor pedida, em qualquer tema.
+render_mode unshaded, cull_back, shadows_disabled;
 
-uniform float energy = 1.15;
+uniform float energy = 1.0;
 
 void fragment() {
-	ALBEDO = COLOR.rgb;
-	EMISSION = COLOR.rgb * energy;
-	ROUGHNESS = 0.45;
+	ALBEDO = COLOR.rgb * energy;
+	ALPHA = COLOR.a;
 }
 """
 
@@ -46,7 +49,7 @@ static func marker() -> ShaderMaterial:
 	if _marker == null:
 		_marker = ShaderMaterial.new()
 		_marker.shader = shader()
-		_marker.set_shader_parameter("energy", 1.15)
+		_marker.set_shader_parameter("energy", 1.0)
 	return _marker
 
 

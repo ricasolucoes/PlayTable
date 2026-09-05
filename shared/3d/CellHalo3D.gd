@@ -36,7 +36,7 @@ enum Shape {
 const ALTURA := 0.02
 
 ## Espessura do anel como fração do raio.
-const ESPESSURA := 0.22
+const ESPESSURA := 0.16
 
 var _positions: Array[Vector3] = []
 var _colors: Array[Color] = []
@@ -55,7 +55,7 @@ func _init() -> void:
 ## de preset, o Ludo troca de jogador), não a cada jogada.
 func setup(count: int, radius: float = 0.34, shape: int = Shape.RING) -> void:
 	stop_pulse()
-	var mm := MultiMesh.new()
+	var mm: MultiMesh = MultiMesh.new()
 	mm.transform_format = MultiMesh.TRANSFORM_3D
 	mm.use_colors = true
 	mm.mesh = _build_mesh(radius, shape)
@@ -72,7 +72,7 @@ func setup(count: int, radius: float = 0.34, shape: int = Shape.RING) -> void:
 
 func _build_mesh(radius: float, shape: int) -> Mesh:
 	if shape == Shape.DISC:
-		var disc := CylinderMesh.new()
+		var disc: CylinderMesh = CylinderMesh.new()
 		disc.top_radius = radius
 		disc.bottom_radius = radius
 		disc.height = 0.012
@@ -80,7 +80,7 @@ func _build_mesh(radius: float, shape: int) -> Mesh:
 		disc.rings = 1
 		return disc
 
-	var ring := TorusMesh.new()
+	var ring: TorusMesh = TorusMesh.new()
 	ring.inner_radius = radius * (1.0 - ESPESSURA)
 	ring.outer_radius = radius
 	# `rings` são as fatias em volta do anel e `ring_segments` as arestas da
