@@ -21,6 +21,8 @@ const JOGOS_DE_TABULEIRO := [
 	"res://games/hanoi/HanoiGame.tscn",
 	"res://games/nim/NimGame.tscn",
 	"res://games/gamao/BackgammonGame.tscn",
+	"res://games/sudoku/SudokuGame.tscn",
+	"res://games/caminho_numerico/NumberPathGame.tscn",
 ]
 
 const JOGOS_DE_CARTAS := [
@@ -67,9 +69,9 @@ func test_os_quatro_autoloads_estao_vivos() -> void:
 # ------------------------------------------------------------------- Catalogo
 
 func test_catalogo_lista_todos_os_jogos() -> void:
-	assert_eq(GameCatalog.get_board_games().size(), 14, "14 jogos de tabuleiro")
+	assert_eq(GameCatalog.get_board_games().size(), 16, "16 jogos de tabuleiro")
 	assert_eq(GameCatalog.get_card_games().size(), 6, "6 jogos de cartas")
-	assert_eq(GameCatalog.get_all_games().size(), 20, "20 no total")
+	assert_eq(GameCatalog.get_all_games().size(), 22, "22 no total")
 
 
 func test_catalogo_bate_com_os_arquivos_esperados() -> void:
@@ -216,7 +218,7 @@ func test_cada_jogo_volta_para_o_menu_da_sua_categoria() -> void:
 		esperado[definicao.scene_path] = BaseGame.MENU_TABULEIRO
 	for definicao in GameCatalog.get_card_games():
 		esperado[definicao.scene_path] = BaseGame.MENU_CARTAS
-	assert_eq(esperado.size(), 20, "os 20 jogos do catalogo")
+	assert_eq(esperado.size(), 22, "os 22 jogos do catalogo")
 
 	for caminho in esperado:
 		var jogo: Node = add_child_autofree((load(caminho) as PackedScene).instantiate())
