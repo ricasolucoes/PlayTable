@@ -520,7 +520,7 @@
       "rule": {
         "type": "stat",
         "key": "tutorials_read",
-        "target": 11
+        "target": 22
       }
     }
   ]

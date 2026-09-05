@@ -9,12 +9,16 @@ extends GutTest
 const CATALOGO := "res://core/configs/rules.json"
 const CSV := "res://core/i18n/translations.csv"
 
-## Os jogos que o usuário apontou como "não sei como se joga". Ficam listados
-## aqui para que apagar uma entrada do JSON reprove, e não passe calado.
-const EXIGEM_REGRAS := [
-	"reversi", "mancala", "ludo", "gamao", "damas", "campo_minado",
-	"batalha_naval", "hanoi", "nim", "solitario", "unolike",
-]
+## Todo jogo do catálogo tem de ter regras escritas.
+##
+## Ter ajuda em metade do catálogo é pior que não ter: quem abre o "?" num jogo
+## e não o encontra no seguinte conclui que o botão é aleatório. A lista sai do
+## próprio catálogo, então jogo novo entra reprovando até ganhar as suas regras.
+func _ids_do_catalogo() -> Array:
+	var ids: Array = []
+	for d in GameCatalog.get_board_games() + GameCatalog.get_card_games():
+		ids.append(d.scene_path.get_base_dir().get_file())
+	return ids
 
 
 func _chaves_do_csv() -> Dictionary:
@@ -36,8 +40,8 @@ func test_o_catalogo_de_regras_carrega() -> void:
 	assert_gt(RulesCatalog.all_ids().size(), 0, "rules.json tem jogos")
 
 
-func test_os_onze_jogos_apontados_tem_regras() -> void:
-	for gid in EXIGEM_REGRAS:
+func test_todo_jogo_do_catalogo_tem_regras() -> void:
+	for gid in _ids_do_catalogo():
 		assert_true(RulesCatalog.has(gid), "%s tem regras escritas" % gid)
 		assert_ne(RulesCatalog.goal_of(gid), "", "%s declara o objetivo" % gid)
 		assert_gt(RulesCatalog.sections_of(gid).size(), 0, "%s tem ao menos uma seção" % gid)

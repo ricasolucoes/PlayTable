@@ -22,6 +22,34 @@
       ],
       "tip": "RULES_BATALHA_NAVAL_TIP"
     },
+    "blackjack": {
+      "goal": "RULES_BLACKJACK_GOAL",
+      "sections": [
+        {
+          "title": "RULES_BLACKJACK_S1",
+          "items": [
+            "RULES_BLACKJACK_S1_1",
+            "RULES_BLACKJACK_S1_2",
+            "RULES_BLACKJACK_S1_3"
+          ]
+        }
+      ],
+      "tip": "RULES_BLACKJACK_TIP"
+    },
+    "caminho_numerico": {
+      "goal": "RULES_CAMINHO_NUMERICO_GOAL",
+      "sections": [
+        {
+          "title": "RULES_CAMINHO_NUMERICO_S1",
+          "items": [
+            "RULES_CAMINHO_NUMERICO_S1_1",
+            "RULES_CAMINHO_NUMERICO_S1_2",
+            "RULES_CAMINHO_NUMERICO_S1_3"
+          ]
+        }
+      ],
+      "tip": "RULES_CAMINHO_NUMERICO_TIP"
+    },
     "campo_minado": {
       "goal": "RULES_CAMPO_MINADO_GOAL",
       "sections": [
@@ -63,6 +91,20 @@
         }
       ],
       "tip": "RULES_DAMAS_TIP"
+    },
+    "domino": {
+      "goal": "RULES_DOMINO_GOAL",
+      "sections": [
+        {
+          "title": "RULES_DOMINO_S1",
+          "items": [
+            "RULES_DOMINO_S1_1",
+            "RULES_DOMINO_S1_2",
+            "RULES_DOMINO_S1_3"
+          ]
+        }
+      ],
+      "tip": "RULES_DOMINO_TIP"
     },
     "gamao": {
       "goal": "RULES_GAMAO_GOAL",
@@ -106,6 +148,20 @@
       ],
       "tip": "RULES_HANOI_TIP"
     },
+    "jogo_da_velha": {
+      "goal": "RULES_JOGO_DA_VELHA_GOAL",
+      "sections": [
+        {
+          "title": "RULES_JOGO_DA_VELHA_S1",
+          "items": [
+            "RULES_JOGO_DA_VELHA_S1_1",
+            "RULES_JOGO_DA_VELHA_S1_2",
+            "RULES_JOGO_DA_VELHA_S1_3"
+          ]
+        }
+      ],
+      "tip": "RULES_JOGO_DA_VELHA_TIP"
+    },
     "ludo": {
       "goal": "RULES_LUDO_GOAL",
       "sections": [
@@ -148,6 +204,20 @@
       ],
       "tip": "RULES_MANCALA_TIP"
     },
+    "memoria": {
+      "goal": "RULES_MEMORIA_GOAL",
+      "sections": [
+        {
+          "title": "RULES_MEMORIA_S1",
+          "items": [
+            "RULES_MEMORIA_S1_1",
+            "RULES_MEMORIA_S1_2",
+            "RULES_MEMORIA_S1_3"
+          ]
+        }
+      ],
+      "tip": "RULES_MEMORIA_TIP"
+    },
     "nim": {
       "goal": "RULES_NIM_GOAL",
       "sections": [
@@ -168,6 +238,62 @@
         }
       ],
       "tip": "RULES_NIM_TIP"
+    },
+    "paciencia": {
+      "goal": "RULES_PACIENCIA_GOAL",
+      "sections": [
+        {
+          "title": "RULES_PACIENCIA_S1",
+          "items": [
+            "RULES_PACIENCIA_S1_1",
+            "RULES_PACIENCIA_S1_2",
+            "RULES_PACIENCIA_S1_3"
+          ]
+        }
+      ],
+      "tip": "RULES_PACIENCIA_TIP"
+    },
+    "paciencia_spider": {
+      "goal": "RULES_PACIENCIA_SPIDER_GOAL",
+      "sections": [
+        {
+          "title": "RULES_PACIENCIA_SPIDER_S1",
+          "items": [
+            "RULES_PACIENCIA_SPIDER_S1_1",
+            "RULES_PACIENCIA_SPIDER_S1_2",
+            "RULES_PACIENCIA_SPIDER_S1_3"
+          ]
+        }
+      ],
+      "tip": "RULES_PACIENCIA_SPIDER_TIP"
+    },
+    "poker": {
+      "goal": "RULES_POKER_GOAL",
+      "sections": [
+        {
+          "title": "RULES_POKER_S1",
+          "items": [
+            "RULES_POKER_S1_1",
+            "RULES_POKER_S1_2",
+            "RULES_POKER_S1_3"
+          ]
+        }
+      ],
+      "tip": "RULES_POKER_TIP"
+    },
+    "quatro_em_linha": {
+      "goal": "RULES_QUATRO_EM_LINHA_GOAL",
+      "sections": [
+        {
+          "title": "RULES_QUATRO_EM_LINHA_S1",
+          "items": [
+            "RULES_QUATRO_EM_LINHA_S1_1",
+            "RULES_QUATRO_EM_LINHA_S1_2",
+            "RULES_QUATRO_EM_LINHA_S1_3"
+          ]
+        }
+      ],
+      "tip": "RULES_QUATRO_EM_LINHA_TIP"
     },
     "reversi": {
       "goal": "RULES_REVERSI_GOAL",
@@ -190,6 +316,27 @@
       ],
       "tip": "RULES_REVERSI_TIP"
     },
+    "senet": {
+      "goal": "RULES_SENET_GOAL",
+      "sections": [
+        {
+          "title": "RULES_SENET_S1",
+          "items": [
+            "RULES_SENET_S1_1",
+            "RULES_SENET_S1_2",
+            "RULES_SENET_S1_3"
+          ]
+        },
+        {
+          "title": "RULES_SENET_S2",
+          "items": [
+            "RULES_SENET_S2_1",
+            "RULES_SENET_S2_2"
+          ]
+        }
+      ],
+      "tip": "RULES_SENET_TIP"
+    },
     "solitario": {
       "goal": "RULES_SOLITARIO_GOAL",
       "sections": [
@@ -210,6 +357,20 @@
         }
       ],
       "tip": "RULES_SOLITARIO_TIP"
+    },
+    "sudoku": {
+      "goal": "RULES_SUDOKU_GOAL",
+      "sections": [
+        {
+          "title": "RULES_SUDOKU_S1",
+          "items": [
+            "RULES_SUDOKU_S1_1",
+            "RULES_SUDOKU_S1_2",
+            "RULES_SUDOKU_S1_3"
+          ]
+        }
+      ],
+      "tip": "RULES_SUDOKU_TIP"
     },
     "unolike": {
       "goal": "RULES_UNOLIKE_GOAL",
