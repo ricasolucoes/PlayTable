@@ -21,6 +21,9 @@ extends Control
 ## Emitido pelo botão voltar. Quem leva ao menu é o `BaseGame`.
 signal back_pressed
 
+## Emitido pelo "?". Quem abre as regras e o `BaseGame`.
+signal help_pressed
+
 ## Margem lateral -- a mesma de `MenuTabuleiro.tscn`, para a barra do jogo e a
 ## do menu alinharem quando uma vira a outra.
 const MARGEM := 24.0
@@ -43,6 +46,9 @@ const RESPIRO := 16
 
 ## Largura do botão voltar. Cabe "‹ Voltar", "‹ Back" e "‹ Volver".
 const LARGURA_VOLTAR := 150.0
+
+## Lado do botao de ajuda. Quadrado, no alvo minimo de toque.
+const LARGURA_AJUDA := UIKit.TOQUE_MIN
 
 ## Corpo do número do placar. Acima de `FONTE_SECAO` porque é o que o jogador
 ## procura de relance, e o rótulo embaixo já segura o piso de 14 sp.
@@ -74,6 +80,7 @@ var _lado_ativo := -1
 
 var _label_titulo: Label = null
 var _caixa_placar: HBoxContainer = null
+var _btn_ajuda: Button = null
 
 ## Formato desenhado agora ("duelo:2"), para saber quando dá para só reescrever.
 var _assinatura := ""
@@ -172,6 +179,14 @@ func _montar_linha() -> void:
 	_caixa_placar.alignment = BoxContainer.ALIGNMENT_END
 	_caixa_placar.size_flags_horizontal = Control.SIZE_SHRINK_END
 	linha.add_child(_caixa_placar)
+
+	_btn_ajuda = UIKit.botao(tr("BTN_RULES_ICON"), UIKit.FONTE_TITULO)
+	_btn_ajuda.name = "BtnRules"
+	_btn_ajuda.custom_minimum_size = Vector2(LARGURA_AJUDA, ALTURA)
+	_btn_ajuda.tooltip_text = tr("RULES_TITLE")
+	_btn_ajuda.visible = false
+	_btn_ajuda.pressed.connect(func() -> void: help_pressed.emit())
+	linha.add_child(_btn_ajuda)
 
 
 ## Um degrau de fonte antes das reticencias.
@@ -309,3 +324,10 @@ func _ponto() -> VBoxContainer:
 
 	v.add_child(UIKit.rotulo("", UIKit.FONTE_MIUDA, UIKit.TEXTO_FRACO))
 	return v
+
+
+## Mostra ou esconde o "?". Fica escondido no jogo que nao tem regras escritas,
+## porque botao que abre painel vazio e pior do que botao nenhum.
+func set_help_available(disponivel: bool) -> void:
+	if _btn_ajuda:
+		_btn_ajuda.visible = disponivel

@@ -49,6 +49,20 @@ func _ready() -> void:
 		GameEventBus.match_started.connect(_on_match_started)
 		GameEventBus.match_completed.connect(_on_match_completed)
 		GameEventBus.item_collected.connect(_on_item_collected)
+		GameEventBus.tutorial_completed.connect(_on_tutorial_completed)
+
+
+## Leu as regras de um jogo pela primeira vez.
+##
+## O sinal existia no barramento desde sempre e ninguem o emitia nem o escutava.
+## Agora paga XP, e o `RewardToast` ja escuta `xp_gained` -- entao quem fecha o
+## painel ve que a leitura valeu alguma coisa, em vez de ela sumir sem sinal.
+const XP_TUTORIAL := 50
+
+func _on_tutorial_completed(_game_id: String) -> void:
+	PlayerProfile.increment_stat("tutorials_read")
+	if RewardSystem:
+		RewardSystem.grant_xp(XP_TUTORIAL, "tutorial")
 
 
 func _on_match_started(_game_id: String, _mode: String) -> void:

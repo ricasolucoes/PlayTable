@@ -48,6 +48,10 @@ var game_id: String = ""
 ## jogos chamam `finish_game()` de mais de um caminho de fim.
 var _result_reported: bool = false
 
+## Painel de "como se joga". Montado aqui para todos os jogos; nenhuma cena o
+## carrega. Fica `null` no jogo sem entrada em `rules.json`.
+var rules_panel: RulesPanel = null
+
 
 ## O raiz de cada jogo é uma Control de tela inteira. No filtro padrão ela
 ## retém o clique, e ele nunca chega ao Picker do Board3D — foi assim que as
@@ -72,6 +76,7 @@ func _enter_tree() -> void:
 		toast.name = "RewardToast"
 		add_child(toast)
 	_montar_barra()
+	_montar_ajuda()
 
 
 ## Põe a barra de cima na cena. Entra por último para desenhar sobre a mesa 3D
@@ -87,6 +92,76 @@ func _montar_barra() -> void:
 	add_child(top_bar)
 
 
+## Pendura o painel de regras e liga o "?" da barra.
+##
+## Chamado por `_enter_tree()`, logo depois de `_montar_barra()`: o painel usa
+## `GameTopBar.BANDA` para nao comecar debaixo da barra, e o botao mora nela.
+func _montar_ajuda() -> void:
+	if get_node_or_null("RulesPanel") != null:
+		return
+	rules_panel = RulesPanel.new()
+	rules_panel.name = "RulesPanel"
+	rules_panel.build(game_id, GameCatalog.bar_title(game_id))
+	rules_panel.closed.connect(_on_rules_closed)
+	add_child(rules_panel)
+
+	var tem := rules_panel.has_content()
+	if top_bar:
+		top_bar.help_pressed.connect(show_rules)
+		top_bar.ready.connect(func() -> void: top_bar.set_help_available(tem), CONNECT_ONE_SHOT)
+	if tem:
+		_abrir_regras_na_primeira_vez.call_deferred()
+
+
+## Abre as regras sozinho na primeira vez que a pessoa entra neste jogo.
+##
+## So quando a cena E a cena corrente. Sob o GUT e sob `tools/shot.gd` o jogo e
+## filho de outra raiz, e um painel que abre sozinho ali tornaria a suite nao
+## deterministica: passaria na primeira execucao e falharia na segunda, porque a
+## bandeira ja teria sido gravada.
+func _abrir_regras_na_primeira_vez() -> void:
+	if not is_inside_tree() or get_tree() == null:
+		return
+	if get_tree().current_scene != self:
+		return
+	if not regras_ineditas():
+		return
+	if rules_panel and rules_panel.has_content():
+		rules_panel.open_automatic()
+
+
+## Verdadeiro enquanto o jogador nunca fechou as regras deste jogo.
+func regras_ineditas() -> bool:
+	if PlayerProfile == null:
+		return false
+	return not PlayerProfile.has_flag(FLAG_REGRAS % game_id)
+
+
+## Abre o painel de regras. Ligado ao "?" da barra.
+func show_rules() -> void:
+	if rules_panel == null or not rules_panel.has_content():
+		return
+	play_click()
+	rules_panel.open()
+
+
+func hide_rules() -> void:
+	if rules_panel:
+		rules_panel.close()
+
+
+## Fechou o painel. Só a abertura automática da primeira partida grava a
+## bandeira e publica no barramento -- reabrir pelo botão não paga de novo.
+func _on_rules_closed(era_automatico: bool) -> void:
+	play_click()
+	if not era_automatico or PlayerProfile == null:
+		return
+	if PlayerProfile.set_flag(FLAG_REGRAS % game_id):
+		PlayerProfile.save_profile()
+		if GameEventBus:
+			GameEventBus.tutorial_completed.emit(game_id)
+
+
 func _derive_game_id() -> String:
 	var path := scene_file_path
 	if path.begins_with("res://games/"):
@@ -100,6 +175,9 @@ func _derive_game_id() -> String:
 
 ## Folga entre a HUD e a borda do tabuleiro, em pixels do viewport logico.
 const HUD_GAP := 10.0
+
+## Bandeira de "já leu as regras deste jogo", uma por `game_id`.
+const FLAG_REGRAS := "viu_regras_%s"
 
 var _fit_size: Vector2 = Vector2.ZERO
 var _fit_center: Vector3 = Vector3.ZERO

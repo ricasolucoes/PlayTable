@@ -1,0 +1,236 @@
+{
+  "_doc": "Regras curtas por jogo. A ESTRUTURA fica aqui; o TEXTO fica em core/i18n/translations.csv, sob as chaves RULES_*, porque e o CSV que LocaleManager e test_i18n governam. Jogo sem entrada aqui simplesmente nao ganha o botao de ajuda -- e assim que se opta por nao ter.",
+  "games": {
+    "batalha_naval": {
+      "goal": "RULES_BATALHA_NAVAL_GOAL",
+      "sections": [
+        {
+          "title": "RULES_BATALHA_NAVAL_S1",
+          "items": [
+            "RULES_BATALHA_NAVAL_S1_1",
+            "RULES_BATALHA_NAVAL_S1_2",
+            "RULES_BATALHA_NAVAL_S1_3"
+          ]
+        },
+        {
+          "title": "RULES_BATALHA_NAVAL_S2",
+          "items": [
+            "RULES_BATALHA_NAVAL_S2_1",
+            "RULES_BATALHA_NAVAL_S2_2"
+          ]
+        }
+      ],
+      "tip": "RULES_BATALHA_NAVAL_TIP"
+    },
+    "campo_minado": {
+      "goal": "RULES_CAMPO_MINADO_GOAL",
+      "sections": [
+        {
+          "title": "RULES_CAMPO_MINADO_S1",
+          "items": [
+            "RULES_CAMPO_MINADO_S1_1",
+            "RULES_CAMPO_MINADO_S1_2",
+            "RULES_CAMPO_MINADO_S1_3"
+          ]
+        },
+        {
+          "title": "RULES_CAMPO_MINADO_S2",
+          "items": [
+            "RULES_CAMPO_MINADO_S2_1",
+            "RULES_CAMPO_MINADO_S2_2"
+          ]
+        }
+      ],
+      "tip": "RULES_CAMPO_MINADO_TIP"
+    },
+    "damas": {
+      "goal": "RULES_DAMAS_GOAL",
+      "sections": [
+        {
+          "title": "RULES_DAMAS_S1",
+          "items": [
+            "RULES_DAMAS_S1_1",
+            "RULES_DAMAS_S1_2",
+            "RULES_DAMAS_S1_3"
+          ]
+        },
+        {
+          "title": "RULES_DAMAS_S2",
+          "items": [
+            "RULES_DAMAS_S2_1",
+            "RULES_DAMAS_S2_2"
+          ]
+        }
+      ],
+      "tip": "RULES_DAMAS_TIP"
+    },
+    "gamao": {
+      "goal": "RULES_GAMAO_GOAL",
+      "sections": [
+        {
+          "title": "RULES_GAMAO_S1",
+          "items": [
+            "RULES_GAMAO_S1_1",
+            "RULES_GAMAO_S1_2",
+            "RULES_GAMAO_S1_3"
+          ]
+        },
+        {
+          "title": "RULES_GAMAO_S2",
+          "items": [
+            "RULES_GAMAO_S2_1",
+            "RULES_GAMAO_S2_2"
+          ]
+        }
+      ],
+      "tip": "RULES_GAMAO_TIP"
+    },
+    "hanoi": {
+      "goal": "RULES_HANOI_GOAL",
+      "sections": [
+        {
+          "title": "RULES_HANOI_S1",
+          "items": [
+            "RULES_HANOI_S1_1",
+            "RULES_HANOI_S1_2",
+            "RULES_HANOI_S1_3"
+          ]
+        },
+        {
+          "title": "RULES_HANOI_S2",
+          "items": [
+            "RULES_HANOI_S2_1",
+            "RULES_HANOI_S2_2"
+          ]
+        }
+      ],
+      "tip": "RULES_HANOI_TIP"
+    },
+    "ludo": {
+      "goal": "RULES_LUDO_GOAL",
+      "sections": [
+        {
+          "title": "RULES_LUDO_S1",
+          "items": [
+            "RULES_LUDO_S1_1",
+            "RULES_LUDO_S1_2",
+            "RULES_LUDO_S1_3"
+          ]
+        },
+        {
+          "title": "RULES_LUDO_S2",
+          "items": [
+            "RULES_LUDO_S2_1",
+            "RULES_LUDO_S2_2"
+          ]
+        }
+      ],
+      "tip": "RULES_LUDO_TIP"
+    },
+    "mancala": {
+      "goal": "RULES_MANCALA_GOAL",
+      "sections": [
+        {
+          "title": "RULES_MANCALA_S1",
+          "items": [
+            "RULES_MANCALA_S1_1",
+            "RULES_MANCALA_S1_2",
+            "RULES_MANCALA_S1_3"
+          ]
+        },
+        {
+          "title": "RULES_MANCALA_S2",
+          "items": [
+            "RULES_MANCALA_S2_1",
+            "RULES_MANCALA_S2_2"
+          ]
+        }
+      ],
+      "tip": "RULES_MANCALA_TIP"
+    },
+    "nim": {
+      "goal": "RULES_NIM_GOAL",
+      "sections": [
+        {
+          "title": "RULES_NIM_S1",
+          "items": [
+            "RULES_NIM_S1_1",
+            "RULES_NIM_S1_2",
+            "RULES_NIM_S1_3"
+          ]
+        },
+        {
+          "title": "RULES_NIM_S2",
+          "items": [
+            "RULES_NIM_S2_1",
+            "RULES_NIM_S2_2"
+          ]
+        }
+      ],
+      "tip": "RULES_NIM_TIP"
+    },
+    "reversi": {
+      "goal": "RULES_REVERSI_GOAL",
+      "sections": [
+        {
+          "title": "RULES_REVERSI_S1",
+          "items": [
+            "RULES_REVERSI_S1_1",
+            "RULES_REVERSI_S1_2",
+            "RULES_REVERSI_S1_3"
+          ]
+        },
+        {
+          "title": "RULES_REVERSI_S2",
+          "items": [
+            "RULES_REVERSI_S2_1",
+            "RULES_REVERSI_S2_2"
+          ]
+        }
+      ],
+      "tip": "RULES_REVERSI_TIP"
+    },
+    "solitario": {
+      "goal": "RULES_SOLITARIO_GOAL",
+      "sections": [
+        {
+          "title": "RULES_SOLITARIO_S1",
+          "items": [
+            "RULES_SOLITARIO_S1_1",
+            "RULES_SOLITARIO_S1_2",
+            "RULES_SOLITARIO_S1_3"
+          ]
+        },
+        {
+          "title": "RULES_SOLITARIO_S2",
+          "items": [
+            "RULES_SOLITARIO_S2_1",
+            "RULES_SOLITARIO_S2_2"
+          ]
+        }
+      ],
+      "tip": "RULES_SOLITARIO_TIP"
+    },
+    "unolike": {
+      "goal": "RULES_UNOLIKE_GOAL",
+      "sections": [
+        {
+          "title": "RULES_UNOLIKE_S1",
+          "items": [
+            "RULES_UNOLIKE_S1_1",
+            "RULES_UNOLIKE_S1_2",
+            "RULES_UNOLIKE_S1_3"
+          ]
+        },
+        {
+          "title": "RULES_UNOLIKE_S2",
+          "items": [
+            "RULES_UNOLIKE_S2_1",
+            "RULES_UNOLIKE_S2_2"
+          ]
+        }
+      ],
+      "tip": "RULES_UNOLIKE_TIP"
+    }
+  }
+}

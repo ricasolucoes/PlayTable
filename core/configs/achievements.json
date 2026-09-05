@@ -512,6 +512,16 @@
       "rule": {
         "type": "all"
       }
+    },
+    {
+      "id": "ACH_RULES_READER",
+      "cat": "progressao",
+      "xp": 150,
+      "rule": {
+        "type": "stat",
+        "key": "tutorials_read",
+        "target": 11
+      }
     }
   ]
 }
