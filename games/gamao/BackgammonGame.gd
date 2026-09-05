@@ -95,6 +95,8 @@ func _setup_3d_hierarchy() -> void:
 	theme.surface = &"felt"
 	theme.surface_color = Color(0.08, 0.28, 0.20) # Feltro verde nobre
 	theme.accent = Color(0.92, 0.78, 0.35)
+	theme.camera_tilt = Tokens3D.CAM_TILT_TRACK
+	theme.camera_max_tilt = 80.0
 	env_3d.apply_theme(theme)
 	fit_table(Vector2(BOARD_WIDTH + 0.35, BOARD_DEPTH + 0.25))
 

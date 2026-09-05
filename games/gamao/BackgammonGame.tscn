@@ -72,7 +72,7 @@ text = "BACKGAMMON_BTN_ROLL"
 visible = false
 custom_minimum_size = Vector2(130.0, 88.0)
 layout_mode = 2
-text = "BACKGAMMON_BTN_END_TURN"
+text = "BTN_END_TURN_GLYPH"
 
 [node name="Actions" type="HBoxContainer" parent="UI"]
 layout_mode = 1
@@ -93,13 +93,13 @@ theme_override_constants/separation = 8
 custom_minimum_size = Vector2(88.0, 88.0)
 layout_mode = 2
 disabled = true
-text = "BTN_UNDO_ICON2"
+text = "BTN_UNDO_GLYPH"
 clip_text = true
 
 [node name="BtnModeToggle" type="Button" parent="UI/Actions"]
 custom_minimum_size = Vector2(95.0, 88.0)
 layout_mode = 2
-text = "MODE_BTN_VS_AI"
+text = "BTN_MODE_GLYPH"
 clip_text = true
 
 [node name="BtnDiffToggle" type="Button" parent="UI/Actions"]
@@ -111,5 +111,5 @@ clip_text = true
 [node name="BtnRestart" type="Button" parent="UI/Actions"]
 custom_minimum_size = Vector2(95.0, 88.0)
 layout_mode = 2
-text = "BTN_RESET_ICON"
+text = "BTN_RESET_GLYPH"
 clip_text = true
