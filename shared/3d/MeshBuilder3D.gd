@@ -411,6 +411,95 @@ static func bowl(radius: float = 0.34, depth: float = 0.14) -> ArrayMesh:
 static func board_slab(size_x: float, size_z: float, thickness: float = Tokens3D.BOARD_SLAB_THICKNESS) -> ArrayMesh:
 	return rounded_box(Vector3(size_x, thickness, size_z), thickness * 0.22, 2)
 
+
+## Casco de navio visto de cima: proa afilada, popa reta, convés chanfrado.
+##
+## A Batalha Naval desenhava os cinco navios como a MESMA caixa retangular, só
+## mais comprida ou mais curta -- porta-aviões e destroier eram indistinguíveis
+## a não ser pelo comprimento, e nada naquilo parecia um navio. Isto é a mesma
+## quantidade de geometria com silhueta: quem olha o mapa vê para que lado a
+## proa aponta.
+##
+## `length` corre em +X (proa à direita), `beam` em Z, `height` em Y.
+static func ship_hull(length: float, beam: float, height: float) -> ArrayMesh:
+	var key := "hull_%.3f_%.3f_%.3f" % [length, beam, height]
+	if _cache.has(key):
+		return _cache[key]
+
+	var meia_l := length * 0.5
+	var meia_b := beam * 0.5
+	var topo := height
+	# A proa ocupa 30% do comprimento; abaixo disso não se lê de que lado ela
+	# está, e acima o casco vira uma seta em vez de um navio.
+	var proa := meia_l
+	var ombro := meia_l - length * 0.30
+	var popa := -meia_l
+
+	# Contorno do convés, no sentido anti-horário visto de cima.
+	var planta := PackedVector2Array([
+		Vector2(popa, -meia_b * 0.86),
+		Vector2(ombro, -meia_b),
+		Vector2(proa, -meia_b * 0.10),
+		Vector2(proa, meia_b * 0.10),
+		Vector2(ombro, meia_b),
+		Vector2(popa, meia_b * 0.86),
+	])
+
+	var st := SurfaceTool.new()
+	st.begin(Mesh.PRIMITIVE_TRIANGLES)
+
+	# O casco afunila para baixo: fundo a 62% da largura do convés. É o que dá o
+	# chanfro que separa costado de convés sob luz rasante.
+	var n := planta.size()
+	for i in range(n):
+		var a := planta[i]
+		var b := planta[(i + 1) % n]
+		var a_topo := Vector3(a.x, topo, a.y)
+		var b_topo := Vector3(b.x, topo, b.y)
+		var a_base := Vector3(a.x * 0.98, 0.0, a.y * 0.62)
+		var b_base := Vector3(b.x * 0.98, 0.0, b.y * 0.62)
+		_quad(st, a_base, b_base, b_topo, a_topo)
+
+	# Convés e fundo, em leque a partir do centro.
+	for i in range(1, n - 1):
+		st.add_vertex(Vector3(planta[0].x, topo, planta[0].y))
+		st.add_vertex(Vector3(planta[i].x, topo, planta[i].y))
+		st.add_vertex(Vector3(planta[i + 1].x, topo, planta[i + 1].y))
+		st.add_vertex(Vector3(planta[0].x * 0.98, 0.0, planta[0].y * 0.62))
+		st.add_vertex(Vector3(planta[i + 1].x * 0.98, 0.0, planta[i + 1].y * 0.62))
+		st.add_vertex(Vector3(planta[i].x * 0.98, 0.0, planta[i].y * 0.62))
+
+	# Superestrutura: um bloco no terço de ré. Sem ela a silhueta ainda é só uma
+	# lasca, e é ela que diz "isto tem uma torre de comando".
+	var sc := -length * 0.12
+	var sl := length * 0.16
+	var sb := meia_b * 0.52
+	var sh := topo + height * 0.75
+	var cantos := PackedVector2Array([
+		Vector2(sc - sl, -sb), Vector2(sc + sl, -sb),
+		Vector2(sc + sl, sb), Vector2(sc - sl, sb),
+	])
+	for i in range(4):
+		var a := cantos[i]
+		var b := cantos[(i + 1) % 4]
+		_quad(st, Vector3(a.x, topo, a.y), Vector3(b.x, topo, b.y),
+			Vector3(b.x, sh, b.y), Vector3(a.x, sh, a.y))
+	for tri in [[0, 1, 2], [0, 2, 3]]:
+		for idx in tri:
+			st.add_vertex(Vector3(cantos[idx].x, sh, cantos[idx].y))
+
+	st.generate_normals()
+	st.generate_tangents()
+	var mesh: ArrayMesh = st.commit()
+	_cache[key] = mesh
+	return mesh
+
+
+## Duas faces de um quadrilátero, com a normal saindo para fora.
+static func _quad(st: SurfaceTool, a: Vector3, b: Vector3, c: Vector3, d: Vector3) -> void:
+	for v in [a, b, c, a, c, d]:
+		st.add_vertex(v)
+
 # ---------------------------------------------------------------------------
 # Compatibilidade com a API anterior
 # ---------------------------------------------------------------------------

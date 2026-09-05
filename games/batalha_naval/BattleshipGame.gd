@@ -204,18 +204,34 @@ func _hull_geometry(board: Board3D, ship: Dictionary) -> Dictionary:
 	return {
 		"size": Vector3(atraves if is_vert else ao_longo, height, ao_longo if is_vert else atraves),
 		"center": center,
+		"length": ao_longo,
+		"beam": atraves,
+		"height": height,
+		# O casco e modelado com a proa em +X; navio vertical no tabuleiro so
+		# precisa girar 90 graus em Y.
+		"yaw": PI * 0.5 if is_vert else 0.0,
 	}
+
+
+## O casco em si, ja com a silhueta e a rotacao certas.
+##
+## Os cinco navios eram a MESMA caixa retangular, mudando so o comprimento:
+## porta-avioes e destroier ficavam indistinguiveis, e nada aquilo parecia um
+## navio. Mesma quantidade de geometria, agora com proa afilada e torre.
+func _montar_casco(geo: Dictionary, material: StandardMaterial3D) -> MeshInstance3D:
+	var no := MeshInstance3D.new()
+	no.mesh = MeshBuilder3D.ship_hull(
+		float(geo["length"]), float(geo["beam"]), float(geo["height"]))
+	no.material_override = material
+	no.rotation.y = float(geo["yaw"])
+	return no
 
 
 func _render_player_hull(ship: Dictionary, index: int) -> void:
 	if (ship["cells"] as Array).is_empty():
 		return
 	var geo := _hull_geometry(fleet_board, ship)
-	var box := BoxMesh.new()
-	box.size = geo["size"]
-	var hull := MeshInstance3D.new()
-	hull.mesh = box
-	hull.material_override = MaterialFactory3D.get_plastic(Color(0.86, 0.88, 0.84), true)
+	var hull := _montar_casco(geo, MaterialFactory3D.get_plastic(Color(0.78, 0.81, 0.84), true))
 	hull.position = geo["center"]
 	_fleet_hulls.add_child(hull)
 	_player_hull_nodes[index] = hull
@@ -239,18 +255,13 @@ func _reveal_enemy_wreck(ship: Dictionary) -> void:
 	if (ship["cells"] as Array).is_empty():
 		return
 	var geo := _hull_geometry(radar_board, ship)
-	var size: Vector3 = geo["size"]
 	var center: Vector3 = geo["center"]
 
-	var box := BoxMesh.new()
-	box.size = size
-	var wreck := MeshInstance3D.new()
-	wreck.mesh = box
-	wreck.material_override = MaterialFactory3D.get_plastic(Color(0.30, 0.26, 0.24), false)
+	var wreck := _montar_casco(geo, MaterialFactory3D.get_plastic(Color(0.26, 0.23, 0.21), false))
 	wreck.position = center
 	_radar_wrecks.add_child(wreck)
 
-	_explode_around(_radar_wrecks, center, size)
+	_explode_around(_radar_wrecks, center, geo["size"])
 
 	var d := Quality3D.duration(Tokens3D.DUR_SLOW)
 	if d <= 0.0:
