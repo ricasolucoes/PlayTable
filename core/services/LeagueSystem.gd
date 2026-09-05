@@ -45,8 +45,10 @@ func _check_season_reset() -> void:
 	if salva != "":
 		current_elo = int(current_elo / 2.0)
 		PlayerProfile.set_stat("competitive_elo", current_elo)
+	var nova_liga := get_current_league()
+	PlayerProfile.set_stat("last_league_id", nova_liga["id"])
+	PlayerProfile.set_stat("league_floor", int(nova_liga["min_elo"]))
 	PlayerProfile.set_stat("elo_season", season)
-	PlayerProfile.set_stat("league_floor", 0)
 
 
 func _on_match_completed(_game_id: String, result: Dictionary) -> void:

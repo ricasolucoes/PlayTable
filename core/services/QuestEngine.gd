@@ -109,10 +109,19 @@ func _roll_scope(scope: String, window: String) -> bool:
 	return true
 
 
+static func _hash_string(s: String) -> int:
+	var h := 2166136261
+	var bytes := s.to_utf8_buffer()
+	for b in bytes:
+		h = (h ^ b) * 16777619
+		h &= 0xFFFFFFFF
+	return h
+
+
 ## Sorteio estavel: a mesma janela sempre produz o mesmo lote.
 func _sortear(pool: Array, quantas: int, window: String) -> Array:
 	var rng := RandomNumberGenerator.new()
-	rng.seed = hash(window)
+	rng.seed = _hash_string(window)
 	var indices := range(pool.size())
 	# Fisher-Yates com o RNG semeado -- `Array.shuffle()` usa o gerador global.
 	for i in range(indices.size() - 1, 0, -1):

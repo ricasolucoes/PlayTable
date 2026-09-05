@@ -82,8 +82,6 @@ func _evaluate() -> void:
 		if atual >= alvo:
 			pendentes.append(d)
 
-	_evaluating = false
-
 	for d in pendentes:
 		_unlock(d)
 
@@ -92,6 +90,8 @@ func _evaluate() -> void:
 	# recursao aberta.
 	if not pendentes.is_empty():
 		_evaluate.call_deferred()
+
+	_evaluating = false
 
 
 func _unlock(d: Dictionary) -> void:
