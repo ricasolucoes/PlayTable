@@ -182,6 +182,8 @@ func _on_player_pit_clicked(pit_idx: int) -> void:
 	var ganhou := _semear(pit_idx, 0)
 	if ganhou["capturou"] > 0:
 		set_status(tr("MANCALA_YOU_CAPTURE") % ganhou["capturou"])
+		if AudioManager:
+			AudioManager.play_capture()
 
 	if _check_game_over(): return
 

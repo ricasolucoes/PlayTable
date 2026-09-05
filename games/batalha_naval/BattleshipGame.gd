@@ -118,7 +118,12 @@ func _child_root(parent: Node3D, name_: String) -> Node3D:
 	return node
 
 
+## Carimbo da partida corrente. O turno da IA e agendado por `await`, e sem esta
+## marca a jogada de uma partida antiga caia sobre o tabuleiro da nova.
+var _geracao: int = 0
+
 func _start_new_game() -> void:
+	_geracao += 1
 	game_over = false
 	is_player_turn = true
 	btn_restart.hide()
@@ -302,8 +307,12 @@ func _on_radar_cell_clicked(r: int, c: int) -> void:
 	var is_hit: bool = cell_val == 1
 	ai_grid.set_cell(r, c, 3 if is_hit else 2)
 	_spawn_peg(radar_board, _radar_marks, r, c, is_hit)
+	# O som chega antes de o texto ser lido: acerto estoura, agua chapinha.
 	if AudioManager:
-		AudioManager.play_piece_place()
+		if is_hit:
+			AudioManager.play_explosion()
+		else:
+			AudioManager.play_splash()
 
 	if is_hit:
 		var sunk_ship := BattleshipRules.check_ship_sunk(ai_ships, ai_grid, r, c)
@@ -322,7 +331,10 @@ func _on_radar_cell_clicked(r: int, c: int) -> void:
 		return
 
 	is_player_turn = false
+	var geracao: int = _geracao
 	await get_tree().create_timer(0.6).timeout
+	if geracao != _geracao or game_over or not is_inside_tree():
+		return
 	_play_ai_turn()
 
 
@@ -337,6 +349,11 @@ func _play_ai_turn() -> void:
 	var is_hit: bool = int(player_grid.get_cell(r, c)) == 1
 	player_grid.set_cell(r, c, 3 if is_hit else 2)
 	_spawn_peg(fleet_board, _fleet_marks, r, c, is_hit)
+	if AudioManager:
+		if is_hit:
+			AudioManager.play_explosion()
+		else:
+			AudioManager.play_splash()
 
 	# A IA so fica sabendo o que o tiro revelou -- acerto, erro e, quando
 	# afunda, as casas do navio. E dai que sai o mapa do proximo tiro.

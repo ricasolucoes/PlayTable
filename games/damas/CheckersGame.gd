@@ -198,6 +198,8 @@ func _execute_player_move(from_pos: Vector2i, move_dict: Dictionary) -> void:
 	CheckersRules.apply_move(grid_data, from_pos, to_pos, captured_pos)
 	if piece_3d and not era_dama and _is_queen(to_pos):
 		piece_3d.promote_queen()
+		if AudioManager:
+			AudioManager.play_card_match()
 		
 	board_3d.clear_states()
 

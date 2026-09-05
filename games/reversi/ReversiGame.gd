@@ -112,6 +112,12 @@ func _on_cell_clicked(r: int, c: int) -> void:
 	pieces_root.add_child(new_piece)
 	pieces_3d[pos] = new_piece
 	new_piece.drop_to(target_3d, 0.35)
+	# O Reversi era mudo do inicio ao fim. O som separa a peca que pousa das
+	# que viram, que e a informacao da jogada.
+	if AudioManager:
+		AudioManager.play_piece_place()
+		if flipped.size() > 0:
+			AudioManager.play_capture()
 	
 	_update_scores()
 	_after_player_move()

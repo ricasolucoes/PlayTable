@@ -126,6 +126,8 @@ func _spawn_top_discard_3d(card: Card) -> void:
 	discard_cards_3d.append(c_3d)
 	
 	c_3d.deal_to(target_pos, rot_y, 0.35)
+	if AudioManager:
+		AudioManager.play_card_flip()
 
 func _draw_from_deck() -> Card:
 	if draw_pile.is_empty():

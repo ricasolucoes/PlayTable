@@ -50,6 +50,15 @@ func play_card_match() -> void:
 func play_win() -> void:
 	play_sound("win", 2.0, 1.0)
 
+func play_explosion() -> void:
+	play_sound("explosion", 0.0, randf_range(0.92, 1.08))
+
+func play_splash() -> void:
+	play_sound("splash", -4.0, randf_range(0.92, 1.08))
+
+func play_capture() -> void:
+	play_sound("capture", -2.0, randf_range(0.96, 1.04))
+
 func play_draw() -> void:
 	play_sound("draw", -2.0, 1.0)
 
@@ -65,6 +74,63 @@ func _generate_all_sounds() -> void:
 	_cached_sounds["card_match"] = _gen_card_match_sound()
 	_cached_sounds["win"] = _gen_win_sound()
 	_cached_sounds["draw"] = _gen_draw_sound()
+	_cached_sounds["explosion"] = _gen_explosion_sound()
+	_cached_sounds["splash"] = _gen_splash_sound()
+	_cached_sounds["capture"] = _gen_capture_sound()
+
+## Estouro do casco atingido na Batalha Naval.
+##
+## Ruido de banda larga com corte que desce -- o que da o "grave que abre" de uma
+## explosao -- somado a um sub de 70 Hz que cai para 40. Nao ha um unico arquivo
+## de audio neste repositorio: todos os sons sao sintetizados aqui, e este
+## segue a mesma regra.
+func _gen_explosion_sound() -> AudioStreamWAV:
+	var rate := 22050
+	var length := int(rate * 0.55)
+	var samples: Array[float] = []
+	samples.resize(length)
+	var low := 0.0
+	for i in range(length):
+		var t := float(i) / float(rate)
+		var prog := float(i) / float(length)
+		# Passa-baixa de um polo com a frequencia de corte descendo: e o filtro que
+		# transforma ruido branco em estouro, em vez de chiado.
+		var corte := lerpf(0.55, 0.05, prog * prog)
+		low += (randf() * 2.0 - 1.0 - low) * corte
+		var env := exp(-t / 0.16)
+		var sub := sin(TAU * lerpf(70.0, 40.0, prog) * t) * exp(-t / 0.10) * 0.55
+		samples[i] = clampf(low * 1.5 * env + sub, -1.0, 1.0)
+	return _create_wav_from_floats(samples, rate)
+
+
+## Tiro que cai na agua: o mesmo ruido, mais curto, mais agudo e sem o sub.
+func _gen_splash_sound() -> AudioStreamWAV:
+	var rate := 22050
+	var length := int(rate * 0.22)
+	var samples: Array[float] = []
+	samples.resize(length)
+	var low := 0.0
+	for i in range(length):
+		var t := float(i) / float(rate)
+		low += (randf() * 2.0 - 1.0 - low) * 0.30
+		samples[i] = low * exp(-t / 0.055) * 0.85
+	return _create_wav_from_floats(samples, rate)
+
+
+## Peca comida: dois tons descendentes curtos, para a captura soar diferente do
+## simples pousar de peca.
+func _gen_capture_sound() -> AudioStreamWAV:
+	var rate := 22050
+	var length := int(rate * 0.26)
+	var samples: Array[float] = []
+	samples.resize(length)
+	for i in range(length):
+		var t := float(i) / float(rate)
+		var freq := 660.0 if t < 0.09 else 440.0
+		var env := exp(-fmod(t, 0.09) / 0.035)
+		samples[i] = sin(TAU * freq * t) * env * 0.55
+	return _create_wav_from_floats(samples, rate)
+
 
 func _create_wav_from_floats(samples: Array[float], sample_rate: int = 22050) -> AudioStreamWAV:
 	var bytes := PackedByteArray()

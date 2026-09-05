@@ -292,6 +292,8 @@ func _move_player_pawn(idx: int, roll: int) -> void:
 	else: players_pawns[0][idx] += roll
 	
 	_sync_pawns_positions()
+	if AudioManager:
+		AudioManager.play_piece_place()
 	_check_captures(0, idx)
 	
 	if _check_win(0): return
@@ -354,6 +356,8 @@ func _check_captures(active_p: int, active_idx: int) -> void:
 					# Captura! Peão adversário volta para a base
 					players_pawns[other_p][other_idx] = -1
 					set_status(tr("LUDO_CAPTURED"))
+					if AudioManager:
+						AudioManager.play_capture()
 					_sync_pawns_positions()
 
 func _check_win(p: int) -> bool:
