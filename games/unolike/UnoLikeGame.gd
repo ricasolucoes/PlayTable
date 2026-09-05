@@ -32,7 +32,7 @@ var discard_cards_3d: Array[Card3D] = []
 ## Moldura no feltro em volta do descarte, na cor que esta valendo. Depois de um
 ## curinga a carta de cima e preta: sem esta marca so o texto do topo diz que
 ## cor foi escolhida, e ele fica longe de onde a jogada acontece.
-var _color_marker: TableZone3D = null
+var _color_marker: CellHalo3D = null
 
 @onready var cards_root: Node3D = $CardsRoot
 @onready var active_color_banner: Label = $UI/VBoxContainer/ActiveColorBanner
@@ -59,17 +59,24 @@ func _ready() -> void:
 
 
 func _build_color_marker() -> void:
-	# Moldura fina em volta do descarte, e nao um disco aceso: um disco no
-	# tamanho de ler a cor de longe vira um borrao que apaga a propria carta.
-	_color_marker = TableZone3D.new()
+	# Anel em volta do descarte, e nao um disco aceso: um disco no tamanho de ler
+	# a cor de longe vira um borrao que apaga a propria carta.
+	#
+	# Era uma moldura RETANGULAR de quatro barras, e a carta do descarte cai com
+	# rotacao aleatoria de ate 15 graus -- a moldura ficava sempre torta em
+	# relacao a carta. O anel nao tem lado, entao nao tem como ficar torto, e e o
+	# mesmo sinal que o resto do aplicativo usa.
+	_color_marker = CellHalo3D.new()
 	_color_marker.name = "ActiveColorMarker"
 	_color_marker.position = Vector3(0.0, 0.0, -0.3)
 	cards_root.add_child(_color_marker)
+	_color_marker.setup(1, 0.80)
+	_color_marker.set_targets([Vector3.ZERO])
 
 
 func _paint_active_color(col: Color) -> void:
 	if _color_marker:
-		_color_marker.setup(Vector2(1.06, 1.36), "", col)
+		_color_marker.light(0, col)
 
 func _start_new_game() -> void:
 	game_over = false
@@ -161,7 +168,7 @@ func _update_ui() -> void:
 	for i in range(player_hand.size()):
 		var card := player_hand.get_card(i)
 		var view := UnoCard2D.new()
-		view.custom_minimum_size = Vector2(78, 116)
+		view.custom_minimum_size = Vector2(UIKit.TOQUE_MIN + 12.0, 148.0)
 		view.setup(card)
 		view.playable = is_player_turn and not game_over and not waiting_color_pick \
 			and UnoRules.can_play_card(card, top_card, active_color)
