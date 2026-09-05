@@ -1,0 +1,50 @@
+{
+  "game_id": "batalha_naval",
+  "out_dir": "shared/assets/batalha_naval",
+  "hero": "encouracado",
+  "style_bible": "Coleção PlayTable de jogos de mesa: peças de resina, madeira nobre, marfim e metal escovado, fotografadas como miniatura real sobre estúdio, luz quente vinda do alto-esquerda com uma única especular limpa. Realismo de objeto de tabuleiro caro, não ilustração. NUNCA pixel art, NUNCA desenho animado, NUNCA estilo cartoon infantil, NUNCA propriedade intelectual de terceiros. A silhueta tem de ler a 64 px de altura numa tela de telefone segurada a meio metro do rosto: forma grande e contrastada, sem detalhe fino. Este jogo é uma frota de miniaturas de metal cinza-aço sobre mar de radar; vista ORTOGONAL DE CIMA, proa apontando para a DIREITA, casco inteiro no quadro, sem nenhuma inclinação em perspectiva.",
+  "defaults": {
+    "model": "gemini-3.1-flash-image",
+    "background": "chroma",
+    "size": 768
+  },
+  "assets": [
+    {
+      "name": "encouracado",
+      "prompt": "Miniatura de porta-aviões visto exatamente de cima, casco alongado de metal cinza-aço com convés claro e ilha de comando pequena a estibordo. Proporção de cinco casas de comprimento por uma de largura: muito alongado.",
+      "size": 1024
+    },
+    {
+      "name": "couracado",
+      "prompt": "Miniatura de couraçado visto exatamente de cima, casco de metal cinza-aço com duas torres de artilharia e uma superestrutura central. Proporção de quatro casas de comprimento por uma de largura.",
+      "reference": [
+        "encouracado"
+      ],
+      "size": 1024
+    },
+    {
+      "name": "cruzador",
+      "prompt": "Miniatura de cruzador visto exatamente de cima, casco de metal cinza-aço com uma torre de artilharia à proa e chaminé central. Proporção de três casas de comprimento por uma de largura.",
+      "reference": [
+        "encouracado"
+      ],
+      "size": 768
+    },
+    {
+      "name": "submarino",
+      "prompt": "Miniatura de submarino visto exatamente de cima, casco cilíndrico liso de metal escuro com vela (torre) central baixa e sem artilharia. Proporção de três casas de comprimento por uma de largura.",
+      "reference": [
+        "encouracado"
+      ],
+      "size": 768
+    },
+    {
+      "name": "destroier",
+      "prompt": "Miniatura de destroier visto exatamente de cima, casco curto e afilado de metal cinza-aço com uma chaminé. Proporção de duas casas de comprimento por uma de largura.",
+      "reference": [
+        "encouracado"
+      ],
+      "size": 512
+    }
+  ]
+}

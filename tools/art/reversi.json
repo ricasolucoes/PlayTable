@@ -1,0 +1,26 @@
+{
+  "game_id": "reversi",
+  "out_dir": "shared/assets/reversi",
+  "hero": "disco_preto",
+  "style_bible": "Coleção PlayTable de jogos de mesa: peças de resina, madeira nobre, marfim e metal escovado, fotografadas como miniatura real sobre estúdio, luz quente vinda do alto-esquerda com uma única especular limpa. Realismo de objeto de tabuleiro caro, não ilustração. NUNCA pixel art, NUNCA desenho animado, NUNCA estilo cartoon infantil, NUNCA propriedade intelectual de terceiros. A silhueta tem de ler a 64 px de altura numa tela de telefone segurada a meio metro do rosto: forma grande e contrastada, sem detalhe fino. Este jogo é um othello de mesa: discos de baquelite brilhante, vista ORTOGONAL de cima. A imagem é a TEXTURA de albedo do topo.",
+  "defaults": {
+    "model": "gemini-3.1-flash-image",
+    "background": "chroma",
+    "size": 512
+  },
+  "assets": [
+    {
+      "name": "disco_preto",
+      "prompt": "Topo de um disco de othello em baquelite preto brilhante, visto exatamente de cima, círculo perfeito preenchendo 96% do quadro, com um anel gravado raso perto da borda e reflexo especular único no alto-esquerda.",
+      "size": 512
+    },
+    {
+      "name": "disco_branco",
+      "prompt": "O mesmo disco da referência, mesma forma e mesmo anel gravado, em baquelite branco marfim em vez de preto.",
+      "reference": [
+        "disco_preto"
+      ],
+      "size": 512
+    }
+  ]
+}

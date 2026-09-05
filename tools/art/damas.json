@@ -1,0 +1,26 @@
+{
+  "game_id": "damas",
+  "out_dir": "shared/assets/damas",
+  "hero": "peca_escura",
+  "style_bible": "Coleção PlayTable de jogos de mesa: peças de resina, madeira nobre, marfim e metal escovado, fotografadas como miniatura real sobre estúdio, luz quente vinda do alto-esquerda com uma única especular limpa. Realismo de objeto de tabuleiro caro, não ilustração. NUNCA pixel art, NUNCA desenho animado, NUNCA estilo cartoon infantil, NUNCA propriedade intelectual de terceiros. A silhueta tem de ler a 64 px de altura numa tela de telefone segurada a meio metro do rosto: forma grande e contrastada, sem detalhe fino. Este jogo é um jogo de damas de salão: discos torneados, vista ORTOGONAL de cima, textura de material bem visível, borda com friso canelado. A imagem é a TEXTURA de albedo do topo do disco.",
+  "defaults": {
+    "model": "gemini-3.1-flash-image",
+    "background": "chroma",
+    "size": 512
+  },
+  "assets": [
+    {
+      "name": "peca_escura",
+      "prompt": "Topo de um disco de damas em ébano polido quase preto, visto exatamente de cima, círculo perfeito preenchendo 96% do quadro, com friso canelado na borda e uma coroa circular côncava rasa no centro. Veio de madeira sutil.",
+      "size": 512
+    },
+    {
+      "name": "peca_clara",
+      "prompt": "O mesmo disco da referência, mesma forma e mesmo friso, em marfim creme envelhecido em vez de ébano. Visto exatamente de cima.",
+      "reference": [
+        "peca_escura"
+      ],
+      "size": 512
+    }
+  ]
+}

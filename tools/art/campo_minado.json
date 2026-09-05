@@ -1,0 +1,36 @@
+{
+  "game_id": "campo_minado",
+  "out_dir": "shared/assets/campo_minado",
+  "hero": "mina",
+  "style_bible": "Coleção PlayTable de jogos de mesa: peças de resina, madeira nobre, marfim e metal escovado, fotografadas como miniatura real sobre estúdio, luz quente vinda do alto-esquerda com uma única especular limpa. Realismo de objeto de tabuleiro caro, não ilustração. NUNCA pixel art, NUNCA desenho animado, NUNCA estilo cartoon infantil, NUNCA propriedade intelectual de terceiros. A silhueta tem de ler a 64 px de altura numa tela de telefone segurada a meio metro do rosto: forma grande e contrastada, sem detalhe fino. Este jogo é ardósia fria #2A3340 com esmalte saturado; vista ORTOGONAL de cima, o objeto achatado como se fosse pousado na casa.",
+  "defaults": {
+    "model": "gemini-3.1-flash-image",
+    "background": "chroma",
+    "size": 512
+  },
+  "assets": [
+    {
+      "name": "mina",
+      "prompt": "Uma mina naval esférica de ferro fundido preto fosco com oito espinhos cônicos curtos e grossos ao redor, vista de cima, ocupando 88% do quadro. Um brilho especular pequeno no alto-esquerda. Corpo escuro e uniforme.",
+      "size": 512
+    },
+    {
+      "name": "bandeira",
+      "prompt": "Uma bandeirinha triangular de tecido rubi presa a um mastro curto de latão polido, com base circular achatada. Vista em três quartos de cima, bandeira aberta para a direita, ocupando 85% do quadro.",
+      "reference": [
+        "mina"
+      ],
+      "size": 512
+    },
+    {
+      "name": "numeros",
+      "prompt": "Uma tira horizontal de oito quadrados de mesmo tamanho, encostados, sem moldura e sem separação visível entre eles, cada quadrado com um único algarismo em alto-relevo esmaltado, na ordem 1 2 3 4 5 6 7 8. Cores dos algarismos, nesta ordem: azul #3399FF, verde #33D94D, vermelho #F24033, roxo #9933E6, laranja #E68019, ciano #1ACCCC, preto #1A1A1A, cinza #999999. Traço muito grosso e geométrico, sem serifa, cada algarismo centrado e ocupando 70% da altura da sua célula, legível a 64 px.",
+      "grid": {
+        "cols": 8,
+        "rows": 1
+      },
+      "model": "gemini-3-pro-image",
+      "size": 2048
+    }
+  ]
+}

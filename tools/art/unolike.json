@@ -1,0 +1,23 @@
+{
+  "game_id": "unolike",
+  "out_dir": "shared/assets/unolike",
+  "hero": "verso",
+  "style_bible": "Coleção PlayTable de jogos de mesa: peças de resina, madeira nobre, marfim e metal escovado, fotografadas como miniatura real sobre estúdio, luz quente vinda do alto-esquerda com uma única especular limpa. Realismo de objeto de tabuleiro caro, não ilustração. NUNCA pixel art, NUNCA desenho animado, NUNCA estilo cartoon infantil, NUNCA propriedade intelectual de terceiros. A silhueta tem de ler a 64 px de altura numa tela de telefone segurada a meio metro do rosto: forma grande e contrastada, sem detalhe fino. Este jogo é um baralho de cartas de cores: papelão acetinado, cantos arredondados, vista frontal exata e chapada, sem perspectiva e sem sombra.",
+  "defaults": {
+    "model": "gemini-3.1-flash-image",
+    "background": "chroma",
+    "size": 512
+  },
+  "assets": [
+    {
+      "name": "verso",
+      "prompt": "O VERSO de uma carta de baralho de cores: retângulo vertical de cantos arredondados, fundo preto carvão, com um losango central vermelho carmim inclinado e uma moldura branca fina em toda a volta. Padrão simétrico, sem nenhuma letra ou número. Preenche o quadro inteiro.",
+      "size": 512
+    },
+    {
+      "name": "moldura",
+      "prompt": "Apenas a MOLDURA de uma carta: retângulo vertical de cantos arredondados, com bisel branco de papel espesso na borda e o miolo completamente transparente ao fundo chroma. Sem nenhum símbolo, letra ou número, só o bisel e a sombra interna sutil dele.",
+      "size": 512
+    }
+  ]
+}
