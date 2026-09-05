@@ -94,9 +94,64 @@ func _setup_3d_ludo_board() -> void:
 		var q_box := BoxMesh.new()
 		q_box.size = Vector3(2.4, 0.02, 2.4)
 		q_mesh.mesh = q_box
-		q_mesh.position = quad_offsets[p]
+		# 0,01 acima da base nao basta: os dois planos brigam em z e o quadrante
+		# sai com listras. Sobe para 0,03, que ja e o suficiente e continua
+		# rente a mesa.
+		q_mesh.position = quad_offsets[p] + Vector3(0.0, 0.02, 0.0)
 		q_mesh.material_override = MaterialFactory3D.get_plastic(QUAD_COLORS[p], false)
 		board_root.add_child(q_mesh)
+
+	_desenhar_pista()
+
+
+## As vinte e oito casas do percurso, mais as quatro retas finais.
+##
+## O traçado sempre existiu -- é um círculo de raio 2,4 que
+## `_get_track_position_3d()` calcula --, mas nada dele era desenhado: quem
+## olhava o tabuleiro via quatro quadrados coloridos e uma cruz de madeira, e
+## não tinha como saber por onde o peão anda nem onde ele entra.
+func _desenhar_pista() -> void:
+	var casa := MeshBuilder3D.disc_token(0.30, 0.03)
+
+	# A casa de largada de cada cor recebe a cor dela; o resto é marfim. É assim
+	# que se vê de onde cada lado sai e para onde ele volta.
+	var largadas: Dictionary = {}
+	for p in range(4):
+		largadas[int(START_OFFSETS[p]) % TRACK_LENGTH] = QUAD_COLORS[p]
+
+	for i in range(TRACK_LENGTH):
+		var ang := (float(i) / float(TRACK_LENGTH)) * TAU
+		var no := MeshInstance3D.new()
+		no.mesh = casa
+		no.position = Vector3(cos(ang) * 2.4, 0.04, sin(ang) * 2.4)
+		if largadas.has(i):
+			no.material_override = MaterialFactory3D.get_plastic(largadas[i], true)
+		else:
+			no.material_override = MaterialFactory3D.get_ivory()
+		board_root.add_child(no)
+
+	# Retas finais: da borda até o centro, na cor de cada lado.
+	for p in range(4):
+		for passo in range(1, 5):
+			var dist := float(32 - (28 + passo - 1)) * 0.45
+			var pos := Vector3.ZERO
+			match p:
+				0: pos = Vector3(0.0, 0.04, dist)
+				1: pos = Vector3(-dist, 0.04, 0.0)
+				2: pos = Vector3(0.0, 0.04, -dist)
+				3: pos = Vector3(dist, 0.04, 0.0)
+			var no := MeshInstance3D.new()
+			no.mesh = casa
+			no.position = pos
+			no.material_override = MaterialFactory3D.get_plastic(QUAD_COLORS[p], false)
+			board_root.add_child(no)
+
+	# A casa do meio, que é a chegada.
+	var centro := MeshInstance3D.new()
+	centro.mesh = MeshBuilder3D.disc_token(0.52, 0.04)
+	centro.position = Vector3(0.0, 0.05, 0.0)
+	centro.material_override = MaterialFactory3D.get_gold()
+	board_root.add_child(centro)
 
 func _setup_3d_pawns() -> void:
 	for c in pawns_root.get_children(): c.queue_free()
