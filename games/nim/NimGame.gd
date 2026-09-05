@@ -12,7 +12,7 @@ const Rules = preload("res://games/nim/NimRules.gd")
 
 const TOKEN_RADIUS: float = 0.30
 const TOKEN_HEIGHT: float = 0.12
-const TOKEN_SPACING: float = 0.28
+const TOKEN_SPACING: float = 0.58
 const LIFT_Y: float = 0.85
 const DISCARD_POS: Vector3 = Vector3(3.2, 0.15, 0.0)
 
@@ -88,7 +88,7 @@ func _ready() -> void:
 	# 74 graus do padrao.
 	env_3d.apply_theme(GameTheme3D.parlour_walnut())
 
-	fit_table(Vector2(7.3, 4.9))
+	fit_table(Vector2(7.3, 5.6))
 	_start_new_game()
 
 
@@ -149,8 +149,10 @@ func _setup_3d_tabletop() -> void:
 	# Criação da base e bandeja de recolhimento
 	var board_root: Node3D = $TabletopEnvironment3D/BoardRoot
 	for c in board_root.get_children():
+		if c.name == "HeapsParent":
+			continue
 		c.queue_free()
-		
+
 	# Base de madeira nogueira com friso em mogno
 	var board_slab := MeshInstance3D.new()
 	var mesh: ArrayMesh = MeshBuilder3D.board_slab(6.8, 4.4, 0.22)
@@ -244,6 +246,9 @@ func _start_new_game() -> void:
 
 func _build_3d_heaps_and_tokens() -> void:
 	var heaps_parent: Node3D = $TabletopEnvironment3D/BoardRoot/HeapsParent
+	if heaps_parent and heaps_parent.is_queued_for_deletion():
+		heaps_parent.name = "HeapsParent_morto"
+		heaps_parent = null
 	if not heaps_parent:
 		heaps_parent = Node3D.new()
 		heaps_parent.name = "HeapsParent"
