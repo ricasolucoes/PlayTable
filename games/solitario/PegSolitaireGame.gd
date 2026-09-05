@@ -86,7 +86,7 @@ func _setup_3d_circular_board() -> void:
 	inner_cyl.height = 0.02
 	inner_cyl.radial_segments = 48
 	inner.mesh = inner_cyl
-	inner.position = Vector3(0, 0.01, 0)
+	inner.position = Vector3(0, 0.02, 0)
 	inner.material_override = MaterialFactory3D.get_wood_walnut()
 	board_root.add_child(inner)
 	
