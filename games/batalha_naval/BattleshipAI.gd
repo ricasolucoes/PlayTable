@@ -38,17 +38,28 @@ const PESO_ACERTO := 60
 
 ## Perfil de cada degrau. `erro` e a chance de largar o mapa e sortear casa;
 ## `cacar` diz se a IA persegue o proprio acerto.
+## A curva de erro e a mesma dos outros jogos, e foi refeita de proposito.
+##
+## No degrau de ENTRADA -- o 3, onde todo jogador novo comeca -- ela sorteava
+## mais da metade das jogadas ao acaso. Isso nao produz um adversario facil,
+## produz um adversario que parece quebrado: quem esta jogando ve a IA fazer
+## um lance sem sentido no meio de uma partida equilibrada e conclui que ha um
+## defeito. Fraco tem de parecer inexperiente.
+##
+## Quem separa um degrau do outro continua sendo o orcamento de busca (ou a
+## qualidade da avaliacao, nos jogos sem busca); o erro so tempera os degraus
+## de baixo.
 const PERFIS := [
-	{"erro": 0.92, "cacar": false},   # 1
-	{"erro": 0.78, "cacar": false},   # 2
-	{"erro": 0.62, "cacar": true},    # 3
-	{"erro": 0.48, "cacar": true},    # 4
-	{"erro": 0.34, "cacar": true},    # 5
-	{"erro": 0.24, "cacar": true},    # 6
-	{"erro": 0.15, "cacar": true},    # 7
-	{"erro": 0.08, "cacar": true},    # 8
-	{"erro": 0.03, "cacar": true},    # 9
-	{"erro": 0.0, "cacar": true},     # 10
+	{"erro": 0.45, "cacar": false},   # 1
+	{"erro": 0.32, "cacar": false},   # 2
+	{"erro": 0.2, "cacar": true},    # 3
+	{"erro": 0.12, "cacar": true},    # 4
+	{"erro": 0.07, "cacar": true},    # 5
+	{"erro": 0.04, "cacar": true},    # 6
+	{"erro": 0.02, "cacar": true},    # 7
+	{"erro": 0.01, "cacar": true},    # 8
+	{"erro": 0, "cacar": true},    # 9
+	{"erro": 0, "cacar": true},     # 10
 ]
 
 

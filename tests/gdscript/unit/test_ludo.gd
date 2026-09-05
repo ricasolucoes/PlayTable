@@ -270,4 +270,7 @@ func test_a_escada_de_perfis_e_monotonica() -> void:
 		erro_antes = float(perfil["erro"])
 	assert_eq(float(AIScript.PERFIS[AIScript.PERFIS.size() - 1]["erro"]), 0.0,
 		"o degrau do topo nao sorteia o peao")
-	assert_gt(float(AIScript.PERFIS[0]["erro"]), 0.5, "o degrau de baixo sorteia quase sempre")
+	assert_gt(float(AIScript.PERFIS[0]["erro"]), 0.25,
+		"o degrau de baixo erra com frequencia")
+	assert_lt(float(AIScript.PERFIS[0]["erro"]), 0.55,
+		"mas nao sorteia a maioria das jogadas: fraco e inexperiente, nao aleatorio")

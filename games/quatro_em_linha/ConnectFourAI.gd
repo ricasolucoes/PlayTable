@@ -71,17 +71,28 @@ const ORDEM := [3, 2, 4, 1, 5, 0, 6]
 ## 10 ja gasta 450 ms por jogada no computador, medido em
 ## `tools/_bench_quatro.gd`. Quem quiser separar os tres degraus de cima tem de
 ## melhorar a avaliacao, nao dar mais nos a ela.
+## A curva de erro e a mesma dos outros jogos, e foi refeita de proposito.
+##
+## No degrau de ENTRADA -- o 3, onde todo jogador novo comeca -- ela sorteava
+## mais da metade das jogadas ao acaso. Isso nao produz um adversario facil,
+## produz um adversario que parece quebrado: quem esta jogando ve a IA fazer
+## um lance sem sentido no meio de uma partida equilibrada e conclui que ha um
+## defeito. Fraco tem de parecer inexperiente.
+##
+## Quem separa um degrau do outro continua sendo o orcamento de busca (ou a
+## qualidade da avaliacao, nos jogos sem busca); o erro so tempera os degraus
+## de baixo.
 const PERFIS := [
-	{"depth": 1, "nos": 60, "erro": 0.80, "ruido": 60},       # 1
-	{"depth": 3, "nos": 200, "erro": 0.55, "ruido": 40},      # 2
-	{"depth": 3, "nos": 400, "erro": 0.38, "ruido": 28},      # 3
-	{"depth": 5, "nos": 800, "erro": 0.25, "ruido": 20},      # 4
-	{"depth": 5, "nos": 1600, "erro": 0.16, "ruido": 14},     # 5
-	{"depth": 7, "nos": 3200, "erro": 0.10, "ruido": 9},      # 6
-	{"depth": 9, "nos": 6000, "erro": 0.05, "ruido": 5},      # 7
-	{"depth": 11, "nos": 9000, "erro": 0.02, "ruido": 0},     # 8
-	{"depth": 13, "nos": 14000, "erro": 0.0, "ruido": 0},     # 9
-	{"depth": 41, "nos": 22000, "erro": 0.0, "ruido": 0},     # 10
+	{"depth": 1, "nos": 60, "erro": 0.45, "ruido": 60},       # 1
+	{"depth": 3, "nos": 200, "erro": 0.32, "ruido": 40},      # 2
+	{"depth": 3, "nos": 400, "erro": 0.2, "ruido": 28},      # 3
+	{"depth": 5, "nos": 800, "erro": 0.12, "ruido": 20},      # 4
+	{"depth": 5, "nos": 1600, "erro": 0.07, "ruido": 14},     # 5
+	{"depth": 7, "nos": 3200, "erro": 0.04, "ruido": 9},      # 6
+	{"depth": 9, "nos": 6000, "erro": 0.02, "ruido": 5},      # 7
+	{"depth": 11, "nos": 9000, "erro": 0.01, "ruido": 0},     # 8
+	{"depth": 13, "nos": 14000, "erro": 0, "ruido": 0},     # 9
+	{"depth": 41, "nos": 22000, "erro": 0, "ruido": 0},     # 10
 ]
 
 ## As 69 janelas de quatro casas em linha do tabuleiro, achatadas em `69 * 4`

@@ -46,17 +46,28 @@ const PESO_SAIR_DA_BASE := 22
 const PESO_AMEACADO := 12
 
 ## Perfil de cada degrau: chance de sortear a jogada, e ruido na nota.
+## A curva de erro e a mesma dos outros jogos, e foi refeita de proposito.
+##
+## No degrau de ENTRADA -- o 3, onde todo jogador novo comeca -- ela sorteava
+## mais da metade das jogadas ao acaso. Isso nao produz um adversario facil,
+## produz um adversario que parece quebrado: quem esta jogando ve a IA fazer
+## um lance sem sentido no meio de uma partida equilibrada e conclui que ha um
+## defeito. Fraco tem de parecer inexperiente.
+##
+## Quem separa um degrau do outro continua sendo o orcamento de busca (ou a
+## qualidade da avaliacao, nos jogos sem busca); o erro so tempera os degraus
+## de baixo.
 const PERFIS := [
-	{"erro": 0.85, "ruido": 70},   # 1
-	{"erro": 0.70, "ruido": 55},   # 2
-	{"erro": 0.55, "ruido": 42},   # 3
-	{"erro": 0.42, "ruido": 32},   # 4
-	{"erro": 0.30, "ruido": 24},   # 5
-	{"erro": 0.20, "ruido": 16},   # 6
-	{"erro": 0.12, "ruido": 10},   # 7
-	{"erro": 0.06, "ruido": 5},    # 8
-	{"erro": 0.02, "ruido": 0},    # 9
-	{"erro": 0.0, "ruido": 0},     # 10
+	{"erro": 0.45, "ruido": 70},   # 1
+	{"erro": 0.32, "ruido": 55},   # 2
+	{"erro": 0.2, "ruido": 42},   # 3
+	{"erro": 0.12, "ruido": 32},   # 4
+	{"erro": 0.07, "ruido": 24},   # 5
+	{"erro": 0.04, "ruido": 16},   # 6
+	{"erro": 0.02, "ruido": 10},   # 7
+	{"erro": 0.01, "ruido": 5},    # 8
+	{"erro": 0, "ruido": 0},    # 9
+	{"erro": 0, "ruido": 0},     # 10
 ]
 
 

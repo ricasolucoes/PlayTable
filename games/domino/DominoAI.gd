@@ -44,17 +44,28 @@ const PESO_BUCHA := 7
 ## Perfil de cada degrau: chance de sortear entre as jogaveis em vez de seguir
 ## a avaliacao. Domino tem informacao escondida -- a mao do adversario nao esta
 ## na mesa -- entao nao ha busca a fazer, so leitura do que ele denunciou.
+## A curva de erro e a mesma dos outros jogos, e foi refeita de proposito.
+##
+## No degrau de ENTRADA -- o 3, onde todo jogador novo comeca -- ela sorteava
+## mais da metade das jogadas ao acaso. Isso nao produz um adversario facil,
+## produz um adversario que parece quebrado: quem esta jogando ve a IA fazer
+## um lance sem sentido no meio de uma partida equilibrada e conclui que ha um
+## defeito. Fraco tem de parecer inexperiente.
+##
+## Quem separa um degrau do outro continua sendo o orcamento de busca (ou a
+## qualidade da avaliacao, nos jogos sem busca); o erro so tempera os degraus
+## de baixo.
 const PERFIS := [
-	{"erro": 0.88},   # 1
-	{"erro": 0.72},   # 2
-	{"erro": 0.58},   # 3
-	{"erro": 0.45},   # 4
-	{"erro": 0.33},   # 5
-	{"erro": 0.22},   # 6
-	{"erro": 0.14},   # 7
-	{"erro": 0.07},   # 8
-	{"erro": 0.02},   # 9
-	{"erro": 0.0},    # 10
+	{"erro": 0.45},   # 1
+	{"erro": 0.32},   # 2
+	{"erro": 0.2},   # 3
+	{"erro": 0.12},   # 4
+	{"erro": 0.07},   # 5
+	{"erro": 0.04},   # 6
+	{"erro": 0.02},   # 7
+	{"erro": 0.01},   # 8
+	{"erro": 0},   # 9
+	{"erro": 0},    # 10
 ]
 
 

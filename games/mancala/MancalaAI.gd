@@ -35,17 +35,28 @@ const PESO_CAPTURA_ARMADA := 2
 
 ## Perfil de cada degrau, no mesmo formato da `CheckersAI`. Quem para a busca e
 ## o orcamento de nos; `depth` e so um teto de seguranca.
+## A curva de erro e a mesma dos outros jogos, e foi refeita de proposito.
+##
+## No degrau de ENTRADA -- o 3, onde todo jogador novo comeca -- ela sorteava
+## mais da metade das jogadas ao acaso. Isso nao produz um adversario facil,
+## produz um adversario que parece quebrado: quem esta jogando ve a IA fazer
+## um lance sem sentido no meio de uma partida equilibrada e conclui que ha um
+## defeito. Fraco tem de parecer inexperiente.
+##
+## Quem separa um degrau do outro continua sendo o orcamento de busca (ou a
+## qualidade da avaliacao, nos jogos sem busca); o erro so tempera os degraus
+## de baixo.
 const PERFIS := [
-	{"depth": 1, "nos": 40, "erro": 0.80, "ruido": 14},       # 1
-	{"depth": 2, "nos": 120, "erro": 0.55, "ruido": 10},      # 2
-	{"depth": 3, "nos": 320, "erro": 0.38, "ruido": 7},       # 3
-	{"depth": 4, "nos": 800, "erro": 0.25, "ruido": 5},       # 4
-	{"depth": 6, "nos": 1800, "erro": 0.16, "ruido": 4},      # 5
-	{"depth": 8, "nos": 3600, "erro": 0.10, "ruido": 3},      # 6
-	{"depth": 10, "nos": 6500, "erro": 0.05, "ruido": 2},     # 7
-	{"depth": 12, "nos": 11000, "erro": 0.02, "ruido": 0},    # 8
-	{"depth": 14, "nos": 17000, "erro": 0.0, "ruido": 0},     # 9
-	{"depth": 18, "nos": 26000, "erro": 0.0, "ruido": 0},     # 10
+	{"depth": 1, "nos": 40, "erro": 0.45, "ruido": 14},       # 1
+	{"depth": 2, "nos": 120, "erro": 0.32, "ruido": 10},      # 2
+	{"depth": 3, "nos": 320, "erro": 0.2, "ruido": 7},       # 3
+	{"depth": 4, "nos": 800, "erro": 0.12, "ruido": 5},       # 4
+	{"depth": 6, "nos": 1800, "erro": 0.07, "ruido": 4},      # 5
+	{"depth": 8, "nos": 3600, "erro": 0.04, "ruido": 3},      # 6
+	{"depth": 10, "nos": 6500, "erro": 0.02, "ruido": 2},     # 7
+	{"depth": 12, "nos": 11000, "erro": 0.01, "ruido": 0},    # 8
+	{"depth": 14, "nos": 17000, "erro": 0, "ruido": 0},     # 9
+	{"depth": 18, "nos": 26000, "erro": 0, "ruido": 0},     # 10
 ]
 
 
