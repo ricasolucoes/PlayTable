@@ -6,28 +6,30 @@ PROJECT_DIR="$(cd "$(dirname "$0")" && pwd)"
 OUT_DIR="$PROJECT_DIR/build/android"
 OUT_AAB="$OUT_DIR/PlayTable.aab"
 
-export JAVA_HOME="/opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home"
+export JAVA_HOME="${JAVA_HOME:-/opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home}"
 export PATH="$JAVA_HOME/bin:$PATH"
-export ANDROID_HOME="/Users/sierra/Library/Android/sdk"
+export ANDROID_HOME="${ANDROID_HOME:-$HOME/Library/Android/sdk}"
 
 KEYSTORE_PATH="${KEYSTORE_PATH:-/Users/sierra/Dev/keystores/playtable-upload.jks}"
 KEYSTORE_ALIAS="${KEYSTORE_ALIAS:-playtable}"
-KEYSTORE_PW_FILE="/Users/sierra/Dev/keystores/playtable-upload.password.txt"
+KEYSTORE_PW_FILE="${KEYSTORE_PW_FILE:-/Users/sierra/Dev/keystores/playtable-upload.password.txt}"
 
-if [ -f "$KEYSTORE_PW_FILE" ]; then
+if [ -z "${KEYSTORE_PASSWORD:-}" ] && [ -f "$KEYSTORE_PW_FILE" ]; then
     KEYSTORE_PASSWORD="$(cat "$KEYSTORE_PW_FILE" | tr -d '\n\r')"
 fi
 
-VERSION_CODE="${EXPORT_VERSION_CODE:-12}"
-VERSION_NAME="${EXPORT_VERSION_NAME:-0.7.0}"
+source "$PROJECT_DIR/scripts/android_version.sh"
 
 # Mesma resolucao do build_apk.sh: versao conferida contra .godot-version e
 # contra a engine do modelo Android, senao o AAB publicado crasha no boot.
 GODOT_BIN="$("$PROJECT_DIR/scripts/godot_bin.sh")"
 
 echo "=> PlayTable :: Exportando PCK do Godot ($VERSION_NAME - code $VERSION_CODE)..."
-mkdir -p "$PROJECT_DIR/android/build/assets"
-"$GODOT_BIN" --headless --path "$PROJECT_DIR" --export-pack "Android" "$PROJECT_DIR/android/build/assets/main.pck"
+# Gradle carrega src/main/assets; limpar a exportacao anterior evita empacotar
+# arquivos soltos antigos junto com o PCK novo.
+rm -rf "$PROJECT_DIR/android/build/src/main/assets"
+mkdir -p "$PROJECT_DIR/android/build/src/main/assets"
+"$GODOT_BIN" --headless --path "$PROJECT_DIR" --export-pack "Android" "$PROJECT_DIR/android/build/src/main/assets/main.pck"
 
 echo "=> Compilando AAB via Gradle..."
 mkdir -p "$PROJECT_DIR/android/build/assetPackInstallTime/src/main/assets"
@@ -58,7 +60,7 @@ cd "$PROJECT_DIR/android/build"
     -Pexport_version_min_sdk=24
 
 mkdir -p "$OUT_DIR"
-AAB_SOURCE="$(find "$PROJECT_DIR/android/build/build/outputs/bundle" -name "*.aab" | head -n 1)"
+AAB_SOURCE="$PROJECT_DIR/android/build/build/outputs/bundle/standardRelease/build-standard-release.aab"
 if [ -z "$AAB_SOURCE" ] || [ ! -f "$AAB_SOURCE" ]; then
     echo "ERROR: Arquivo .aab não encontrado em android/build/build/outputs/bundle/"
     exit 1
@@ -67,10 +69,11 @@ echo "   AAB gerado em: $AAB_SOURCE"
 cp "$AAB_SOURCE" "$OUT_AAB"
 
 echo "=> Assinando AAB com jarsigner..."
+export KEYSTORE_PASSWORD
 jarsigner -sigalg SHA256withRSA -digestalg SHA-256 \
     -keystore "$KEYSTORE_PATH" \
-    -storepass "$KEYSTORE_PASSWORD" \
-    -keypass "$KEYSTORE_PASSWORD" \
+    -storepass:env KEYSTORE_PASSWORD \
+    -keypass:env KEYSTORE_PASSWORD \
     "$OUT_AAB" "$KEYSTORE_ALIAS"
 
 echo "=> Verificando assinatura do AAB..."

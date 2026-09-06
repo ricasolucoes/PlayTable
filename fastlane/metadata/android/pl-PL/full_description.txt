@@ -1,29 +1,5 @@
-PlayTable łączy 16 ponadczasowych klasycznych gier planszowych i karcianych w jednej aplikacji — w 100% za darmo i bez żadnych reklam.
+PlayTable to najlepsza kolekcja 22 klasycznych gier planszowych, karcianych i logicznych w jednej aplikacji — w 100% darmowa, bez reklam i w pełni offline!
 
-Wszystko działa bezpośrednio na Twoim urządzeniu. Bez konieczności połączenia z internetem, bez logowania, bez rejestracji i bez śledzenia danych. Włącz tryb samolotowy i graj w dowolnym miejscu i czasie!
+Zawiera: Warcaby, Statki (Bitwa morska), Saper, Sudoku, Domino, Tryktrak (Backgammon), Reversi (Otello), Chińczyk (Ludo), Czwórki (Connect 4), Kółko i krzyżyk, Mankala, Senet, Samotnik (Peg Solitaire), Wieże Hanoi, Nim, Ścieżka liczb, Pasjans Klondike, Pasjans Pająk, Blackjack 21, Gra pamięciowa, UnoLike i Wideo Poker.
 
-🎲 Gry Planszowe:
-• Szachy
-• Warcaby
-• Chińczyk (Ludo)
-• Młynek
-• Reversi
-• Mankala
-• Cztery w rzędzie
-• Kółko i krzyżyk
-• Statki (Bitwa morska)
-• Kropki i kwadraty
-• Gra pamięciowa (Memory)
-
-🃏 Gry Karciane:
-• Pasjans (Klondike)
-• Oczko / Blackjack (21)
-• Wojna (War)
-• Kradzież stosu
-• Koncentracja
-
-✨ Najważniejsze Zalety:
-• 100% Za darmo: Zero reklam, brak mikropłatności
-• 100% Offline: Graj bez zużywania transferu danych
-• Przejrzysty interfejs i płynne sterowanie dotykowe
-• Pełna prywatność: Twoje wyniki i ustawienia pozostają na urządzeniu
+Graj bez internetu i reklam. Obsługa Google Play Games Sidekick oraz otwarty kod źródłowy na GitHubie (ricasolucoes).

@@ -2,6 +2,7 @@
 
 [ext_resource type="Script" path="res://games/unolike/UnoLikeGame.gd" id="1_script"]
 [ext_resource type="PackedScene" uid="uid://tabletopenv3duid" path="res://shared/3d/TabletopEnvironment3D.tscn" id="2_env"]
+[ext_resource type="PackedScene" uid="uid://gameshelluid" path="res://shared/ui/GameShell.tscn" id="3_shell"]
 
 [node name="UnoLikeGame" type="Control"]
 layout_mode = 3
@@ -25,37 +26,14 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 
-[node name="VBoxContainer" type="VBoxContainer" parent="UI"]
+[node name="GameShell" parent="UI" instance=ExtResource("3_shell")]
 layout_mode = 1
-anchors_preset = 10
-anchor_right = 1.0
-offset_left = 24.0
-offset_top = 134.0
-offset_right = -24.0
-offset_bottom = 200.0
-grow_horizontal = 2
-theme_override_constants/separation = 8
 
-[node name="AIInfoLabel" type="Label" parent="UI/VBoxContainer"]
-layout_mode = 2
-theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.8)
-text = ""
+[node name="ActiveColorBanner" type="Label" parent="UI"]
+layout_mode = 0
 horizontal_alignment = 1
 clip_text = true
-
-[node name="ActiveColorBanner" type="Label" parent="UI/VBoxContainer"]
-layout_mode = 2
-theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.8)
-text = ""
-horizontal_alignment = 1
-clip_text = true
-
-[node name="StatusLabel" type="Label" parent="UI/VBoxContainer"]
-layout_mode = 2
-theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.8)
-text = "YOUR_TURN_BANG"
-horizontal_alignment = 1
-autowrap_mode = 3
+mouse_filter = 2
 
 [node name="ColorPickerModal" type="PanelContainer" parent="UI"]
 visible = false
@@ -132,12 +110,6 @@ custom_minimum_size = Vector2(140.0, 88.0)
 layout_mode = 2
 text = "DOMINO_BTN_DRAW"
 
-[node name="BtnRestart" type="Button" parent="UI/Actions"]
-visible = false
-custom_minimum_size = Vector2(160.0, 88.0)
-layout_mode = 2
-text = "BTN_NEW_MATCH_ICON"
-
 [node name="PlayerArea" type="Control" parent="UI"]
 layout_mode = 1
 anchors_preset = 12
@@ -170,4 +142,3 @@ alignment = 1
 [connection signal="pressed" from="UI/ColorPickerModal/VBox/Grid/BtnGreen" to="." method="_on_color_chosen" binds= [2]]
 [connection signal="pressed" from="UI/ColorPickerModal/VBox/Grid/BtnYellow" to="." method="_on_color_chosen" binds= [3]]
 [connection signal="pressed" from="UI/Actions/BtnDraw" to="." method="_on_btn_draw_pressed"]
-[connection signal="pressed" from="UI/Actions/BtnRestart" to="." method="_on_btn_restart_pressed"]

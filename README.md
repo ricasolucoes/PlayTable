@@ -1,6 +1,6 @@
 # PlayTable
 
-Bem-vindo ao repositório do **PlayTable** — um aplicativo unificado, gratuito, open source, internacionalizado (i18n) e 100% livre de anúncios que reúne uma coleção de **20 minijogos clássicos de tabuleiro e cartas** em uma experiência polida para dispositivos móveis e desktop (Godot 4.7.2 Engine).
+Bem-vindo ao repositório do **PlayTable** — um aplicativo unificado, gratuito, open source, internacionalizado (i18n) e 100% livre de anúncios que reúne uma coleção de **22 minijogos clássicos de tabuleiro e cartas** em uma experiência polida para dispositivos móveis e desktop (Godot 4.7.2 Engine).
 
 ---
 
@@ -11,13 +11,13 @@ Bem-vindo ao repositório do **PlayTable** — um aplicativo unificado, gratuito
 3. **Internacionalização Nativa (i18n):** Suporte nativo a múltiplos idiomas (Português, Inglês, Espanhol) com troca dinâmica em tempo de execução.
 4. **Sem Anúncios (Zero Ads):** Zero propagandas, sem banners, sem intersticiais e sem SDKs de rastreamento.
 5. **Sem Sistema de Contas/Login:** Sem telemetria predatória e sem cadastro. Configurações e estatísticas salvas 100% localmente.
-6. **Sem Compras no App (Zero IAP):** Todos os 20 jogos liberados nativamente, sem paywalls ou microtransações.
+6. **Sem Compras no App (Zero IAP):** Todos os 22 jogos liberados nativamente, sem paywalls ou microtransações.
 
 ---
 
-## 🎮 Catálogo dos 20 Jogos Implementados
+## 🎮 Catálogo dos 22 Jogos Implementados
 
-### 🎲 Jogos de Tabuleiro (13 Jogos)
+### 🎲 Jogos de Tabuleiro e Lógica (16 Jogos)
 | Jogo | Complexidade | Destaques | Localização |
 | :--- | :--- | :--- | :--- |
 | **Jogo da Velha** | Muito Baixa | Grade 3x3, IA Minimax, placar e reinício | [`games/jogo_da_velha/`](games/jogo_da_velha/) |
@@ -30,6 +30,9 @@ Bem-vindo ao repositório do **PlayTable** — um aplicativo unificado, gratuito
 | **Ludo Simplificado** | Média | 4 jogadores (Humano + 3 IAs), dado 1-6 animado e capturas | [`games/ludo/`](games/ludo/) |
 | **Reversi (Othello)** | Média | Tabuleiro 8x8 verde, viradas em 8 direções e matriz posicional | [`games/reversi/`](games/reversi/) |
 | **Mancala (Kalah)** | Baixa/Média | 12 covas + 2 depósitos, semeadura anti-horária, turnos extras e IA | [`games/mancala/`](games/mancala/) |
+| **Gamão** | Média | Tabuleiro 3D, dados, capturas e arrasto | [`games/gamao/`](games/gamao/) |
+| **Sudoku** | Média | Grade 9x9, anotações e dificuldade progressiva | [`games/sudoku/`](games/sudoku/) |
+| **Caminho Numérico** | Média | Caminhos com obstáculos, portais e estrelas | [`games/caminho_numerico/`](games/caminho_numerico/) |
 | **Senet Egípcio** | Baixa/Média | Trilha serpenteante 3x10, varetas de lançamento (1-5) e casas sagradas | [`games/senet/`](games/senet/) |
 | **Torres de Hanói** | Baixa | 3 a 8 discos 3D, física em arco, solver automático, undo e gamificação | [`games/hanoi/`](games/hanoi/) |
 | **Jogo de Nim** | Baixa | 3 a 5 pilhas de gemas 3D, IA Teorema de Bouton, Normal e Misère | [`games/nim/`](games/nim/) |
@@ -59,10 +62,10 @@ Bem-vindo ao repositório do **PlayTable** — um aplicativo unificado, gratuito
 ├── shared/                # Componentes visuais e lógica reaproveitável
 │   ├── pecas/             # Componentes de peões e peças
 │   └── theme/             # Tema global (MainTheme.tres)
-├── games/                 # Módulos dos 20 jogos isolados (Regras, IAs, Lógicas únicas)
+├── games/                 # Módulos dos 22 jogos isolados (Regras, IAs, Lógicas únicas)
 └── tests/                 # Suíte GUT rodando contra o GDScript de produção
     ├── gdscript/unit/     # Um arquivo por jogo, mais núcleo e i18n
-    └── gdscript/integration/  # Catálogo: instancia as 20 cenas de verdade
+    └── gdscript/integration/  # Catálogo: instancia as 22 cenas de verdade
 ```
 
 ---

@@ -57,6 +57,29 @@
 
 Cada fase dona escreve a sua seção neste mesmo arquivo, sem mover as regras de 1 a 6.
 
+### 7.1 Salas e partidas em tempo real — o relay (escrito em 2026-09-06, servidor ainda ausente)
+
+O cliente já existe: `core/net/NetworkManager.gd`. Na mesma rede Wi‑Fi ele dispensa o servidor (ENet direto entre os dois aparelhos, farol UDP na porta 47475). Pela internet ele espera **um relay WebSocket** neste endereço:
+
+- `wss://playtable.ricasolucoes.com.br/api/v1/rooms/ws/new?game=<game_id>&v=<protocolo>` — cria uma sala e devolve o código.
+- `wss://playtable.ricasolucoes.com.br/api/v1/rooms/ws/<CÓDIGO>?v=<protocolo>` — entra na sala de um amigo.
+
+O relay fala o protocolo do `SceneMultiplayer` do Godot 4.7 (um `WebSocketMultiplayerPeer` servidor, id 1, com `server_relay` ligado): os dois aparelhos entram como clientes, o relay os põe na mesma sala e encaminha os RPCs de um para o outro. **Nenhum RPC muda entre LAN e relay** — o jogo não sabe por onde a jogada viajou.
+
+Os RPCs, todos em `/root/NetworkManager`, `any_peer`, `reliable`:
+
+| RPC | Quem manda | Para quê |
+|---|---|---|
+| `_rpc_hello(nome, protocolo, game_id)` | quem entra | apresentar-se; protocolo diferente recebe `_rpc_reject("NET_VERSION_MISMATCH")` |
+| `_rpc_start(game_id, nome_anfitrião)` | anfitrião (assento 1) | os dois abrem a cena do jogo |
+| `_rpc_move(payload: Dictionary)` | quem jogou | a jogada, no formato do jogo (`{"idx"}`, `{"col"}`, `{"r","c"}`) |
+| `_rpc_restart()` | quem tocou em reiniciar | os dois recomeçam |
+| `_rpc_reject(chave)` | qualquer lado | recusa com chave de tradução |
+
+O que o relay precisa fazer além de encaminhar: gerar o código da sala (4 a 6 letras maiúsculas, sem O/0 e I/1), entregar ao criador por `_rpc_room_code(code)` (RPC a acrescentar no cliente quando o servidor existir), fechar a sala quando um dos dois cair (o outro recebe `peer_disconnected` e o cliente trata como "saiu da partida"), e recusar o terceiro peer. Sem autenticação nesta fase: a sala é efêmera e o código é o segredo; quando a Fase 3 existir, o bearer da seção 3 entra no handshake.
+
+Sem servidor: `create_client` não conecta, o cliente espera `RELAY_TIMEOUT` (8 s) e cai em `ONLINE_UNAVAILABLE`; a tela de sala diz "servidor online indisponível" e a porta da rede local continua aberta. É o estado normal da seção 4.
+
 ## 8. Regras que todo endpoint futuro herda
 
 - Timeout curto e fila — nunca esperar indefinidamente, nunca perder a mutação.

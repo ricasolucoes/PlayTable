@@ -35,8 +35,8 @@ var discard_cards_3d: Array[Card3D] = []
 var _color_marker: CellHalo3D = null
 
 @onready var cards_root: Node3D = $CardsRoot
-@onready var active_color_banner: Label = $UI/VBoxContainer/ActiveColorBanner
-@onready var ai_info_label: Label = $UI/VBoxContainer/AIInfoLabel
+@onready var shell: GameShell = $UI/GameShell
+@onready var active_color_banner: Label = $UI/ActiveColorBanner
 @onready var player_cards_container: HBoxContainer = $UI/PlayerArea/ScrollContainer/CardsContainer
 @onready var color_picker_modal: PanelContainer = $UI/ColorPickerModal
 @onready var btn_draw: Button = $UI/Actions/BtnDraw
@@ -44,8 +44,10 @@ var _color_marker: CellHalo3D = null
 func _ready() -> void:
 	menu_scene_path = MENU_CARTAS
 	env_3d = $TabletopEnvironment3D
-	status_label = $UI/VBoxContainer/StatusLabel
-	btn_restart = $UI/Actions/BtnRestart
+	status_label = shell.status_label
+	btn_restart = shell.btn_restart
+	shell.restart_requested.connect(_on_restart_pressed)
+	active_color_banner.reparent(shell.status_label.get_parent())
 	env_3d.set_felt_color(Color(0.12, 0.14, 0.22)) # Feltro Grafite Escuro
 	# Sem informar a area util e o tamanho do conteudo, a camera enquadrava as
 	# 6x6 unidades padrao para um monte de descarte de uma carta so: a carta da
@@ -117,6 +119,8 @@ func _start_new_game() -> void:
 	_spawn_top_discard_3d(first_card)
 	set_status(tr("UNO_YOUR_TURN_LONG"))
 	_update_ui()
+	shell.timer.reset()
+	shell.timer.start()
 
 func _spawn_top_discard_3d(card: Card) -> void:
 	var c_3d: Card3D = preload("res://shared/3d/Card3D.tscn").instantiate()
@@ -151,7 +155,7 @@ func _draw_from_deck() -> Card:
 
 func _update_ui() -> void:
 	set_duel_score(player_hand.size(), ai_hand.size(), "SCORE_YOURS", "SCORE_AI_CARDS")
-	ai_info_label.text = DifficultyManager.label_for(game_id)
+	shell.set_level(DifficultyManager.label_for(game_id))
 	
 	# A cor sai da propria arte da carta: uma definicao so de "vermelho de UNO"
 	# para o banner, a mao, a marca da mesa e a face impressa.
@@ -343,4 +347,5 @@ func _on_btn_draw_pressed() -> void:
 		_play_ai_turn()
 
 func _end_game(msg: String, is_player_win: bool) -> void:
-	finish_game(msg, is_player_win)
+	shell.timer.stop()
+	finish_game(msg, is_player_win, {"time": shell.timer.get_time()})

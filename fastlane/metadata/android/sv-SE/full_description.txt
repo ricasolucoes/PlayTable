@@ -1,29 +1,5 @@
-PlayTable samlar 16 tidlösa klassiska bräd- och kortspel i en enda app — 100% gratis och helt utan annonser.
+PlayTable är den kompletta samlingen med 22 klassiska brädspel, kortspel och logikpussel — 100% gratis, reklamfritt och helt offline!
 
-Allt körs direkt på din enhet. Inget internet krävs, inga inloggningar, inga registreringar och ingen datainsamling. Slå på flygplansläge och spela när som helst, var som helst!
+Innehåller Dam, Sänka skepp, Röj, Sudoku, Domino, Backgammon, Othello (Reversi), Fia med knuff (Ludo), Fyra i rad, Tre i rad, Kalaha (Mancala), Senet, Peg Solitaire, Tornen i Hanoi, Nim, Nummerväg, Harpan (Klondike Solitaire), Spindeln, Blackjack 21, Minnesspel, UnoLike och Video Poker.
 
-🎲 Brädspel:
-• Schack
-• Dam
-• Fia med knuff (Ludo)
-• Kvarnspel
-• Reversi
-• Kalaha (Mancala)
-• Fyra i rad
-• Tre i rad
-• Sänka skepp
-• Prickar och rutor (Dots and Boxes)
-• Minnesspel (Memory)
-
-🃏 Kortspel:
-• Harpan / Patiens (Solitaire)
-• Tjugoett / Blackjack (21)
-• Krig (War)
-• Steal the Pile
-• Koncentration
-
-✨ Höjdpunkter:
-• 100% Gratis: Inga annonser, inga köp i appen
-• 100% Offline: Spela var du vill utan internet
-• Ren design och smidiga pekkontroller
-• Full integritet: Inställningar och statistik stannar på din enhet
+Kräver inget internet och har inga köp i appen. Open source på GitHub (ricasolucoes).

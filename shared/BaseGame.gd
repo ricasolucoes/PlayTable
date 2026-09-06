@@ -88,6 +88,11 @@ func _enter_tree() -> void:
 	_montar_barra()
 	_montar_ajuda()
 	_montar_resultado()
+	_ligar_rede()
+
+
+func _exit_tree() -> void:
+	_desligar_rede()
 
 
 ## Pendura o cartao de fim de partida. Entra por ultimo e numa camada propria,
@@ -100,6 +105,87 @@ func _montar_resultado() -> void:
 	result_panel.primary_pressed.connect(_on_result_primary)
 	result_panel.menu_pressed.connect(go_back_to_menu)
 	add_child(result_panel)
+
+
+# ------------------------------------------------------------ partida em rede
+
+## Liga esta cena ao NetworkManager. Toda cena liga; so a partida em rede
+## recebe alguma coisa, e so o jogo que implementa `_on_net_move()` faz algo
+## com ela.
+func _ligar_rede() -> void:
+	if NetworkManager == null:
+		return
+	if not NetworkManager.move_received.is_connected(_on_net_move):
+		NetworkManager.move_received.connect(_on_net_move)
+	if not NetworkManager.restart_received.is_connected(_on_net_restart):
+		NetworkManager.restart_received.connect(_on_net_restart)
+	if not NetworkManager.peer_left.is_connected(_on_net_peer_left):
+		NetworkManager.peer_left.connect(_on_net_peer_left)
+
+
+func _desligar_rede() -> void:
+	if NetworkManager == null:
+		return
+	if NetworkManager.move_received.is_connected(_on_net_move):
+		NetworkManager.move_received.disconnect(_on_net_move)
+	if NetworkManager.restart_received.is_connected(_on_net_restart):
+		NetworkManager.restart_received.disconnect(_on_net_restart)
+	if NetworkManager.peer_left.is_connected(_on_net_peer_left):
+		NetworkManager.peer_left.disconnect(_on_net_peer_left)
+
+
+## Verdadeiro quando esta cena e uma partida em rede: o gerente esta em partida
+## e a partida e deste jogo.
+func net_active() -> bool:
+	return NetworkManager != null and NetworkManager.is_active() and NetworkManager.game_id == game_id
+
+
+## Assento local na partida em rede: 1 para quem abriu a sala, 2 para quem
+## entrou. Zero fora da rede.
+func net_seat() -> int:
+	return NetworkManager.local_seat if net_active() else 0
+
+
+## Nome de quem esta do outro lado.
+func net_opponent_name() -> String:
+	if NetworkManager == null or NetworkManager.opponent_name == "":
+		return tr("NET_OPPONENT")
+	return NetworkManager.opponent_name
+
+
+## Manda a jogada ao outro aparelho. O formato e do jogo.
+func net_send(payload: Dictionary) -> void:
+	if net_active():
+		NetworkManager.send_move(payload)
+
+
+## A jogada do outro aparelho chegou. Cada jogo em rede sobrescreve.
+func _on_net_move(_payload: Dictionary) -> void:
+	pass
+
+
+## O outro lado pediu para recomecar: recomeca sem devolver o pedido.
+func _on_net_restart() -> void:
+	if not net_active():
+		return
+	_result_reported = false
+	if result_panel != null:
+		result_panel.dismiss()
+	if top_bar != null:
+		top_bar.mark_win(false)
+	_start_new_game()
+	begin_match("online")
+
+
+## O outro lado saiu. A partida trava sem contar na escada, e o cartao oferece
+## jogar de novo -- agora sem rede, no modo local do jogo.
+func _on_net_peer_left() -> void:
+	game_over = true
+	var aviso := tr("NET_OPPONENT_LEFT") % net_opponent_name()
+	set_status(aviso)
+	if result_panel != null and uses_result_panel:
+		var nivel := DifficultyManager.get_level(game_id) if DifficultyManager != null else 1
+		result_panel.present_now(false, true, nivel, 0, aviso)
 
 
 ## O botao principal do cartao: recomecar no degrau em que a escada ficou. Se
@@ -326,6 +412,8 @@ func _on_back_pressed() -> void:
 
 func go_back_to_menu() -> void:
 	play_click()
+	if NetworkManager != null and NetworkManager.state != NetworkManager.State.OFFLINE:
+		NetworkManager.leave()
 	SceneManager.goto_scene(menu_scene_path)
 
 
@@ -348,8 +436,11 @@ func restart_game() -> void:
 		result_panel.dismiss()
 	if top_bar != null:
 		top_bar.mark_win(false)
+	# Em rede os dois aparelhos recomecam juntos: quem tocou avisa o outro.
+	if net_active():
+		NetworkManager.send_restart()
 	_start_new_game()
-	begin_match()
+	begin_match("online" if net_active() else "solo")
 
 
 ## Recomeça a partida. Cada jogo sobrescreve.

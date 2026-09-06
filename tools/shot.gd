@@ -38,6 +38,7 @@ func _initialize() -> void:
 		push_error("could not load %s" % scene_path)
 		quit(2)
 		return
+	await process_frame
 	var inst := ps.instantiate()
 	root.add_child(inst)
 

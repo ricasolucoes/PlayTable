@@ -174,6 +174,116 @@ Plans:
 Plans:
 - [ ] TBD (run /gsd-plan-phase 13 to break down)
 
+### Phase 14: Jogo de Tabuleiro - Xadrez (Chess)
+
+**Goal:** Implementar o jogo de Xadrez com motor de regras, gamificação e suporte multiplayer.
+**Requirements**: Criar módulo `games/xadrez/`. Implementar regras (xeque, xeque-mate, roque, en passant, promoção). IA local offline. Disparar eventos de progresso via `GameEventBus`. Integrar backend RicaGames (Fase 7.1) para multiplayer (matchmaking e salas privadas). (Ver arquivo `REQUIREMENTS.md` na pasta da fase)
+**Depends on:** Phase 7.1
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd-plan-phase 14 to break down)
+
+### Phase 15: Jogo de Tabuleiro - Trilha (Nine Men's Morris)
+
+**Goal:** Implementar o jogo de Trilha, mecânicas de posicionamento e moinhos.
+**Requirements**: Criar módulo `games/trilha/`. Implementar as 3 fases (colocação, movimentação, voo) e captura por moinho. IA offline tática. Abstrair conquistas via `PlayerProfile` e Event Bus. Multiplayer RicaGames. (Ver arquivo `REQUIREMENTS.md` na pasta da fase)
+**Depends on:** Phase 14
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd-plan-phase 15 to break down)
+
+### Phase 16: Jogo de Cartas - Truco
+
+**Goal:** Implementar o jogo de Truco (Paulista/Mineiro), com blefes e sistema de apostas.
+**Requirements**: Criar módulo `games/truco/`. Sistema de rodadas, sinais e manilhas. Gamificação com eventos de bluff_successful. Suporte essencial a pareamento 1v1 ou 2v2 online via RicaGames. (Ver arquivo `REQUIREMENTS.md` na pasta da fase)
+**Depends on:** Phase 15
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd-plan-phase 16 to break down)
+
+### Phase 17: Jogo de Cartas - Buraco (Canasta)
+
+**Goal:** Implementar o jogo de Buraco, com compra, lixo, canastras e batida.
+**Requirements**: Criar módulo `games/buraco/`. Lógica de baixar jogos, canastras limpas/sujas, morto. Progressão baseada em pontos e eventos. Multiplayer RicaGames para partidas 1v1 ou 2v2 longas, com persistência local para reconexão. (Ver arquivo `REQUIREMENTS.md` na pasta da fase)
+**Depends on:** Phase 16
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd-plan-phase 17 to break down)
+
+### Phase 18: Jogo de Tabuleiro - Guerra (War)
+
+**Goal:** Implementar o jogo de estratégia Guerra, com mapa e dominação de territórios.
+**Requirements**: Criar módulo `games/guerra/`. Mapas, distribuição de exércitos, ataques e objetivos secretos. Progressão baseada em dominação e vitórias (streaks). Multiplayer RicaGames até 6 jogadores simultâneos/assíncronos. (Ver arquivo `REQUIREMENTS.md` na pasta da fase)
+**Depends on:** Phase 17
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd-plan-phase 18 to break down)
+
+### Phase 19: Jogo de Dados - General (Yahtzee)
+
+**Goal:** Implementar o clássico jogo de dados General.
+**Requirements**: Criar módulo `games/general/`. Lógica de rolagem de 5 dados (com retenção de dados entre rolagens) e tabela de pontuação (Trinca, Sequência, Full House, General). Sistema de Leaderboards para maior pontuação. Multiplayer online (Fase 7.1). (Ver arquivo `REQUIREMENTS.md` na pasta da fase)
+**Depends on:** Phase 18
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd-plan-phase 19 to break down)
+
+### Phase 20: Jogo de Cartas - Paciência Spider
+
+**Goal:** Implementar Paciência Spider, aproveitando a base de arrastar e soltar cartas.
+**Requirements**: Criar módulo `games/spider/`. Aproveitar código de física/drag-drop da Paciência Klondike. Níveis de dificuldade: 1, 2 e 4 naipes. Conquistas para vitórias nas dificuldades maiores. (Ver arquivo `REQUIREMENTS.md` na pasta da fase)
+**Depends on:** Phase 19
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd-plan-phase 20 to break down)
+
+### Phase 21: Jogo de Cartas - Copas (Hearts)
+
+**Goal:** Implementar o clássico Copas.
+**Requirements**: Criar módulo `games/copas/`. Jogo de vazas de 4 jogadores. Regras para evitar copas e Dama de Espadas, e mecânica de "Acertar a Lua". IA avançada para evitar receber pontos. Multiplayer online 4-players (Fase 7.1). (Ver arquivo `REQUIREMENTS.md` na pasta da fase)
+**Depends on:** Phase 20
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd-plan-phase 21 to break down)
+
+### Phase 22: Jogo Social - Bingo (Multijogador)
+
+**Goal:** Implementar Bingo focado na experiência multijogador e social.
+**Requirements**: Criar módulo `games/bingo/`. Gerador de cartelas 5x5, roleta/sorteio de bolas. Foco absoluto em salas da RicaGames (Fase 7.1) suportando múltiplos jogadores. Conquistas para preenchimento de padrões rápidos. (Ver arquivo `REQUIREMENTS.md` na pasta da fase)
+**Depends on:** Phase 21
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd-plan-phase 22 to break down)
+
+### Phase 23: Jogo de Lógica - Mastermind (Senha)
+
+**Goal:** Implementar Jogo da Senha/Mastermind.
+**Requirements**: Criar módulo `games/senha/`. Tabuleiro de pinos coloridos. Validação de posição e cor (pinos brancos/pretos). Modo offline de resolver códigos e sistema de tempo/tentativas para Leaderboards. (Ver arquivo `REQUIREMENTS.md` na pasta da fase)
+**Depends on:** Phase 22
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd-plan-phase 23 to break down)
+
+### Phase 24: Jogo Social - Stop (Adedanha)
+
+**Goal:** Implementar Stop/Adedanha com mecânica social de validação de palavras.
+**Requirements**: Criar módulo `games/stop/`. Sistema de salas (RicaGames) onde os jogadores digitam palavras por categoria. Sincronização em tempo real e fase de votação onde os próprios jogadores validam a resposta dos oponentes, eliminando a necessidade de um dicionário offline gigante. (Ver arquivo `REQUIREMENTS.md` na pasta da fase)
+**Depends on:** Phase 23
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd-plan-phase 24 to break down)
+
 ---
 
 ## Estrutura Core e Menus

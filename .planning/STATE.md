@@ -10,7 +10,7 @@ stopped_at: Completed 01-03-PLAN.md
 last_updated: "2026-09-01T03:19:23.128Z"
 last_activity: 2026-09-01
 progress:
-  total_phases: 14
+  total_phases: 25
   completed_phases: 1
   total_plans: 4
   completed_plans: 4
@@ -35,7 +35,7 @@ See: .planning/PROJECT.md (updated 2026-08-31)
 **Status:** Ready to plan
 **Last Activity:** 2026-09-01
 
-Phase: 1 of 14 (Discovery e Auditoria)
+Phase: 1 of 25 (Discovery e Auditoria)
 Plan: 2 of 4 in current phase (01-01 concluído)
 Progress: [███░░░░░░░] 25%
 
@@ -121,3 +121,14 @@ Todos os 16 jogos solicitados foram completamente implementados e testados no pr
 - Phase 11 added: QA e Testes de Sincronização
 - Phase 12 added: Performance e Otimização
 - Phase 13 added: Release e Rollout
+- Phase 14 added: Jogo de Tabuleiro - Xadrez
+- Phase 15 added: Jogo de Tabuleiro - Trilha
+- Phase 16 added: Jogo de Cartas - Truco
+- Phase 17 added: Jogo de Cartas - Buraco
+- Phase 18 added: Jogo de Tabuleiro - Guerra
+- Phase 19 added: Jogo de Dados - General
+- Phase 20 added: Jogo de Cartas - Paciência Spider
+- Phase 21 added: Jogo de Cartas - Copas
+- Phase 22 added: Jogo Social - Bingo
+- Phase 23 added: Jogo de Lógica - Mastermind
+- Phase 24 added: Jogo Social - Stop

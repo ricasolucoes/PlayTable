@@ -60,6 +60,7 @@ func _ready() -> void:
 	status_label = shell.status_label
 	btn_restart = shell.btn_restart
 	shell.restart_requested.connect(restart_game)
+	$UI/VBoxContainer.reparent(shell.status_label.get_parent())
 	env_3d = $TabletopEnvironment3D
 	env_3d.set_felt_color(Color(0.2, 0.05, 0.05))
 	fit_table(Vector2(9.5, 6.0))

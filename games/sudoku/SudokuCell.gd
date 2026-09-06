@@ -26,11 +26,13 @@ func set_fixed_value(v: int) -> void:
 	text = str(v)
 	add_theme_color_override("font_color", Color.WHITE)
 	disabled = true
+	add_theme_color_override("font_disabled_color", Color.WHITE)
 	notes_label.text = ""
 
 func set_user_value(v: int) -> void:
 	if is_fixed:
 		return
+	disabled = false
 	value = v
 	if v == 0:
 		text = ""

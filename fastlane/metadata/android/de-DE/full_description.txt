@@ -1,29 +1,5 @@
-PlayTable vereint 16 zeitlose Brett- und Kartenspiel-Klassiker in einer einzigen App – 100% kostenlos und komplett werbefrei.
+PlayTable vereint 22 zeitlose Brett- und Kartenspiele sowie Logikrätsel in einer einzigen Premium-App — 100% kostenlos, komplett werbefrei und vollständig offline spielbar!
 
-Alles läuft direkt auf Ihrem Gerät. Kein Internet erforderlich, kein Login, keine Registrierung und kein Datentracking. Aktivieren Sie den Flugmodus und spielen Sie jederzeit und überall!
+Enthält Dame, Schiffe versenken, Minesweeper, Sudoku, Domino, Backgammon, Reversi (Othello), Ludo (Mensch ärgere dich nicht), Vier Gewinnt, Tic-Tac-Toe, Mancala, Senet, Solitär (Peg Solitaire), Türme von Hanoi, Nim, Zahlenpfad sowie Klondike Solitaire, Spider Solitaire, Blackjack 21, Memory, UnoLike und Video Poker.
 
-🎲 Brettspiele:
-• Schach
-• Dame
-• Ludo (Mensch ärgere Dich nicht)
-• Mühle
-• Reversi
-• Mancala
-• Vier gewinnt
-• Tic-Tac-Toe
-• Schiffe versenken
-• Käsekästchen
-• Memory-Spiel
-
-🃏 Kartenspiele:
-• Solitaire (Klondike)
-• Blackjack (21)
-• Krieg (War)
-• Steal the Pile
-• Konzentration
-
-✨ Highlights:
-• 100% Kostenlos: Keine Werbung, keine In-App-Käufe
-• 100% Offline: Spielen Sie überall ohne Datenverbrauch
-• Klares Design, intuitive Bedienung und schnelle Ladezeiten
-• Volle Privatsphäre: Einstellungen und Statistiken bleiben auf Ihrem Gerät
+Keine Werbung, keine In-App-Käufe, kein Internet erforderlich. Mit Google Play Games Sidekick und lokalem Mehrspielermodus. Open Source auf GitHub unter ricasolucoes!

@@ -1,29 +1,5 @@
-PlayTable menghadirkan 16 game papan dan kartu klasik legendaris dalam satu aplikasi — 100% gratis tanpa iklan sama sekali.
+PlayTable adalah koleksi lengkap 22 game papan, kartu, dan puzzle logika klasik terbaik — 100% gratis, tanpa iklan, dan sepenuhnya offline!
 
-Semua game berjalan langsung di perangkat Anda. Tanpa perlu koneksi internet, tanpa login, tanpa registrasi, dan tanpa pelacakan data. Aktifkan mode pesawat dan mainkan kapan saja, di mana saja!
+Termasuk Dam (Checkers), Kapal Perang (Battleship), Ranjau (Minesweeper), Sudoku, Domino, Backgammon, Reversi (Othello), Ludo, Sambung Empat (Connect 4), Tic-Tac-Toe, Mancala (Congklak), Senet, Peg Solitaire, Menara Hanoi, Nim, Jalur Angka, Solitaire Klondike, Solitaire Spider, Blackjack 21, Game Memori, UnoLike, dan Video Poker.
 
-🎲 Game Papan:
-• Catur (Chess)
-• Dam (Checkers)
-• Ludo
-• Nine Men's Morris
-• Reversi (Othello)
-• Mancala (Congklak)
-• Connect Four
-• Tic-Tac-Toe (X-O)
-• Battleship (Kapal Perang)
-• Titik & Kotak (Dots and Boxes)
-• Game Memori
-
-🃏 Game Kartu:
-• Solitaire (Klondike)
-• Blackjack (21)
-• Perang Kartu (War)
-• Curi Tumpukan
-• Konsentrasi
-
-✨ Keunggulan Utama:
-• 100% Gratis: Tanpa iklan, tanpa pembelian dalam aplikasi
-• 100% Offline: Main di mana saja tanpa kuota internet
-• Desain bersih, kontrol sentuh responsif, dan ringan
-• Privasi Penuh: Skor dan pengaturan hanya tersimpan di perangkat Anda
+Tanpa iklan, tanpa kuota internet, dukungan Google Play Games Sidekick, dan open source di GitHub (ricasolucoes).

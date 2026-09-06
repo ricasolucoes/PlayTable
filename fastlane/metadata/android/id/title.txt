@@ -1,1 +1,1 @@
-PlayTable: Game Klasik
+PlayTable: Game Papan Klasik

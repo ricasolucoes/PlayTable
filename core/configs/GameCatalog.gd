@@ -81,6 +81,16 @@ static func get_all_games() -> Array[GameDefinition]:
 	return all
 
 
+## Returns all games available for local network / online multiplayer.
+static func get_net_games() -> Array[GameDefinition]:
+	var net: Array[GameDefinition] = []
+	for id in ["jogo_da_velha", "quatro_em_linha", "reversi"]:
+		var def := find_by_id(id)
+		if def != null:
+			net.append(def)
+	return net
+
+
 ## Identificador do jogo no barramento de eventos e no perfil, tirado da pasta
 ## da cena (`res://games/gamao/BackgammonGame.tscn` -> `gamao`). O mesmo
 ## calculo que `BaseGame._derive_game_id()` faz, para os dois lados falarem o

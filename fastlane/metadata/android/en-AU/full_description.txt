@@ -1,29 +1,38 @@
-PlayTable brings together 16 timeless classic board and card games in a single app — 100% free with zero ads.
+PlayTable is the ultimate all-in-one collection of 22 timeless classic board games, card games, and logic puzzles — 100% free, completely ad-free, and fully offline!
 
-Everything runs directly on your device. No internet required, no logins, no sign-ups, and zero tracking. Turn on airplane mode and enjoy all games anytime, anywhere!
+Designed for pure gameplay, instant responsiveness, and complete user privacy, PlayTable runs locally on your smartphone or tablet. No Wi-Fi or mobile data required, no sign-ups, no tracking, and no in-app purchases. Turn on airplane mode and enjoy classic games anytime, anywhere!
 
-🎲 Board Games:
-• Chess
-• Checkers
-• Ludo
-• Nine Men's Morris
-• Reversi
-• Mancala
-• Connect Four
-• Tic-Tac-Toe
-• Battleship
-• Dots and Boxes
-• Memory Game
+🎲 16 CLASSIC BOARD & LOGIC GAMES:
+• Checkers (Draughts): Classic 8x8 board with king promotion and mandatory captures.
+• Battleship: 10x10 radar and fleet grids with intelligent Hunt & Target AI.
+• Minesweeper: Legendary logic puzzle featuring safe first clicks and flag placement.
+• Sudoku: Pure 9x9 logic grids with pencil notes and real-time conflict checking.
+• Dominoes: Traditional double-six 28-tile game with classic draw and blocking rules.
+• Backgammon: Classic 24-point board, bearing off, checker hits, and 3D dice rolling.
+• Reversi (Othello): Strategic piece flipping powered by advanced Minimax algorithms.
+• Ludo: Fun 4-token race track for quick matches and casual strategy.
+• Connect Four (4 in a Row): Drop chips and connect 4 horizontally, vertically, or diagonally.
+• Tic-Tac-Toe: Fast, crisp matches against adaptive AI or with a friend.
+• Mancala (Kalah): The ancient African pit and pebble sowing strategy game.
+• Senet: Explore the oldest known board game from Ancient Egypt.
+• Peg Solitaire: The timeless cross-shaped board puzzle of jumping and clearing pegs.
+• Tower of Hanoi: The classic mathematical disc-stacking puzzle.
+• Nim: Deep mathematical strategy game of stone pile management.
+• Number Path: Engaging sequential path puzzle (Hidato / Numbrix style).
 
-🃏 Card Games:
-• Solitaire (Klondike)
-• Blackjack (21)
-• War
-• Steal the Pile
-• Concentration
+🃏 6 TIMELESS CARD GAMES:
+• Klondike Solitaire: The world's most beloved single-player card game.
+• Spider Solitaire: High-challenge multi-column deck sequencing.
+• Blackjack (21): Face the dealer, double down, and hit 21 without busting.
+• Memory Match: Train and sharpen visual recall by matching hidden pairs.
+• UnoLike: Fast-paced shedding game with color matching, Skips, Reverses, and Wilds.
+• Video Poker: Classic Jacks or Better machine with strategic discard and payouts.
 
-✨ Key Highlights:
-• 100% Free: No ads, no in-app purchases, no paywalls
-• 100% Offline: Play anywhere without wifi or mobile data
-• Clean visuals, smooth touch controls, and fast loading
-• Complete Privacy: Settings and stats stay on your device
+✨ TOP HIGHLIGHTS:
+• 100% Free: No ads, no popups, no subscriptions, and no microtransactions.
+• 100% Offline: Zero data usage — perfect for flights, commutes, and road trips.
+• Multiple Modes: Play solo against smart AI or challenge friends locally on the same device.
+• Local Stats & Privacy: All win streaks, personal bests, and records stay strictly on your device.
+• Open Source: Proudly built with Godot 4 and maintained by the ricasolucoes GitHub community.
+
+Download PlayTable today and carry a complete arcade of 22 classic games in your pocket!

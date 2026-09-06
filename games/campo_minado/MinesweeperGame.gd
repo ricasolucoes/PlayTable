@@ -119,7 +119,7 @@ func _load_art() -> void:
 		numbers_grid = DecalGrid3D.new()
 		numbers_grid.name = "NumbersGrid"
 		add_child(numbers_grid)
-		numbers_grid.setup(tira, 8, 1, board_3d.cell_size * 0.78, linhas * colunas)
+		numbers_grid.setup(tira, 4, 2, board_3d.cell_size * 0.78, linhas * colunas)
 
 
 ## Um icone deitado sobre a casa: `Sprite3D` sem billboard, porque billboard

@@ -7,6 +7,7 @@ var selected_pos: Vector2i = Vector2i(-1, -1)
 var valid_targets: Array[Dictionary] = []
 var marbles_3d: Dictionary = {}
 
+@onready var shell: GameShell = $GameShell
 @onready var board_root: Node3D = $BoardRoot
 @onready var marbles_root: Node3D = $MarblesRoot
 
@@ -38,8 +39,9 @@ var _holes_3d: Dictionary = {}
 
 func _ready() -> void:
 	env_3d = $TabletopEnvironment3D
-	status_label = $UI/VBoxContainer/StatusLabel
-	btn_restart = $UI/Actions/BtnRestart
+	status_label = shell.status_label
+	btn_restart = shell.btn_restart
+	shell.restart_requested.connect(_on_restart_pressed)
 	_setup_3d_circular_board()
 
 	# Sem tema proprio a cena herda o `casino_green`, que e mesa de carteado e
@@ -144,6 +146,8 @@ func _start_new_game() -> void:
 	_paint_targets()
 	_update_ui()
 	set_status(tr("PEG_START"))
+	shell.timer.reset()
+	shell.timer.start()
 
 func _sync_marbles_3d() -> void:
 	for m in marbles_root.get_children(): m.queue_free()
@@ -335,10 +339,13 @@ func _execute_jump(from_pos: Vector2i, target_dict: Dictionary) -> void:
 		_end_game()
 
 func _end_game() -> void:
+	shell.timer.stop()
 	var remaining: int = PegSolitaireRules.count_pegs(grid_data)
-	# `pegs` e a metrica de placar do Resta Um: quanto menos sobra, melhor.
-	# So a esfera unica conta como vitoria -- e o objetivo do jogo.
-	var fatos := {"pegs": remaining, "perfect": remaining == 1}
+	var fatos := {
+		"pegs": remaining,
+		"perfect": remaining == 1,
+		"time": shell.timer.get_time()
+	}
 	if remaining == 1:
 		finish_game(tr("PEG_WIN_PERFECT"), true, fatos)
 	elif remaining <= 3:

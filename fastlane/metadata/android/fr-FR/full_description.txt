@@ -1,29 +1,35 @@
-PlayTable réunit 16 jeux classiques de plateau et de cartes dans une seule application, 100% gratuite et sans publicités.
+PlayTable est la collection ultime de 22 jeux de société, jeux de cartes et casse-têtes classiques réunis dans une seule application — 100% gratuit, sans publicité et entièrement hors-ligne !
 
-Tout fonctionne directement sur votre appareil. Aucune connexion internet requise, aucun compte, aucune inscription et aucune collecte de données. Activez le mode avion et jouez où et quand vous voulez !
+🎲 16 JEUX DE SOCIÉTÉ ET DE RÉFLEXION :
+• Dames (Checkers) : Plateau classique 8x8 avec promotion et prises obligatoires.
+• Bataille Navale : Grilles 10x10 avec radar et flotte contre une IA tactique Hunt & Target.
+• Démineur : Le jeu de logique légendaire avec premier clic sécurisé et drapeaux.
+• Sudoku : Grilles 9x9 pures avec annotations au crayon et détection d'erreurs.
+• Dominos : 28 dominos (double 6) avec pioche stratégique et règles traditionnelles.
+• Backgammon : Plateau 24 flèches, capture et dés 3D virtuels.
+• Reversi (Othello) : Retournement de pions tactique avec algorithme Minimax.
+• Ludo (Petits Chevaux) : La course familiale classique de 4 pions.
+• Puissance 4 : Alignez 4 jetons à l'horizontale, verticale ou diagonale.
+• Morpion (Tic-Tac-Toe) : Parties rapides et amusantes contre l'IA ou à deux.
+• Mancala (Kalah) : Le jeu de semis africain millénaire.
+• Senet : Le mystérieux jeu de l'Égypte antique.
+• Solitaire à Pions (Peg Solitaire) : Éliminez les billes pour n'en laisser qu'une seule.
+• Tours de Hanoï : Le casse-tête mathématique emblématique.
+• Nim : Jeu mathématique classique de retrait de bâtonnets.
+• Chemin Numérique : Puzzle logique de parcours continu séquentiel (style Hidato).
 
-🎲 Jeux de Plateau :
-• Échecs
-• Dames
-• Ludo (Petits Chevaux)
-• Jeu du Moulin
-• Reversi (Othello)
-• Mancala
-• Puissance 4
-• Morpion (Tic-Tac-Toe)
-• Bataille Navale
-• La Pipopipette (Points et Boîtes)
-• Jeu de Mémoire
+🃏 6 JEUX DE CARTES CLASSIQUES :
+• Solitaire Klondike : La patience de cartes la plus célèbre au monde.
+• Solitaire Spider : Défi captivant d'ordonnancement de 10 colonnes.
+• Blackjack (21) : Battez le croupier sans dépasser 21.
+• Jeu de Mémoire : Retrouvez toutes les paires de cartes cachées.
+• UnoLike : Débarrassez-vous de vos cartes par couleur et chiffre avec cartes action.
+• Vidéo Poker : Jacks or Better avec tirage stratégique et tableau officiel des gains.
 
-🃏 Jeux de Cartes :
-• Solitaire (Klondike)
-• Blackjack (21)
-• Bataille (War)
-• Vole-Paquet
-• Concentration
+✨ POINTS FORTS :
+• 100% Gratuit & Sans Pub : Aucune publicité, aucun achat intégré et aucune interruption.
+• 100% Hors-ligne : Jouez n'importe où sans wifi ni données mobiles.
+• Mode Deux Joueurs Local : Jouez à deux sur le même appareil (pass-and-play) ou contre l'IA.
+• Open Source : Développé avec Godot 4 sous la communauté GitHub ricasolucoes.
 
-✨ Points Forts :
-• 100% Gratuit : Zéro publicité, aucun achat intégré
-• 100% Hors-ligne : Jouez partout sans utiliser vos données
-• Interface épurée et commandes tactiles fluides
-• Confidentialité totale : Vos statistiques restent sur votre appareil
+Téléchargez PlayTable dès aujourd'hui et profitez de 22 chefs-d'œuvre du jeu classique !

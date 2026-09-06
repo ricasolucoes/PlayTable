@@ -15,11 +15,7 @@ const RAIZ := "res://shared/assets"
 ## Os tres sobreviventes do lote antigo, que o Memoria carrega e que ainda nao
 ## foram regenerados pelo pipeline (`tools/gen_art.py`). Cada um sai daqui no
 ## dia em que ganhar o proprio `.prompt.md`; o teste cobra a saida.
-const LEGADO := [
-	"res://shared/assets/cards/card_back_blue.png",
-	"res://shared/assets/rewards/gem_emerald.png",
-	"res://shared/assets/rewards/gem_ruby.png",
-]
+const LEGADO: Array = []
 
 
 func _pngs(pasta: String, saida: Array) -> void:
@@ -80,6 +76,9 @@ func test_todo_png_de_shared_assets_tem_proveniencia() -> void:
 
 
 func test_a_lista_de_legado_so_guarda_o_que_ainda_nao_foi_regenerado() -> void:
+	if LEGADO.is_empty():
+		assert_true(true, "todos os assets foram regenerados e possuem proveniencia")
+		return
 	for png in LEGADO:
 		assert_true(FileAccess.file_exists(png),
 			"%s saiu do repositorio: tire-o de LEGADO" % png)

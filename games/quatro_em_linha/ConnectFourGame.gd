@@ -19,6 +19,10 @@ var is_player_turn: bool = true
 var vs_ai: bool = true
 var is_animating: bool = false
 
+## Partida em rede: vermelho e quem abriu a sala, amarelo e quem entrou. Cada
+## aparelho toca so na propria vez; a coluna do outro chega por `_on_net_move`.
+var em_rede: bool = false
+
 ## Degrau de 1 a 10 do DifficultyManager. Vira orcamento de busca da IA.
 var ai_level: int = DifficultyManager.DEFAULT_LEVEL
 var score_p1: int = 0
@@ -53,6 +57,7 @@ func _ready() -> void:
 	status_label = $VBoxContainer/StatusCard/StatusLabel
 	board = Grid2D.new(ROWS, COLS, 0)
 	ai_level = DifficultyManager.get_level(game_id)
+	_ler_modo_de_rede()
 	
 	_setup_board_visuals()
 	_setup_column_buttons()
@@ -61,7 +66,25 @@ func _ready() -> void:
 	_update_turn_ui()
 	win_modal.visible = false
 	_started_at = Time.get_ticks_msec() / 1000.0
-	begin_match("ai" if vs_ai else "versus")
+	begin_match(_modo())
+
+
+func _ler_modo_de_rede() -> void:
+	em_rede = net_active()
+	if em_rede:
+		vs_ai = false
+	if btn_mode_toggle:
+		btn_mode_toggle.visible = not em_rede
+
+
+func _modo() -> String:
+	if em_rede:
+		return "online"
+	return "ai" if vs_ai else "versus"
+
+
+func _lado_da_vez() -> int:
+	return 1 if is_player_turn else 2
 
 func _setup_board_visuals() -> void:
 	board_back.queue_redraw()
@@ -87,7 +110,25 @@ func _on_col_pressed(col: int) -> void:
 		
 	# No modo local, os dois jogadores usam as mesmas colunas e o lado ativo
 	# define a cor da ficha que cai.
-	_make_move(col, 1 if vs_ai or is_player_turn else 2)
+	var player_id := 1 if vs_ai or is_player_turn else 2
+	if em_rede and not NetworkManager.is_my_turn(player_id):
+		return
+	if em_rede:
+		net_send({"col": col})
+	_make_move(col, player_id)
+
+
+## A coluna escolhida pelo outro aparelho.
+func _on_net_move(payload: Dictionary) -> void:
+	if not em_rede or game_over or is_animating:
+		return
+	var col := int(payload.get("col", -1))
+	if col < 0 or col >= COLS or not ConnectFourRules.can_drop(board, col):
+		return
+	var lado := _lado_da_vez()
+	if lado != NetworkManager.remote_seat():
+		return
+	_make_move(col, lado)
 
 func _make_move(col: int, player_id: int) -> void:
 	var row := ConnectFourRules.drop_piece(board, col, player_id)
@@ -173,25 +214,33 @@ func _handle_game_won(winner_id: int, win_cells: Array[Vector2i]) -> void:
 	# vitoria nem a derrota chegavam na gamificacao. `close_call` marca a
 	# partida decidida com o tabuleiro quase cheio, que e a conquista "Por um
 	# triz".
-	report_match_result(winner_id == 1, {
+	var venceu := winner_id == 1
+	if em_rede:
+		venceu = NetworkManager.is_my_turn(winner_id)
+	report_match_result(venceu, {
 		"time": Time.get_ticks_msec() / 1000.0 - _started_at,
 		"close_call": _pecas_no_tabuleiro() >= COLS * ROWS - 3,
 		"winner": winner_id,
-		"mode": "ai" if vs_ai else "versus",
+		"mode": _modo(),
 	})
 
 	if winner_id == 1:
 		score_p1 += 1
-		_set_score_ui()
 		win_modal_title.text = tr("WIN_TITLE") if vs_ai else tr("CONNECT4_WIN_PLAYER") % 1
 		win_modal_sub.text = tr("CONNECT4_WIN_DESC") if vs_ai else tr("CONNECT4_WIN_PLAYER_DESC") % 1
-		if AudioManager: AudioManager.play_win()
 	else:
 		score_p2 += 1
-		_set_score_ui()
 		win_modal_title.text = tr("CONNECT4_LOSE") if vs_ai else tr("CONNECT4_WIN_PLAYER") % 2
 		win_modal_sub.text = tr("CONNECT4_LOSE_DESC") if vs_ai else tr("CONNECT4_WIN_PLAYER_DESC") % 2
-		if AudioManager: AudioManager.play_win()
+	if em_rede:
+		win_modal_title.text = tr("WIN_TITLE") if venceu else tr("NET_OPPONENT_WINS") % net_opponent_name()
+		win_modal_sub.text = tr("CONNECT4_WIN_DESC") if venceu else tr("CONNECT4_LOSE_DESC")
+	_set_score_ui()
+	if AudioManager:
+		if venceu or not em_rede:
+			AudioManager.play_win()
+		else:
+			AudioManager.play_lose()
 		
 	# Highlight winning pieces
 	for cell in win_cells:
@@ -205,7 +254,7 @@ func _handle_game_draw() -> void:
 	report_match_result(false, {
 		"draw": true,
 		"time": Time.get_ticks_msec() / 1000.0 - _started_at,
-		"mode": "ai" if vs_ai else "versus",
+		"mode": _modo(),
 	})
 	win_modal_title.text = tr("DRAW_TITLE")
 	win_modal_sub.text = tr("CONNECT4_DRAW_DESC")
@@ -216,6 +265,11 @@ func _update_turn_ui() -> void:
 	if game_over:
 		return
 	_set_score_ui()
+	if em_rede:
+		var minha := NetworkManager.is_my_turn(_lado_da_vez())
+		set_active_side(minha)
+		set_status(tr("NET_YOUR_TURN") if minha else tr("NET_THEIR_TURN") % net_opponent_name())
+		return
 	set_active_side(is_player_turn)
 	if not vs_ai:
 		set_status(tr("CONNECT4_PLAYER_TURN") % (1 if is_player_turn else 2))
@@ -226,7 +280,11 @@ func _update_turn_ui() -> void:
 
 
 func _set_score_ui() -> void:
-	if vs_ai:
+	if em_rede:
+		var meu := score_p1 if NetworkManager.local_seat == 1 else score_p2
+		var dele := score_p2 if NetworkManager.local_seat == 1 else score_p1
+		set_duel_score(meu, dele, "NET_YOU", "NET_OPPONENT")
+	elif vs_ai:
 		set_duel_score(score_p1, score_p2)
 	else:
 		set_duel_score(score_p1, score_p2, "SCORE_PLAYER_1", "SCORE_PLAYER_2")
@@ -241,8 +299,10 @@ func _start_new_game() -> void:
 	is_animating = false
 	is_player_turn = true
 	ai_level = DifficultyManager.get_level(game_id)
+	_ler_modo_de_rede()
+	_update_mode_button()
 	_started_at = Time.get_ticks_msec() / 1000.0
-	begin_match("ai" if vs_ai else "versus")
+	begin_match(_modo())
 	_update_turn_ui()
 
 

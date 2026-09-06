@@ -262,7 +262,10 @@ func _deitar_arte_no_conves(casco: MeshInstance3D, geo: Dictionary, ship_name: S
 	sprite.alpha_cut = SpriteBase3D.ALPHA_CUT_DISCARD
 	sprite.shaded = true
 	sprite.pixel_size = float(geo["length"]) / float(maxi(tex.get_width(), 1))
-	sprite.rotation_degrees = Vector3(-90.0, 0.0, 0.0)
+	# Tres sprites foram gerados com a proa para cima. Girar no plano local
+	# alinha o comprimento da imagem ao +X do casco, sem alterar a malha.
+	var giro := 90.0 if chave in ["couracado", "cruzador", "destroier"] else 0.0
+	sprite.rotation_degrees = Vector3(-90.0, giro, 0.0)
 	sprite.position = Vector3(0.0, float(geo["height"]) * 0.5 + 0.012, 0.0)
 	casco.add_child(sprite)
 

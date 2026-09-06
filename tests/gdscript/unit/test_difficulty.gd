@@ -188,7 +188,9 @@ func test_o_xp_paga_o_degrau_em_que_a_partida_foi_jogada() -> void:
 ## O multiplicador so vale se a gamificacao o aplicar de fato.
 func test_a_gamificacao_multiplica_o_xp_pelo_degrau() -> void:
 	var ganhos: Array[int] = []
-	var ouvinte := func(qtd: int, _fonte: String): ganhos.append(qtd)
+	var ouvinte := func(qtd: int, fonte: String):
+		if fonte == "match_end":
+			ganhos.append(qtd)
 	GameEventBus.xp_gained.connect(ouvinte)
 
 	GameEventBus.emit_match_completed("jogo_de_teste_xp", {"win": false, "xp": 100, "xp_scale": 1.0})

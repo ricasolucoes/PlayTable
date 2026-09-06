@@ -65,16 +65,26 @@ def sync_metadata(service, package_name: str, edit_id: str, metadata_dir: Path):
         if full_desc:
             listing_body["fullDescription"] = full_desc
 
-        try:
-            service.edits().listings().update(
-                packageName=package_name,
-                editId=edit_id,
-                language=locale,
-                body=listing_body
-            ).execute()
-            print(f"   ✓ Metadados atualizados para [{locale}]")
-        except Exception as e:
-            print(f"   ⚠️  Aviso ao atualizar idioma [{locale}]: {e}")
+        success = False
+        last_err = None
+        for attempt in range(3):
+            try:
+                service.edits().listings().update(
+                    packageName=package_name,
+                    editId=edit_id,
+                    language=locale,
+                    body=listing_body
+                ).execute()
+                print(f"   ✓ Metadados atualizados para [{locale}]")
+                success = True
+                break
+            except Exception as e:
+                last_err = e
+                import time
+                time.sleep(1.5)
+        if not success:
+            print(f"   ❌ Erro detalhado no idioma [{locale}]: {last_err}")
+            raise RuntimeError(f"Falha ao atualizar idioma [{locale}]: {last_err}") from last_err
 
 def get_release_notes(metadata_dir: Path, version_code: int):
     notes = []
@@ -105,7 +115,8 @@ def get_release_notes(metadata_dir: Path, version_code: int):
 
 def publish(package_name: str, aab_path: str = None, track: str = "production",
             metadata_dir: str = None, key_path: str = DEFAULT_KEY_PATH,
-            release_status: str = "completed", verify_only: bool = False):
+            release_status: str = "completed", verify_only: bool = False,
+            release_name: str = None):
     
     print(f"\n=======================================================")
     print(f"🚀 Google Play Publisher :: {package_name}")
@@ -166,7 +177,7 @@ def publish(package_name: str, aab_path: str = None, track: str = "production",
                 release_notes = get_release_notes(Path(metadata_dir), version_code)
 
             release_body = {
-                "name": f"Release {version_code}",
+                "name": release_name or f"Release {version_code}",
                 "versionCodes": [str(version_code)],
                 "status": release_status
             }
@@ -185,6 +196,15 @@ def publish(package_name: str, aab_path: str = None, track: str = "production",
                 body=track_body
             ).execute()
             print(f"   ✓ Faixa '{track}' configurada com a versão {version_code}")
+
+        # Validar edicao se a conta de servico tiver permissao para o endpoint validate
+        try:
+            service.edits().validate(packageName=package_name, editId=edit_id).execute()
+        except Exception as e:
+            if "does not have permission" in str(e):
+                print("   ℹ️  Aviso: edits:validate não permitido para esta Service Account (normal na Play Store).")
+            else:
+                raise e
 
         # 5. Validar / Comitar Edição
         if verify_only:
@@ -218,6 +238,7 @@ def main():
     parser.add_argument("--key", default=DEFAULT_KEY_PATH, help=f"Path to Service Account JSON key (default: {DEFAULT_KEY_PATH})")
     parser.add_argument("--status", default="completed", choices=["completed", "draft", "inProgress", "halted"],
                         help="Release status (default: completed)")
+    parser.add_argument("--release-name", help="Nome da versao exibido no Play Console")
     parser.add_argument("--verify-only", action="store_true", help="Authenticate and open/close edit session without committing")
 
     args = parser.parse_args()
@@ -230,7 +251,8 @@ def main():
             metadata_dir=args.metadata_dir,
             key_path=args.key,
             release_status=args.status,
-            verify_only=args.verify_only
+            verify_only=args.verify_only,
+            release_name=args.release_name
         )
     except Exception as e:
         sys.exit(1)

@@ -4,13 +4,18 @@
 
 ## [Futuro]
 
-- [ ] **Gerar os 20 assets dos sete manifestos** (`venv/bin/python tools/gen_art.py --all`) — o pipeline e o código que os consome estão prontos, e agora os três PNG legados do Memória (verso azul e duas gemas) têm manifesto (`tools/art/memoria.json`); o que falta é cota: o free tier do projeto Gemini Jogos (`436393374436`) devolve `429 RESOURCE_EXHAUSTED` para toda imagem (reconferido em 2026-09-06 à 0h). Depois de gerar: abrir cada PNG, capturar os seis jogos, conferir que o Godot não reescreveu os `.import` de decalque para VRAM, tirar os três do Memória de `LEGADO` em `test_art_provenance.gd`, e medir o delta do APK (orçamento ~6 MB)
 - [ ] **Overlay de vitória de 3 s com o Veo** — só se o orçamento do APK sobreviver ao lote acima; senão vai para `fastlane/` com `.gdignore`
 - [ ] **Os 70 ids vazios em `core/configs/play_games_ids.json`** — só o Play Console resolve
 
-## [Unreleased](https://github.com/ricasolucoes/PlayTable/compare/v0.7.0...develop)
+## [Unreleased](https://github.com/ricasolucoes/PlayTable/compare/v0.8.0...develop)
+
+---
+
+## [v0.8.0 (2026-09-06)](https://github.com/ricasolucoes/PlayTable/compare/v0.7.0...v0.8.0)
 
 ### ✨ Novidades
+
+- [x] **Arte dos sete manifestos entregue** — 20 imagens com proveniência; esmeraldas da recompensa e do Mancala regeneradas após conferência visual.
 
 - [x] **"Como se joga" nos vinte e dois jogos** — botão "?" na `GameTopBar` e um painel com objetivo, passos e uma dica de estratégia por jogo (os cantos do Reversi, a cova a seis casas do depósito no Mancala, a armadilha dupla do Quatro em Linha), que abre sozinho na primeira partida de cada jogo. Não havia nada disso: zero chaves `RULES_` no CSV. A estrutura fica em `core/configs/rules.json` e o texto no CSV, 99 chaves nos três idiomas; ler pela primeira vez paga XP e a conquista `ACH_RULES_READER`. O teste varre o catálogo: jogo novo entra reprovando até ganhar as suas regras
 - [x] **Arrastar a peça com o dedo** (`shared/3d/DragPicker3D.gd`) — pegar a peça é o gesto que a pessoa tenta primeiro, e só o Resta Um aceitava. O padrão saiu dele e virou uma camada reusável: cada alvo é projetado da própria mesa 3D, o toque vai para o alvo **mais próximo** dentro de um raio, e o raio sai da menor distância real entre alvos projetados — três pinos ganham raio generoso, sessenta e quatro casas ganham raio apertado, sem ninguém escrever número. Hanói, Resta Um, Damas e Gamão arrastam; os dois toques continuam valendo em todos. No Gamão a camada 2D de vinte e seis botões reposicionados a cada reenquadramento saiu: cada ponta virou um alvo com três amostras da base ao topo da pilha (`set_targets` aceita uma lista de pontos por alvo), e as vinte e quatro pontas ganharam a moldura do `CellHalo3D` em três cores — escolhida, destino e "dá para pegar"
@@ -39,6 +44,8 @@
 
 ### 🐛 Correções
 
+- [x] **Revisão da publicação** — botão das varetas do Senet reconectado, células do Sudoku reabilitadas ao reiniciar e números fixos legíveis; anotações do Sudoku e controles do Uno e Spider deixam de sobrepor a HUD. O cabeçalho do perfil limita textos longos à largura disponível.
+
 - [x] **Quatro jogos não compilavam** depois do refactor do `GameShell` — o Nim usava `shell` sem declarar, o Campo Minado pedia `game_timer` em vez de `timer`, o Gamão ligava um botão que saiu da cena, e a cena das Damas trazia um `[ext_resource]` depois dos `[node]`
 - [x] **O Nim congelava** — lambda em GDScript captura variável local por valor, e a contagem de tweens nunca fechava; **e as pilhas do Nim sumiam** no aparelho, porque `queue_free()` não remove na hora e o `HeapsParent` morria com as pilhas dentro
 - [x] **Os "losangos brancos"** — `TorusMesh.rings` e `ring_segments` trocados desenham um quadrado rodado, e `StandardMaterial3D` não emite na cor da instância. Entrou o `StateShader3D`
@@ -56,6 +63,9 @@
 - [x] **A suíte** — o carimbo do import de `run_gut.sh` olha o caminho do arquivo, e não só o `class_name` (mover `GridGame.gd` para `TouchGrid.gd` deixava o cache do Godot apontando para um arquivo que não existia); `wait_frames` deprecado vira `wait_process_frames` (seis avisos por execução); a espera do turno da IA do Reversi sobe de 6 s para 20 s, porque no degrau 10 a busca passa dos 6 s com outra sessão do Godot e um build do Android ao lado; teste de cena que espera um ou dois quadros e libera a cena acordava o `_schedule_refit()` do `BaseGame` num nó já liberado, e passa a esperar a bandeira baixar; e a base do Mancala subiu 3 cm, porque o topo em y=0 disputava o pixel com o tampo do ambiente
 
 ### 🔧 Técnico
+
+- [x] **Android 0.8.0, código 13** — APK, AAB e CI leem a versão do mesmo preset. O AAB passa a exportar o PCK novo na pasta que o Gradle empacota, sem arquivos soltos antigos. A CI instala o template Android correspondente, reaplica ícones e PGS, usa SDK 36 e executa testes antes de publicar. O publicador valida a edição e interrompe em falhas de metadados.
+- [x] **Ficha da loja revisada** — catálogo real de 22 jogos em 27 localidades, sem prometer Xadrez, Trilha ou recursos online ainda indisponíveis.
 
 **O achado do `casino_green`:** `TabletopEnvironment3D` aplica esse tema por padrão, e é o único com `camera_max_tilt = 56` — teto que existe para a face da carta não achatar. Treze tabuleiros herdavam o teto de mesa de carteado e paravam em dois terços da largura. Resta Um, Campo Minado, Hanói, Ludo, Mancala, Nim e Reversi declaram o próprio tema; a Torre de Hanói tem teto próprio de 42°, porque é o único jogo cujo conteúdo é vertical.
 

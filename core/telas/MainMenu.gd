@@ -244,9 +244,13 @@ func _pintar_barra_em(margem: MarginContainer) -> void:
 	var meio := UIKit.vbox(7)
 	meio.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	meio.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	meio.add_child(UIKit.rotulo(tr("PROFILE_LEVEL") % r["level"], UIKit.FONTE_CORPO, UIKit.TEXTO))
+	var nivel := UIKit.rotulo(tr("PROFILE_LEVEL") % r["level"], UIKit.FONTE_CORPO, UIKit.TEXTO)
+	nivel.clip_text = true
+	meio.add_child(nivel)
 	meio.add_child(UIKit.barra(int(r["xp"]), proximo, UIKit.OURO, 12.0))
-	meio.add_child(UIKit.rotulo(tr("PROFILE_XP") % [r["xp"], proximo], UIKit.FONTE_MIUDA, UIKit.TEXTO_FRACO))
+	var xp := UIKit.rotulo(tr("PROFILE_XP") % [r["xp"], proximo], UIKit.FONTE_MIUDA, UIKit.TEXTO_FRACO)
+	xp.clip_text = true
+	meio.add_child(xp)
 	linha.add_child(UIKit.expandir(meio))
 
 	# A sequência some quando é zero em vez de mostrar "🔥 0": a chama apagada

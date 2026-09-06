@@ -298,3 +298,10 @@ func test_a_escada_de_perfis_e_monotonica() -> void:
 		"o degrau de baixo erra com frequencia")
 	assert_lt(float(AIScript.PERFIS[0]["erro"]), 0.55,
 		"mas nao sorteia a maioria das jogadas: fraco e inexperiente, nao aleatorio")
+
+
+func test_botao_de_varetas_inicia_uma_jogada() -> void:
+	var jogo := _jogo()
+	assert_true(jogo.btn_cast_sticks.pressed.is_connected(jogo._on_btn_cast_sticks_pressed))
+	jogo.btn_cast_sticks.pressed.emit()
+	assert_between(jogo.current_throw, 1, 5)

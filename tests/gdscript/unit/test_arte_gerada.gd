@@ -35,7 +35,7 @@ func test_sem_arquivo_get_textured_devolve_o_proprio_fallback() -> void:
 func test_token_com_chave_de_arte_sem_arquivo_fica_procedural() -> void:
 	var peca: Token3D = add_child_autofree(TOKEN.instantiate())
 	peca.material_name = "obsidian"
-	peca.art_by_material = {"obsidian": "reversi/disco_preto", "ivory": "reversi/disco_branco"}
+	peca.art_by_material = {"obsidian": "inexistente/disco_preto", "ivory": "inexistente/disco_branco"}
 	peca.apply_material("obsidian")
 	assert_same(peca.mesh_instance.material_override, MaterialFactory3D.get_obsidian(),
 		"o material e o de sempre enquanto a arte nao existe")
@@ -126,7 +126,26 @@ func test_a_capacidade_do_atlas_nao_estoura() -> void:
 func test_o_campo_minado_sem_atlas_continua_nos_labels() -> void:
 	var jogo: Node = add_child_autofree((load("res://games/campo_minado/MinesweeperGame.tscn") as PackedScene).instantiate())
 	await wait_process_frames(1)
-	assert_null(jogo.numbers_grid, "sem numeros.png nao ha grade de decalques")
-	jogo._mostrar_numero(2, 2, 3)
-	assert_eq(jogo.numbers_3d.size(), 1, "o algarismo vem como Label3D")
-	assert_true(jogo.numbers_3d[Vector2i(2, 2)] is Label3D)
+	if jogo.numbers_grid != null:
+		assert_not_null(jogo.numbers_grid, "com numeros.png ha grade de decalques")
+		jogo._mostrar_numero(2, 2, 3)
+		assert_true(jogo.numbers_grid.has(Vector2i(2, 2)), "o algarismo vai para o DecalGrid3D")
+	else:
+		assert_null(jogo.numbers_grid, "sem numeros.png nao ha grade de decalques")
+		jogo._mostrar_numero(2, 2, 3)
+		assert_eq(jogo.numbers_3d.size(), 1, "o algarismo vem como Label3D")
+		assert_true(jogo.numbers_3d[Vector2i(2, 2)] is Label3D)
+
+
+func test_atlas_entregue_tem_oito_celulas_quadradas() -> void:
+	var atlas := AssetCatalog.get_game_art("campo_minado", "numeros")
+	assert_not_null(atlas)
+	if atlas == null:
+		return
+	assert_eq(atlas.get_width(), atlas.get_height() * 2)
+	var jogo: Node = add_child_autofree((load("res://games/campo_minado/MinesweeperGame.tscn") as PackedScene).instantiate())
+	assert_eq(jogo.numbers_grid._cols, 4)
+	assert_eq(jogo.numbers_grid._rows, 2)
+	for n in range(1, 9):
+		jogo._mostrar_numero(0, n - 1, n)
+		assert_eq(jogo.numbers_grid.cell_of(Vector2i(0, n - 1)), n - 1)

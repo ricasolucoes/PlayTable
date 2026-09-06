@@ -27,14 +27,16 @@ var ai_level: int = DifficultyManager.DEFAULT_LEVEL
 
 @onready var board_3d: Board3D = $Board3D
 @onready var pieces_root: Node3D = $PiecesRoot
-@onready var level_label: Label = $UI/VBoxContainer/LevelLabel
+@onready var shell: GameShell = $UI/GameShell
 @onready var btn_cast_sticks: Button = $UI/SticksArea/BtnCastSticks
 @onready var sticks_label: Label = $UI/SticksArea/SticksLabel
 
 func _ready() -> void:
 	env_3d = $TabletopEnvironment3D
-	status_label = $UI/VBoxContainer/StatusLabel
-	btn_restart = $UI/Actions/BtnRestart
+	status_label = shell.status_label
+	btn_restart = shell.btn_restart
+	shell.restart_requested.connect(_on_restart_pressed)
+	btn_cast_sticks.pressed.connect(_on_btn_cast_sticks_pressed)
 	ai_level = DifficultyManager.get_level(game_id)
 	board_3d.setup_board(3, 10, 0.65, "wood_checkered")
 	# O toque entra pelo proprio tabuleiro: a casa tocada e a casa desenhada.
@@ -86,6 +88,8 @@ func _start_new_game() -> void:
 	set_status(tr("SENET_YOUR_TURN"))
 	btn_cast_sticks.disabled = false
 	_sync_pieces_3d()
+	shell.timer.reset()
+	shell.timer.start()
 
 func _sync_pieces_3d() -> void:
 	for p in pieces_root.get_children(): p.queue_free()
@@ -105,7 +109,7 @@ func _sync_pieces_3d() -> void:
 			pieces_3d[sq] = piece
 			
 	set_duel_score("%d/5" % player_borne_off, "%d/5" % ai_borne_off)
-	level_label.text = DifficultyManager.label_for(game_id)
+	shell.set_level(DifficultyManager.label_for(game_id))
 
 func _on_btn_cast_sticks_pressed() -> void:
 	if not can_throw or game_over: return
@@ -241,7 +245,14 @@ func _play_ai_move() -> void:
 	_execute_move(2, chosen["from"], chosen["to"])
 
 func _end_game(winner: int) -> void:
+	shell.timer.stop()
+	var extra := {
+		"time": shell.timer.get_time(),
+		"score_player": player_borne_off,
+		"score_ai": ai_borne_off,
+		"winner": winner
+	}
 	if winner == 1:
-		finish_game(tr("SENET_WIN"), true)
+		finish_game(tr("SENET_WIN"), true, extra)
 	else:
-		finish_game(tr("SENET_LOSE"))
+		finish_game(tr("SENET_LOSE"), false, extra)

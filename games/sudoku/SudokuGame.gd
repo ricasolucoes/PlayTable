@@ -5,10 +5,8 @@ const CELL_SCENE := preload("res://games/sudoku/SudokuCell.tscn")
 
 @onready var main_grid = $BoardContainer/MainGrid
 @onready var num_pad = $NumberPad
-@onready var btn_notes = $VBoxContainer/TopBar/BtnNotes
-@onready var status_lbl = $VBoxContainer/StatusCard/StatusVBox/StatusLabel
-@onready var level_lbl = $VBoxContainer/StatusCard/StatusVBox/LevelLabel
-@onready var win_modal = $WinModal
+@onready var btn_notes = $Actions/BtnNotes
+@onready var shell: GameShell = $GameShell
 
 var cells_2d := [] # 9x9 Array of SudokuCell
 var solution_grid := []
@@ -16,8 +14,9 @@ var notes_mode := false
 var selected_cell: SudokuCell = null
 
 func _ready() -> void:
-	status_label = status_lbl
-	btn_restart = $VBoxContainer/TopBar/BtnRestart
+	status_label = shell.status_label
+	btn_restart = shell.btn_restart
+	shell.restart_requested.connect(_on_restart_pressed)
 	
 	_setup_board_ui()
 	_setup_numpad()
@@ -56,23 +55,20 @@ func _setup_numpad() -> void:
 	for i in range(1, 10):
 		var btn = Button.new()
 		btn.text = str(i)
-		btn.custom_minimum_size = Vector2(72, 72)
+		btn.custom_minimum_size = Vector2(88, 88)
 		btn.add_theme_font_size_override("font_size", 32)
 		btn.pressed.connect(_on_numpad_pressed.bind(i))
 		num_pad.add_child(btn)
 		
 	var btn_clear = Button.new()
 	btn_clear.text = "X"
-	btn_clear.custom_minimum_size = Vector2(72, 72)
+	btn_clear.custom_minimum_size = Vector2(88, 88)
 	btn_clear.add_theme_font_size_override("font_size", 32)
 	btn_clear.add_theme_color_override("font_color", Color(0.9, 0.3, 0.3))
 	btn_clear.pressed.connect(_on_numpad_pressed.bind(0))
 	num_pad.add_child(btn_clear)
 
 func _start_new_game() -> void:
-	win_modal.hide()
-	# O Sudoku tem o proprio modal de vitoria; o cartao comum ficaria por cima dele.
-	uses_result_panel = false
 	notes_mode = false
 	btn_notes.button_pressed = false
 	btn_notes.text = "SUDOKU_NOTES_OFF"
@@ -83,7 +79,7 @@ func _start_new_game() -> void:
 	var level = 1
 	if DifficultyManager != null:
 		level = DifficultyManager.get_level(game_id)
-		level_lbl.text = difficulty_suffix()
+		shell.set_level(difficulty_suffix())
 		
 	var data = SudokuGenerator.generate_board(level)
 	var puzzle = data["puzzle"]
@@ -102,6 +98,8 @@ func _start_new_game() -> void:
 			cell.highlight(false)
 
 	set_status("SUDOKU_PLAYING")
+	shell.timer.reset()
+	shell.timer.start()
 
 func _on_cell_clicked(r: int, c: int) -> void:
 	if game_over:
@@ -169,5 +167,5 @@ func _check_win() -> bool:
 
 func _do_win() -> void:
 	_select_cell(null)
-	finish_game("SUDOKU_WIN", true)
-	reveal_result_modal(win_modal)
+	shell.timer.stop()
+	finish_game("SUDOKU_WIN", true, {"time": shell.timer.get_time()})

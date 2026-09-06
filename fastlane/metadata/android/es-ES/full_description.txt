@@ -1,29 +1,38 @@
-PlayTable reúne 16 juegos clásicos de tablero y cartas en una sola aplicación, 100% gratuita y sin anuncios.
+PlayTable es la colección definitiva con 22 juegos clásicos de mesa, cartas y acertijos lógicos en una sola aplicación: ¡100% gratis, sin anuncios y totalmente offline!
 
-Todo funciona directamente en tu dispositivo. Sin necesidad de internet, sin inicio de sesión, sin registros y sin recopilación de datos. ¡Abre la app en modo avión y juega donde y cuando quieras!
+Diseñado para los amantes de los juegos tradicionales que buscan una experiencia fluida, sin interrupciones y con total respeto a la privacidad. Todo funciona localmente en tu dispositivo: sin conexión a internet, sin registros y sin compras integradas. ¡Activa el modo avión y juega donde y cuando quieras!
 
-🎲 Juegos de Tablero:
-• Ajedrez
-• Damas
-• Ludo
-• Molino
-• Reversi
-• Mancala
-• Cuatro en Raya
-• Tres en Raya
-• Hundir la Flota (Batalla Naval)
-• Cuadrados (Puntos y Cajas)
-• Juego de Memoria
+🎲 16 JUEGOS DE MESA Y LÓGICA:
+• Damas: Tablero clásico 8x8 con damas voladoras y capturas múltiples obligatorias.
+• Batalla Naval: Cuadrículas de radar y flota 10x10 con IA táctica Hunt & Target.
+• Buscaminas: El legendario juego de deducción con primer toque seguro y banderas.
+• Sudoku: Cuadrículas lógicas 9x9 con notas a lápiz y validación instantánea.
+• Dominó: 28 fichas (doble seis) con modo clásico de robo y bloqueo.
+• Backgammon: Tablero de 24 puntos, captura en barra y lanzamiento de dados.
+• Reversi (Othello): Domina el tablero volteando las fichas rivales con IA Minimax.
+• Ludo: La clásica carrera familiar de 4 peones hasta la meta.
+• Cuatro en Línea: Conecta cuatro fichas seguidas en horizontal, vertical o diagonal.
+• Tres en Línea (Ta-Te-Ti): Partidas rápidas y dinámicas para todas las edades.
+• Mancala (Kalah): El milenario juego africano de siembra y recolección.
+• Senet: El juego de mesa sagrado del Antiguo Egipto.
+• Solitario de Clavijas (Senku): Salta y elimina clavijas hasta dejar una sola.
+• Torre de Hanói: El clásico desafío matemático de traslado de discos.
+• Nim: Clásico juego matemático de equilibrio y eliminación de pilas.
+• Camino Numérico: Desafío de conexión secuencial continua estilo Hidato.
 
-🃏 Juegos de Cartas:
-• Solitario (Klondike)
-• Blackjack (21)
-• Guerra
-• Robamontón
-• Concentración
+🃏 6 JUEGOS DE CARTAS CLÁSICOS:
+• Solitario Klondike: El solitario de cartas más famoso y adictivo del mundo.
+• Solitario Spider: Desafío de ordenamiento de naipes en 10 columnas.
+• Blackjack (Veintiuno): Vence al crupier sumando 21 sin pasarte.
+• Juego de Memoria: Encuentra y empareja todas las cartas ocultas.
+• UnoLike: Juego de descarte por colores y números con cartas de acción y cambio de sentido.
+• Video Poker: Jacks or Better con descarte estratégico y tabla oficial de pagos.
 
-✨ Características:
-• 100% Gratis: Sin anuncios ni compras dentro de la app
-• 100% Offline: Juega en cualquier lugar sin conexión
-• Diseño elegante y controles táctiles intuitivos
-• Privacidad total: Tus estadísticas y ajustes se quedan en tu dispositivo
+✨ CARACTERÍSTICAS DESTACADAS:
+• 100% Gratis: Sin anuncios molestos, sin banners y sin microtransacciones.
+• 100% Fuera de Línea (Offline): Juega en viajes, aviones o zonas sin cobertura.
+• Modos Versátiles: Juega contra la IA o con amigos en el mismo dispositivo (modo local).
+• Privacidad Absoluta: Tus récords, estadísticas y preferencias se quedan en tu dispositivo.
+• Código Abierto: Desarrollado con Godot 4 bajo la organización ricasolucoes en GitHub.
+
+¡Descarga PlayTable ahora y disfruta de 22 grandes clásicos en cualquier lugar!

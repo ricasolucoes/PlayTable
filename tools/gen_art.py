@@ -118,7 +118,9 @@ def ler_hash_gravado(md):
     if not md.exists():
         return None
     for linha in md.read_text(encoding="utf-8").splitlines():
-        if linha.startswith("prompt_sha256:"):
+        # Aprovacao manual registra a spec do manifesto separadamente do
+        # prompt efetivo da ferramenta image_gen, preservado no mesmo MD.
+        if linha.startswith(("approved_manifest_sha256:", "prompt_sha256:")):
             return linha.split(":", 1)[1].strip()
     return None
 

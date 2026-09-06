@@ -1,29 +1,5 @@
-PlayTable raccoglie 16 classici giochi da tavolo e di carte in un'unica applicazione, 100% gratuita e senza pubblicità.
+PlayTable è la collezione definitiva di 22 grandi giochi classici da tavolo, carte e logica in un'unica applicazione — 100% gratuita, senza pubblicità e completamente offline!
 
-Tutto funziona direttamente sul tuo dispositivo. Nessuna connessione internet richiesta, nessun account, nessuna registrazione e nessun tracciamento dei dati. Attiva la modalità aereo e gioca dove e quando vuoi!
+Include Dama, Battaglia Navale, Campo Minato, Sudoku, Domino, Backgammon, Reversi (Othello), Ludo, Forza Quattro, Tris (Filetto), Mancala, Senet, Solitario della Pallina, Torre di Hanoi, Nim, Percorso Numerico, Solitario Klondike, Solitario Spider, Blackjack 21, Gioco della Memoria, UnoLike e Video Poker.
 
-🎲 Giochi da Tavolo:
-• Scacchi
-• Dama
-• Ludo
-• Mulino (Filetto)
-• Reversi
-• Mancala
-• Forza 4
-• Tris (Tic-Tac-Toe)
-• Battaglia Navale
-• Punti e Linee
-• Gioco di Memoria
-
-🃏 Giochi di Carte:
-• Solitario (Klondike)
-• Blackjack (21)
-• Guerra
-• Ruba-Mazzetto
-• Concentrazione
-
-✨ Caratteristiche Principali:
-• 100% Gratis: Nessuna pubblicità, nessun acquisto in-app
-• 100% Offline: Gioca ovunque senza usare dati mobili
-• Grafica pulita, comandi touch fluidi e avvio immediato
-• Massima Privacy: Dati e statistiche salvati solo sul tuo dispositivo
+100% offline, zero pubblicità, supporto a Google Play Games Sidekick e multiplayer locale sullo stesso dispositivo. Open source su GitHub (ricasolucoes).

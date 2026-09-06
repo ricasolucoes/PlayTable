@@ -20,18 +20,13 @@ if [ "$SKIP_BUILD" != "1" ]; then
 fi
 
 if [ ! -f "$AAB_PATH" ]; then
-    FALLBACK_AAB="$(find "$SCRIPT_DIR/build" "$SCRIPT_DIR/android/build" -name "*.aab" 2>/dev/null | head -n 1)"
-    if [ -n "$FALLBACK_AAB" ] && [ -f "$FALLBACK_AAB" ]; then
-        AAB_PATH="$FALLBACK_AAB"
-    else
-        echo "❌ Erro: AAB não encontrado em $AAB_PATH"
-        exit 1
-    fi
+    echo "Erro: AAB nao encontrado em $AAB_PATH" >&2
+    exit 1
 fi
 
 echo "=> AAB localizado: $AAB_PATH"
 echo "=> Enviando para a Google Play Store..."
-python3 /Users/sierra/Dev/scripts/play_store_publish.py \
+python3 "$SCRIPT_DIR/scripts/play_store_publish.py" \
     --package org.playtable.app \
     --aab "$AAB_PATH" \
     --track "$TRACK" \

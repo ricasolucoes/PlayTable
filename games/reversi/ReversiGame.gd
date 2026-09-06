@@ -6,6 +6,11 @@ var grid_data: Grid2D
 var is_player_turn: bool = true
 var pieces_3d: Dictionary = {}
 
+## Partida em rede: as pretas sao de quem abriu a sala, as brancas de quem
+## entrou. `is_player_turn` continua sendo "a vez deste aparelho"; a jogada do
+## outro chega por `_on_net_move` e passa pelo mesmo `_aplicar_jogada`.
+var em_rede: bool = false
+
 ## Degrau de 1 a 10 do DifficultyManager. Vira orcamento de busca da IA.
 var ai_level: int = DifficultyManager.DEFAULT_LEVEL
 
@@ -39,13 +44,31 @@ func _ready() -> void:
 
 func _start_new_game() -> void:
 	game_over = false
-	is_player_turn = true
+	em_rede = net_active()
+	# As pretas abrem. Em rede, o convidado (brancas) espera a primeira jogada.
+	is_player_turn = _meu() == 1
 	btn_restart.hide()
 
 	ai_level = DifficultyManager.get_level(game_id)
 	grid_data = ReversiRules.create_initial_board()
 	_sync_pieces_3d()
-	set_status(tr("REVERSI_YOUR_TURN_LONG"))
+	if em_rede and not is_player_turn:
+		set_status(tr("NET_THEIR_TURN") % net_opponent_name())
+	else:
+		set_status(tr("REVERSI_YOUR_TURN_LONG"))
+
+
+## O lado deste aparelho: pretas (1) fora da rede, o assento da sala em rede.
+func _meu() -> int:
+	return NetworkManager.local_seat if em_rede else 1
+
+
+func _rival() -> int:
+	return 3 - _meu()
+
+
+static func _material_de(player: int) -> String:
+	return "obsidian" if player == 1 else "ivory"
 
 func _sync_pieces_3d() -> void:
 	for p in pieces_root.get_children(): p.queue_free()
@@ -87,14 +110,15 @@ func _highlight_valid_moves() -> void:
 	if not is_player_turn or game_over:
 		return
 	var destinos: Array = []
-	destinos.assign(ReversiRules.get_valid_moves(grid_data, 1))
+	destinos.assign(ReversiRules.get_valid_moves(grid_data, _meu()))
 	board_3d.set_cells_state(destinos, Board3D.CellState.VALID)
 
 func _on_cell_clicked(r: int, c: int) -> void:
 	if game_over or not is_player_turn: return
 	
 	var pos := Vector2i(r, c)
-	var flipped := ReversiRules.get_flipped_pieces(grid_data, pos, 1)
+	var eu := _meu()
+	var flipped := ReversiRules.get_flipped_pieces(grid_data, pos, eu)
 	if flipped.size() == 0:
 		# Recusar calado e o que faz o jogo parecer quebrado: quem nao conhece a
 		# regra do flanqueio conclui que o toque nao esta chegando.
@@ -103,20 +127,43 @@ func _on_cell_clicked(r: int, c: int) -> void:
 			AudioManager.play_error()
 		return
 	
-	# Jogada do jogador
-	grid_data.set_cell(r, c, 1)
+	if em_rede:
+		net_send({"r": r, "c": c})
+	_aplicar_jogada(pos, eu)
+	_after_player_move()
+
+
+## A jogada do outro aparelho. So na vez dele, e so se for legal aqui tambem.
+func _on_net_move(payload: Dictionary) -> void:
+	if not em_rede or game_over or is_player_turn:
+		return
+	var pos := Vector2i(int(payload.get("r", -1)), int(payload.get("c", -1)))
+	if not grid_data.is_valid(pos.x, pos.y) or int(grid_data.get_cell(pos.x, pos.y)) != 0:
+		return
+	var rival := _rival()
+	if ReversiRules.get_flipped_pieces(grid_data, pos, rival).size() == 0:
+		return
+	_aplicar_jogada(pos, rival)
+	_after_remote_move()
+
+
+## Pousa o disco de `player` em `pos` e vira os flanqueados. E o mesmo caminho
+## para a pessoa, a IA e o outro aparelho: a mesa nao sabe quem jogou.
+func _aplicar_jogada(pos: Vector2i, player: int) -> void:
+	var flipped := ReversiRules.get_flipped_pieces(grid_data, pos, player)
+	var mat := _material_de(player)
+	grid_data.set_cell(pos.x, pos.y, player)
 	for f in flipped:
-		grid_data.set_cell(f.x, f.y, 1)
+		grid_data.set_cell(f.x, f.y, player)
 		var p_3d = pieces_3d.get(f)
 		if p_3d:
-			p_3d.flip_180("obsidian", 0.35)
-			
+			p_3d.flip_180(mat, 0.35)
+
 	var new_piece := preload("res://shared/3d/Token3D.tscn").instantiate()
 	new_piece.token_type = "cylinder"
-	new_piece.material_name = "obsidian"
+	new_piece.material_name = mat
 	new_piece.art_by_material = ART_DISCOS
-	var target_3d := board_3d.get_cell_position_3d(r, c, 0.08)
-
+	var target_3d := board_3d.get_cell_position_3d(pos.x, pos.y, 0.08)
 	new_piece.position = target_3d + Vector3(0, 2.5, 0)
 	pieces_root.add_child(new_piece)
 	pieces_3d[pos] = new_piece
@@ -127,9 +174,24 @@ func _on_cell_clicked(r: int, c: int) -> void:
 		AudioManager.play_piece_place()
 		if flipped.size() > 0:
 			AudioManager.play_capture()
-	
 	_update_scores()
-	_after_player_move()
+
+
+## Depois da jogada do outro aparelho: minha vez se tenho jogada; senao ele
+## joga de novo, e os dois lados chegam a mesma conclusao pelo mesmo tabuleiro.
+func _after_remote_move() -> void:
+	var minhas := ReversiRules.get_valid_moves(grid_data, _meu())
+	var dele := ReversiRules.get_valid_moves(grid_data, _rival())
+	if minhas.size() == 0 and dele.size() == 0:
+		_end_game()
+		return
+	if minhas.size() > 0:
+		is_player_turn = true
+		set_status(tr("NET_YOUR_TURN"))
+	else:
+		is_player_turn = false
+		set_status(tr("NET_YOU_PASS") % net_opponent_name())
+	_highlight_valid_moves()
 
 func _update_scores() -> void:
 	var black_count: int = 0
@@ -146,25 +208,36 @@ func _update_scores() -> void:
 ## degrau fica na tela: o numero da dificuldade existia e mexia no XP sem o
 ## jogador nunca ver em que degrau estava jogando.
 func _pintar_placar(pretas: int, brancas: int) -> void:
+	if em_rede:
+		var meu := pretas if _meu() == 1 else brancas
+		var dele := brancas if _meu() == 1 else pretas
+		set_duel_score(meu, dele, "NET_YOU", "NET_OPPONENT")
+		level_label.text = tr("NET_MODE_LABEL") % net_opponent_name()
+		return
 	set_duel_score(pretas, brancas)
 	level_label.text = DifficultyManager.label_for(game_id)
 
 func _after_player_move() -> void:
-	var ai_moves := ReversiRules.get_valid_moves(grid_data, 2)
-	var player_moves := ReversiRules.get_valid_moves(grid_data, 1)
+	var rival_moves := ReversiRules.get_valid_moves(grid_data, _rival())
+	var player_moves := ReversiRules.get_valid_moves(grid_data, _meu())
 	
-	if ai_moves.size() == 0 and player_moves.size() == 0:
+	if rival_moves.size() == 0 and player_moves.size() == 0:
 		_end_game()
 		return
 		
-	if ai_moves.size() > 0:
+	if rival_moves.size() > 0:
 		is_player_turn = false
+		if em_rede:
+			set_status(tr("NET_THEIR_TURN") % net_opponent_name())
+			_highlight_valid_moves()
+			return
 		set_status(tr("REVERSI_AI_TURN"))
 		_highlight_valid_moves()
 		await get_tree().create_timer(0.6).timeout
 		_play_ai_turn()
 	else:
-		set_status(tr("REVERSI_AI_NO_MOVES"))
+		is_player_turn = true
+		set_status(tr("NET_THEY_PASS") % net_opponent_name() if em_rede else tr("REVERSI_AI_NO_MOVES"))
 		_highlight_valid_moves()
 
 ## Pensa fora da linha principal, durante a pausa de encenacao que ja existia.
@@ -197,25 +270,7 @@ func _play_ai_turn() -> void:
 	if not is_inside_tree() or game_over:
 		return
 	if ai_move != Vector2i(-1, -1):
-		var flipped := ReversiRules.get_flipped_pieces(grid_data, ai_move, 2)
-		grid_data.set_cell(ai_move.x, ai_move.y, 2)
-		for f in flipped:
-			grid_data.set_cell(f.x, f.y, 2)
-			var p_3d = pieces_3d.get(f)
-			if p_3d:
-				p_3d.flip_180("ivory", 0.35)
-				
-		var new_piece := preload("res://shared/3d/Token3D.tscn").instantiate()
-		new_piece.token_type = "cylinder"
-		new_piece.material_name = "ivory"
-		new_piece.art_by_material = ART_DISCOS
-
-		var target_3d := board_3d.get_cell_position_3d(ai_move.x, ai_move.y, 0.08)
-		new_piece.position = target_3d + Vector3(0, 2.5, 0)
-		pieces_root.add_child(new_piece)
-		pieces_3d[ai_move] = new_piece
-		new_piece.drop_to(target_3d, 0.35)
-		
+		_aplicar_jogada(ai_move, 2)
 	_update_scores()
 	
 	var player_moves := ReversiRules.get_valid_moves(grid_data, 1)
@@ -237,9 +292,10 @@ func _play_ai_turn() -> void:
 func _end_game() -> void:
 	# get_winner devolve {"winner", "black", "white"}, nao o id do vencedor.
 	var winner: int = ReversiRules.get_winner(grid_data)["winner"]
-	if winner == 1:
-		finish_game(tr("RESULT_YOU_WIN"), true)
-	elif winner == 2:
-		finish_game(tr("RESULT_AI_WINS"))
+	if winner == _meu():
+		finish_game(tr("RESULT_YOU_WIN"), true, {"mode": "online" if em_rede else "ai"})
+	elif winner == _rival():
+		var msg := tr("NET_OPPONENT_WINS") % net_opponent_name() if em_rede else tr("RESULT_AI_WINS")
+		finish_game(msg, false, {"mode": "online" if em_rede else "ai"})
 	else:
-		finish_game(tr("DRAW_TITLE"))
+		finish_game(tr("DRAW_TITLE"), false, {"draw": true, "mode": "online" if em_rede else "ai"})

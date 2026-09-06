@@ -10,6 +10,8 @@ config_version=5
 
 [application]
 
+boot_splash/bg_color=Color(0.0431373, 0.0705882, 0.160784, 1)
+boot_splash/image="res://shared/assets/splash/boot_splash.png"
 config/name="PlayTable"
 config/description="Coleção de jogos de tabuleiro e cartas offline em 3D imersivo."
 config/icon="res://icon.png"
@@ -32,6 +34,7 @@ theme/custom="res://shared/theme/MainTheme.tres"
 SaveManager="*res://core/save/SaveManager.gd"
 LocaleManager="*res://core/i18n/LocaleManager.gd"
 SceneManager="*res://core/navegacao/SceneManager.gd"
+NetworkManager="*res://core/net/NetworkManager.gd"
 AudioManager="*res://core/audio/AudioManager.gd"
 GameEventBus="*res://core/services/GameEventBus.gd"
 PlayerProfile="*res://core/services/PlayerProfile.gd"

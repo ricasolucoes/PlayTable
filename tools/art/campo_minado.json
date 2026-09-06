@@ -25,10 +25,12 @@
     },
     {
       "name": "numeros",
-      "prompt": "Uma tira horizontal de oito quadrados de mesmo tamanho, encostados, sem moldura e sem separação visível entre eles, cada quadrado com um único algarismo em alto-relevo esmaltado, na ordem 1 2 3 4 5 6 7 8. Cores dos algarismos, nesta ordem: azul #3399FF, verde #33D94D, vermelho #F24033, roxo #9933E6, laranja #E68019, ciano #1ACCCC, preto #1A1A1A, cinza #999999. Traço muito grosso e geométrico, sem serifa, cada algarismo centrado e ocupando 70% da altura da sua célula, legível a 64 px.",
+      "prompt": "Production sprite atlas for Minesweeper game. Landscape canvas 2:1 aspect ratio. EXACTLY 4 columns and 2 rows of EQUALLY SIZED square cells, forming a mathematically regular 4x2 grid filling the entire canvas. NO drawn grid lines. Transparent background. One large bold sans-serif digit centered precisely within each invisible cell, at 60% of cell height. Top row left to right exactly: 1, 2, 3, 4. Bottom row left to right exactly: 5, 6, 7, 8. Colors by digit: 1 bright blue, 2 green, 3 bright red, 4 purple, 5 orange, 6 cyan, 7 ivory white, 8 light silver gray. Digits use flat saturated enamel with subtle bevel. Orthographic front facing, identical scale and baseline in every cell. No perspective, no frames, no tiles, no decoration, no cast shadows, no extra text, no duplicated or missing numbers. Intended for UV slicing into eight exact equal square cells, so preserve the grid spacing rigorously.",
       "model": "gemini-3-pro-image",
-      "size": 2048,
-      "_nota": "Sem `grid`: o DecalGrid3D lê a tira inteira e desloca o UV por célula; fatias numeros_1..8.png entrariam no APK sem ninguém as ler."
+      "size": 1024,
+      "_nota": "Atlas 4x2 aprovado via image_gen, alpha preservado, 1024x512. Nao fatiar nem aplicar chroma. Prompt exato e modelo efetivo na proveniencia.",
+      "atlas_columns": 4,
+      "atlas_rows": 2
     }
   ]
 }
