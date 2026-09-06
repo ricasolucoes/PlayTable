@@ -1,0 +1,1 @@
+22 gry, w tym Sudoku i Ścieżka liczb. Nowa grafika, muzyka w tle i sterowanie przeciąganiem. Lepszy widok planszy, czytelniejsze karty i zasady do każdej gry. Poprawki w Senecie, restartowaniu Sudoku, układach i zapisach. Darmowe, bez reklam i offline.

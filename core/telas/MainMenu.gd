@@ -43,11 +43,11 @@ const ANEL_GROSSURA := 9.0
 ## 36 de respiro + 96 do anel + 20 embaixo.
 const ALTURA_BARRA := 152.0
 
-## Três cartões de 216 px e dois vãos de 12 fecham exatamente os 672 px úteis
-## da linha. É por isso que são três e não quatro: o quarto sairia cortado, e
+## Três cartões e dois vãos de 12 dividem o espaço útil da linha com
+## SIZE_EXPAND_FILL (~213 px com a barra de rolagem vertical, 216 px sem ela).
+## É por isso que são três e não quatro: o quarto sairia cortado, e
 ## cartão cortado numa fileira que não rola é defeito, não afordância.
 const NOVOS_NA_TELA := 3
-const LARGURA_NOVO := 216.0
 const ALTURA_NOVO := 248.0
 const ALTURA_ARTE := 112.0
 
@@ -489,7 +489,7 @@ func _cartao_novo(def: GameDefinition) -> Button:
 	var acento := _acento(def)
 
 	var b := Button.new()
-	b.custom_minimum_size = Vector2(LARGURA_NOVO, ALTURA_NOVO)
+	b.custom_minimum_size = Vector2(0, ALTURA_NOVO)
 	b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	b.focus_mode = Control.FOCUS_NONE
 	UIKit.rolavel(b)

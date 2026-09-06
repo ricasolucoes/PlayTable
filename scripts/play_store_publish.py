@@ -86,6 +86,64 @@ def sync_metadata(service, package_name: str, edit_id: str, metadata_dir: Path):
             print(f"   ❌ Erro detalhado no idioma [{locale}]: {last_err}")
             raise RuntimeError(f"Falha ao atualizar idioma [{locale}]: {last_err}") from last_err
 
+def sync_images(service, package_name: str, edit_id: str, metadata_dir: Path, target_locales: list = None):
+    if not target_locales:
+        target_locales = ["pt-BR", "en-US"]
+
+    print(f"\n🖼️  Sincronizando capturas de tela e assets gráficos para {target_locales}...")
+    for locale in target_locales:
+        locale_images = metadata_dir / locale / "images"
+        if not locale_images.is_dir():
+            continue
+
+        # 1. Icon (512x512)
+        icon_path = locale_images / "icon.png"
+        if icon_path.exists():
+            try:
+                service.edits().images().upload(
+                    packageName=package_name, editId=edit_id, language=locale,
+                    imageType="icon", media_body=MediaFileUpload(str(icon_path), mimetype="image/png")
+                ).execute()
+                print(f"   ✓ Ícone atualizado [{locale}]")
+            except Exception as e:
+                print(f"   ⚠️  Aviso ao subir ícone [{locale}]: {e}")
+
+        # 2. Feature Graphic (1024x500)
+        feature_path = locale_images / "featureGraphic.png"
+        if feature_path.exists():
+            try:
+                service.edits().images().upload(
+                    packageName=package_name, editId=edit_id, language=locale,
+                    imageType="featureGraphic", media_body=MediaFileUpload(str(feature_path), mimetype="image/png")
+                ).execute()
+                print(f"   ✓ Imagem de destaque (Feature Graphic) atualizada [{locale}]")
+            except Exception as e:
+                print(f"   ⚠️  Aviso ao subir Feature Graphic [{locale}]: {e}")
+
+        # 3. Phone Screenshots (deleteall and upload sorted 01..08)
+        phone_shots = locale_images / "phoneScreenshots"
+        if phone_shots.is_dir():
+            shots = sorted([f for f in phone_shots.glob("*.jpg")])
+            if shots:
+                try:
+                    service.edits().images().deleteall(
+                        packageName=package_name, editId=edit_id, language=locale, imageType="phoneScreenshots"
+                    ).execute()
+                except Exception:
+                    pass
+
+                uploaded_count = 0
+                for s in shots:
+                    try:
+                        service.edits().images().upload(
+                            packageName=package_name, editId=edit_id, language=locale,
+                            imageType="phoneScreenshots", media_body=MediaFileUpload(str(s), mimetype="image/jpeg")
+                        ).execute()
+                        uploaded_count += 1
+                    except Exception as e:
+                        print(f"   ⚠️  Erro ao subir screenshot {s.name} [{locale}]: {e}")
+                print(f"   ✓ {uploaded_count} capturas de tela sincronizadas [{locale}]")
+
 def get_release_notes(metadata_dir: Path, version_code: int):
     notes = []
     if not metadata_dir or not metadata_dir.is_dir():
@@ -164,9 +222,10 @@ def publish(package_name: str, aab_path: str = None, track: str = "production",
             version_code = bundle_response.get("versionCode")
             print(f"   ✓ AAB enviado com sucesso! Versão (versionCode): {version_code}")
 
-        # 3. Sincronizar metadados se diretório fornecido
+        # 3. Sincronizar metadados e imagens se diretório fornecido
         if metadata_dir:
             sync_metadata(service, package_name, edit_id, Path(metadata_dir))
+            sync_images(service, package_name, edit_id, Path(metadata_dir))
 
         # 4. Atualizar faixa de lançamento (Track) se houver AAB
         if version_code:

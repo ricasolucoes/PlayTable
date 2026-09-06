@@ -1,0 +1,1 @@
+Sudoku ve Sayı Yolu dahil 22 oyun. Yeni grafikler, arka plan müziği ve sürükleme kontrolleri. Daha iyi tahta açıları, okunaklı kartlar ve her oyun için kurallar. Senet, Sudoku yeniden başlatma, düzen ve kayıt düzeltmeleri. Ücretsiz, reklamsız ve çevrimdışı.

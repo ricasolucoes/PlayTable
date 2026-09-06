@@ -1,0 +1,1 @@
+22 game termasuk Sudoku dan Jalur Angka. Grafis baru, musik latar, dan kontrol seret. Papan lebih proporsional, kartu lebih jelas, dan panduan aturan di setiap game. Perbaikan untuk Senet, restart Sudoku, tata letak, dan penyimpanan. Gratis, tanpa iklan, dan bisa dimainkan offline.
