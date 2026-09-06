@@ -18,6 +18,18 @@ func _jogo() -> Node:
 	return add_child_autofree(GameScene.instantiate())
 
 
+## Para o teste que precisa da cena assentada (picker projetado, HUD medida):
+## a mesma espera do `_montar` de test_touch_input. `BaseGame.fit_table()`
+## agenda um reenquadramento em dois `process_frame`, e liberar a cena com a
+## corrotina no ar acorda-a num no que nao existe mais -- erro que o GUT conta
+## como falha. Sem espera nenhuma nao ha erro; e a espera curta que expoe.
+func _cena() -> Node:
+	var jogo := _jogo()
+	await wait_process_frames(2)
+	await wait_physics_frames(2)
+	return jogo
+
+
 func test_todos_os_peoes_comecam_na_base() -> void:
 	var jogo := _jogo()
 	assert_eq(jogo.players_pawns.size(), 4, "4 jogadores")
@@ -40,6 +52,47 @@ func test_peao_so_sai_da_base_com_seis() -> void:
 	jogo.current_turn = 0
 	jogo._move_player_pawn(0, 6)
 	assert_eq(jogo.players_pawns[0][0], 0, "com 6 o peao entra na casa 0")
+
+
+## Quando ha mais de um peao para escolher, a casa onde cada um pararia
+## acende, vira alvo do picker, e soltar o peao nela e a escolha.
+func test_o_peao_que_pode_andar_mostra_o_destino_e_aceita_o_arrasto() -> void:
+	var jogo := await _cena()
+	jogo.players_pawns[0] = [3, 10, -1, -1]
+	jogo._sync_pawns_positions(true)
+	jogo._handle_player_roll(2)
+	assert_eq(jogo._movable_atual, [0, 1], "os dois peoes na pista podem andar")
+	assert_eq(jogo.halos.color_of(0), Tokens3D.COLOR_VALID, "a casa de destino do peao 1 acende")
+	assert_eq(jogo.halos.color_of(1), Tokens3D.COLOR_VALID, "a do peao 2 tambem")
+	assert_eq(jogo.halos.color_of(2), Color.TRANSPARENT, "peao na base nao tem destino")
+	var casa: Vector3 = jogo._get_track_position_3d(0, 5, 0)
+	assert_almost_eq(jogo.halos.position_of(0).x, casa.x, 0.01, "o anel esta na casa 5")
+	assert_almost_eq(jogo.halos.position_of(0).z, casa.z, 0.01, "o anel esta na casa 5")
+	assert_ne(jogo.picker.screen_of("dest_0"), Vector2.INF, "o destino e um alvo do picker")
+	assert_ne(jogo.picker.screen_of(0), Vector2.INF, "e o peao tambem")
+
+	jogo._on_peao_pego(0)
+	jogo._on_peao_solto(0, "dest_0")
+	assert_eq(jogo.players_pawns[0][0], 5, "soltar no destino anda as duas casas")
+	assert_true(jogo._movable_atual.is_empty(), "a escolha fechou")
+	assert_eq(jogo.halos.color_of(0), Color.TRANSPARENT, "e o anel apagou")
+
+
+func test_soltar_o_peao_fora_do_destino_o_devolve_e_mantem_a_escolha() -> void:
+	var jogo := await _cena()
+	jogo.players_pawns[0] = [3, 10, -1, -1]
+	jogo._sync_pawns_positions(true)
+	jogo._handle_player_roll(2)
+	jogo._on_peao_pego(1)
+	jogo._on_peao_solto(1, null)
+	assert_eq(jogo.players_pawns[0], [3, 10, -1, -1], "nada andou")
+	assert_eq(jogo._movable_atual, [0, 1], "a escolha continua de pe")
+	# Um peao que nao pode andar nao sobe com o dedo.
+	jogo._on_peao_pego(2)
+	assert_eq(jogo._drag_idx, -1, "o peao da base nao e pego")
+	# Tocar o peao levantado e a escolha.
+	jogo._on_peao_tocado(1)
+	assert_eq(jogo.players_pawns[0][1], 12, "tocar o peao levantado o escolhe")
 
 
 func test_peao_na_pista_anda_o_valor_do_dado() -> void:

@@ -42,6 +42,22 @@ var can_roll: bool = true
 var ai_level: int = DifficultyManager.DEFAULT_LEVEL
 var pawns_3d = [[], [], [], []]
 
+## Anel na casa de destino de cada peao que pode andar, e o arrasto do peao
+## ate la. Levantar o peao dizia QUAL pode andar; nada dizia para ONDE, e a
+## unica maneira de escolher era o botao "Peao N" da HUD, que nao aponta para
+## nenhum peao da mesa. O anel e o mesmo do Board3D; o arrasto e o mesmo
+## `DragPicker3D` das Damas e do Gamao. Os botoes continuam valendo.
+var halos: CellHalo3D = null
+var picker: DragPicker3D = null
+
+## Os peoes do jogador que podem andar com a tirada corrente (vazio fora da
+## escolha), e o que esta na mao.
+var _movable_atual: Array = []
+var _drag_idx: int = -1
+
+## Altura do topo das casas da pista (disco de 0,03 em y=0,04): onde o anel pousa.
+const ALTURA_DA_CASA := 0.055
+
 @onready var board_root: Node3D = $BoardRoot
 @onready var pawns_root: Node3D = $PawnsRoot
 @onready var dice_3d: Dice3D = $Dice3D
@@ -57,6 +73,10 @@ func _ready() -> void:
 	ai_level = DifficultyManager.get_level(game_id)
 	_setup_3d_ludo_board()
 	_setup_3d_pawns()
+	halos = CellHalo3D.new()
+	board_root.add_child(halos)
+	halos.setup(PAWNS_PER_PLAYER, 0.30)
+	_setup_picker()
 	dice_3d.roll_finished.connect(_on_dice_roll_finished)
 	# O tabuleiro tem 6,5 unidades; sem isto a camera usava as 6x6 padrao com a
 	# area util errada e sobrava meia tela de feltro vazio.
@@ -165,6 +185,79 @@ func _setup_3d_pawns() -> void:
 			pawns_root.add_child(pawn)
 			pawns_3d[p].append(pawn)
 
+## Os alvos do toque, projetados da propria mesa: os quatro peoes do jogador
+## onde estao, e a casa de destino de cada um que pode andar (`"dest_N"`).
+## `PawnsRoot` e `BoardRoot` ficam na origem sem giro, entao a posicao local
+## de um peao e a sua posicao no mundo.
+func _setup_picker() -> void:
+	picker = DragPicker3D.new()
+	add_child(picker)
+	picker.attach(env_3d, ALTURA_DA_CASA)
+	picker.target_tapped.connect(_on_peao_tocado)
+	picker.drag_started.connect(_on_peao_pego)
+	picker.drag_moved.connect(_on_peao_movido)
+	picker.drag_ended.connect(_on_peao_solto)
+	_refresh_picker_targets()
+
+
+func _refresh_picker_targets() -> void:
+	if picker == null:
+		return
+	var alvos: Dictionary = {}
+	for idx in range(PAWNS_PER_PLAYER):
+		alvos[idx] = _get_track_position_3d(0, players_pawns[0][idx], idx)
+	for idx in _movable_atual:
+		alvos["dest_%d" % int(idx)] = _destino_do_peao(int(idx), last_roll)
+	picker.set_targets(alvos)
+
+
+## Onde o peao do jogador para com esta tirada: da base entra na casa 0, na
+## pista anda o valor do dado.
+func _destino_do_peao(idx: int, roll: int) -> Vector3:
+	var pos: int = int(players_pawns[0][idx])
+	var passo: int = 0 if pos == -1 else pos + roll
+	return _get_track_position_3d(0, passo, idx)
+
+
+## Tocou um peao levantado: e a escolha, sem passar pelo botao.
+func _on_peao_tocado(id: Variant) -> void:
+	if id is int and int(id) in _movable_atual:
+		_on_pawn_choice_selected(int(id), last_roll)
+
+
+func _on_peao_pego(id: Variant) -> void:
+	if not (id is int) or not (int(id) in _movable_atual):
+		picker.cancel_drag()
+		return
+	_drag_idx = int(id)
+	var pawn = pawns_3d[0][_drag_idx]
+	if pawn and pawn.has_method("set_lift"):
+		pawn.set_lift(Tokens3D.LIFT_DRAG)
+
+
+func _on_peao_movido(_from: Variant, _over: Variant, world: Vector3) -> void:
+	if _drag_idx < 0 or world == Vector3.INF:
+		return
+	var pawn: Node3D = pawns_3d[0][_drag_idx]
+	pawn.position = Vector3(world.x, pawn.position.y, world.z)
+
+
+func _on_peao_solto(_from: Variant, to: Variant) -> void:
+	var idx: int = _drag_idx
+	_drag_idx = -1
+	if idx < 0:
+		return
+	if to is String and to == "dest_%d" % idx and idx in _movable_atual:
+		_on_pawn_choice_selected(idx, last_roll)
+		return
+	# Soltou fora do destino: o peao volta para a casa, continua levantado e a
+	# escolha fica de pe, para quem prefere o botao ou um toque.
+	var pawn = pawns_3d[0][idx]
+	pawn.jump_to(_get_track_position_3d(0, players_pawns[0][idx], idx), 0.3, 0.2)
+	if pawn.has_method("set_lift"):
+		pawn.set_lift(Tokens3D.LIFT_SELECTED)
+
+
 func _get_track_position_3d(p: int, step_val: int, pawn_idx: int) -> Vector3:
 	if step_val == -1: # Na base
 		var base_centers = [
@@ -219,6 +312,10 @@ func _start_new_game() -> void:
 		[-1, -1, -1, -1]
 	]
 	tentativas_restantes = TENTATIVAS_NA_BASE
+	_movable_atual = []
+	_drag_idx = -1
+	if halos:
+		halos.clear()
 	
 	dice_3d.position = Vector3(0, 0.35, 0)
 	dice_3d.set_value_immediate(6)
@@ -258,6 +355,7 @@ func _sync_pawns_positions(immediate: bool = false) -> void:
 				pawn.position = target_pos
 			else:
 				pawn.jump_to(target_pos, 0.4, 0.3)
+	_refresh_picker_targets()
 
 func _on_btn_dice_pressed() -> void:
 	if not can_roll or game_over or current_turn != 0: return
@@ -298,6 +396,7 @@ func _todos_na_base(p: int) -> bool:
 
 
 func _handle_player_roll(roll: int) -> void:
+	last_roll = roll
 	var movable: Array = _movable_pawns(0, roll)
 
 	if movable.is_empty():
@@ -329,12 +428,24 @@ func _handle_player_roll(roll: int) -> void:
 		# andar levanta, e ai o numero do botao tem a quem se referir.
 		_levantar_peoes(movable)
 
-## Levanta os peoes do jogador que podem andar e baixa o resto.
+## Levanta os peoes do jogador que podem andar e baixa o resto; acende o anel
+## na casa onde cada um deles pararia, e poe essas casas entre os alvos do
+## arrasto.
 func _levantar_peoes(indices: Array) -> void:
+	_movable_atual = indices.duplicate()
 	for idx in range(PAWNS_PER_PLAYER):
 		var pawn = pawns_3d[0][idx]
 		if pawn and pawn.has_method("set_lift"):
 			pawn.set_lift(Tokens3D.LIFT_SELECTED if idx in indices else 0.0)
+		if halos == null:
+			continue
+		if idx in indices:
+			var casa := _destino_do_peao(idx, last_roll)
+			halos.move_target(idx, Vector3(casa.x, ALTURA_DA_CASA, casa.z))
+			halos.light(idx, Tokens3D.COLOR_VALID)
+		else:
+			halos.light(idx, Color.TRANSPARENT)
+	_refresh_picker_targets()
 
 func _on_pawn_choice_selected(pawn_idx: int, roll: int) -> void:
 	for c in pawn_buttons_container.get_children(): c.queue_free()

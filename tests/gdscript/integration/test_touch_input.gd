@@ -300,6 +300,40 @@ func test_arrastar_uma_peca_do_gamao_pelo_viewport_a_move() -> void:
 	assert_eq(jogo.move_step_history.size(), 1, "uma jogada registrada no turno")
 
 
+func test_arrastar_um_peao_do_ludo_ate_o_destino_o_move() -> void:
+	var jogo := await _montar("res://games/ludo/LudoGame.tscn")
+	jogo.players_pawns[0] = [3, 10, -1, -1]
+	jogo._sync_pawns_positions(true)
+	jogo._handle_player_roll(2)
+	await wait_process_frames(1)
+	var picker: DragPicker3D = jogo.picker
+	assert_ne(picker.screen_of("dest_0"), Vector2.INF, "o destino do peao 1 esta projetado")
+	_arrastar_no_picker(picker, picker.screen_of(0), picker.screen_of("dest_0"))
+	await wait_process_frames(2)
+	assert_eq(jogo.players_pawns[0][0], 5, "o peao andou duas casas pelo arrasto")
+
+
+func test_tocar_uma_cova_do_mancala_semeia() -> void:
+	var jogo := await _montar("res://games/mancala/MancalaGame.tscn")
+	var picker: DragPicker3D = jogo.picker
+	var ponto: Vector2 = picker.screen_of(0)
+	assert_ne(ponto, Vector2.INF, "a cova 0 esta projetada")
+	var aperta := InputEventMouseButton.new()
+	aperta.button_index = MOUSE_BUTTON_LEFT
+	aperta.pressed = true
+	aperta.position = ponto
+	aperta.global_position = ponto
+	picker._on_gui_input(aperta)
+	var solta := InputEventMouseButton.new()
+	solta.button_index = MOUSE_BUTTON_LEFT
+	solta.pressed = false
+	solta.position = ponto
+	solta.global_position = ponto
+	picker._on_gui_input(solta)
+	assert_eq(jogo.pits[0], 0, "a cova 0 foi semeada pelo toque na mesa")
+	await wait_until(func() -> bool: return jogo.is_player_turn or jogo.game_over, 20.0)
+
+
 func _arrastar_no_picker(picker: DragPicker3D, de: Vector2, ate: Vector2) -> void:
 	var aperta := InputEventMouseButton.new()
 	aperta.button_index = MOUSE_BUTTON_LEFT
