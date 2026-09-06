@@ -3,6 +3,68 @@ extends GutTest
 ## Testes Unitários de Regras e Lógica de Gamão (Backgammon).
 
 const Rules := preload("res://games/gamao/BackgammonRules.gd")
+const GameScene := preload("res://games/gamao/BackgammonGame.tscn")
+
+
+## A mesma espera do `_montar` de test_touch_input: `BaseGame.fit_table()`
+## agenda um reenquadramento que espera dois `process_frame` (e a HUD, ao
+## assentar no primeiro quadro, pode agendar outro). Liberar a cena com essa
+## corrotina no ar acorda-a num no que ja nao existe -- erro que o GUT conta
+## como falha. Sem espera nenhuma nao ha erro; e a espera curta que expoe.
+func _cena() -> Node:
+	var jogo = add_child_autofree(GameScene.instantiate())
+	await wait_process_frames(2)
+	await wait_physics_frames(2)
+	return jogo
+
+
+## Em retrato o percurso corre na vertical: o enquadramento e mais fundo que
+## largo, a casa do jogador (pontas 1 a 6) fica embaixo a esquerda, a ponta 24
+## embaixo a direita, a 13 longe, e a saida dele na borda de perto.
+func test_em_retrato_o_percurso_corre_na_vertical() -> void:
+	var jogo = await _cena()
+	var p1: Vector3 = jogo.board_root.to_global(jogo._get_point_center_3d(1))
+	var p13: Vector3 = jogo.board_root.to_global(jogo._get_point_center_3d(13))
+	var p24: Vector3 = jogo.board_root.to_global(jogo._get_point_center_3d(24))
+	assert_lt(p1.x, 0.0, "a ponta 1 fica a esquerda")
+	assert_gt(p1.z, 0.0, "e perto do jogador")
+	assert_gt(p24.x, 0.0, "a ponta 24 fica a direita")
+	assert_gt(p24.z, 0.0, "e tambem perto")
+	assert_lt(p13.z, 0.0, "a ponta 13 fica longe")
+	var saida: Vector3 = jogo.board_root.to_global(jogo._get_bear_off_pos(Rules.PLAYER_WHITE, 0))
+	assert_gt(saida.z, p1.z, "a saida do jogador e a borda de perto")
+	assert_gt(jogo._fit_size.y, jogo._fit_size.x, "o enquadramento e mais fundo que largo")
+
+
+## A barra e a saida acendem com a mesma moldura das pontas -- e nao mais com
+## uma caixa dourada propria -- nas mesmas cores de estado.
+func test_barra_e_saida_acendem_com_a_moldura_do_tabuleiro() -> void:
+	var jogo = await _cena()
+	assert_true(jogo.bar_halo is CellHalo3D, "a barra e um CellHalo3D")
+	assert_true(jogo.bear_halo is CellHalo3D, "a saida e um CellHalo3D")
+	assert_eq(jogo.bar_halo.color_of(0), Color.TRANSPARENT, "barra apagada no inicio")
+	assert_eq(jogo.bear_halo.color_of(0), Color.TRANSPARENT, "saida apagada no inicio")
+
+	# Uma branca na barra e dados rolados: a barra e a origem obrigatoria.
+	jogo.game_state["bar_white"] = 1
+	jogo.has_rolled_dice = true
+	jogo.available_moves.assign([1, 2])
+	jogo._sync_all_checkers_3d()
+	jogo._select_position(Rules.BAR_POS)
+	assert_eq(jogo.selected_pos, Rules.BAR_POS, "a barra fica selecionada")
+	assert_eq(jogo.bar_halo.color_of(0), Tokens3D.COLOR_SELECTED, "e acende como escolhida")
+
+	# Todas as brancas em casa: a saida vira destino.
+	jogo.game_state = Rules.create_initial_state()
+	var board: Array = jogo.game_state["board"]
+	for pt in range(1, 25):
+		board[pt] = 0
+	board[1] = 15
+	jogo._sync_all_checkers_3d()
+	jogo._select_position(1)
+	assert_eq(jogo.selected_pos, 1, "a ponta 1 fica selecionada")
+	assert_eq(jogo.bear_halo.color_of(0), Tokens3D.COLOR_VALID, "a saida acende como destino")
+	assert_eq(jogo.bar_halo.color_of(0), Color.TRANSPARENT, "e a barra apaga")
 
 
 func test_estado_inicial_tem_30_pecas() -> void:

@@ -51,7 +51,6 @@ var pieces_root: Node3D = null
 var highlights_root: Node3D = null
 var dice_nodes: Array[Dice3D] = []
 var checker_nodes: Array[Node3D] = []
-var point_highlight_meshes: Dictionary = {} # pt -> MeshInstance3D
 
 @onready var shell: GameShell = $GameShell
 
@@ -69,9 +68,16 @@ var point_highlight_meshes: Dictionary = {} # pt -> MeshInstance3D
 ## topo. Dois toques continuam valendo.
 var picker: DragPicker3D = null
 
-## As molduras das 24 pontas: o mesmo anel do Board3D, num MultiMesh so. A
-## barra e a saida continuam com as caixas douradas, porque tem outra forma.
+## As molduras das 24 pontas: o mesmo anel do Board3D, num MultiMesh so.
 var point_halos: CellHalo3D = null
+
+## A barra e a saida tem outra forma que as pontas, e por isso cada uma e um
+## `CellHalo3D` de um alvo so, com a moldura do proprio tamanho. Eram duas
+## caixas douradas de material proprio: um sinal a mais, diferente do das
+## pontas, para dizer a mesma coisa. Agora tudo o que se toca no gamao acende
+## com a mesma moldura, nas mesmas tres cores.
+var bar_halo: CellHalo3D = null
+var bear_halo: CellHalo3D = null
 
 ## Peca sendo arrastada, e de onde saiu.
 var _drag_node: Node3D = null
@@ -107,11 +113,22 @@ func _setup_3d_hierarchy() -> void:
 	theme.camera_tilt = Tokens3D.CAM_TILT_TRACK
 	theme.camera_max_tilt = 80.0
 	env_3d.apply_theme(theme)
-	fit_table(Vector2(BOARD_WIDTH + 0.35, BOARD_DEPTH + 0.25))
 
 	board_root = $TabletopEnvironment3D/BoardRoot
 	for c in board_root.get_children():
 		c.queue_free()
+
+	# Em retrato o percurso corre na vertical. O tabuleiro e 7,6 x 5,2, mais
+	# largo que fundo, e deitado na tela de um telefone ocupava um terco da
+	# altura util com a camera ja no teto de 80 graus: a folga que sobrava era
+	# geometrica, nao de enquadramento. Girado um quarto de volta, a casa do
+	# jogador (pontas 1 a 6) fica embaixo a esquerda, a saida dele na borda de
+	# perto, e a peca sobe pela coluna da direita, cruza em cima e desce pela da
+	# esquerda -- o mesmo anti-horario de sempre, visto de pe. Tudo o que e
+	# posicionado em coordenadas locais do tabuleiro (pontas, pecas, dados,
+	# molduras, alvos do toque) gira junto sem saber disso.
+	board_root.rotation.y = -PI * 0.5
+	fit_table(Vector2(BOARD_DEPTH + 0.25, BOARD_WIDTH + 0.35))
 
 	pieces_root = Node3D.new()
 	pieces_root.name = "PiecesRoot"
@@ -205,27 +222,18 @@ func _build_triangular_points() -> void:
 		alvos.append(Vector3(pos_coords.x, 0.04 - CellHalo3D.ALTURA, pos_coords.z * 0.55))
 	point_halos.set_targets(alvos)
 
-	# Halo da Barra
-	var bar_halo := MeshInstance3D.new()
-	var bh_box := BoxMesh.new()
-	bh_box.size = Vector3(BAR_WIDTH * 0.9, 0.05, 2.2)
-	bar_halo.mesh = bh_box
-	bar_halo.position = Vector3(0.0, 0.12, 0.0)
-	bar_halo.material_override = MaterialFactory3D.get_gold()
-	bar_halo.visible = false
+	# A barra: a mesma moldura, do tamanho dela, pousada no topo da regua
+	# (0,12), que e mais alta que o feltro.
+	bar_halo = CellHalo3D.new()
 	highlights_root.add_child(bar_halo)
-	point_highlight_meshes[Rules.BAR_POS] = bar_halo
+	bar_halo.setup_frames(1, Vector2(BAR_WIDTH * 0.9, BOARD_DEPTH - 0.5))
+	bar_halo.set_targets([Vector3(0.0, 0.12, 0.0)])
 
-	# Halo do Bear-off
-	var bear_halo := MeshInstance3D.new()
-	var b_box := BoxMesh.new()
-	b_box.size = Vector3(0.75, 0.08, 1.9)
-	bear_halo.mesh = b_box
-	bear_halo.position = Vector3(BOARD_WIDTH * 0.5 - 0.35, 0.07, 1.3)
-	bear_halo.material_override = MaterialFactory3D.get_gold()
-	bear_halo.visible = false
+	# A saida do jogador: a bandeja de recolhimento das brancas.
+	bear_halo = CellHalo3D.new()
 	highlights_root.add_child(bear_halo)
-	point_highlight_meshes[Rules.BEAR_OFF_POS] = bear_halo
+	bear_halo.setup_frames(1, Vector2(0.75, 1.9))
+	bear_halo.set_targets([Vector3(BOARD_WIDTH * 0.5 - 0.35, 0.06, 1.3)])
 
 
 func _create_point_triangle_mesh(pt: int) -> MeshInstance3D:
@@ -412,11 +420,19 @@ func _paint_halos() -> void:
 		if cor.a > 0.0:
 			point_halos.light(pt - 1, cor)
 
-	if point_highlight_meshes.has(Rules.BAR_POS):
-		point_highlight_meshes[Rules.BAR_POS].visible = selected_pos == Rules.BAR_POS \
-			or destinos.has(Rules.BAR_POS) or (na_barra and minha_vez)
-	if point_highlight_meshes.has(Rules.BEAR_OFF_POS):
-		point_highlight_meshes[Rules.BEAR_OFF_POS].visible = destinos.has(Rules.BEAR_OFF_POS)
+	# Barra e saida: as mesmas tres cores das pontas. A barra com peca propria
+	# depois de rolar e "da para pegar" -- e obrigatoria, alias.
+	if bar_halo:
+		var cor_barra := Color.TRANSPARENT
+		if selected_pos == Rules.BAR_POS:
+			cor_barra = Tokens3D.COLOR_SELECTED
+		elif destinos.has(Rules.BAR_POS):
+			cor_barra = Tokens3D.COLOR_VALID
+		elif na_barra and minha_vez:
+			cor_barra = Tokens3D.COLOR_HINT
+		bar_halo.light(0, cor_barra)
+	if bear_halo:
+		bear_halo.light(0, Tokens3D.COLOR_VALID if destinos.has(Rules.BEAR_OFF_POS) else Color.TRANSPARENT)
 
 
 func _has_own_checker(board: Array, pt: int) -> bool:
@@ -713,10 +729,12 @@ func _on_peca_solta(_from_id: Variant, to: Variant) -> void:
 
 
 func _clear_all_highlights() -> void:
-	for halo in point_highlight_meshes.values():
-		halo.visible = false
 	if point_halos:
 		point_halos.clear()
+	if bar_halo:
+		bar_halo.clear()
+	if bear_halo:
+		bear_halo.clear()
 
 
 # ---------------------------------------------------------------------------
