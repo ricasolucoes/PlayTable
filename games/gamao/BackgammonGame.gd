@@ -62,11 +62,20 @@ var point_highlight_meshes: Dictionary = {} # pt -> MeshInstance3D
 @onready var btn_undo: Button = $UI/Actions/BtnUndo
 @onready var btn_mode_toggle: Button = $UI/Actions/BtnModeToggle
 @onready var btn_diff_toggle: Button = $UI/Actions/BtnDiffToggle
-@onready var touch_buttons_container: Control = $UI/TouchGrid
+## Toque e arrasto sobre as 24 pontas, a barra e a saida, projetados da
+## propria mesa. Era uma camada 2D de 26 botoes reposicionados a cada
+## reenquadramento; agora e o mesmo `DragPicker3D` do Hanoi, do Resta Um e das
+## Damas, com tres amostras por ponta para o toque pegar a peca da base e a do
+## topo. Dois toques continuam valendo.
+var picker: DragPicker3D = null
 
-## Alvo de toque de cada posicao (1..24, barra, saida), posicionado projetando
-## o proprio ponto do tabuleiro na tela.
-var touch_targets: Dictionary = {}
+## As molduras das 24 pontas: o mesmo anel do Board3D, num MultiMesh so. A
+## barra e a saida continuam com as caixas douradas, porque tem outra forma.
+var point_halos: CellHalo3D = null
+
+## Peca sendo arrastada, e de onde saiu.
+var _drag_node: Node3D = null
+var _drag_from: int = -99
 
 func _ready() -> void:
 	env_3d = get_node_or_null("TabletopEnvironment3D") as TabletopEnvironment3D
@@ -77,7 +86,7 @@ func _ready() -> void:
 
 	_setup_3d_hierarchy()
 	_setup_ui_events()
-	_setup_touch_overlays()
+	_setup_picker()
 	_start_new_game()
 
 
@@ -124,14 +133,26 @@ func _build_board_3d() -> void:
 	main_slab.material_override = MaterialFactory3D.get_wood_walnut()
 	board_root.add_child(main_slab)
 
-	# 2. Moldura externa elevada em mogno
-	var rim_mesh := BoxMesh.new()
-	rim_mesh.size = Vector3(BOARD_WIDTH + 0.3, 0.16, BOARD_DEPTH + 0.3)
-	var rim := MeshInstance3D.new()
-	rim.mesh = rim_mesh
-	rim.position = Vector3(0.0, -0.02, 0.0)
-	rim.material_override = MaterialFactory3D.get_wood_mahogany()
-	board_root.add_child(rim)
+	# 2. Moldura externa elevada em mogno: quatro reguas em volta da base.
+	#
+	# Era UMA caixa do tamanho do tabuleiro inteiro, com o topo em y=0,06: ela
+	# tapava o feltro (0,02), as vinte e quatro pontas (0,02) e qualquer halo
+	# rente a mesa. O gamao era jogado sobre uma prancha lisa de mogno, sem uma
+	# ponta a vista -- e ninguem reparou porque as pecas continuavam aparecendo.
+	var largura_regua := 0.15
+	for lado in [
+		[Vector3(largura_regua, 0.16, BOARD_DEPTH + 0.3), Vector3(-(BOARD_WIDTH + largura_regua) * 0.5, -0.02, 0.0)],
+		[Vector3(largura_regua, 0.16, BOARD_DEPTH + 0.3), Vector3((BOARD_WIDTH + largura_regua) * 0.5, -0.02, 0.0)],
+		[Vector3(BOARD_WIDTH + 0.3, 0.16, largura_regua), Vector3(0.0, -0.02, -(BOARD_DEPTH + largura_regua) * 0.5)],
+		[Vector3(BOARD_WIDTH + 0.3, 0.16, largura_regua), Vector3(0.0, -0.02, (BOARD_DEPTH + largura_regua) * 0.5)],
+	]:
+		var rim_mesh := BoxMesh.new()
+		rim_mesh.size = lado[0]
+		var rim := MeshInstance3D.new()
+		rim.mesh = rim_mesh
+		rim.position = lado[1]
+		rim.material_override = MaterialFactory3D.get_wood_mahogany()
+		board_root.add_child(rim)
 
 	# 3. Feltro interior (Dois quadrantes: Esquerdo e Direito)
 	var felt_w: float = (BOARD_WIDTH - BAR_WIDTH - 0.8) * 0.5
@@ -173,17 +194,16 @@ func _build_triangular_points() -> void:
 		var mesh_inst := _create_point_triangle_mesh(pt)
 		board_root.add_child(mesh_inst)
 
-		# Cria halo/indicador de destaque para cada ponto
-		var halo := MeshInstance3D.new()
-		var halo_box := BoxMesh.new()
-		halo_box.size = Vector3(POINT_PITCH_X * 0.9, 0.04, 2.0)
-		halo.mesh = halo_box
+	# Uma moldura por ponta, no mesmo MultiMesh: selecionada, destino e "da
+	# para pegar" sao a mesma malha em tres cores, sem material novo por estado.
+	point_halos = CellHalo3D.new()
+	highlights_root.add_child(point_halos)
+	point_halos.setup_frames(24, Vector2(POINT_PITCH_X * 0.9, 2.0))
+	var alvos: Array = []
+	for pt in range(1, 25):
 		var pos_coords := _get_point_center_3d(pt)
-		halo.position = Vector3(pos_coords.x, 0.03, pos_coords.z * 0.55)
-		halo.material_override = MaterialFactory3D.get_gold()
-		halo.visible = false
-		highlights_root.add_child(halo)
-		point_highlight_meshes[pt] = halo
+		alvos.append(Vector3(pos_coords.x, 0.04 - CellHalo3D.ALTURA, pos_coords.z * 0.55))
+	point_halos.set_targets(alvos)
 
 	# Halo da Barra
 	var bar_halo := MeshInstance3D.new()
@@ -214,10 +234,11 @@ func _create_point_triangle_mesh(pt: int) -> MeshInstance3D:
 	var base_z := -POINT_OUTER_Z if is_top else POINT_OUTER_Z
 	var tip_z := -POINT_INNER_Z if is_top else POINT_INNER_Z
 
+	# Meio centimetro acima do feltro (0,02), senao os dois planos disputam o z.
 	var hw: float = POINT_PITCH_X * 0.46
-	var p0 := Vector3(x_pos - hw, 0.02, base_z)
-	var p1 := Vector3(x_pos + hw, 0.02, base_z)
-	var p2 := Vector3(x_pos, 0.02, tip_z)
+	var p0 := Vector3(x_pos - hw, 0.025, base_z)
+	var p1 := Vector3(x_pos + hw, 0.025, base_z)
+	var p2 := Vector3(x_pos, 0.025, tip_z)
 
 	var st := SurfaceTool.new()
 	st.begin(Mesh.PRIMITIVE_TRIANGLES)
@@ -327,147 +348,75 @@ func _setup_ui_events() -> void:
 	btn_diff_toggle.pressed.connect(_on_btn_diff_toggle_pressed)
 
 
-## Monta a camada de toque sobre o tabuleiro.
+## Os alvos do toque, projetados da propria mesa.
 ##
 ## Antes isto era uma fileira de 12 botoes em cima e outra embaixo, esticadas
-## pela largura da tela em HBoxContainer. O tabuleiro e 3D em perspectiva: as
-## duas fileiras planas nao coincidiam com ponta nenhuma -- ficavam uma dentro
-## da HUD marrom e a outra abaixo do tabuleiro, no feltro vazio. Tocar uma peca
-## nao fazia nada, e era por isso que nao dava para mover.
-##
-## Agora cada alvo e posicionado projetando o proprio ponto do tabuleiro na
-## tela pela camera, e se reposiciona sozinho quando o enquadramento muda.
-func _setup_touch_overlays() -> void:
-	for c in touch_buttons_container.get_children():
-		c.queue_free()
-	touch_targets.clear()
-
-	touch_buttons_container.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	# Estes alvos sao dimensionados pela projecao das pontas, e nao pelo dedo:
-	# doze pontas atravessam 720 px de tela, o que da ~50 px cada uma e nunca os
-	# 88 px do minimo de toque. A regua de layout le esta marca para nao cobrar
-	# de um alvo projetado um tamanho que a geometria do tabuleiro nao permite.
-	touch_buttons_container.set_meta("alvo_projetado", true)
-
+## pela largura da tela; depois, 26 botoes reposicionados pela projecao de cada
+## ponta a cada reenquadramento. O `DragPicker3D` faz a projecao sozinho e
+## acrescenta o arrasto. Cada ponta tem TRES amostras, da base ao topo da
+## pilha: com um ponto so no centro, tocar a peca encostada na borda da mesa
+## caia fora do raio.
+func _setup_picker() -> void:
+	picker = DragPicker3D.new()
+	add_child(picker)
+	picker.attach(env_3d, 0.05)
+	var alvos: Dictionary = {}
 	for pt in range(1, 25):
-		touch_targets[pt] = _create_touch_button(pt, "%d" % pt)
-	touch_targets[Rules.BAR_POS] = _create_touch_button(Rules.BAR_POS, tr("BACKGAMMON_BAR"))
-	touch_targets[Rules.BEAR_OFF_POS] = _create_touch_button(Rules.BEAR_OFF_POS, tr("BACKGAMMON_BEAR_OFF"))
-
-	if env_3d:
-		env_3d.framing_changed.connect(func(_size: Vector2): _refresh_touch_overlays())
-	var vp := get_viewport()
-	if vp:
-		vp.size_changed.connect(_refresh_touch_overlays)
-	_refresh_touch_overlays.call_deferred()
-
-
-## O rotulo vai para o `tooltip_text`, e nao para dentro do botao: a ponta mede
-## ~50 px de largura na tela, e o unico tamanho de fonte que cabia ali eram os
-## 13 px de antes -- metade do piso de 14 sp e ilegivel a meio metro do rosto.
-## O contorno do alvo ja diz onde tocar, e o numero da ponta esta desenhado no
-## proprio tabuleiro 3D.
-func _create_touch_button(pt: int, label: String) -> Button:
-	var btn := Button.new()
-	btn.focus_mode = Control.FOCUS_NONE
-	btn.tooltip_text = label
-	btn.mouse_filter = Control.MOUSE_FILTER_STOP
-	btn.pressed.connect(func(): _on_position_touched(pt))
-	touch_buttons_container.add_child(btn)
-	return btn
+		alvos[pt] = [
+			board_root.to_global(_get_checker_stack_pos(pt, 0)),
+			board_root.to_global(_get_checker_stack_pos(pt, 2)),
+			board_root.to_global(_get_checker_stack_pos(pt, 4)),
+		]
+	alvos[Rules.BAR_POS] = [
+		board_root.to_global(_get_bar_pos(Rules.PLAYER_WHITE, 0)),
+		board_root.to_global(_get_bar_pos(Rules.PLAYER_WHITE, 2)),
+		board_root.to_global(_get_bar_pos(Rules.PLAYER_BLACK, 0)),
+		board_root.to_global(_get_bar_pos(Rules.PLAYER_BLACK, 2)),
+	]
+	alvos[Rules.BEAR_OFF_POS] = [
+		board_root.to_global(_get_bear_off_pos(Rules.PLAYER_WHITE, 0)),
+		board_root.to_global(_get_bear_off_pos(Rules.PLAYER_WHITE, 3)),
+		board_root.to_global(_get_bear_off_pos(Rules.PLAYER_BLACK, 0)),
+		board_root.to_global(_get_bear_off_pos(Rules.PLAYER_BLACK, 3)),
+	]
+	picker.set_targets(alvos)
+	picker.target_tapped.connect(func(id: Variant) -> void: _on_position_touched(int(id)))
+	picker.drag_started.connect(_on_peca_pega)
+	picker.drag_moved.connect(_on_peca_movida)
+	picker.drag_ended.connect(_on_peca_solta)
 
 
-## Retangulo de tela que o ponto `pt` ocupa, projetando o contorno dele.
-##
-## Projeta os oito cantos da caixa que envolve a ponta -- e nao so o centro --
-## porque em perspectiva a mesma ponta e larga na borda da mesa e estreita na
-## ponta do triangulo. A altura entra na conta para a pilha de pecas empilhadas
-## tambem ficar dentro do alvo.
-func _touch_rect(cam: Camera3D, pt: int) -> Rect2:
-	var x := 0.0
-	var hw := POINT_PITCH_X * 0.5
-	var z0 := 0.0
-	var z1 := 0.0
-
-	if pt == Rules.BAR_POS:
-		hw = BAR_WIDTH * 0.62
-		z0 = -1.2
-		z1 = 1.2
-	elif pt == Rules.BEAR_OFF_POS:
-		x = BOARD_WIDTH * 0.5 - 0.35
-		hw = 0.42
-		z0 = 0.35
-		z1 = 2.25
-	else:
-		x = _get_point_x_coord(pt)
-		var is_top := pt >= 13
-		z0 = -POINT_OUTER_Z if is_top else POINT_INNER_Z
-		z1 = -POINT_INNER_Z if is_top else POINT_OUTER_Z
-
-	var min_p := Vector2(INF, INF)
-	var max_p := Vector2(-INF, -INF)
-	for sx in [-hw, hw]:
-		for sz in [z0, z1]:
-			for sy in [0.0, 0.36]:
-				var mundo: Vector3 = board_root.to_global(Vector3(x + sx, sy, sz))
-				var tela := cam.unproject_position(mundo)
-				min_p = min_p.min(tela)
-				max_p = max_p.max(tela)
-
-	# Alvo minimo de 44 px: e o menor toque confortavel num telefone, e as
-	# pontas do fundo projetam mais estreitas que isso.
-	var rect := Rect2(min_p, max_p - min_p)
-	var falta := Vector2(maxf(44.0 - rect.size.x, 0.0), maxf(44.0 - rect.size.y, 0.0))
-	rect.position -= falta * 0.5
-	rect.size += falta
-	return rect
-
-
-func _refresh_touch_overlays() -> void:
-	if env_3d == null or board_root == null or not is_inside_tree():
+## Pinta o tabuleiro com o que da para fazer: a ponta escolhida, os destinos e,
+## depois de rolar, as pontas de onde da para pegar uma peca. E o que a camada
+## 2D contava com bordas coloridas; agora e a moldura do proprio tabuleiro.
+func _paint_halos() -> void:
+	if point_halos == null:
 		return
-	var cam := env_3d.camera
-	if cam == null:
-		return
-	var origem := touch_buttons_container.global_position
-	for pt in touch_targets:
-		var btn: Button = touch_targets[pt]
-		if not is_instance_valid(btn):
-			continue
-		var rect := _touch_rect(cam, pt)
-		btn.position = rect.position - origem
-		btn.size = rect.size
-	_sync_touch_visuals()
-
-
-## Deixa a camada de toque contar a mesma historia que os halos do tabuleiro:
-## o que da para escolher, o que esta escolhido e para onde da para ir.
-func _sync_touch_visuals() -> void:
+	point_halos.clear()
 	var destinos := {}
 	for dest in valid_destinations:
 		destinos[int(dest["to"])] = true
-
+	var board: Array = game_state.get("board", [])
 	var na_barra := has_rolled_dice \
 		and Rules.has_checkers_on_bar(game_state, current_player)
-	var board: Array = game_state.get("board", [])
+	var minha_vez := not (is_vs_ai and current_player == Rules.PLAYER_BLACK)
 
-	for pt in touch_targets:
-		var btn: Button = touch_targets[pt]
-		if not is_instance_valid(btn):
-			continue
-		var estado := "idle"
+	for pt in range(1, 25):
+		var cor := Color.TRANSPARENT
 		if pt == selected_pos:
-			estado = "selected"
+			cor = Tokens3D.COLOR_SELECTED
 		elif destinos.has(pt):
-			estado = "target"
-		elif has_rolled_dice and _has_own_checker(board, pt) \
-				and (not na_barra or pt == Rules.BAR_POS):
-			estado = "ready"
+			cor = Tokens3D.COLOR_VALID
+		elif has_rolled_dice and minha_vez and not na_barra and _has_own_checker(board, pt):
+			cor = Tokens3D.COLOR_HINT
+		if cor.a > 0.0:
+			point_halos.light(pt - 1, cor)
 
-		btn.visible = pt != Rules.BEAR_OFF_POS or estado != "idle"
-		for nome in ["normal", "hover", "pressed", "focus", "disabled"]:
-			btn.add_theme_stylebox_override(nome, _touch_style(estado))
-		btn.add_theme_color_override("font_color", _touch_ink(estado))
+	if point_highlight_meshes.has(Rules.BAR_POS):
+		point_highlight_meshes[Rules.BAR_POS].visible = selected_pos == Rules.BAR_POS \
+			or destinos.has(Rules.BAR_POS) or (na_barra and minha_vez)
+	if point_highlight_meshes.has(Rules.BEAR_OFF_POS):
+		point_highlight_meshes[Rules.BEAR_OFF_POS].visible = destinos.has(Rules.BEAR_OFF_POS)
 
 
 func _has_own_checker(board: Array, pt: int) -> bool:
@@ -477,37 +426,6 @@ func _has_own_checker(board: Array, pt: int) -> bool:
 		return false
 	var val: int = int(board[pt])
 	return val > 0 if current_player == Rules.PLAYER_WHITE else val < 0
-
-
-func _touch_style(estado: String) -> StyleBoxFlat:
-	var style := StyleBoxFlat.new()
-	style.set_corner_radius_all(10)
-	match estado:
-		"selected":
-			style.bg_color = Color(0.96, 0.78, 0.26, 0.30)
-			style.border_color = Color(1.0, 0.86, 0.36, 0.95)
-			style.set_border_width_all(3)
-		"target":
-			style.bg_color = Color(0.30, 0.85, 0.45, 0.26)
-			style.border_color = Color(0.44, 0.95, 0.58, 0.90)
-			style.set_border_width_all(3)
-		"ready":
-			style.bg_color = Color(1.0, 1.0, 1.0, 0.06)
-			style.border_color = Color(1.0, 1.0, 1.0, 0.34)
-			style.set_border_width_all(2)
-		_:
-			style.bg_color = Color(0, 0, 0, 0.0)
-			style.border_color = Color(1, 1, 1, 0.10)
-			style.set_border_width_all(1)
-	return style
-
-
-func _touch_ink(estado: String) -> Color:
-	match estado:
-		"selected": return Color(1.0, 0.90, 0.48)
-		"target": return Color(0.62, 1.0, 0.74)
-		"ready": return Color(1, 1, 1, 0.72)
-		_: return Color(1, 1, 1, 0.28)
 
 
 func _start_new_game() -> void:
@@ -632,7 +550,7 @@ func _on_btn_roll_dice_pressed() -> void:
 
 	is_animating = false
 	_render_dice_ui()
-	_sync_touch_visuals()
+	_paint_halos()
 
 	# Verifica se há qualquer jogada legal possível
 	var legal_moves := Rules.get_all_legal_single_moves(game_state, current_player, available_moves)
@@ -706,27 +624,19 @@ func _select_position(pt: int) -> void:
 		has_piece = (val > 0) if current_player == Rules.PLAYER_WHITE else (val < 0)
 
 	if not has_piece:
+		_paint_halos()
 		return
 
 	# Calcula destinos válidos
 	var moves := Rules.get_valid_moves_for_position(game_state, current_player, pt, available_moves)
 	if moves.is_empty():
 		set_status(tr("BACKGAMMON_NO_MOVE_HERE"))
+		_paint_halos()
 		return
 
 	selected_pos = pt
 	valid_destinations = moves
-
-	# Ativa destaques visuais
-	if point_highlight_meshes.has(pt):
-		point_highlight_meshes[pt].visible = true
-
-	for dest in valid_destinations:
-		var target_pt: int = dest["to"]
-		if point_highlight_meshes.has(target_pt):
-			point_highlight_meshes[target_pt].visible = true
-
-	_sync_touch_visuals()
+	_paint_halos()
 
 	if pt == Rules.BAR_POS:
 		set_status(tr("BACKGAMMON_BAR_PICKED"))
@@ -734,10 +644,79 @@ func _select_position(pt: int) -> void:
 		set_status(tr("BACKGAMMON_POINT_PICKED") % pt)
 
 
+## A peca do topo de uma posicao, pela posicao esperada dela: as pecas sao
+## refeitas a cada jogada e nao guardam de que ponta sao.
+func _top_checker_node(pt: int) -> Node3D:
+	var esperado := Vector3.INF
+	var board: Array = game_state.get("board", [])
+	if pt == Rules.BAR_POS:
+		var na_barra: int = int(game_state.get("bar_white" if current_player == Rules.PLAYER_WHITE else "bar_black", 0))
+		if na_barra > 0:
+			esperado = _get_bar_pos(current_player, na_barra - 1)
+	elif pt >= 1 and pt <= 24 and pt < board.size():
+		var quantas: int = absi(int(board[pt]))
+		if quantas > 0:
+			esperado = _get_checker_stack_pos(pt, quantas - 1)
+	if esperado == Vector3.INF:
+		return null
+	for node in checker_nodes:
+		if is_instance_valid(node) and node.position.distance_to(esperado) < 0.01:
+			return node
+	return null
+
+
+func _on_peca_pega(id: Variant) -> void:
+	var pt: int = int(id)
+	if game_over or is_animating or not has_rolled_dice \
+			or (is_vs_ai and current_player == Rules.PLAYER_BLACK):
+		picker.cancel_drag()
+		return
+	_select_position(pt)
+	# A selecao pode ter sido recusada (ponta vazia, sem jogada) ou redirigida
+	# para a barra; so a peca da ponta escolhida de fato sobe com o dedo.
+	if selected_pos != pt:
+		picker.cancel_drag()
+		return
+	var node: Node3D = _top_checker_node(pt)
+	if node == null:
+		picker.cancel_drag()
+		return
+	_drag_node = node
+	_drag_from = pt
+	if node is Token3D:
+		(node as Token3D).set_lift(Tokens3D.LIFT_DRAG)
+
+
+func _on_peca_movida(_from_id: Variant, _over: Variant, world: Vector3) -> void:
+	if _drag_node == null or not is_instance_valid(_drag_node) or world == Vector3.INF:
+		return
+	var local: Vector3 = board_root.to_local(world)
+	_drag_node.position = Vector3(local.x, _drag_node.position.y, local.z)
+
+
+func _on_peca_solta(_from_id: Variant, to: Variant) -> void:
+	var node: Node3D = _drag_node
+	var origem: int = _drag_from
+	_drag_node = null
+	_drag_from = -99
+	if node == null:
+		return
+	if to != null and selected_pos == origem:
+		var destino: int = int(to)
+		for dest in valid_destinations:
+			if int(dest["to"]) == destino:
+				_execute_player_move(origem, dest)
+				return
+	# Soltou fora de um destino: as pecas voltam ao lugar e a selecao fica de
+	# pe para quem prefere os dois toques.
+	_sync_all_checkers_3d()
+
+
 func _clear_all_highlights() -> void:
 	for halo in point_highlight_meshes.values():
 		halo.visible = false
-	_sync_touch_visuals()
+	if point_halos:
+		point_halos.clear()
 
 
 # ---------------------------------------------------------------------------
@@ -791,6 +770,7 @@ func _execute_player_move(from_pos: int, move_data: Dictionary) -> void:
 			_select_position(Rules.BAR_POS)
 		else:
 			set_status(tr("BACKGAMMON_MOVED"))
+			_paint_halos()
 
 
 func _finish_turn() -> void:
@@ -806,7 +786,7 @@ func _finish_turn() -> void:
 	current_player = 3 - current_player # Alterna 1 <-> 2
 
 	_update_ui_stats()
-	_sync_touch_visuals()
+	_paint_halos()
 
 	if is_vs_ai and current_player == Rules.PLAYER_BLACK:
 		btn_roll_dice.disabled = true
@@ -916,6 +896,7 @@ func _on_btn_undo_pressed() -> void:
 	selected_pos = -99
 	valid_destinations.clear()
 	btn_undo.disabled = (turn_history.size() <= 1)
+	_paint_halos()
 
 	set_status(tr("BACKGAMMON_UNDONE"))
 

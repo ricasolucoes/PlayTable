@@ -272,3 +272,49 @@ func test_os_botoes_da_hud_recebem_o_toque_com_o_picker_na_cena() -> void:
 		botao.button_down.connect(func() -> void: apertado[0] = true)
 		await _tocar(botao.global_position + botao.size * 0.5)
 		assert_true(apertado[0], "%s: o botao %s recebe o toque" % [caminho.get_file(), botao.name])
+
+
+func test_arrastar_uma_peca_do_gamao_pelo_viewport_a_move() -> void:
+	var jogo := await _montar("res://games/gamao/BackgammonGame.tscn")
+	jogo._on_btn_roll_dice_pressed()
+	await wait_until(func() -> bool: return jogo.has_rolled_dice and not jogo.is_animating, 5.0)
+	assert_true(jogo.has_rolled_dice, "os dados rolaram")
+	if not jogo.has_rolled_dice:
+		return
+	var legais: Array = BackgammonRules.get_all_legal_single_moves(jogo.game_state,
+		jogo.current_player, jogo.available_moves)
+	if legais.is_empty():
+		pass_test("a rolagem nao deu jogada legal; nada a arrastar")
+		return
+	var jogada: Dictionary = legais[0]
+	var de: int = int(jogada["from"])
+	var ate: int = int(jogada["to"])
+	var antes: int = int(jogo.game_state["board"][de])
+	var picker: DragPicker3D = jogo.picker
+	# Pelo picker, e nao pelo viewport: a metade de baixo da tela do runner e
+	# a saida de texto do proprio GUT, que fica por cima da mesa e engole o
+	# toque nas pontas -- ver o teste dos botoes da HUD.
+	_arrastar_no_picker(picker, picker.screen_of(de), picker.screen_of(ate))
+	await wait_process_frames(2)
+	assert_ne(int(jogo.game_state["board"][de]), antes, "a origem perdeu uma peca")
+	assert_eq(jogo.move_step_history.size(), 1, "uma jogada registrada no turno")
+
+
+func _arrastar_no_picker(picker: DragPicker3D, de: Vector2, ate: Vector2) -> void:
+	var aperta := InputEventMouseButton.new()
+	aperta.button_index = MOUSE_BUTTON_LEFT
+	aperta.pressed = true
+	aperta.position = de
+	aperta.global_position = de
+	picker._on_gui_input(aperta)
+	for t in [0.3, 0.7, 1.0]:
+		var anda := InputEventMouseMotion.new()
+		anda.position = de.lerp(ate, t)
+		anda.global_position = anda.position
+		picker._on_gui_input(anda)
+	var solta := InputEventMouseButton.new()
+	solta.button_index = MOUSE_BUTTON_LEFT
+	solta.pressed = false
+	solta.position = ate
+	solta.global_position = ate
+	picker._on_gui_input(solta)

@@ -53,8 +53,8 @@ var enabled: bool = true
 
 var _env: TabletopEnvironment3D = null
 var _plane_y: float = 0.0
-var _targets: Dictionary = {}          # id -> Vector3 (mundo)
-var _screen: Dictionary = {}           # id -> Vector2 (tela)
+var _targets: Dictionary = {}          # id -> Array[Vector3] (mundo): as amostras do alvo
+var _screen: Dictionary = {}           # id -> Array[Vector2] (tela)
 var _raio: float = RAIO_MINIMO
 
 var _press_id: Variant = null
@@ -102,14 +102,26 @@ func _on_framing_changed(_size: Vector2) -> void:
 	refresh_projection()
 
 
-## Declara os alvos: `{id: Vector3}` em coordenadas de MUNDO.
+## Declara os alvos: `{id: Vector3}` em coordenadas de MUNDO -- ou
+## `{id: [Vector3, Vector3, ...]}` quando um alvo é comprido demais para um
+## ponto só. A ponta do gamão tem cinco casas de peça enfileiradas: com um
+## ponto no centro, tocar a peça da base caía fora do raio; com três amostras
+## ao longo dela, o toque vai para a ponta certa de qualquer altura.
 ##
 ## `id` é `Variant` de propósito: `Vector2i` numa grade, `int` nos três pinos do
 ## Hanói, `int` nas vinte e seis pontas do gamão. Quem consome devolve o mesmo
 ## valor nos sinais, e não um índice que a cena teria de traduzir.
 func set_targets(targets: Dictionary) -> void:
-	_targets = targets.duplicate()
+	_targets.clear()
+	for id in targets:
+		_targets[id] = _amostras(targets[id])
 	refresh_projection()
+
+
+static func _amostras(valor: Variant) -> Array:
+	if valor is Array:
+		return (valor as Array).duplicate()
+	return [valor]
 
 
 ## Move um alvo só. O topo da pilha do Hanói sobe a cada disco, e refazer os três
@@ -117,7 +129,7 @@ func set_targets(targets: Dictionary) -> void:
 func move_target(id: Variant, world_pos: Vector3) -> void:
 	if not _targets.has(id):
 		return
-	_targets[id] = world_pos
+	_targets[id] = [world_pos]
 	refresh_projection()
 
 
@@ -133,10 +145,13 @@ func refresh_projection() -> void:
 	if cam == null:
 		return
 	for id in _targets:
-		var mundo: Vector3 = _targets[id]
-		if cam.is_position_behind(mundo):
-			continue
-		_screen[id] = cam.unproject_position(mundo)
+		var pontos: Array = []
+		for mundo in _targets[id]:
+			if cam.is_position_behind(mundo):
+				continue
+			pontos.append(cam.unproject_position(mundo))
+		if not pontos.is_empty():
+			_screen[id] = pontos
 	_recalcular_raio()
 
 
@@ -146,13 +161,17 @@ func refresh_projection() -> void:
 ## muda com o tamanho da tela e com o enquadramento -- que muda quando a HUD do
 ## próprio jogo muda de altura.
 func _recalcular_raio() -> void:
+	# A distância que importa é entre amostras de alvos DIFERENTES: duas
+	# amostras da mesma ponta podem estar coladas sem que isso aperte o raio.
 	var menor: float = INF
 	var ids: Array = _screen.keys()
 	for i in ids.size():
 		for j in range(i + 1, ids.size()):
-			var d: float = (_screen[ids[i]] as Vector2).distance_to(_screen[ids[j]])
-			if d > 0.0:
-				menor = minf(menor, d)
+			for a in _screen[ids[i]]:
+				for b in _screen[ids[j]]:
+					var d: float = (a as Vector2).distance_to(b)
+					if d > 0.0:
+						menor = minf(menor, d)
 	if menor == INF:
 		_raio = RAIO_MAXIMO
 		return
@@ -164,16 +183,20 @@ func target_at(screen_point: Vector2) -> Variant:
 	var melhor: Variant = null
 	var menor: float = _raio
 	for id in _screen:
-		var d: float = (_screen[id] as Vector2).distance_to(screen_point)
-		if d < menor:
-			menor = d
-			melhor = id
+		for p in _screen[id]:
+			var d: float = (p as Vector2).distance_to(screen_point)
+			if d < menor:
+				menor = d
+				melhor = id
 	return melhor
 
 
-## Onde um alvo caiu na tela. `Vector2.INF` se ele não está projetado.
+## Onde um alvo caiu na tela -- a primeira amostra dele. `Vector2.INF` se ele
+## não está projetado.
 func screen_of(id: Variant) -> Vector2:
-	return _screen.get(id, Vector2.INF)
+	if not _screen.has(id):
+		return Vector2.INF
+	return (_screen[id] as Array)[0]
 
 
 ## O ponto do plano de jogo sob um ponto da tela. `Vector3.INF` atrás da câmera.

@@ -87,7 +87,9 @@ func _setup_with_mesh(count: int, mesh: Mesh) -> void:
 ## anel (`ESPESSURA` do menor lado), para as duas formas lerem como o mesmo sinal.
 func _build_frame(size: Vector2) -> Mesh:
 	var meia: Vector2 = size * 0.5
-	var borda: float = minf(size.x, size.y) * 0.5 * ESPESSURA
+	# Piso de 0,05 na borda: a ponta do gamao tem 0,42 de largura, e a fracao
+	# do anel daria 0,034 -- pouco mais de um pixel no telefone.
+	var borda: float = maxf(minf(size.x, size.y) * 0.5 * ESPESSURA, 0.05)
 	var st := SurfaceTool.new()
 	st.begin(Mesh.PRIMITIVE_TRIANGLES)
 	# Quatro faixas: as duas ao longo de Z ocupam a altura inteira, as duas ao
