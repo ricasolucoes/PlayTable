@@ -8,13 +8,15 @@ extends GutTest
 
 const JOGO := "jogo_de_teste_da_escada"
 
-var _backup: Dictionary = {}
+var _backup: ConfigFile = null
 var _backup_perfil: Dictionary = {}
 var _backup_fila: String = ""
 
 
 func before_each() -> void:
-	_backup = SaveManager.settings.duplicate(true)
+	# `SaveManager.settings` deixou de existir quando o save virou um ConfigFile
+	# so; o acesso antigo estourava em silencio e o backup nunca acontecia.
+	_backup = SaveManager.snapshot()
 	# Os testes de ligacao publicam partida de verdade no barramento, e dai sai
 	# XP, streak e envio para o Play Games -- tudo em disco. Sem guardar antes,
 	# rodar a suite mexia no progresso de quem estivesse jogando na maquina, e a
@@ -39,8 +41,7 @@ func before_each() -> void:
 
 
 func after_each() -> void:
-	SaveManager.settings = _backup
-	SaveManager.save_data()
+	SaveManager.restore(_backup)
 	DifficultyManager.reload()
 
 	if _backup_fila != "":

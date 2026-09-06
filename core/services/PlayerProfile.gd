@@ -314,9 +314,18 @@ static func _bissexto(ano: int) -> bool:
 
 
 ## Data ISO deslocada em `dias` a partir de hoje. Negativo volta no tempo.
+##
+## "Hoje" e o dia LOCAL, o mesmo que `update_daily_streak()` le. Antes a base
+## era o relogio Unix, que e UTC: no Brasil o dia em UTC vira as 21h, e entre
+## 21h e meia-noite `date_offset(-1)` devolvia a data local de hoje -- os
+## testes de sequencia comparavam "ontem em UTC" com "hoje local" e a suite
+## mudava de resultado sem mudar codigo, conforme a hora em que rodava. A
+## conta e feita sobre a string da data, sem fuso: `get_unix_time_from_
+## datetime_string` e `get_date_string_from_unix_time` sao simetricas em UTC.
 static func date_offset(dias: int) -> String:
-	var agora := int(Time.get_unix_time_from_system())
-	return Time.get_date_string_from_unix_time(agora + dias * 86400)
+	var hoje := Time.get_date_string_from_system()
+	var base := int(Time.get_unix_time_from_datetime_string(hoje + "T00:00:00"))
+	return Time.get_date_string_from_unix_time(base + dias * 86400)
 
 
 # ------------------------------------------------------------------ conquistas

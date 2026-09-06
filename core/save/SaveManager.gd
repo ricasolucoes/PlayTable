@@ -81,3 +81,22 @@ func get_setting(key: String, default_val: Variant = null, section: String = "Se
 
 func has_section(section: String) -> bool:
 	return _config.has_section(section)
+
+
+## Copia do estado inteiro, para a suite guardar antes de mexer e devolver
+## depois. Toda partida terminada grava; sem isto os testes escreviam no
+## progresso de quem joga nesta maquina.
+func snapshot() -> ConfigFile:
+	var copia := ConfigFile.new()
+	for section in _config.get_sections():
+		for key in _config.get_section_keys(section):
+			copia.set_value(section, key, _config.get_value(section, key))
+	return copia
+
+
+func restore(copia: ConfigFile) -> void:
+	_config = ConfigFile.new()
+	for section in copia.get_sections():
+		for key in copia.get_section_keys(section):
+			_config.set_value(section, key, copia.get_value(section, key))
+	save_data()

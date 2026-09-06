@@ -65,21 +65,29 @@ USER_DIR="$HOME/Library/Application Support/user_data"
 if [[ "$(uname)" != "Darwin" ]]; then
 	USER_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/godot/app_userdata/user_data"
 fi
-SAVE_BAK="$(mktemp)"
-SAVE_TINHA=0
-if [[ -f "$USER_DIR/config.save" ]]; then
-	cp "$USER_DIR/config.save" "$SAVE_BAK"
-	SAVE_TINHA=1
-fi
+# Os tres arquivos que o SaveManager conhece: o unificado de hoje
+# (save_data.cfg) e os dois legados que ele migra na primeira abertura. Guardar
+# so o config.save, como era, deixava a suite gravar no perfil de verdade
+# desde que o save virou um ConfigFile so.
+SAVE_ARQUIVOS=(save_data.cfg config.save player_profile.cfg)
+SAVE_BAK="$(mktemp -d)"
+for arq in "${SAVE_ARQUIVOS[@]}"; do
+	if [[ -f "$USER_DIR/$arq" ]]; then
+		cp "$USER_DIR/$arq" "$SAVE_BAK/$arq"
+	fi
+done
 
 restaurar_save() {
-	if (( SAVE_TINHA )); then
-		cp "$SAVE_BAK" "$USER_DIR/config.save"
-	else
-		rm -f "$USER_DIR/config.save"
-	fi
-	rm -f "$SAVE_BAK"
+	for arq in "${SAVE_ARQUIVOS[@]}"; do
+		if [[ -f "$SAVE_BAK/$arq" ]]; then
+			cp "$SAVE_BAK/$arq" "$USER_DIR/$arq"
+		else
+			rm -f "$USER_DIR/$arq"
+		fi
+	done
+	rm -rf "$SAVE_BAK"
 }
+
 
 SAIDA="$(mktemp)"
 trap 'rm -f "$SAIDA"; restaurar_save' EXIT
