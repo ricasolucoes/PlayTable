@@ -77,6 +77,15 @@ func _ready() -> void:
 	var vp: Viewport = get_viewport()
 	if vp:
 		vp.size_changed.connect(refresh_projection)
+	# Fica EMBAIXO da HUD. Um Control de tela cheia adicionado por ultimo e o
+	# primeiro a receber o toque, e com MOUSE_FILTER_STOP ele engole tudo: foi
+	# assim que o Desfazer do Hanoi morreu no mesmo commit em que o arrasto
+	# nasceu. No indice 0 o picker so recebe o que nenhum botao acima quis --
+	# a mesa. Adiado porque quem chama `add_child` pode ainda estar montando a
+	# cena, e mover um filho no meio disso e pedir um indice velho.
+	var pai: Node = get_parent()
+	if pai:
+		pai.move_child.call_deferred(self, 0)
 
 
 ## Liga o picker à mesa. `play_plane_y` é a altura do plano onde a peça desliza

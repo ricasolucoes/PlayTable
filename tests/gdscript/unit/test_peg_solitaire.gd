@@ -142,15 +142,47 @@ func test_cena_monta_o_tabuleiro_inicial() -> void:
 	assert_false(jogo.game_over, "partida aberta")
 
 
+## O toque entra pelo `DragPicker3D`, o mesmo Control que o aparelho toca: o
+## teste empurra os eventos por ele, e nao por metodos internos da cena.
+func _apertar(jogo: Node, ponto: Vector2) -> void:
+	var ev := InputEventMouseButton.new()
+	ev.button_index = MOUSE_BUTTON_LEFT
+	ev.pressed = true
+	ev.position = ponto
+	ev.global_position = ponto
+	jogo.picker._on_gui_input(ev)
+
+
+func _arrastar(jogo: Node, ponto: Vector2) -> void:
+	var ev := InputEventMouseMotion.new()
+	ev.position = ponto
+	ev.global_position = ponto
+	jogo.picker._on_gui_input(ev)
+
+
+func _soltar(jogo: Node, ponto: Vector2) -> void:
+	var ev := InputEventMouseButton.new()
+	ev.button_index = MOUSE_BUTTON_LEFT
+	ev.pressed = false
+	ev.position = ponto
+	ev.global_position = ponto
+	jogo.picker._on_gui_input(ev)
+
+
+func _tocar(jogo: Node, casa: Vector2i) -> void:
+	var ponto: Vector2 = jogo.picker.screen_of(casa)
+	_apertar(jogo, ponto)
+	_soltar(jogo, ponto)
+
+
 func test_cena_executa_o_salto_removendo_a_esfera_saltada() -> void:
 	# Duas batidas continuam valendo, agora pelo mesmo caminho do arrasto.
 	var jogo = add_child_autofree(GameScene.instantiate())
 	await wait_process_frames(2)
-	jogo._begin_press(jogo._cell_screen[Vector2i(1, 3)])
+	_tocar(jogo, Vector2i(1, 3))
 	assert_eq(jogo.selected_pos, Vector2i(1, 3), "esfera selecionada")
 	assert_eq(jogo.valid_targets.size(), 1, "um destino possivel")
-	jogo._end_press(jogo._cell_screen[Vector2i(1, 3)])
-	jogo._begin_press(jogo._cell_screen[Vector2i(3, 3)])
+	_tocar(jogo, Vector2i(3, 3))
 	assert_eq(jogo.grid_data.get_cell(1, 3), VAZIO, "origem esvaziada")
 	assert_eq(jogo.grid_data.get_cell(2, 3), VAZIO, "esfera saltada removida")
 	assert_eq(jogo.grid_data.get_cell(3, 3), PINO, "destino ocupado")
@@ -163,29 +195,43 @@ func test_arrastar_a_esfera_ate_o_furo_executa_o_salto() -> void:
 	# arrastar. Agora o alvo sai da projecao do proprio furo.
 	var jogo = add_child_autofree(GameScene.instantiate())
 	await wait_process_frames(2)
-	var origem: Vector2 = jogo._cell_screen[Vector2i(3, 1)]
-	var destino: Vector2 = jogo._cell_screen[Vector2i(3, 3)]
-	jogo._begin_press(origem)
+	var origem: Vector2 = jogo.picker.screen_of(Vector2i(3, 1))
+	var destino: Vector2 = jogo.picker.screen_of(Vector2i(3, 3))
+	_apertar(jogo, origem)
+	_arrastar(jogo, origem.lerp(destino, 0.5))
 	assert_eq(jogo.selected_pos, Vector2i(3, 1), "a esfera foi pega")
-	jogo._update_drag(origem.lerp(destino, 0.5))
-	jogo._update_drag(destino)
+	_arrastar(jogo, destino)
 	assert_eq(jogo._hover_target, Vector2i(3, 3), "o furo sob o dedo acende")
-	jogo._end_press(destino)
+	_soltar(jogo, destino)
 	assert_eq(jogo.grid_data.get_cell(3, 3), PINO, "soltou no furo e saltou")
 	assert_eq(RulesScript.count_pegs(jogo.grid_data), 31, "31 esferas restantes")
+
+
+func test_soltar_fora_de_um_destino_devolve_a_esfera() -> void:
+	var jogo = add_child_autofree(GameScene.instantiate())
+	await wait_process_frames(2)
+	var origem: Vector2 = jogo.picker.screen_of(Vector2i(3, 1))
+	var longe: Vector2 = jogo.picker.screen_of(Vector2i(0, 3))
+	_apertar(jogo, origem)
+	_arrastar(jogo, origem.lerp(longe, 0.5))
+	_arrastar(jogo, longe)
+	_soltar(jogo, longe)
+	assert_eq(RulesScript.count_pegs(jogo.grid_data), 32, "nada saltou")
+	assert_eq(jogo.grid_data.get_cell(3, 1), PINO, "a esfera continua na origem")
+	assert_eq(jogo.selected_pos, Vector2i(3, 1), "e continua selecionada para as duas batidas")
 
 
 func test_o_toque_cai_no_furo_mais_proximo() -> void:
 	# Exigir o toque exato sobre o furo e o que fazia errar a esfera.
 	var jogo = add_child_autofree(GameScene.instantiate())
 	await wait_process_frames(2)
-	var centro: Vector2 = jogo._cell_screen[Vector2i(3, 1)]
-	var desvio: float = jogo._pick_radius * 0.45
-	assert_eq(jogo._cell_at(centro + Vector2(desvio, 0.0)), Vector2i(3, 1),
+	var centro: Vector2 = jogo.picker.screen_of(Vector2i(3, 1))
+	var desvio: float = jogo.picker._raio * 0.45
+	assert_eq(jogo.picker.target_at(centro + Vector2(desvio, 0.0)), Vector2i(3, 1),
 		"errar por meio raio ainda pega a esfera certa")
-	assert_eq(jogo._cell_at(centro + Vector2(0.0, -desvio)), Vector2i(3, 1),
+	assert_eq(jogo.picker.target_at(centro + Vector2(0.0, -desvio)), Vector2i(3, 1),
 		"em qualquer direcao")
-	assert_eq(jogo._cell_at(Vector2(4.0, 4.0)), Vector2i(-1, -1),
+	assert_null(jogo.picker.target_at(Vector2(4.0, 4.0)),
 		"longe do tabuleiro nao pega nada")
 
 
@@ -194,8 +240,9 @@ func test_so_as_trinta_e_tres_casas_do_tabuleiro_recebem_toque() -> void:
 	# 2x2 dos cantos nao existem e nao podem receber toque.
 	var jogo = add_child_autofree(GameScene.instantiate())
 	await wait_process_frames(2)
-	assert_eq(jogo._cell_screen.size(), 33, "33 casas jogaveis projetadas")
+	assert_eq(jogo.picker._targets.size(), 33, "33 casas jogaveis projetadas")
+	assert_eq(jogo.halos.multimesh.instance_count, 33, "e 33 aneis de destino")
 	for r in range(7):
 		for c in range(7):
-			assert_eq(jogo._cell_screen.has(Vector2i(r, c)), RulesScript.is_valid_cell(r, c),
+			assert_eq(jogo.picker.screen_of(Vector2i(r, c)) != Vector2.INF, RulesScript.is_valid_cell(r, c),
 				"celula (%d,%d)" % [r, c])

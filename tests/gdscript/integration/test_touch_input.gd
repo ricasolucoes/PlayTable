@@ -175,3 +175,100 @@ func test_afundar_um_navio_inimigo_revela_o_casco_inteiro() -> void:
 	await wait_process_frames(1)
 	assert_true(navio["sunk"], "o navio afundou")
 	assert_gt(jogo._radar_wrecks.get_child_count(), 0, "o casco aparece no mapa de ataque")
+
+
+# ------------------------------------------------------------ DragPicker3D
+
+## Um arrasto de verdade pelo viewport: aperta, anda em tres passos, solta.
+func _arrastar(de: Vector2, ate: Vector2) -> void:
+	var aperta := InputEventMouseButton.new()
+	aperta.button_index = MOUSE_BUTTON_LEFT
+	aperta.pressed = true
+	aperta.position = de
+	aperta.global_position = de
+	get_viewport().push_input(aperta, true)
+	await wait_process_frames(1)
+	var anterior := de
+	for t in [0.3, 0.7, 1.0]:
+		var ponto: Vector2 = de.lerp(ate, t)
+		var anda := InputEventMouseMotion.new()
+		anda.position = ponto
+		anda.global_position = ponto
+		anda.relative = ponto - anterior
+		anda.button_mask = MOUSE_BUTTON_MASK_LEFT
+		get_viewport().push_input(anda, true)
+		anterior = ponto
+		await wait_process_frames(1)
+	var solta := InputEventMouseButton.new()
+	solta.button_index = MOUSE_BUTTON_LEFT
+	solta.pressed = false
+	solta.position = ate
+	solta.global_position = ate
+	get_viewport().push_input(solta, true)
+	await wait_physics_frames(1)
+
+
+func test_arrastar_a_esfera_do_resta_um_pelo_viewport_executa_o_salto() -> void:
+	# O caminho inteiro do aparelho: o evento entra pelo viewport, atravessa a
+	# HUD, cai no DragPicker3D e vira salto. Antes so os metodos internos da
+	# cena eram exercitados, e uma camada por cima do picker passaria calada.
+	var jogo := await _montar("res://games/solitario/PegSolitaireGame.tscn")
+	var picker: DragPicker3D = jogo.picker
+	assert_eq(PegSolitaireRules.count_pegs(jogo.grid_data), 32)
+	await _arrastar(picker.screen_of(Vector2i(3, 1)), picker.screen_of(Vector2i(3, 3)))
+	assert_eq(PegSolitaireRules.count_pegs(jogo.grid_data), 31, "a esfera saltou e a do meio saiu")
+	assert_eq(jogo.grid_data.get_cell(3, 3), 1, "pousou no furo de destino")
+
+
+func test_arrastar_uma_peca_das_damas_pelo_viewport_a_move() -> void:
+	var jogo := await _montar(DAMAS)
+	var origem := Vector2i(-1, -1)
+	var destino := Vector2i(-1, -1)
+	for r in CheckersRules.ROWS:
+		for c in CheckersRules.COLS:
+			var pos := Vector2i(r, c)
+			if jogo.grid_data.get_cell(r, c) > 0:
+				var jogadas: Array = CheckersRules.get_valid_moves_for_piece(jogo.grid_data, pos)
+				if not jogadas.is_empty():
+					origem = pos
+					destino = jogadas[0]["to"]
+					break
+		if origem.x >= 0:
+			break
+	assert_ne(origem, Vector2i(-1, -1), "ha uma peca branca com jogada")
+	var picker: DragPicker3D = jogo.picker
+	await _arrastar(picker.screen_of(origem), picker.screen_of(destino))
+	assert_eq(jogo.grid_data.get_cell(origem.x, origem.y), 0, "a origem esvaziou")
+	assert_gt(jogo.grid_data.get_cell(destino.x, destino.y), 0, "a peca esta no destino")
+	# A jogada dispara a busca da IA num WorkerThreadPool. Liberar a cena com a
+	# tarefa no ar deixava a thread viva ate o fim do processo, e o Godot
+	# abortava ao sair (SIGSEGV num mutex) -- a suite passava e o runner saia
+	# com 134. Espera a vez voltar antes de encerrar.
+	await wait_until(func() -> bool: return jogo.is_player_turn or jogo.game_over, 8.0)
+	assert_true(jogo.is_player_turn or jogo.game_over, "a IA respondeu e a vez voltou")
+
+
+## O picker e um Control de tela cheia com MOUSE_FILTER_STOP: adicionado por
+## ultimo, ficava POR CIMA da HUD e engolia o toque dos botoes -- o Desfazer do
+## Hanoi morreu assim. Ele agora se poe no indice 0, e este teste e o que
+## impede a regressao de voltar calada.
+func test_os_botoes_da_hud_recebem_o_toque_com_o_picker_na_cena() -> void:
+	# Nem o botao de voltar, que navega de verdade e cuja transicao cobriria o
+	# toque do jogo seguinte, nem o canto inferior direito, onde o rodape do
+	# proprio GUT fica por cima da cena durante a suite.
+	var alvos := {
+		"res://games/hanoi/HanoiGame.tscn": "UI/Actions/BtnUndo",
+		DAMAS: "GameShell/VBoxContainer/BtnRestart",
+		"res://games/solitario/PegSolitaireGame.tscn": "UI/Actions/BtnRestart",
+	}
+	for caminho in alvos:
+		var jogo := await _montar(caminho)
+		assert_not_null(jogo.picker, "%s tem picker" % caminho.get_file())
+		var botao: Button = jogo.get_node(alvos[caminho])
+		botao.show()
+		await wait_process_frames(1)
+		assert_true(botao.is_visible_in_tree(), "%s: o botao esta na tela" % caminho.get_file())
+		var apertado := [false]
+		botao.button_down.connect(func() -> void: apertado[0] = true)
+		await _tocar(botao.global_position + botao.size * 0.5)
+		assert_true(apertado[0], "%s: o botao %s recebe o toque" % [caminho.get_file(), botao.name])

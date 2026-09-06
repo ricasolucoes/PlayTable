@@ -17,6 +17,19 @@ var ai_level: int = DifficultyManager.DEFAULT_LEVEL
 @onready var game_shell: GameShell = $GameShell
 @onready var level_label: Label = game_shell.level_label
 
+## A arte gerada das pecas (`tools/art/damas.json`), por material. Sem o
+## arquivo em `shared/assets/damas/`, fica o marfim e a obsidiana procedurais.
+const ART_PECAS := {"ivory": "damas/peca_clara", "obsidian": "damas/peca_escura"}
+
+## Toque e arrasto sobre as 64 casas, projetadas da propria mesa. Dois toques
+## continuam valendo; pegar a peca com o dedo e o gesto que a pessoa tenta
+## primeiro, e so o Resta Um e o Hanoi o aceitavam.
+var picker: DragPicker3D = null
+
+## Peca sendo arrastada, e de onde saiu.
+var _drag_piece: Token3D = null
+var _drag_from: Vector2i = Vector2i(-1, -1)
+
 func _ready() -> void:
 	env_3d = $TabletopEnvironment3D
 	status_label = game_shell.status_label
@@ -28,7 +41,28 @@ func _ready() -> void:
 	# O tabuleiro se anuncia para a camera: nao existe distancia escrita a mao.
 	fit_table(board_3d.content_size())
 	board_3d.cell_clicked.connect(_on_cell_clicked)
+	_setup_picker()
 	_start_new_game()
+
+
+## O picker fica por cima do picking fisico do Board3D e passa a ser a porta do
+## toque: o toque simples continua caindo em `_on_cell_clicked`, e o arrasto
+## ganha os tres sinais abaixo.
+func _setup_picker() -> void:
+	picker = DragPicker3D.new()
+	add_child(picker)
+	picker.attach(env_3d, Tokens3D.TILE_THICKNESS)
+	var alvos: Dictionary = {}
+	for r in range(CheckersRules.ROWS):
+		for c in range(CheckersRules.COLS):
+			alvos[Vector2i(r, c)] = board_3d.to_global(_cell_pos(r, c))
+	picker.set_targets(alvos)
+	picker.target_tapped.connect(func(id: Variant) -> void:
+		var casa: Vector2i = id
+		_on_cell_clicked(casa.x, casa.y))
+	picker.drag_started.connect(_on_peca_pega)
+	picker.drag_moved.connect(_on_peca_movida)
+	picker.drag_ended.connect(_on_peca_solta)
 
 ## Damas de salao: tabuleiro de bordo e nogueira sobre couro, luz de abajur.
 func _build_theme() -> GameTheme3D:
@@ -70,6 +104,7 @@ func _sync_pieces_3d() -> void:
 				piece.token_type = "cylinder"
 				piece.token_radius = 0.30
 				piece.material_name = "ivory" if val > 0 else "obsidian"
+				piece.art_by_material = ART_PECAS
 				piece.position = _cell_pos(r, c)
 				pieces_root.add_child(piece)
 				pieces_3d[Vector2i(r, c)] = piece
@@ -313,6 +348,69 @@ func _play_ai_turn(turno: Dictionary) -> void:
 
 func _is_queen(pos: Vector2i) -> bool:
 	return absi(int(grid_data.get_cell(pos.x, pos.y))) == 2
+
+
+# ---------------------------------------------------------------------------
+# Arrastar peca
+# ---------------------------------------------------------------------------
+
+func _on_peca_pega(id: Variant) -> void:
+	var origem: Vector2i = id
+	if game_over or not is_player_turn or grid_data.get_cell(origem.x, origem.y) <= 0:
+		picker.cancel_drag()
+		return
+	# No meio de uma captura em cadeia so a peca que esta comendo pode andar.
+	if continuing_capture_pos != Vector2i(-1, -1) and origem != continuing_capture_pos:
+		picker.cancel_drag()
+		return
+	if not _piece_is_playable(origem):
+		set_status(tr("CHECKERS_MUST_CAPTURE"))
+		_highlight_forced_captures()
+		picker.cancel_drag()
+		return
+	var piece: Token3D = pieces_3d.get(origem)
+	if piece == null:
+		picker.cancel_drag()
+		return
+	selected_pos = origem
+	valid_moves = CheckersRules.get_valid_moves_for_piece(grid_data, origem)
+	_show_selection(origem)
+	_drag_piece = piece
+	_drag_from = origem
+	piece.set_lift(Tokens3D.LIFT_DRAG)
+
+
+func _on_peca_movida(_from_id: Variant, _over: Variant, world: Vector3) -> void:
+	if _drag_piece == null or world == Vector3.INF:
+		return
+	# Acompanha o dedo sem tween: tween aqui atrasaria a peca em relacao ao
+	# ponto tocado, e o gesto pareceria emperrado.
+	var local: Vector3 = pieces_root.to_local(world)
+	_drag_piece.position = Vector3(local.x, Tokens3D.TILE_THICKNESS, local.z)
+
+
+func _on_peca_solta(_from_id: Variant, to: Variant) -> void:
+	var piece: Token3D = _drag_piece
+	var origem: Vector2i = _drag_from
+	_drag_piece = null
+	_drag_from = Vector2i(-1, -1)
+	if piece == null:
+		return
+	piece.set_lift(0.0)
+	if to != null:
+		var destino: Vector2i = to
+		for vm in valid_moves:
+			if vm["to"] == destino:
+				# `jump_to` sai de onde a peca esta -- debaixo do dedo -- e nao
+				# da casa de origem, que e o que faz o pouso parecer continuar
+				# o gesto em vez de recomecar.
+				_execute_player_move(origem, vm)
+				return
+	# Soltou fora de um destino: a peca volta para a casa dela. A selecao
+	# continua de pe para quem prefere jogar com dois toques.
+	piece.slide_to(_cell_pos(origem.x, origem.y))
+	piece.select(true)
+
 
 
 func _end_game(winner: int) -> void:
