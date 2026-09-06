@@ -10,9 +10,19 @@ var game_won: bool = false
 var tiles_3d: Dictionary = {}
 var flags_3d: Dictionary = {}
 
-## Quantas minas esta partida tem. Sai do degrau da escada do DifficultyManager
-## -- e a unica alavanca de dificuldade que o Campo Minado tem.
+## Quantas minas esta partida tem, e o tamanho do campo. Os tres saem do degrau
+## da escada do DifficultyManager (`MinesweeperRules.DEGRAUS`): o Campo Minado
+## nao tem adversario, entao campo e densidade sao a dificuldade.
 var total_minas: int = MinesweeperRules.TOTAL_MINES
+var linhas: int = MinesweeperRules.ROWS
+var colunas: int = MinesweeperRules.COLS
+
+## Lado da casa. Fixo: quem enquadra o campo maior e a camera, por `fit_table`.
+const CELL := 0.75
+
+## O Board3D nasce com a grade padrao dele (8x8 de nogueira) antes de esta cena
+## pedir a de ardosia: a primeira partida sempre remonta.
+var _campo_montado: bool = false
 
 @onready var game_shell: GameShell = $GameShell
 @onready var game_timer: GameTimer = game_shell.timer
@@ -61,7 +71,6 @@ func _ready() -> void:
 	btn_restart = game_shell.btn_restart
 	game_shell.restart_requested.connect(_on_btn_smiley_pressed)
 	game_timer.time_changed.connect(func(_sec: int): _pintar_placar())
-	board_3d.setup_board(MinesweeperRules.ROWS, MinesweeperRules.COLS, 0.75, "slate_grid")
 	# O toque entra pelo proprio tabuleiro: a casa tocada e a casa desenhada.
 	# A grade 2D de botoes que ficava aqui era plana e ancorada no centro da
 	# tela, e nao coincidia com o tabuleiro em perspectiva.
@@ -81,8 +90,23 @@ func _ready() -> void:
 	add_child(mines_root)
 	_load_art()
 
-	fit_table(board_3d.content_size())
 	_start_new_game()
+
+
+## Monta (ou remonta) o campo no tamanho do degrau e reenquadra a camera.
+##
+## O Board3D e reconstruido so quando o tamanho muda: trocar de degrau entre
+## duas partidas e o unico caminho ate aqui, e o custo e o de uma cena nova.
+func _montar_campo(p_linhas: int, p_colunas: int) -> void:
+	linhas = p_linhas
+	colunas = p_colunas
+	_campo_montado = true
+	board_3d.setup_board(linhas, colunas, CELL, "slate_grid")
+	fit_table(board_3d.content_size())
+	if numbers_grid != null:
+		numbers_grid.queue_free()
+		numbers_grid = null
+		_load_art()
 
 
 ## A arte do Gemini entra por aqui e so por aqui: cada peca tem o seu caminho
@@ -95,8 +119,7 @@ func _load_art() -> void:
 		numbers_grid = DecalGrid3D.new()
 		numbers_grid.name = "NumbersGrid"
 		add_child(numbers_grid)
-		numbers_grid.setup(tira, 8, 1, board_3d.cell_size * 0.78,
-			MinesweeperRules.ROWS * MinesweeperRules.COLS)
+		numbers_grid.setup(tira, 8, 1, board_3d.cell_size * 0.78, linhas * colunas)
 
 
 ## Um icone deitado sobre a casa: `Sprite3D` sem billboard, porque billboard
@@ -113,7 +136,11 @@ func _icone_deitado(tex: Texture2D, r: int, c: int, lado: float) -> Sprite3D:
 	return sprite
 
 func _start_new_game() -> void:
-	total_minas = MinesweeperRules.minas_do_degrau(DifficultyManager.get_level(game_id))
+	var degrau := DifficultyManager.get_level(game_id)
+	total_minas = MinesweeperRules.minas_do_degrau(degrau)
+	var dims := MinesweeperRules.dimensoes_do_degrau(degrau)
+	if not _campo_montado or dims.x != linhas or dims.y != colunas:
+		_montar_campo(dims.x, dims.y)
 	first_click = true
 	game_over = false
 	game_won = false
@@ -136,7 +163,7 @@ func _start_new_game() -> void:
 	
 	board_3d.clear_states()
 
-	grid_data = MinesweeperRules.create_empty_grid()
+	grid_data = MinesweeperRules.create_empty_grid(linhas, colunas)
 	_update_header_mines()
 
 func _update_header_mines() -> void:
@@ -209,8 +236,8 @@ func _update_flag_3d(r: int, c: int, is_flagged: bool) -> void:
 ## `HIGHLIGHT` na casa numerada tinha o problema oposto -- destacava sem
 ## informar, porque o numero nunca era desenhado.
 func _sync_revealed_3d() -> void:
-	for r in range(MinesweeperRules.ROWS):
-		for c in range(MinesweeperRules.COLS):
+	for r in range(grid_data.rows):
+		for c in range(grid_data.cols):
 			var cell: Dictionary = grid_data.get_cell(r, c)
 			if not cell["is_revealed"]:
 				continue
@@ -261,8 +288,8 @@ func _trigger_game_over(hit_r: int, hit_c: int) -> void:
 	btn_smiley.text = "😵"
 	finish_game(tr("MINESWEEPER_BOOM"), false, {"time": float(game_timer.get_time())})
 	
-	for r in range(MinesweeperRules.ROWS):
-		for c in range(MinesweeperRules.COLS):
+	for r in range(grid_data.rows):
+		for c in range(grid_data.cols):
 			var cell: Dictionary = grid_data.get_cell(r, c)
 			if cell["is_mine"]:
 				board_3d.set_cell_state(r, c, Board3D.CellState.INVALID)

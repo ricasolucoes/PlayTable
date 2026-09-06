@@ -203,9 +203,74 @@ func test_partida_completa_nao_trava() -> void:
 	assert_eq(_conta_minas(g), MINAS, "as 10 minas continuam la")
 
 
+# ------------------------------------------------------------------ a escada
+
+## O Campo Minado nao tem adversario: campo e densidade sao a dificuldade. Cada
+## degrau tem de ser um campo pelo menos tao grande e tao denso quanto o
+## anterior, e as colunas param em 10 para a casa continuar cabendo no dedo.
+func test_cada_degrau_e_um_campo_maior_ou_mais_denso() -> void:
+	var casas_antes := 0
+	var densidade_antes := 0.0
+	for nivel in range(DifficultyManager.MIN_LEVEL, DifficultyManager.MAX_LEVEL + 1):
+		var dims: Vector2i = RulesScript.dimensoes_do_degrau(nivel)
+		var minas: int = RulesScript.minas_do_degrau(nivel)
+		var casas := dims.x * dims.y
+		var densidade := float(minas) / float(casas)
+		assert_true(casas >= casas_antes, "degrau %d nao encolhe o campo" % nivel)
+		assert_true(densidade >= densidade_antes - 0.001, "degrau %d nao afrouxa a densidade" % nivel)
+		assert_true(dims.y <= 10, "degrau %d cabe em 10 colunas" % nivel)
+		assert_true(dims.x >= dims.y, "degrau %d e mais alto que largo, como a tela" % nivel)
+		assert_true(minas <= casas - 9, "degrau %d deixa a zona segura do primeiro toque" % nivel)
+		casas_antes = casas
+		densidade_antes = densidade
+	assert_eq(RulesScript.dimensoes_do_degrau(3), Vector2i(9, 9), "o degrau de entrada e o 9x9 classico")
+	assert_eq(RulesScript.minas_do_degrau(3), 10, "com as 10 minas classicas")
+
+
+func test_as_regras_valem_num_campo_de_outro_tamanho() -> void:
+	var g: Grid2D = RulesScript.create_empty_grid(16, 10)
+	assert_eq(g.rows, 16, "16 linhas")
+	assert_eq(g.cols, 10, "10 colunas")
+	RulesScript.generate_mines(g, 8, 5, 36)
+	var minas := 0
+	for r in range(16):
+		for c in range(10):
+			if g.get_cell(r, c)["is_mine"]:
+				minas += 1
+			if abs(r - 8) <= 1 and abs(c - 5) <= 1:
+				assert_false(g.get_cell(r, c)["is_mine"], "zona segura respeitada em (%d,%d)" % [r, c])
+	assert_eq(minas, 36, "36 minas no 16x10")
+	RulesScript.reveal_cell(g, 8, 5)
+	assert_false(RulesScript.check_win(g), "abrir uma regiao nao vence")
+
+
 # ----------------------------------------------------------- MinesweeperGame
 
 const GameScene = preload("res://games/campo_minado/MinesweeperGame.tscn")
+
+
+## O degrau monta o campo: a cena reconstroi o Board3D no tamanho do degrau, e
+## a casa aberta ganha a placa clara (`REVEALED`) que a separa da fechada.
+func test_a_cena_monta_o_campo_do_degrau_e_marca_as_casas_abertas() -> void:
+	var antes: int = DifficultyManager.get_level("campo_minado")
+	DifficultyManager.set_level("campo_minado", DifficultyManager.MAX_LEVEL)
+	var jogo = add_child_autofree(GameScene.instantiate())
+	assert_eq(jogo.board_3d.rows, 16, "degrau 10 monta 16 linhas")
+	assert_eq(jogo.board_3d.cols, 10, "e 10 colunas")
+	assert_eq(jogo.grid_data.rows, 16, "a grade de regras acompanha")
+	assert_eq(jogo.total_minas, 36, "com 36 minas")
+	assert_eq(jogo.board_3d.board_style, "slate_grid", "e continua ardosia")
+
+	jogo._on_cell_clicked(8, 5)
+	assert_true(jogo.board_3d.revealed_count() > 0, "a casa tocada virou placa clara")
+	assert_eq(jogo.board_3d.state_of(8, 5), Board3D.CellState.REVEALED, "a casa tocada esta REVEALED")
+
+	DifficultyManager.set_level("campo_minado", DifficultyManager.MIN_LEVEL)
+	jogo.restart_game()
+	assert_eq(jogo.board_3d.rows, 8, "voltar ao degrau 1 remonta o 8x8")
+	assert_eq(jogo.grid_data.cols, 8, "e a grade de regras junto")
+	assert_eq(jogo.board_3d.revealed_count(), 0, "campo novo sem casa aberta")
+	DifficultyManager.set_level("campo_minado", antes)
 
 
 func test_vitoria_anuncia_o_tempo_no_rotulo() -> void:

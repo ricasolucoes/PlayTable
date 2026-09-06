@@ -43,6 +43,22 @@ var _mm_light: MultiMeshInstance3D
 var _mm_dark: MultiMeshInstance3D
 var _mm_marker: MultiMeshInstance3D
 
+## Placa clara e rasa que toma o lugar da casa aberta (Campo Minado).
+##
+## A casa aberta era a mesma casa de ardosia com 20% mais luz, e a diferenca
+## sumia na mesa: quem olhava nao sabia o que ja tinha cavado. Agora a casa
+## fechada continua o bloco escuro e alto, e a aberta vira uma placa de arenito
+## claro, mais baixa -- forma E cor, como o botao alto e o chao raso do Campo
+## Minado de sempre.
+var _mm_revealed: MultiMeshInstance3D
+
+## Espessura da placa da casa aberta e altura do topo dela. O rebaixo de ebano
+## termina em y=0,013: a placa tem de nascer acima dele, senao e o ebano que
+## aparece no lugar da casa aberta. O degrau ate o topo da casa fechada
+## (TILE_THICKNESS, 0,045) e o que se le a meio metro do rosto.
+const REVEALED_THICKNESS := 0.016
+const REVEALED_TOP := 0.030
+
 var _base_colors: PackedColorArray = PackedColorArray()
 var _states: Array[int] = []
 var _disabled: Dictionary = {}
@@ -67,6 +83,7 @@ func setup_board(p_rows: int, p_cols: int, p_cell_size: float = 0.8, p_style: St
 	_mm_light = null
 	_mm_dark = null
 	_mm_marker = null
+	_mm_revealed = null
 	_disabled.clear()
 
 	_states.clear()
@@ -103,6 +120,14 @@ func _build_tiles() -> void:
 
 	_mm_light.multimesh.instance_count = light_count
 	_mm_dark.multimesh.instance_count = dark_count
+
+	var plate := BoxMesh.new()
+	plate.size = Vector3(cell_size * 0.985, REVEALED_THICKNESS, cell_size * 0.985)
+	_mm_revealed = _make_multimesh(plate, _revealed_material())
+	_mm_revealed.multimesh.instance_count = rows * cols
+	_mm_revealed.multimesh.visible_instance_count = 0
+	_mm_revealed.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	cells_root.add_child(_mm_revealed)
 
 func _make_multimesh(mesh: Mesh, material: StandardMaterial3D) -> MultiMeshInstance3D:
 	var mmi := MultiMeshInstance3D.new()
@@ -232,6 +257,16 @@ func _frame_material() -> StandardMaterial3D:
 		_:
 			return MaterialFactory3D.get_wood_mahogany()
 
+## Material da casa aberta. Arenito claro sobre a ardosia; nos outros estilos,
+## um papel claro que ainda se separa da casa fechada.
+func _revealed_material() -> StandardMaterial3D:
+	match board_style:
+		"slate_grid":
+			return MaterialFactory3D.get_paper(Color(0.84, 0.77, 0.64))
+		_:
+			return MaterialFactory3D.get_paper(Color(0.93, 0.90, 0.82))
+
+
 ## Tom base da casa antes de qualquer estado. Grades uniformes recebem uma
 ## alternancia muito sutil para a leitura de linha/coluna nao se perder.
 func _base_color(r: int, c: int) -> Color:
@@ -329,6 +364,23 @@ func set_cell_disabled(r: int, c: int, disabled: bool) -> void:
 		_states[r * cols + c] = CellState.NORMAL
 	_refresh_all_instances()
 
+## Estado anotado de uma casa. E por aqui que a suite confere: em modo headless
+## o MultiMesh nao devolve o que recebeu.
+func state_of(r: int, c: int) -> int:
+	if not is_valid_cell(r, c):
+		return CellState.NORMAL
+	return _states[r * cols + c]
+
+
+## Quantas casas estao abertas (`REVEALED`) -- as que ganharam a placa clara.
+func revealed_count() -> int:
+	var n := 0
+	for s in _states:
+		if s == CellState.REVEALED:
+			n += 1
+	return n
+
+
 ## Devolve a casa ao estado neutro. Para o tabuleiro inteiro use `clear_states()`,
 ## que faz o mesmo numa reconstrucao so.
 func reset_cell_material(r: int, c: int) -> void:
@@ -377,6 +429,7 @@ func _refresh_all_instances() -> void:
 	var light_i := 0
 	var dark_i := 0
 	var marker_i := 0
+	var revealed_i := 0
 	var half_tile := Tokens3D.TILE_THICKNESS * 0.5
 
 	for r in rows:
@@ -386,6 +439,16 @@ func _refresh_all_instances() -> void:
 			var pos := get_cell_position_3d(r, c, half_tile)
 			var xform := Transform3D(Basis.IDENTITY, pos)
 			var tint := _base_color(r, c) * _state_tint(state)
+
+			if state == CellState.REVEALED and _mm_revealed != null:
+				# O bloco da casa afunda ate sumir dentro do rebaixo, e a placa
+				# clara ocupa o lugar dele, mais baixa que as casas fechadas.
+				xform = Transform3D(Basis.IDENTITY.scaled(Vector3(1.0, 0.02, 1.0)),
+					get_cell_position_3d(r, c, 0.0))
+				_mm_revealed.multimesh.set_instance_transform(revealed_i,
+					Transform3D(Basis.IDENTITY, get_cell_position_3d(r, c, REVEALED_TOP - REVEALED_THICKNESS * 0.5)))
+				_mm_revealed.multimesh.set_instance_color(revealed_i, Color.WHITE)
+				revealed_i += 1
 
 			if _is_dark_cell(r, c):
 				_mm_dark.multimesh.set_instance_transform(dark_i, xform)
@@ -405,6 +468,8 @@ func _refresh_all_instances() -> void:
 				marker_i += 1
 
 	_mm_marker.multimesh.visible_instance_count = marker_i
+	if _mm_revealed != null:
+		_mm_revealed.multimesh.visible_instance_count = revealed_i
 
 # ---------------------------------------------------------------------------
 # Toque / clique
