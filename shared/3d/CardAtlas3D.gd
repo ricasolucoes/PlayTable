@@ -78,10 +78,13 @@ static func ensure_built(context: Node) -> void:
 
 	_building = false
 
+## Celula do atlas. 180x252 fora do tier baixo: o indice de canto ocupa um
+## quarto da carta e a 150 px de largura o algarismo saia serrilhado no
+## telefone, que mostra a carta com quase o dobro dos pixels do atlas.
 static func _cell_size() -> Vector2i:
 	if Quality3D.tier() == Quality3D.Tier.LOW:
 		return Vector2i(104, 146)
-	return Vector2i(150, 210)
+	return Vector2i(180, 252)
 
 # ---------------------------------------------------------------------------
 # Coordenadas no atlas
@@ -151,7 +154,7 @@ static func clear_cache() -> void:
 
 ## Control interno que pinta o atlas inteiro em um unico _draw.
 class _AtlasPainter extends Control:
-	var cell: Vector2i = Vector2i(150, 210)
+	var cell: Vector2i = Vector2i(180, 252)
 
 	func _draw() -> void:
 		draw_rect(Rect2(Vector2.ZERO, size), Color(1, 1, 1, 1), true)

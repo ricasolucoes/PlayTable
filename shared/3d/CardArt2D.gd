@@ -18,6 +18,10 @@ const SUIT_CLUB := "C"
 const RANKS: PackedStringArray = ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"]
 const SUITS: PackedStringArray = [SUIT_SPADE, SUIT_HEART, SUIT_DIAMOND, SUIT_CLUB]
 
+## Fracao da carta que o indice de canto ocupa (largura, altura).
+const INDEX_W := 0.34
+const INDEX_H := 0.30
+
 const INK_BLACK := Color(0.11, 0.12, 0.16)
 const INK_RED := Color(0.74, 0.12, 0.15)
 const FACE_BG := Color(0.975, 0.968, 0.945)
@@ -69,19 +73,24 @@ static func draw_face(ci: CanvasItem, rect: Rect2, rank: String, suit: String) -
 	var ink := ink_for(suit)
 	_draw_card_base(ci, rect)
 
-	var pad: float = rect.size.x * 0.085
-	var corner_h: float = rect.size.y * 0.115
+	# O indice do canto e o que se le no telefone: a carta na mesa tem ~100 px
+	# de largura a meio metro do rosto, e o indice de 11% da altura saia com
+	# ~12 px -- "nao da pra ver quase". Agora ele ocupa um quarto da altura, com
+	# o naipe embaixo, e o miolo de naipes cede a faixa lateral para ele.
+	var pad: float = rect.size.x * 0.055
+	var corner_w: float = rect.size.x * INDEX_W
+	var corner_h: float = rect.size.y * INDEX_H
 
 	# Indice nos dois cantos opostos, como em um baralho real: a carta continua
 	# legivel em leque, segura de qualquer lado.
 	_draw_index(ci, Rect2(rect.position + Vector2(pad, pad),
-		Vector2(rect.size.x * 0.20, corner_h)), rank, suit, ink, false)
-	_draw_index(ci, Rect2(rect.position + rect.size - Vector2(pad + rect.size.x * 0.20, pad + corner_h),
-		Vector2(rect.size.x * 0.20, corner_h)), rank, suit, ink, true)
+		Vector2(corner_w, corner_h)), rank, suit, ink, false)
+	_draw_index(ci, Rect2(rect.position + rect.size - Vector2(pad + corner_w, pad + corner_h),
+		Vector2(corner_w, corner_h)), rank, suit, ink, true)
 
 	var inner := Rect2(
-		rect.position + Vector2(rect.size.x * 0.20, rect.size.y * 0.11),
-		Vector2(rect.size.x * 0.60, rect.size.y * 0.78))
+		rect.position + Vector2(rect.size.x * 0.32, rect.size.y * 0.14),
+		Vector2(rect.size.x * 0.36, rect.size.y * 0.72))
 
 	if PIP_LAYOUT.has(rank):
 		_draw_pips(ci, inner, rank, suit, ink)
@@ -117,13 +126,25 @@ static func _round_corners(ci: CanvasItem, rect: Rect2, radius: float) -> void:
 			pts.append(centre + Vector2(dx, dy) * radius)
 		ci.draw_colored_polygon(pts, bg)
 
-## Indice de canto: valor por extenso e o naipe pequeno logo abaixo.
+## Indice de canto: valor grande e o naipe logo abaixo.
+##
+## O algarismo leva 64% da altura do canto e ganha um contorno da propria cor
+## para engrossar o traco -- a fonte de sistema e fina demais para uma carta que
+## aparece pequena. "10" e o unico valor de dois caracteres e encolhe para caber
+## na mesma largura.
 static func _draw_index(ci: CanvasItem, rect: Rect2, rank: String, suit: String,
 		ink: Color, upside_down: bool) -> void:
 	var font := ThemeDB.fallback_font
-	var font_size: int = int(rect.size.y * 0.52)
+	var font_size: int = int(rect.size.y * 0.70)
 	var label := rank
 	var text_w := font.get_string_size(label, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x
+	if text_w > rect.size.x:
+		font_size = int(float(font_size) * rect.size.x / text_w)
+		text_w = font.get_string_size(label, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x
+	var grossura: int = maxi(1, int(rect.size.y * 0.035))
+	var linha_base := Vector2((rect.size.x - text_w) * 0.5, float(font_size) * 0.92)
+	var naipe := Rect2(Vector2(rect.size.x * 0.22, rect.size.y * 0.68),
+		Vector2(rect.size.x * 0.56, rect.size.y * 0.30))
 
 	if upside_down:
 		# Gira o proprio canvas para o indice de baixo, em vez de manter um
@@ -131,22 +152,24 @@ static func _draw_index(ci: CanvasItem, rect: Rect2, rank: String, suit: String,
 		var centre := rect.position + rect.size * 0.5
 		ci.draw_set_transform(centre, PI, Vector2.ONE)
 		var local := Rect2(-rect.size * 0.5, rect.size)
-		ci.draw_string(font, local.position + Vector2((rect.size.x - text_w) * 0.5, font_size),
-			label, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, ink)
-		draw_suit(ci, Rect2(local.position + Vector2(rect.size.x * 0.18, rect.size.y * 0.60),
-			Vector2(rect.size.x * 0.64, rect.size.y * 0.36)), suit, ink)
+		ci.draw_string_outline(font, local.position + linha_base, label,
+			HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, grossura, ink)
+		ci.draw_string(font, local.position + linha_base, label,
+			HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, ink)
+		draw_suit(ci, Rect2(local.position + naipe.position, naipe.size), suit, ink)
 		ci.draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 	else:
-		ci.draw_string(font, rect.position + Vector2((rect.size.x - text_w) * 0.5, font_size),
-			label, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, ink)
-		draw_suit(ci, Rect2(rect.position + Vector2(rect.size.x * 0.18, rect.size.y * 0.60),
-			Vector2(rect.size.x * 0.64, rect.size.y * 0.36)), suit, ink)
+		ci.draw_string_outline(font, rect.position + linha_base, label,
+			HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, grossura, ink)
+		ci.draw_string(font, rect.position + linha_base, label,
+			HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, ink)
+		draw_suit(ci, Rect2(rect.position + naipe.position, naipe.size), suit, ink)
 
 static func _draw_pips(ci: CanvasItem, inner: Rect2, rank: String, suit: String, ink: Color) -> void:
 	var layout: Array = PIP_LAYOUT[rank]
-	var pip_size := Vector2(inner.size.x * 0.30, inner.size.y * 0.17)
+	var pip_size := Vector2(inner.size.x * 0.40, inner.size.y * 0.16)
 	if rank == "A":
-		pip_size = Vector2(inner.size.x * 0.62, inner.size.y * 0.34)
+		pip_size = Vector2(inner.size.x * 0.85, inner.size.y * 0.34)
 
 	for entry in layout:
 		var p: Vector2 = entry
