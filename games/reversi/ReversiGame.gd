@@ -100,7 +100,7 @@ func _on_cell_clicked(r: int, c: int) -> void:
 		# regra do flanqueio conclui que o toque nao esta chegando.
 		set_status(tr("REVERSI_INVALID"))
 		if AudioManager:
-			AudioManager.play_draw()
+			AudioManager.play_error()
 		return
 	
 	# Jogada do jogador

@@ -49,5 +49,9 @@ func _deferred_goto_scene(path: String) -> void:
 		var instance: Node = next_scene.instantiate()
 		get_tree().root.add_child(instance)
 		get_tree().current_scene = instance
+		# A musica de fundo acompanha a tela: menu fora dos jogos, e nos jogos
+		# o clima que o catalogo da ao jogo.
+		if AudioManager != null:
+			AudioManager.play_music_for_scene(instance)
 	else:
 		push_error("SceneManager: Failed to load scene: %s" % path)

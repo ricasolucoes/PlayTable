@@ -61,6 +61,8 @@ func _start_new_game() -> void:
 	
 	deck = Deck.create_standard_52()
 	deck.shuffle()
+	if AudioManager:
+		AudioManager.play_shuffle()
 	
 	# Distribuição inicial em 3D
 	var p_c1 := deck.draw()

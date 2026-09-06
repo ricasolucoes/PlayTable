@@ -657,6 +657,13 @@ func _secao_ajustes() -> VBoxContainer:
 	som.pressed.connect(_on_som_pressed)
 	fila.add_child(som)
 
+	var musica := UIKit.botao(_rotulo_musica(), UIKit.FONTE_MIUDA)
+	musica.name = "BtnMusica"
+	musica.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	musica.clip_text = true
+	musica.pressed.connect(_on_musica_pressed)
+	fila.add_child(musica)
+
 	var idioma := UIKit.botao(tr("BTN_LANGUAGE"), UIKit.FONTE_MIUDA)
 	idioma.name = "BtnIdioma"
 	idioma.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -686,6 +693,22 @@ func _on_som_pressed() -> void:
 	var b: Button = _corpo.find_child("BtnSom", true, false)
 	if b != null:
 		b.text = _rotulo_som()
+
+
+func _rotulo_musica() -> String:
+	if AudioManager == null:
+		return tr("MUSIC_ON")
+	return tr("MUSIC_ON") if AudioManager.music_enabled else tr("MUSIC_OFF")
+
+
+func _on_musica_pressed() -> void:
+	if AudioManager == null:
+		return
+	AudioManager.play_click()
+	AudioManager.music_enabled = not AudioManager.music_enabled
+	var b: Button = _corpo.find_child("BtnMusica", true, false)
+	if b != null:
+		b.text = _rotulo_musica()
 
 
 func _on_idioma_pressed() -> void:

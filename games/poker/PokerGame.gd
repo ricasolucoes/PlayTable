@@ -91,6 +91,8 @@ func _on_btn_action_pressed() -> void:
 		
 		deck = Deck.create_standard_52(true)
 		deck.shuffle()
+		if AudioManager:
+			AudioManager.play_shuffle()
 		player_hand.clear()
 		
 		_clear_cards()

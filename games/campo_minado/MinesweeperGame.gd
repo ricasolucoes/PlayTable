@@ -188,6 +188,8 @@ func _on_cell_clicked(r: int, c: int) -> void:
 	if is_flag_mode:
 		if not cell["is_revealed"]:
 			cell["is_flagged"] = not cell["is_flagged"]
+			if AudioManager:
+				AudioManager.play_flag()
 			_update_flag_3d(r, c, cell["is_flagged"])
 			_update_header_mines()
 			_check_win_condition()
@@ -206,6 +208,8 @@ func _on_cell_clicked(r: int, c: int) -> void:
 		return
 		
 	MinesweeperRules.reveal_cell(grid_data, r, c)
+	if AudioManager:
+		AudioManager.play_piece_place()
 	_sync_revealed_3d()
 	_check_win_condition()
 

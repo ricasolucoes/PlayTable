@@ -112,6 +112,8 @@ func _start_new_game() -> void:
 		_shuffle_seeded(deck, hash("%s:%d" % [daily_date, current_suit_count]))
 	else:
 		deck.shuffle()
+		if AudioManager:
+			AudioManager.play_shuffle()
 
 	for col in range(TABLEAU_COUNT):
 		var amount := 6 if col < 4 else 5
