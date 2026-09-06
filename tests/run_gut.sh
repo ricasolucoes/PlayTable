@@ -38,8 +38,13 @@ echo "Godot: $GODOT_BIN ($(godot_version "$GODOT_BIN"))"
 # entra em global_script_class_cache.cfg depois de um --import, e ate la quem
 # herda dela morre em "Could not find base class". Conferir so engine e GUT
 # deixava passar exatamente esse caso.
+#
+# Com o CAMINHO do arquivo, e nao so o nome: o cache guarda os dois, e mover
+# `shared/GridGame.gd` para `shared/TouchGrid.gd` sem mudar o `class_name`
+# deixava o carimbo igual e o cache apontando para um arquivo que nao existe
+# mais -- "Could not find script for class" em todo teste que a usava.
 STAMP="$REPO_ROOT/.godot/.gut_import_stamp"
-CLASSES="$(grep -rhE '^class_name ' "$REPO_ROOT/core" "$REPO_ROOT/games" "$REPO_ROOT/shared" \
+CLASSES="$(grep -rHE '^class_name ' "$REPO_ROOT/core" "$REPO_ROOT/games" "$REPO_ROOT/shared" \
 	--include='*.gd' 2>/dev/null | sort | shasum | cut -d' ' -f1)"
 WANT="$(godot_version "$GODOT_BIN")|$(cat "$REPO_ROOT/addons/gut/.gut_version" 2>/dev/null || echo none)|$CLASSES"
 if [[ ! -f "$STAMP" || "$(cat "$STAMP")" != "$WANT" ]]; then

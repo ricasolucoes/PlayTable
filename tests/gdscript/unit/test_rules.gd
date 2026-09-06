@@ -91,7 +91,7 @@ func test_o_painel_montado_respeita_o_piso_de_fonte_e_o_alvo_de_toque() -> void:
 	add_child_autofree(painel)
 	painel.build("gamao", "Gamão")
 	assert_true(painel.has_content(), "o gamão monta painel")
-	await wait_frames(2)
+	await wait_process_frames(2)
 
 	var pequenos: Array = []
 	var apertados: Array = []

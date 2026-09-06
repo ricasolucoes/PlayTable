@@ -1,6 +1,6 @@
 extends GutTest
 
-## Ciclo de vida compartilhado — exercita shared/BaseGame.gd e shared/GridGame.gd.
+## Ciclo de vida compartilhado — exercita shared/BaseGame.gd e shared/TouchGrid.gd.
 ##
 ## As duas classes nasceram concentrando o que os 16 jogos repetiam: o botao
 ## voltar tinha 13 copias, o reiniciar 11, o fim de partida 8 e a grade de toque

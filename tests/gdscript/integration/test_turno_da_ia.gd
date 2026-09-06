@@ -16,7 +16,13 @@ const QUATRO := preload("res://games/quatro_em_linha/ConnectFourGame.tscn")
 const MANCALA := preload("res://games/mancala/MancalaGame.tscn")
 
 ## Espera de sobra para a pausa de encenacao (0,6 s a 0,7 s) mais a busca.
-const ESPERA := 6.0
+##
+## Era 6 s, e o teste do Reversi ("a vez voltou para o jogador") era o que
+## restava da suite intermitente: no degrau 10 a busca chega a meio segundo
+## com a maquina livre, mas a suite roda ao lado de outras sessoes do Godot e
+## de um build do Android, e ai ela passa dos 6 s. A espera so custa tempo
+## quando a IA de fato demora; quando ela responde, `wait_until` volta na hora.
+const ESPERA := 20.0
 
 var _degraus: Dictionary = {}
 
@@ -37,14 +43,16 @@ func after_each() -> void:
 
 func test_o_reversi_responde_a_jogada_do_jogador() -> void:
 	var jogo = add_child_autofree(REVERSI.instantiate())
-	await wait_frames(2)
+	await wait_process_frames(2)
 
 	var antes: int = jogo.grid_data.count_matching(2)
 	# (2,3) e uma das quatro aberturas legais das pretas.
 	jogo._on_cell_clicked(2, 3)
+	var inicio := Time.get_ticks_msec()
 	await wait_until(func(): return jogo.is_player_turn and not jogo.game_over, ESPERA)
 
-	assert_true(jogo.is_player_turn, "a vez voltou para o jogador")
+	assert_true(jogo.is_player_turn, "a vez voltou para o jogador em %d ms (limite %d s)"
+		% [Time.get_ticks_msec() - inicio, int(ESPERA)])
 	assert_ne(jogo.grid_data.count_matching(2), antes, "a IA jogou e o placar mudou")
 
 
@@ -59,7 +67,7 @@ func _fichas(jogo, dono: int) -> int:
 
 func test_o_quatro_em_linha_responde_a_jogada_do_jogador() -> void:
 	var jogo = add_child_autofree(QUATRO.instantiate())
-	await wait_frames(2)
+	await wait_process_frames(2)
 
 	# A vez so passa dentro do retorno da animacao de queda, entao esperar por
 	# `is_player_turn` daria certo antes de a IA jogar: o que se espera aqui e
@@ -73,7 +81,7 @@ func test_o_quatro_em_linha_responde_a_jogada_do_jogador() -> void:
 
 func test_o_mancala_responde_a_jogada_do_jogador() -> void:
 	var jogo = add_child_autofree(MANCALA.instantiate())
-	await wait_frames(2)
+	await wait_process_frames(2)
 
 	# A cova 2 tem 4 gemas e termina na 6 (a Kalah do jogador), o que daria
 	# turno extra e nao passaria a vez. A cova 0 termina na 4.
@@ -92,10 +100,10 @@ func test_o_mancala_responde_a_jogada_do_jogador() -> void:
 func test_fechar_a_cena_no_meio_da_busca_nao_estoura() -> void:
 	var jogo = REVERSI.instantiate()
 	add_child(jogo)
-	await wait_frames(2)
+	await wait_process_frames(2)
 
 	jogo._on_cell_clicked(2, 3)
-	await wait_frames(1)
+	await wait_process_frames(1)
 	jogo.queue_free()
 	await wait_seconds(2.0)
 
