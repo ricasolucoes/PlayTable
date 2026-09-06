@@ -35,6 +35,10 @@ var ai_memoria: Dictionary = {}
 
 @onready var shell: GameShell = $GameShell
 @onready var table_tiles_root: Node3D = $TableTilesRoot
+
+## Os dois aneis nas pontas livres da corrente: o mesmo anel do Board3D. Eram
+## dois discos com `get_glow()`, refeitos a cada pedra pousada.
+var end_halos: CellHalo3D = null
 @onready var player_hand_container: HBoxContainer = $UI/PlayerArea/HandVBox/HandContainer
 @onready var btn_draw: Button = $UI/Actions/BtnDraw
 @onready var btn_pass: Button = $UI/Actions/BtnPass
@@ -47,6 +51,9 @@ func _ready() -> void:
 	btn_restart = shell.btn_restart
 	shell.restart_requested.connect(_on_btn_restart_pressed)
 	menu_scene_path = MENU_TABULEIRO
+	end_halos = CellHalo3D.new()
+	add_child(end_halos)
+	end_halos.setup(2, TILE_WID * 0.30)
 	_start_new_game()
 
 func _start_new_game() -> void:
@@ -119,6 +126,8 @@ func _start_new_game() -> void:
 ## reenquadra o que existe -- a corrente cresce, o enquadramento cresce junto.
 func _render_table_tiles_3d() -> void:
 	for c in table_tiles_root.get_children(): c.queue_free()
+	if end_halos:
+		end_halos.clear()
 
 	var rows := _layout_chain_rows()
 	if rows.is_empty():
@@ -196,27 +205,26 @@ func _spawn_table_tile(tile: Dictionary, pos: Vector3, is_double: bool, end_mark
 	table_tiles_root.add_child(node)
 
 	if end_mark != 0 and board_chain.size() > 1:
-		table_tiles_root.add_child(_end_marker(pos, end_mark, span))
+		_mark_end(pos, end_mark, span)
 
 
-## Halo dourado rente a mesa, encostado na ponta livre da corrente. E o que liga
+## Anel dourado rente a mesa, encostado na ponta livre da corrente. E o que liga
 ## o rotulo "Pontas: [ 3 ] <-> [ 5 ]" a pedra de onde aquele numero saiu.
 ##
-## Fica preso ao TableTilesRoot, e nao a pedra: a pedra normal esta girada 90
-## graus e a bucha nao, entao um filho da pedra apontaria para lados diferentes
-## nos dois casos. Em coordenadas de mesa a corrente sempre corre em X.
-func _end_marker(tile_pos: Vector3, end_mark: int, span: float) -> MeshInstance3D:
-	var halo := MeshInstance3D.new()
-	var disc := CylinderMesh.new()
-	disc.top_radius = TILE_WID * 0.22
-	disc.bottom_radius = TILE_WID * 0.22
-	disc.height = 0.014
-	halo.mesh = disc
-	halo.position = tile_pos + Vector3(float(end_mark) * (span * 0.5 + TILE_WID * 0.30),
-		-0.05, 0.0)
-	halo.material_override = MaterialFactory3D.get_glow(Color(1.0, 0.82, 0.28), 0.85)
-	halo.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	return halo
+## O alvo e dado em coordenadas de mesa, e nao como filho da pedra: a pedra
+## normal esta girada 90 graus e a bucha nao, entao um filho da pedra apontaria
+## para lados diferentes nos dois casos. Em coordenadas de mesa a corrente
+## sempre corre em X.
+func _mark_end(tile_pos: Vector3, end_mark: int, span: float) -> void:
+	if end_halos == null:
+		return
+	var indice: int = 0 if end_mark < 0 else 1
+	var alvo: Vector3 = table_tiles_root.to_global(tile_pos
+		+ Vector3(float(end_mark) * (span * 0.5 + TILE_WID * 0.30), -0.05 - CellHalo3D.ALTURA, 0.0))
+
+	end_halos.move_target(indice, alvo)
+	end_halos.light(indice, Tokens3D.COLOR_SELECTED)
+
 
 func _update_ui() -> void:
 	set_duel_score(player_hand.size(), ai_hand.size(), "SCORE_YOURS", "SCORE_AI_CARDS")

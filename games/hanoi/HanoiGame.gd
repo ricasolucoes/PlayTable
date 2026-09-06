@@ -20,7 +20,11 @@ const LIFT_Y: float = 2.4
 var disk_count: int = 3
 var pegs: Array[Array] = []
 var disk_nodes: Dictionary = {}
-var peg_halos: Array[MeshInstance3D] = []
+
+## Os tres aneis de estacao: o mesmo anel do Board3D e do Mancala, num
+## MultiMesh so. Eram tres toros proprios com `get_state_overlay()`, que
+## cacheia por cor -- cada tom novo criava um material.
+var halos: CellHalo3D = null
 
 var selected_peg: int = -1
 var selected_disk_node: Node3D = null
@@ -60,7 +64,11 @@ var _drag_peg: int = -1
 func _ready() -> void:
 	env_3d = $TabletopEnvironment3D
 	status_label = shell.status_label
-	btn_restart = shell.btn_restart
+	# O reiniciar desta cena e o da barra de acoes, sempre a vista. O botao do
+	# GameShell nasce em y=223, debaixo da barra de dificuldade (234 a 322), e
+	# quando `finish_game()` o mostrava ele ficava atras dos botoes de disco:
+	# visivel pela metade e sem receber toque nenhum.
+	btn_restart = $UI/Actions/BtnRestart
 	shell.restart_requested.connect(_on_btn_restart_pressed)
 	menu_scene_path = BaseGame.MENU_TABULEIRO
 	
@@ -79,7 +87,6 @@ func _setup_3d_tabletop() -> void:
 	for c in board_root.get_children(): c.queue_free()
 	for c in pegs_root.get_children(): c.queue_free()
 	for c in halos_root.get_children(): c.queue_free()
-	peg_halos.clear()
 	
 	# Base de Madeira Nobre Chanfrada
 	var base_mesh: ArrayMesh = MeshBuilder3D.board_slab(6.2, 2.6, 0.22)
@@ -113,20 +120,6 @@ func _setup_3d_tabletop() -> void:
 		plate.material_override = MaterialFactory3D.get_gold()
 		board_root.add_child(plate)
 		
-		# Anel de Halo luminoso (usado para Dica e Seleção)
-		var halo := MeshInstance3D.new()
-		var halo_mesh := TorusMesh.new()
-		halo_mesh.inner_radius = 0.80
-		halo_mesh.outer_radius = 0.90
-		halo_mesh.rings = 24
-		halo_mesh.ring_segments = 24
-		halo.mesh = halo_mesh
-		halo.position = Vector3(peg_pos.x, 0.125, peg_pos.z)
-		halo.material_override = MaterialFactory3D.get_state_overlay(Color(0.2, 0.85, 1.0), 0.8)
-		halo.visible = false
-		halos_root.add_child(halo)
-		peg_halos.append(halo)
-		
 		# Fuso / Haste vertical de Ouro polido
 		var spindle := MeshInstance3D.new()
 		var spindle_cyl := CylinderMesh.new()
@@ -148,6 +141,16 @@ func _setup_3d_tabletop() -> void:
 		cap.position = Vector3(peg_pos.x, 2.05, peg_pos.z)
 		cap.material_override = MaterialFactory3D.get_gold()
 		pegs_root.add_child(cap)
+
+	# Anel de estacao em volta do prato de cada pino (dica e selecao).
+	halos = CellHalo3D.new()
+	halos_root.add_child(halos)
+	halos.setup(3, 0.92)
+	var alvos: Array = []
+	for i in range(3):
+		var peg_pos := _get_peg_base_pos(i)
+		alvos.append(Vector3(peg_pos.x, 0.125 - CellHalo3D.ALTURA, peg_pos.z))
+	halos.set_targets(alvos)
 		
 	# Enquadra a câmera na área do jogo
 	# Sem tema proprio a cena herda o `casino_green`, mesa de carteado, cujo teto de
@@ -233,9 +236,6 @@ func _start_new_game() -> void:
 	move_history.clear()
 	move_count = 0
 	shell.timer.reset()
-	
-	if btn_restart != null:
-		btn_restart.hide()
 	_hide_all_halos()
 	
 	disk_count = discos_do_degrau(DifficultyManager.get_level(game_id))
@@ -377,7 +377,7 @@ func _on_peg_pressed(peg_idx: int) -> void:
 		var top_disk_size: int = Rules.get_top_disk(pegs[peg_idx])
 		selected_disk_node = disk_nodes.get(top_disk_size)
 		_animate_disk_lift(selected_disk_node, peg_idx)
-		_show_peg_halo(peg_idx, Color(1.0, 0.85, 0.2))
+		_show_peg_halo(peg_idx, Tokens3D.COLOR_SELECTED)
 		set_status(tr("HANOI_DISK_LIFTED") % top_disk_size)
 		return
 		
@@ -543,8 +543,8 @@ func _on_btn_hint_pressed() -> void:
 	var t: int = hint["to"]
 	var disk_val: int = Rules.get_top_disk(pegs[f])
 	
-	_show_peg_halo(f, Color(1.0, 0.85, 0.2))
-	_show_peg_halo(t, Color(0.2, 1.0, 0.4))
+	_show_peg_halo(f, Tokens3D.COLOR_SELECTED)
+	_show_peg_halo(t, Tokens3D.COLOR_VALID)
 	set_status(tr("HANOI_HINT") % [disk_val, _get_peg_name(f), _get_peg_name(t)])
 
 
@@ -715,15 +715,13 @@ func _get_stars_string(stars: int) -> String:
 
 
 func _show_peg_halo(peg_idx: int, color: Color) -> void:
-	if peg_idx >= 0 and peg_idx < peg_halos.size():
-		var h := peg_halos[peg_idx]
-		h.material_override = MaterialFactory3D.get_state_overlay(color, 0.9)
-		h.visible = true
+	if halos:
+		halos.light(peg_idx, color)
 
 
 func _hide_all_halos() -> void:
-	for h in peg_halos:
-		h.visible = false
+	if halos:
+		halos.clear()
 
 
 func _highlight_active_difficulty_button() -> void:
@@ -798,7 +796,7 @@ func _on_disco_pego(id: Variant) -> void:
 	_drag_peg = peg
 	_drag_node = disk_nodes.get(Rules.get_top_disk(pilha_peg))
 	_play_place_sound()
-	_show_peg_halo(peg, Color(1.0, 0.85, 0.2))
+	_show_peg_halo(peg, Tokens3D.COLOR_SELECTED)
 
 
 func _on_disco_movido(_from_id: Variant, over: Variant, world: Vector3) -> void:
@@ -808,7 +806,8 @@ func _on_disco_movido(_from_id: Variant, over: Variant, world: Vector3) -> void:
 	# ponto tocado, e o gesto pareceria emperrado.
 	_drag_node.position = Vector3(world.x, BASE_Y + LIFT_Y * 0.5, world.z)
 	_hide_all_halos()
-	_show_peg_halo(_drag_peg, Color(1.0, 0.85, 0.2))
+	_show_peg_halo(_drag_peg, Tokens3D.COLOR_SELECTED)
+
 	if over != null and int(over) != _drag_peg:
 		var destino: int = int(over)
 		var pode: bool = Rules.can_move_disk(pegs, _drag_peg, destino)

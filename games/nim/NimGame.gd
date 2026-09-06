@@ -37,7 +37,9 @@ var turn_count: int = 0
 # Estruturas 3D
 var heap_roots: Array[Node3D] = []
 var piece_nodes: Array[Array] = [] # Array de Array[Node3D] para cada pilha
-var heap_halos: Array[MeshInstance3D] = []
+## A moldura que acende em volta da canaleta escolhida: o mesmo sinal do
+## Board3D e do Mancala, num MultiMesh so. Era um BoxMesh proprio por pilha.
+var halos: CellHalo3D = null
 var discard_tray: Node3D = null
 
 ## Carimbo da partida corrente. Todo callback agendado por timer guarda o valor
@@ -259,9 +261,9 @@ func _build_3d_heaps_and_tokens() -> void:
 		
 	heap_roots.clear()
 	piece_nodes.clear()
-	heap_halos.clear()
 	
 	var num_heaps: int = heaps.size()
+	var maior_canaleta: float = 0.0
 	var total_span_x: float = float(num_heaps - 1) * 1.35
 	var start_x: float = -total_span_x * 0.5 - 0.35 # leve deslocamento para a esquerda da cesta
 	
@@ -284,17 +286,7 @@ func _build_3d_heaps_and_tokens() -> void:
 		channel.position = Vector3(0.0, 0.008, 0.0)
 		channel.material_override = MaterialFactory3D.get_felt_casino(Color(0.32, 0.05, 0.08))
 		heap_node.add_child(channel)
-		
-		# Halo de seleção ao redor da pilha
-		var halo := MeshInstance3D.new()
-		var halo_box := BoxMesh.new()
-		halo_box.size = Vector3(0.80, 0.02, channel_length + 0.1)
-		halo.mesh = halo_box
-		halo.position = Vector3(0.0, 0.009, 0.0)
-		halo.material_override = MaterialFactory3D.get_state_overlay(Color(1.0, 0.85, 0.2, 0.6), 0.8)
-		halo.visible = false
-		heap_node.add_child(halo)
-		heap_halos.append(halo)
+		maior_canaleta = maxf(maior_canaleta, channel_length)
 		
 		# Cria as peças 3D da pilha
 		var current_heap_pieces: Array[Node3D] = []
@@ -306,6 +298,16 @@ func _build_3d_heaps_and_tokens() -> void:
 			current_heap_pieces.append(piece)
 			
 		piece_nodes.append(current_heap_pieces)
+
+	# A moldura de selecao de cada canaleta. Todas do tamanho da maior: os
+	# presets nao passam de sete pecas, e a canaleta ja nasce com esse minimo.
+	halos = CellHalo3D.new()
+	heaps_parent.add_child(halos)
+	halos.setup_frames(num_heaps, Vector2(0.80, maior_canaleta + 0.1))
+	var alvos: Array = []
+	for h in range(num_heaps):
+		alvos.append(Vector3(heap_roots[h].position.x, 0.0, 0.0))
+	halos.set_targets(alvos)
 
 
 func _create_piece_node(heap_idx: int, piece_idx: int, _total_in_heap: int) -> Node3D:
@@ -465,8 +467,13 @@ func _lower_pieces_in_heap(heap_idx: int) -> void:
 
 
 func _update_heap_halos() -> void:
-	for h in range(heap_halos.size()):
-		heap_halos[h].visible = (h == selected_heap)
+	if halos == null:
+		return
+	if selected_heap >= 0:
+		halos.light_only([selected_heap], Tokens3D.COLOR_SELECTED)
+	else:
+		halos.clear()
+
 
 
 # ---------------------------------------------------------------------------
