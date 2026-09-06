@@ -20,6 +20,13 @@ func _initialize() -> void:
 	# na metade da resolucao logica -- com a HUD ocupando o dobro da fracao de
 	# tela que ocupa no aparelho, o que faz o enquadramento da camera parecer
 	# muito mais afastado do que e.
+	#
+	# `root.size` sozinho nao basta: a janela do sistema continua nos 360x640
+	# do override e `get_texture()` devolve o que ela tem. E o DisplayServer
+	# quem redimensiona a janela de verdade -- o mesmo efeito de passar
+	# `--resolution 720x1280` na linha de comando do Godot, sem depender de
+	# quem chama lembrar da flag.
+	DisplayServer.window_set_size(Vector2i(w, h))
 	var win := root
 	win.content_scale_mode = Window.CONTENT_SCALE_MODE_CANVAS_ITEMS
 	win.content_scale_aspect = Window.CONTENT_SCALE_ASPECT_EXPAND

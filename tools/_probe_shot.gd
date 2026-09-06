@@ -49,6 +49,14 @@ func _initialize() -> void:
 			inst._on_heap_selected(1)
 		"hanoi_select":
 			inst._on_peg_pressed(0)
+		"hanoi_win":
+			inst.pegs = HanoiRules.create_initial_pegs(inst.disk_count)
+			inst.pegs[2] = inst.pegs[0]
+			inst.pegs[0] = []
+			inst._sync_disks_position_instant()
+			inst._check_game_over()
+			# O cartao de resultado espera 0,9 s de relogio, nao de quadros.
+			await create_timer(1.6).timeout
 		"gamao_roll":
 			inst._on_btn_roll_dice_pressed()
 			for i in range(300):
