@@ -158,29 +158,43 @@ static func clear_cache() -> void:
 # ---------------------------------------------------------------------------
 
 ## Control interno que pinta o atlas inteiro em um unico _draw.
+##
+## As 52 faces continuam vetoriais: sao nitidas em qualquer resolucao, 52
+## chamadas ao Gemini custariam ~4 MB de PNG e o Flash erra letra miuda. O que
+## a arte gerada acrescenta e a MOLDURA de papel sob cada face e o VERSO
+## (`tools/art/unolike.json`); sem os arquivos, o desenho e o de sempre.
 class _AtlasPainter extends Control:
 	var cell: Vector2i = Vector2i(150, 210)
 
 	func _draw() -> void:
 		draw_rect(Rect2(Vector2.ZERO, size), Color(1, 1, 1, 1), true)
 		var cs := Vector2(cell)
+		var moldura: Texture2D = AssetCatalog.get_game_art("unolike", "moldura")
+		var verso: Texture2D = AssetCatalog.get_game_art("unolike", "verso")
 
 		for row in UnoCardArt2D.COLOR_KEYS.size():
 			for col in UnoCardArt2D.KINDS.size():
 				var r := Rect2(Vector2(float(col) * cs.x, float(row) * cs.y), cs)
+				if moldura != null:
+					draw_texture_rect(moldura, r, false)
 				UnoCardArt2D.draw_face(self, r, UnoCardArt2D.KINDS[col],
 					UnoCardArt2D.COLOR_KEYS[row])
 
 		var extra := float(UnoCardAtlas3D.EXTRA_ROW) * cs.y
-		UnoCardArt2D.draw_face(self,
-			Rect2(Vector2(float(UnoCardAtlas3D.WILD_COL) * cs.x, extra), cs),
-			"wild", UnoCardArt2D.WILD)
-		UnoCardArt2D.draw_face(self,
-			Rect2(Vector2(float(UnoCardAtlas3D.WILD4_COL) * cs.x, extra), cs),
-			"wild4", UnoCardArt2D.WILD)
-		UnoCardArt2D.draw_back(self,
-			Rect2(Vector2(float(UnoCardAtlas3D.BACK_COL) * cs.x, extra), cs))
+		var r_wild := Rect2(Vector2(float(UnoCardAtlas3D.WILD_COL) * cs.x, extra), cs)
+		var r_wild4 := Rect2(Vector2(float(UnoCardAtlas3D.WILD4_COL) * cs.x, extra), cs)
+		if moldura != null:
+			draw_texture_rect(moldura, r_wild, false)
+			draw_texture_rect(moldura, r_wild4, false)
+		UnoCardArt2D.draw_face(self, r_wild, "wild", UnoCardArt2D.WILD)
+		UnoCardArt2D.draw_face(self, r_wild4, "wild4", UnoCardArt2D.WILD)
+		var r_verso := Rect2(Vector2(float(UnoCardAtlas3D.BACK_COL) * cs.x, extra), cs)
+		if verso != null:
+			draw_texture_rect(verso, r_verso, false)
+		else:
+			UnoCardArt2D.draw_back(self, r_verso)
 
 		# Celula lisa: fonte do pixel usado pela borda da carta.
+
 		draw_rect(Rect2(Vector2(float(UnoCardAtlas3D.BLANK_COL) * cs.x, extra), cs),
 			Color(0.985, 0.982, 0.975), true)

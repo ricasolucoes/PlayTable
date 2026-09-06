@@ -20,6 +20,16 @@ const BOARD_GAP := 0.55
 ## Altura do casco sobre a casa.
 const HULL_HEIGHT := 0.22
 
+## Nome do asset gerado de cada classe (`tools/art/batalha_naval.json`): a
+## silhueta vista de cima que se deita sobre o conves do casco procedural.
+const ART_NAVIOS := {
+	"SHIP_CARRIER": "encouracado",
+	"SHIP_BATTLESHIP": "couracado",
+	"SHIP_CRUISER": "cruzador",
+	"SHIP_SUBMARINE": "submarino",
+	"SHIP_DESTROYER": "destroier",
+}
+
 var player_grid: Grid2D
 var ai_grid: Grid2D
 var player_ships: Array = []
@@ -218,20 +228,46 @@ func _hull_geometry(board: Board3D, ship: Dictionary) -> Dictionary:
 ## Os cinco navios eram a MESMA caixa retangular, mudando so o comprimento:
 ## porta-avioes e destroier ficavam indistinguiveis, e nada aquilo parecia um
 ## navio. Mesma quantidade de geometria, agora com proa afilada e torre.
-func _montar_casco(geo: Dictionary, material: StandardMaterial3D) -> MeshInstance3D:
+func _montar_casco(geo: Dictionary, material: StandardMaterial3D, ship_name: String = "") -> MeshInstance3D:
 	var no := MeshInstance3D.new()
 	no.mesh = MeshBuilder3D.ship_hull(
 		float(geo["length"]), float(geo["beam"]), float(geo["height"]))
 	no.material_override = material
 	no.rotation.y = float(geo["yaw"])
+	_deitar_arte_no_conves(no, geo, ship_name)
 	return no
+
+
+## A arte gerada da classe, deitada sobre o conves. O casco continua sendo a
+## malha -- e ela que da a sombra, a borda e o destroco --; a imagem so entra
+## por cima quando o PNG existe em `shared/assets/batalha_naval/`.
+##
+## O sprite fica no espaco do casco, entao herda o `yaw`: a proa da imagem
+## aponta para +X como a proa da malha, e o navio vertical gira os dois juntos.
+func _deitar_arte_no_conves(casco: MeshInstance3D, geo: Dictionary, ship_name: String) -> void:
+	var chave: String = str(ART_NAVIOS.get(ship_name, ""))
+	if chave == "":
+		return
+	var tex: Texture2D = AssetCatalog.get_game_art("batalha_naval", chave)
+	if tex == null:
+		return
+	var sprite := Sprite3D.new()
+	sprite.texture = tex
+	sprite.billboard = BaseMaterial3D.BILLBOARD_DISABLED
+	sprite.alpha_cut = SpriteBase3D.ALPHA_CUT_DISCARD
+	sprite.shaded = true
+	sprite.pixel_size = float(geo["length"]) / float(maxi(tex.get_width(), 1))
+	sprite.rotation_degrees = Vector3(-90.0, 0.0, 0.0)
+	sprite.position = Vector3(0.0, float(geo["height"]) * 0.5 + 0.012, 0.0)
+	casco.add_child(sprite)
 
 
 func _render_player_hull(ship: Dictionary, index: int) -> void:
 	if (ship["cells"] as Array).is_empty():
 		return
 	var geo := _hull_geometry(fleet_board, ship)
-	var hull := _montar_casco(geo, MaterialFactory3D.get_plastic(Color(0.78, 0.81, 0.84), true))
+	var hull := _montar_casco(geo, MaterialFactory3D.get_plastic(Color(0.78, 0.81, 0.84), true),
+		str(ship.get("name", "")))
 	hull.position = geo["center"]
 	_fleet_hulls.add_child(hull)
 	_player_hull_nodes[index] = hull
@@ -257,7 +293,9 @@ func _reveal_enemy_wreck(ship: Dictionary) -> void:
 	var geo := _hull_geometry(radar_board, ship)
 	var center: Vector3 = geo["center"]
 
-	var wreck := _montar_casco(geo, MaterialFactory3D.get_plastic(Color(0.26, 0.23, 0.21), false))
+	var wreck := _montar_casco(geo, MaterialFactory3D.get_plastic(Color(0.26, 0.23, 0.21), false),
+		str(ship.get("name", "")))
+
 	wreck.position = center
 	_radar_wrecks.add_child(wreck)
 

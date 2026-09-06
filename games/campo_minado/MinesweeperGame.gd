@@ -39,9 +39,21 @@ const NUMBER_COLORS = [
 	Color(0.6, 0.6, 0.6)    # 8 Cinza
 ]
 
-## Numeros ja na mesa, por casa. Reaproveitados entre partidas.
+## Numeros ja na mesa, por casa (so no caminho de `Label3D`).
 var numbers_3d: Dictionary = {}
 var numbers_root: Node3D = null
+
+## Os algarismos como decalques de um atlas so, quando `numeros.png` existe em
+## `shared/assets/campo_minado/` (gerado por `tools/gen_art.py`). Sem o
+## arquivo, cada casa ganha um `Label3D` -- legivel, so que um no por casa.
+var numbers_grid: DecalGrid3D = null
+
+## Icones gerados da mina e da bandeira. `null` = peao de rubi e casa tingida.
+var _mine_tex: Texture2D = null
+var _flag_tex: Texture2D = null
+
+## Minas reveladas no fim da partida (so quando ha `mina.png`).
+var mines_root: Node3D = null
 
 func _ready() -> void:
 	env_3d = $TabletopEnvironment3D
@@ -64,9 +76,41 @@ func _ready() -> void:
 	numbers_root = Node3D.new()
 	numbers_root.name = "NumbersRoot"
 	add_child(numbers_root)
+	mines_root = Node3D.new()
+	mines_root.name = "MinesRoot"
+	add_child(mines_root)
+	_load_art()
 
 	fit_table(board_3d.content_size())
 	_start_new_game()
+
+
+## A arte do Gemini entra por aqui e so por aqui: cada peca tem o seu caminho
+## procedural de reserva, e a cena nao muda quando o arquivo nao existe.
+func _load_art() -> void:
+	_mine_tex = AssetCatalog.get_game_art("campo_minado", "mina")
+	_flag_tex = AssetCatalog.get_game_art("campo_minado", "bandeira")
+	var tira: Texture2D = AssetCatalog.get_game_art("campo_minado", "numeros")
+	if tira != null:
+		numbers_grid = DecalGrid3D.new()
+		numbers_grid.name = "NumbersGrid"
+		add_child(numbers_grid)
+		numbers_grid.setup(tira, 8, 1, board_3d.cell_size * 0.78,
+			MinesweeperRules.ROWS * MinesweeperRules.COLS)
+
+
+## Um icone deitado sobre a casa: `Sprite3D` sem billboard, porque billboard
+## ficaria de pe em relacao a camera inclinada e sairia da casa.
+func _icone_deitado(tex: Texture2D, r: int, c: int, lado: float) -> Sprite3D:
+	var sprite := Sprite3D.new()
+	sprite.texture = tex
+	sprite.billboard = BaseMaterial3D.BILLBOARD_DISABLED
+	sprite.alpha_cut = SpriteBase3D.ALPHA_CUT_DISCARD
+	sprite.shaded = false
+	sprite.pixel_size = lado / float(maxi(tex.get_width(), 1))
+	sprite.rotation_degrees = Vector3(-90.0, 0.0, 0.0)
+	sprite.position = board_3d.get_cell_position_3d(r, c, Tokens3D.TILE_THICKNESS + 0.03)
+	return sprite
 
 func _start_new_game() -> void:
 	total_minas = MinesweeperRules.minas_do_degrau(DifficultyManager.get_level(game_id))
@@ -85,6 +129,10 @@ func _start_new_game() -> void:
 	if numbers_root:
 		for n in numbers_root.get_children(): n.queue_free()
 	numbers_3d.clear()
+	if numbers_grid:
+		numbers_grid.clear()
+	if mines_root:
+		for m in mines_root.get_children(): m.queue_free()
 	
 	board_3d.clear_states()
 
@@ -137,10 +185,14 @@ func _on_cell_clicked(r: int, c: int) -> void:
 func _update_flag_3d(r: int, c: int, is_flagged: bool) -> void:
 	var pos := Vector2i(r, c)
 	if is_flagged:
-		var flag := preload("res://shared/3d/Token3D.tscn").instantiate()
-		flag.token_type = "pawn"
-		flag.material_name = "ruby"
-		flag.position = board_3d.get_cell_position_3d(r, c, 0.15)
+		var flag: Node3D
+		if _flag_tex != null:
+			flag = _icone_deitado(_flag_tex, r, c, board_3d.cell_size * 0.82)
+		else:
+			flag = preload("res://shared/3d/Token3D.tscn").instantiate()
+			flag.token_type = "pawn"
+			flag.material_name = "ruby"
+			flag.position = board_3d.get_cell_position_3d(r, c, 0.15)
 		flags_root.add_child(flag)
 		flags_3d[pos] = flag
 	else:
@@ -174,6 +226,15 @@ func _sync_revealed_3d() -> void:
 ## mostra nada -- e o que separa visualmente a regiao limpa do resto.
 func _mostrar_numero(r: int, c: int, count: int) -> void:
 	var pos := Vector2i(r, c)
+	if numbers_grid != null:
+		if count <= 0:
+			numbers_grid.remove(pos)
+		elif not numbers_grid.has(pos):
+			# A tira e "1 2 3 4 5 6 7 8": a celula do algarismo n e n - 1.
+			numbers_grid.place(pos,
+				board_3d.get_cell_position_3d(r, c, Tokens3D.TILE_THICKNESS + 0.01),
+				clampi(count, 1, 8) - 1)
+		return
 	if count <= 0:
 		if numbers_3d.has(pos):
 			numbers_3d[pos].queue_free()
@@ -205,6 +266,11 @@ func _trigger_game_over(hit_r: int, hit_c: int) -> void:
 			var cell: Dictionary = grid_data.get_cell(r, c)
 			if cell["is_mine"]:
 				board_3d.set_cell_state(r, c, Board3D.CellState.INVALID)
+				# A mina em si so aparece quando a arte existe; sem ela a casa
+				# tingida de vermelho ja diz onde estava.
+				if _mine_tex != null and mines_root != null:
+					mines_root.add_child(_icone_deitado(_mine_tex, r, c, board_3d.cell_size * 0.84))
+
 
 func _check_win_condition() -> void:
 	if MinesweeperRules.check_win(grid_data):

@@ -42,6 +42,14 @@ const PIT_POSITIONS_3D = {
 
 const GEM_MATERIALS = ["ruby", "sapphire", "emerald", "amber", "gold"]
 
+## A arte gerada das sementes (`tools/art/mancala.json`), por material. Rubi e
+## ouro nao tem manifesto e ficam procedurais.
+const ART_SEMENTES := {
+	"amber": "mancala/semente_ambar",
+	"emerald": "mancala/semente_esmeralda",
+	"sapphire": "mancala/semente_safira",
+}
+
 ## Raio da semente. O padrao do Token3D e 0,36 -- diametro 0,72 numa cova de
 ## 0,52 de largura util: uma semente ja transbordava, e seis viravam uma bola.
 const GEM_RADIUS := 0.11
@@ -136,6 +144,8 @@ func _sync_gems_3d() -> void:
 			var gem := preload("res://shared/3d/Token3D.tscn").instantiate()
 			gem.token_type = "sphere"
 			gem.material_name = GEM_MATERIALS[g_i % GEM_MATERIALS.size()]
+			gem.art_by_material = ART_SEMENTES
+
 			
 			# Espalhar em espiral de angulo aureo, e nao empilhar: com passo de 0,04
 			# contra esferas de ~0,62 de diametro as sementes se atravessavam e a
