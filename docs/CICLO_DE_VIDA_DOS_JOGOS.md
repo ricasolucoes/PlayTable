@@ -3,9 +3,18 @@
 Levantamento da duplicação entre os 16 jogos de `games/` e o desenho da camada
 que passa a concentrá-la em `shared/`.
 
+> **Nomes de hoje.** O levantamento foi escrito com os nomes da época, e dois
+> deles mudaram depois: `GenericGame` virou **`shared/ui/PlaceholderScreen.gd`**
+> (a tela de *placeholder*, que é o que sempre foi), e `GridGame` virou
+> **`shared/TouchGrid.gd`**, um ajudante **estático** — `TouchGrid.build_touch_grid()`
+> — que nenhum jogo herda: os seis tabuleiros em grade migraram para o toque
+> direto no `Board3D` e no `DragPicker3D`, e o que restou de grade 2D é chamado,
+> não herdado. Onde o texto abaixo diz `GenericGame`, leia `PlaceholderScreen`;
+> onde diz `GridGame`, leia `TouchGrid`.
+
 ---
 
-## 1. O que `shared/GenericGame.gd` cobre hoje
+## 1. O que `shared/GenericGame.gd` (hoje `PlaceholderScreen`) cobria
 
 **Nada do ciclo de vida dos jogos.** Apesar do nome, `GenericGame` não é uma
 classe-base: é a tela de *placeholder* — 14 linhas, sem `class_name` — exibida
@@ -34,7 +43,7 @@ Contagem obtida com `grep -rhoE '^func [a-zA-Z0-9_]+' games/ --include='*.gd'`.
 | `_on_btn_restart_pressed` | 11 | Não | **Nasce em `BaseGame`.** 10 das 11 cópias eram só `_start_new_game()`; a 11ª (Blackjack) chamava `_start_game()`, renomeado. |
 | `_on_restart_pressed` | 3 | Não | **Alias em `BaseGame`.** As 3 cópias somavam `AudioManager.play_click()` — que agora todas ganham. |
 | `_end_game` | 8 | Não | **Meio-termo.** As 8 têm assinaturas diferentes (`()`, `(winner: int)`, `(is_player_win: bool)`, `(msg, is_player_win)`), mas o mesmo final: travar a partida, escrever no rótulo, mostrar o reiniciar e comemorar. Esse final vira `BaseGame.finish_game(mensagem, venceu)`; a assinatura de cada jogo continua sendo dele. |
-| `_setup_touch_grid` | 6 | Não | **Nasce em `GridGame.build_touch_grid()`.** As 6 cópias só trocavam o tamanho da célula e o alcance do laço. |
+| `_setup_touch_grid` | 6 | Não | **Nasce em `GridGame.build_touch_grid()`** (hoje `TouchGrid.build_touch_grid()`, estático). As 6 cópias só trocavam o tamanho da célula e o alcance do laço. |
 | `_update_ui` | 6 | Não | **Fica em cada jogo.** Um mostra gemas na cova, outro pontas do dominó, outro fichas de cassino: mesmo nome, nada em comum. |
 | `_play_ai_turn` | 6 | Não | **Fica em cada jogo.** É a regra do jogo, não ciclo de vida. |
 | `_on_cell_clicked` | 5 | Não | **Fica em cada jogo.** Só a assinatura `(r, c)` é comum, e ela vira o contrato do `build_touch_grid`. |
@@ -56,7 +65,10 @@ Poker são de cartas e mesmo assim compartilham botão voltar e reiniciar.
 - **`shared/GridGame.gd`** (`class_name GridGame extends BaseGame`) — herdada
   pelos 6 jogos cujo tabuleiro é uma grade de células tocáveis (Reversi, Damas,
   Batalha Naval, Campo Minado, Resta Um, Senet). Acrescenta apenas
-  `build_touch_grid()`.
+  `build_touch_grid()`. **Hoje:** `shared/TouchGrid.gd`, `class_name TouchGrid`,
+  sem herança — o toque desses seis entra pelo próprio tabuleiro 3D
+  (`Board3D.cell_clicked`, `DragPicker3D`), e a grade 2D sobrevive só como
+  função estática para quem ainda precisa dela.
 
 Os jogos de cartas **não** ganham `build_touch_grid`, e nada em `BaseGame`
 precisa saber se quem herda tem tabuleiro, IA, dado ou baralho.
@@ -129,7 +141,7 @@ sobre `games/` **e** `shared/`:
 | `_on_back_pressed` | 3 | **1** | `BaseGame` (alias) |
 | `_on_btn_restart_pressed` | 11 | **1** | `BaseGame` |
 | `_on_restart_pressed` | 3 | **1** | `BaseGame` (alias) |
-| `_setup_touch_grid` | 6 | **0** | virou `GridGame.build_touch_grid()` |
+| `_setup_touch_grid` | 6 | **0** | virou `GridGame.build_touch_grid()` (hoje `TouchGrid.build_touch_grid()`) |
 | `_end_game` | 8 | 8 | de cada jogo, todas terminando em `finish_game()` |
 | `_start_new_game` | 12 | 16 | de cada jogo — agora é o ponto de extensão declarado |
 | `_ready` | 24 | 24 | de cada jogo, como previsto |
@@ -138,7 +150,7 @@ sobre `games/` **e** `shared/`:
 classes novas. Um commit por jogo, com a suíte GUT verde em cada um.
 
 **Testes que trancam o resultado:** `tests/gdscript/unit/test_shared_lifecycle.gd`
-bate direto em `BaseGame` e `GridGame`; em `tests/gdscript/integration/test_catalog.gd`,
+bate direto em `BaseGame` e `TouchGrid`; em `tests/gdscript/integration/test_catalog.gd`,
 `test_cada_jogo_volta_para_o_menu_da_sua_categoria` instancia as 16 cenas e confere
 o `menu_scene_path`, e `test_nenhum_jogo_reescreve_o_ciclo_de_vida` lê os `.gd` de
 `games/` e reprova qualquer cópia nova do botão voltar, do reiniciar ou do
