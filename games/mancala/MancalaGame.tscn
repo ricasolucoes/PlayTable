@@ -31,34 +31,4 @@ mouse_filter = 2
 [node name="GameShell" parent="UI" instance=ExtResource("3_shell")]
 layout_mode = 1
 
-[node name="CenterContainer" type="Control" parent="UI"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-
-[node name="VBox" type="ScrollContainer" parent="UI/CenterContainer"]
-layout_mode = 1
-anchors_preset = 12
-anchor_top = 1.0
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = 8.0
-offset_top = -112.0
-offset_right = -8.0
-offset_bottom = -16.0
-grow_horizontal = 2
-grow_vertical = 0
-horizontal_scroll_mode = 1
-vertical_scroll_mode = 0
-
-[node name="PlayerRow" type="HBoxContainer" parent="UI/CenterContainer/VBox"]
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_constants/separation = 8
-alignment = 1
-
 [connection signal="restart_requested" from="UI/GameShell" to="." method="_on_btn_restart_pressed"]

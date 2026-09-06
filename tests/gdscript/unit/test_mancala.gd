@@ -16,6 +16,18 @@ func _jogo() -> Node:
 	return add_child_autofree(GameScene.instantiate())
 
 
+## Para o teste que precisa da cena assentada (picker projetado, HUD medida):
+## a mesma espera do `_montar` de test_touch_input. `BaseGame.fit_table()`
+## agenda um reenquadramento em dois `process_frame`, e liberar a cena com a
+## corrotina no ar acorda-a num no que nao existe mais -- erro que o GUT conta
+## como falha. Sem espera nenhuma nao ha erro; e a espera curta que expoe.
+func _cena() -> Node:
+	var jogo := _jogo()
+	await wait_process_frames(2)
+	await wait_physics_frames(2)
+	return jogo
+
+
 func test_tabuleiro_inicial_tem_quatro_gemas_por_cova() -> void:
 	var jogo := _jogo()
 	assert_eq(jogo.pits.size(), 14, "14 covas")
@@ -34,6 +46,40 @@ func _total(jogo) -> int:
 	for v in jogo.pits:
 		soma += v
 	return soma
+
+
+## O tabuleiro fica de pe em retrato: as covas do jogador descem pela coluna
+## da esquerda, a Kalah dele e a de baixo, e a semeadura da a volta.
+func test_o_tabuleiro_fica_de_pe_com_as_covas_do_jogador_a_esquerda() -> void:
+	var jogo := _jogo()
+	for i in range(6):
+		assert_lt(jogo.PIT_POSITIONS_3D[i].x, 0.0, "cova %d do jogador a esquerda" % i)
+		assert_gt(jogo.PIT_POSITIONS_3D[i + 7].x, 0.0, "cova %d da IA a direita" % (i + 7))
+	assert_lt(jogo.PIT_POSITIONS_3D[0].z, jogo.PIT_POSITIONS_3D[5].z, "a cova 0 e a de cima")
+	assert_gt(jogo.PIT_POSITIONS_3D[6].z, jogo.PIT_POSITIONS_3D[5].z, "a Kalah do jogador e a de baixo")
+	assert_lt(jogo.PIT_POSITIONS_3D[13].z, jogo.PIT_POSITIONS_3D[12].z, "a da IA e a de cima")
+	assert_gt(jogo._fit_size.y, jogo._fit_size.x, "o enquadramento e mais fundo que largo")
+
+
+## O toque entra pela mesa: cada cova do jogador e um alvo do picker, e a
+## contagem esta escrita ao lado dela, nao num botao.
+func test_a_cova_e_tocada_na_mesa_e_a_contagem_esta_ao_lado_dela() -> void:
+	var jogo := await _cena()
+	assert_not_null(jogo.picker, "ha um DragPicker3D")
+	for i in range(6):
+		assert_ne(jogo.picker.screen_of(i), Vector2.INF, "a cova %d esta projetada" % i)
+	assert_eq(jogo.picker.screen_of(7), Vector2.INF, "as covas da IA nao sao alvo")
+	assert_eq(jogo.count_labels.size(), 14, "um numero por cova")
+	assert_eq(jogo.count_labels[2].text, "4", "a cova 2 comeca com 4")
+	assert_eq(jogo.count_labels[13].text, "0", "a Kalah da IA tambem tem numero")
+	assert_lt(jogo.count_labels[2].position.x, jogo.PIT_POSITIONS_3D[2].x,
+		"o numero fica do lado de fora da coluna, nao sobre as sementes")
+
+	jogo.picker.target_tapped.emit(2)
+	assert_eq(jogo.pits[2], 0, "o toque na cova 2 semeou")
+	assert_eq(jogo.count_labels[2].text, "0", "e o numero acompanhou")
+	assert_eq(jogo.count_labels[6].text, "1", "uma gema entrou na Kalah")
+	await wait_until(func() -> bool: return jogo.is_player_turn or jogo.game_over, 20.0)
 
 
 func test_semeadura_distribui_uma_gema_por_cova() -> void:

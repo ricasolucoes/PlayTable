@@ -11,7 +11,6 @@ var ai_level: int = DifficultyManager.DEFAULT_LEVEL
 
 @onready var board_root: Node3D = $BoardRoot
 @onready var gems_root: Node3D = $GemsRoot
-@onready var player_pits_container: HBoxContainer = $UI/CenterContainer/VBox/PlayerRow
 @onready var shell: GameShell = $UI/GameShell
 
 ## Anel sob as covas que dão para semear. O Mancala não tinha afordância nenhuma
@@ -19,26 +18,44 @@ var ai_level: int = DifficultyManager.DEFAULT_LEVEL
 ## quais covas eram suas nem quais estavam jogáveis.
 var halos: CellHalo3D = null
 
+## O toque nas seis covas do jogador, projetado da propria mesa. Era uma fileira
+## de seis botoes no pe da tela -- uma grade 2D ancorada sobre um tabuleiro 3D,
+## que nunca coincide com ele, e que com o tabuleiro de pe nem faria sentido.
+var picker: DragPicker3D = null
+
+## Quantas sementes ha em cada cova, escrito na mesa ao lado dela. Era o texto
+## do botao; a cova de cima nem tinha numero.
+var count_labels: Array[Label3D] = []
+
+## Em retrato o tabuleiro fica DE PE. Deitado ele era 6,8 x 2,4 -- quase tres
+## vezes mais largo que fundo -- e ocupava um terco da altura da tela com a
+## cova a 68 px; de pe cabe na altura inteira e a cova passa de 90 px. As covas
+## do jogador descem pela coluna da esquerda, a Kalah dele e a de baixo (perto
+## de quem joga), as da IA sobem pela coluna da direita e a Kalah da IA e a de
+## cima. E a mesma semeadura anti-horaria de sempre, vista de pe.
 const PIT_POSITIONS_3D = {
-	# Jogador (0 a 5): De -2.0 a +2.0 em X, Z = 0.6
-	0: Vector3(-1.9, 0.08, 0.6),
-	1: Vector3(-1.14, 0.08, 0.6),
-	2: Vector3(-0.38, 0.08, 0.6),
-	3: Vector3(0.38, 0.08, 0.6),
-	4: Vector3(1.14, 0.08, 0.6),
-	5: Vector3(1.9, 0.08, 0.6),
-	# Kalah Jogador (6): Direita, Z = 0.0
-	6: Vector3(2.8, 0.08, 0.0),
-	# IA (7 a 12): Direita para Esquerda, Z = -0.6
-	7: Vector3(1.9, 0.08, -0.6),
-	8: Vector3(1.14, 0.08, -0.6),
-	9: Vector3(0.38, 0.08, -0.6),
-	10: Vector3(-0.38, 0.08, -0.6),
-	11: Vector3(-1.14, 0.08, -0.6),
-	12: Vector3(-1.9, 0.08, -0.6),
-	# Kalah IA (13): Esquerda, Z = 0.0
-	13: Vector3(-2.8, 0.08, 0.0)
+	# Jogador (0 a 5): coluna da esquerda, de cima para baixo
+	0: Vector3(-0.8, 0.08, -1.9),
+	1: Vector3(-0.8, 0.08, -1.14),
+	2: Vector3(-0.8, 0.08, -0.38),
+	3: Vector3(-0.8, 0.08, 0.38),
+	4: Vector3(-0.8, 0.08, 1.14),
+	5: Vector3(-0.8, 0.08, 1.9),
+	# Kalah do jogador (6): embaixo
+	6: Vector3(0.0, 0.08, 2.8),
+	# IA (7 a 12): coluna da direita, de baixo para cima
+	7: Vector3(0.8, 0.08, 1.9),
+	8: Vector3(0.8, 0.08, 1.14),
+	9: Vector3(0.8, 0.08, 0.38),
+	10: Vector3(0.8, 0.08, -0.38),
+	11: Vector3(0.8, 0.08, -1.14),
+	12: Vector3(0.8, 0.08, -1.9),
+	# Kalah da IA (13): em cima
+	13: Vector3(0.0, 0.08, -2.8)
 }
+
+## Base de madeira: larga o bastante para os numeros ao lado das covas.
+const BASE_SIZE := Vector3(3.2, 0.22, 6.8)
 
 const GEM_MATERIALS = ["ruby", "sapphire", "emerald", "amber", "gold"]
 
@@ -64,7 +81,8 @@ func _ready() -> void:
 	btn_restart = shell.btn_restart
 	ai_level = DifficultyManager.get_level(game_id)
 	_setup_3d_mancala_board()
-	_setup_ui_buttons()
+	_setup_count_labels()
+	_setup_picker()
 
 	halos = CellHalo3D.new()
 	$BoardRoot.add_child(halos)
@@ -82,18 +100,21 @@ func _ready() -> void:
 	# 74 graus do padrao.
 	env_3d.apply_theme(GameTheme3D.desert_gold())
 
-	fit_table(Vector2(6.8, 2.4))
+	fit_table(Vector2(BASE_SIZE.x + 0.2, BASE_SIZE.z + 0.2))
 	_start_new_game()
 
 func _setup_3d_mancala_board() -> void:
 	for c in board_root.get_children(): c.queue_free()
 	
-	# Base de madeira entalhada
+	# Base de madeira entalhada. O topo fica 3 cm ACIMA da mesa: com o topo em
+	# y=0, o mesmo y do tampo do ambiente, os dois planos disputavam o pixel e
+	# a madeira clara da mesa aparecia em listras sobre o mogno -- o mesmo
+	# defeito dos "entalhes" do Resta Um.
 	var base := MeshInstance3D.new()
 	var box := BoxMesh.new()
-	box.size = Vector3(6.6, 0.22, 2.2)
+	box.size = BASE_SIZE
 	base.mesh = box
-	base.position = Vector3(0, -0.11, 0)
+	base.position = Vector3(0, -BASE_SIZE.y * 0.5 + 0.03, 0)
 	base.material_override = MaterialFactory3D.get_wood_mahogany()
 	board_root.add_child(base)
 	
@@ -110,13 +131,52 @@ func _setup_3d_mancala_board() -> void:
 		pit_mesh.material_override = MaterialFactory3D.get_wood_walnut()
 		board_root.add_child(pit_mesh)
 
-func _setup_ui_buttons() -> void:
-	for c in player_pits_container.get_children(): c.queue_free()
+## Um numero deitado na mesa ao lado de cada cova, do lado de fora da coluna
+## -- nunca sobre as sementes, que foi o defeito que levou o numero para o
+## botao. As Kalahs levam o numero ao lado, na direcao do centro da mesa.
+func _setup_count_labels() -> void:
+	count_labels.clear()
+	for idx in range(14):
+		var lbl := Label3D.new()
+		lbl.font_size = 64
+		lbl.pixel_size = 0.005
+		lbl.modulate = Color(0.97, 0.93, 0.82)
+		lbl.outline_size = 12
+		lbl.outline_modulate = Color(0.12, 0.07, 0.03, 0.9)
+		lbl.billboard = BaseMaterial3D.BILLBOARD_DISABLED
+		lbl.shaded = false
+		lbl.rotation_degrees = Vector3(-90.0, 0.0, 0.0)
+		lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		lbl.position = _count_label_pos(idx)
+		board_root.add_child(lbl)
+		count_labels.append(lbl)
+
+
+func _count_label_pos(idx: int) -> Vector3:
+	var pos: Vector3 = PIT_POSITIONS_3D[idx]
+	if idx == 6:
+		return Vector3(0.95, 0.1, pos.z)
+	if idx == 13:
+		return Vector3(-0.95, 0.1, pos.z)
+	var lado: float = -1.0 if idx <= 5 else 1.0
+	return Vector3(lado * 1.36, 0.1, pos.z)
+
+
+## Semear e um toque; o `DragPicker3D` entra pelo alvo mais proximo dentro do
+## raio, e nao pela casa exatamente sob o dedo. Um dedo que tremeu ao soltar
+## sobre a mesma cova continua sendo um toque.
+func _setup_picker() -> void:
+	picker = DragPicker3D.new()
+	add_child(picker)
+	picker.attach(env_3d, 0.08)
+	var alvos: Dictionary = {}
 	for i in range(6):
-		var btn := Button.new()
-		btn.custom_minimum_size = Vector2(UIKit.TOQUE_MIN, UIKit.TOQUE_MIN)
-		btn.pressed.connect(_on_player_pit_clicked.bind(i))
-		player_pits_container.add_child(btn)
+		alvos[i] = board_root.to_global(PIT_POSITIONS_3D[i])
+	picker.set_targets(alvos)
+	picker.target_tapped.connect(func(id: Variant) -> void: _on_player_pit_clicked(int(id)))
+	picker.drag_ended.connect(func(de: Variant, ate: Variant) -> void:
+		if ate != null and ate == de:
+			_on_player_pit_clicked(int(de)))
 
 func _start_new_game() -> void:
 	game_over = false
@@ -169,17 +229,17 @@ func _update_ui() -> void:
 	set_duel_score(pits[6], pits[13])
 	shell.set_level(DifficultyManager.label_for(game_id))
 
+	for i in range(mini(14, count_labels.size())):
+		count_labels[i].text = "%d" % int(pits[i])
+
 	var jogaveis: Array = []
 	for i in range(6):
-		var btn := player_pits_container.get_child(i) as Button
-		var count: int = pits[i]
-		btn.text = "%d" % count
-		var pode := is_player_turn and count > 0 and not game_over
-		btn.disabled = not pode
-		if pode:
+		if is_player_turn and int(pits[i]) > 0 and not game_over:
 			jogaveis.append(i)
 	if halos:
 		halos.light_only(jogaveis)
+	if picker:
+		picker.enabled = is_player_turn and not game_over
 
 ## Semeia a cova do jogador. A regra e a mesma que a busca da IA usa: semear,
 ## pular a Kalah do adversario, turno extra e captura moram todos em
