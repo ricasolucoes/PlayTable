@@ -195,13 +195,16 @@ func _setup_difficulty_buttons() -> void:
 		diff_buttons_container.add_child(btn)
 
 
-## Quantos discos cada degrau da escada vale. Degrau 1 e a torre de 3, degrau
-## 10 e a de 8 -- as duas pontas que `HanoiRules` aceita.
+## Quantos discos cada degrau da escada vale: um disco a mais por degrau, da
+## torre de 3 (degrau 1) a de 8 (degrau 6 em diante).
+##
+## Era uma reta esticada pelos dez degraus, e metade das vitorias nao mudava
+## nada: subir do degrau 3 para o 4 dava a mesma torre de 4 discos, e o cartao
+## de fim de partida prometia "proximo nivel" para a pessoa encontrar o mesmo
+## jogo. Cada vitoria agora dobra a torre; do degrau 6 ao 10 so o XP cresce.
 static func discos_do_degrau(level: int) -> int:
 	var lvl := clampi(level, DifficultyManager.MIN_LEVEL, DifficultyManager.MAX_LEVEL)
-	var faixa := DifficultyManager.MAX_LEVEL - DifficultyManager.MIN_LEVEL
-	var passo := Rules.MAX_DISKS - Rules.MIN_DISKS
-	return Rules.MIN_DISKS + int(floor(float(lvl - DifficultyManager.MIN_LEVEL) * passo / faixa))
+	return clampi(Rules.MIN_DISKS + (lvl - DifficultyManager.MIN_LEVEL), Rules.MIN_DISKS, Rules.MAX_DISKS)
 
 
 ## O degrau mais baixo que vale este numero de discos. E o inverso de
@@ -607,6 +610,13 @@ func _handle_game_won() -> void:
 	game_over = true
 	shell.timer.stop()
 	_hide_all_halos()
+
+	# A demonstracao automatica resolve a torre, mas nao e vitoria de ninguem:
+	# contava XP, subia a escada e disparava o cartao de "proximo nivel".
+	if is_auto_solving:
+		_cancel_auto_solver()
+		set_status(tr("HANOI_AUTO_DONE"))
+		return
 	
 	var optimal: int = Rules.get_optimal_moves(disk_count)
 	var stars: int = Rules.calculate_stars(move_count, disk_count)
@@ -653,13 +663,6 @@ func _handle_game_won() -> void:
 		"stars": stars,
 		"time": shell.timer.get_time(),
 	})
-
-
-func _on_btn_next_level_pressed() -> void:
-	play_click()
-	if disk_count < Rules.MAX_DISKS:
-		disk_count += 1
-		_start_new_game()
 
 
 # ---------------------------------------------------------------------------

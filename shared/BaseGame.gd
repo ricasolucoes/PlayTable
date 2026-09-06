@@ -52,6 +52,16 @@ var _result_reported: bool = false
 ## carrega. Fica `null` no jogo sem entrada em `rules.json`.
 var rules_panel: RulesPanel = null
 
+## O cartao de fim de partida, comum aos jogos: resultado, degrau da escada e o
+## proximo passo ("Proximo nivel" quando a escada subiu). `finish_game()` o
+## apresenta; jogos com modal proprio de resultado desligam `uses_result_panel`.
+var result_panel: ResultPanel = null
+var uses_result_panel: bool = true
+
+## O ultimo fechamento na escada: `{"level": degrau, "delta": +1/-1/0}`. Vazio
+## antes da primeira partida terminar.
+var last_difficulty: Dictionary = {}
+
 
 ## O raiz de cada jogo é uma Control de tela inteira. No filtro padrão ela
 ## retém o clique, e ele nunca chega ao Picker do Board3D — foi assim que as
@@ -77,6 +87,28 @@ func _enter_tree() -> void:
 		add_child(toast)
 	_montar_barra()
 	_montar_ajuda()
+	_montar_resultado()
+
+
+## Pendura o cartao de fim de partida. Entra por ultimo e numa camada propria,
+## acima da HUD e do picker de arrasto, que sao Controls de tela cheia.
+func _montar_resultado() -> void:
+	if get_node_or_null("ResultPanel") != null:
+		return
+	result_panel = ResultPanel.new()
+	result_panel.name = "ResultPanel"
+	result_panel.primary_pressed.connect(_on_result_primary)
+	result_panel.menu_pressed.connect(go_back_to_menu)
+	add_child(result_panel)
+
+
+## O botao principal do cartao: recomecar no degrau em que a escada ficou. Se
+## ela subiu, isto E o proximo nivel -- `_start_new_game()` de cada jogo le o
+## degrau de novo.
+func _on_result_primary() -> void:
+	if result_panel:
+		result_panel.dismiss()
+	restart_game()
 
 
 ## Põe a barra de cima na cena. Entra por último para desenhar sobre a mesa 3D
@@ -216,15 +248,27 @@ func _apply_fit() -> void:
 	env_3d.frame_content(_fit_size, _fit_center)
 
 
+## Espera dois quadros sem `await`: uma cadeia de `call_deferred`. Uma corrotina
+## que acorda depois de o no ter sido liberado -- a suite instancia a cena,
+## espera um quadro e a solta -- imprime "Resumed function after await, but
+## class instance is gone"; a chamada adiada num objeto liberado e descartada
+## em silencio.
 func _schedule_refit() -> void:
 	if _refit_pending or not is_inside_tree():
 		return
 	_refit_pending = true
-	await get_tree().process_frame
-	await get_tree().process_frame
+	_refit_passo.call_deferred(2)
+
+
+func _refit_passo(restantes: int) -> void:
+	if not is_inside_tree():
+		_refit_pending = false
+		return
+	if restantes > 0:
+		_refit_passo.call_deferred(restantes - 1)
+		return
 	_refit_pending = false
-	if is_instance_valid(self) and is_inside_tree():
-		_apply_fit()
+	_apply_fit()
 
 
 ## Quanto a HUD come em cima e embaixo, em pixels do viewport logico.
@@ -300,6 +344,8 @@ func _on_restart_pressed() -> void:
 func restart_game() -> void:
 	play_click()
 	_result_reported = false
+	if result_panel != null:
+		result_panel.dismiss()
 	if top_bar != null:
 		top_bar.mark_win(false)
 	_start_new_game()
@@ -325,6 +371,22 @@ func finish_game(message: String, player_won: bool = false, extra: Dictionary = 
 		btn_restart.show()
 	if player_won and env_3d != null:
 		env_3d.celebrate_win()
+	var draw := bool(extra.get("draw", false))
+	# A derrota tinha silencio; a vitoria, cada jogo toca a sua fanfarra.
+	if AudioManager != null and not player_won and not draw:
+		AudioManager.play_lose()
+	_apresentar_resultado(message, player_won, draw)
+
+
+## Mostra o cartao de fim de partida com o degrau que `report_match_result()`
+## acabou de fechar. Sem DifficultyManager (suite sem autoload) o cartao ainda
+## aparece, so sem a linha do degrau.
+func _apresentar_resultado(message: String, player_won: bool, draw: bool) -> void:
+	if not uses_result_panel or result_panel == null:
+		return
+	var nivel := int(last_difficulty.get("level", DifficultyManager.DEFAULT_LEVEL if DifficultyManager else 1))
+	var delta := int(last_difficulty.get("delta", 0))
+	result_panel.present(player_won, draw, nivel, delta, message)
 
 
 ## Anuncia que uma partida comecou.
@@ -356,6 +418,8 @@ func report_match_result(player_won: bool, extra: Dictionary = {}) -> void:
 	var payload := extra.duplicate()
 	payload["win"] = player_won
 	payload.merge(_close_difficulty(player_won, bool(payload.get("draw", false))))
+	if payload.has("difficulty"):
+		last_difficulty = {"level": int(payload["difficulty"]), "delta": int(payload.get("difficulty_delta", 0))}
 	GameEventBus.emit_match_completed(game_id, payload)
 
 

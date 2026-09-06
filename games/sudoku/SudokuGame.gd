@@ -71,6 +71,8 @@ func _setup_numpad() -> void:
 
 func _start_new_game() -> void:
 	win_modal.hide()
+	# O Sudoku tem o proprio modal de vitoria; o cartao comum ficaria por cima dele.
+	uses_result_panel = false
 	notes_mode = false
 	btn_notes.button_pressed = false
 	btn_notes.text = "SUDOKU_NOTES_OFF"
