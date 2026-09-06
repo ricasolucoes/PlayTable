@@ -1,0 +1,37 @@
+{
+  "game_id": "memoria",
+  "out_dir": "shared/assets/memoria",
+  "hero": "gem_ruby",
+  "style_bible": "Coleção PlayTable de jogos de mesa: peças de resina, madeira nobre, marfim e metal escovado, fotografadas como miniatura real sobre estúdio, luz quente vinda do alto-esquerda com uma única especular limpa. Realismo de objeto de tabuleiro caro, não ilustração. NUNCA pixel art, NUNCA desenho animado, NUNCA estilo cartoon infantil, NUNCA propriedade intelectual de terceiros. A silhueta tem de ler a 64 px de altura numa tela de telefone segurada a meio metro do rosto: forma grande e contrastada, sem detalhe fino. Este jogo é um jogo da memória 2D de salão: cartas de papelão acetinado azul-real com filigrana dourada, e gemas lapidadas como prêmio. Tudo em vista frontal exata e chapada, sem perspectiva.",
+  "defaults": {
+    "model": "gemini-3.1-flash-image",
+    "background": "chroma",
+    "size": 256,
+    "import": "decal"
+  },
+  "assets": [
+    {
+      "name": "gem_ruby",
+      "out_dir": "shared/assets/rewards",
+      "prompt": "Um rubi lapidado em corte almofada, vermelho carmim profundo, visto exatamente de frente pela mesa da pedra, ocupando 90% do quadro, com facetas grandes e um brilho especular branco pequeno no alto-esquerda. Ícone de prêmio: uma pedra só, sem anel, sem base.",
+      "size": 256
+    },
+    {
+      "name": "gem_emerald",
+      "out_dir": "shared/assets/rewards",
+      "prompt": "A mesma pedra da referência, mesmo corte, mesma escala e mesmo brilho, em verde esmeralda profundo em vez de rubi. Corte esmeralda retangular de cantos chanfrados, para ter FORMA diferente do rubi além da cor.",
+      "reference": [
+        "gem_ruby"
+      ],
+      "size": 256
+    },
+    {
+      "name": "card_back_blue",
+      "out_dir": "shared/assets/cards",
+      "background": "none",
+      "crop_aspect": "5:8",
+      "prompt": "O VERSO de uma carta de jogo da memória, preenchendo o quadro INTEIRO até as bordas, sem margem e sem mostrar o contorno da carta: veludo azul-real profundo com uma treliça de losangos em filigrana dourada fina, contínua e simétrica, e um medalhão dourado pequeno no centro. Padrão que continua além das bordas e tolera recorte central. Sem nenhuma letra, número ou figura.",
+      "size": 480
+    }
+  ]
+}

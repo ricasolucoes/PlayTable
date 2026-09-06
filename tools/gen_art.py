@@ -88,6 +88,7 @@ def assinatura(man, asset):
         modelo_de(man, asset),
         str(asset.get("size", man.get("defaults", {}).get("size", 512))),
         str(asset.get("grid", "")),
+        str(asset.get("crop_aspect", "")),
         ",".join(asset.get("reference", [])),
     ])
     return hashlib.sha256(corpo.encode("utf-8")).hexdigest()
@@ -95,12 +96,22 @@ def assinatura(man, asset):
 
 # --------------------------------------------------------------- proveniência
 
+def pasta_de(man, asset):
+    """A pasta do asset: a do manifesto, ou a do proprio asset quando ele a declara.
+
+    O Memoria le o verso em `shared/assets/cards/` e as gemas em
+    `shared/assets/rewards/` -- caminhos que `AssetCatalog.get_card_back()` e
+    `get_gem()` conhecem. Um manifesto, duas pastas.
+    """
+    return RAIZ / asset.get("out_dir", man["out_dir"])
+
+
 def caminho_png(man, asset):
-    return RAIZ / man["out_dir"] / ("%s.png" % asset["name"])
+    return pasta_de(man, asset) / ("%s.png" % asset["name"])
 
 
 def caminho_md(man, asset):
-    return RAIZ / man["out_dir"] / ("%s.prompt.md" % asset["name"])
+    return pasta_de(man, asset) / ("%s.prompt.md" % asset["name"])
 
 
 def ler_hash_gravado(md):
@@ -268,6 +279,33 @@ def recortar_chroma(dados_png, lado):
     return saida.getvalue(), "chroma-key, despill, erode 1px, bbox, %dx%d LANCZOS" % (lado, lado)
 
 
+def recortar_proporcao(dados_png, proporcao, altura):
+    """Recorta o centro da imagem na proporção `"L:A"` e reamostra para `altura`.
+
+    Para o que é esticado num retângulo pelo jogo -- o verso da carta do
+    Memória, desenhado com `draw_texture_rect` no retângulo da carta. O modelo
+    devolve quadrado; um quadrado com margem transparente (o caminho do chroma)
+    viraria uma carta pequena dentro da carta, e um quadrado esticado a 5:8
+    deforma qualquer padrão. Recortar o centro custa as bordas do desenho, e
+    por isso o prompt pede padrão contínuo que tolere o corte.
+    """
+    from PIL import Image
+    lw, la = (int(x) for x in proporcao.split(":"))
+    img = Image.open(io.BytesIO(dados_png)).convert("RGBA")
+    w, h = img.size
+    alvo = lw / la
+    if w / h > alvo:
+        nw = int(round(h * alvo))
+        caixa = ((w - nw) // 2, 0, (w - nw) // 2 + nw, h)
+    else:
+        nh = int(round(w / alvo))
+        caixa = (0, (h - nh) // 2, w, (h - nh) // 2 + nh)
+    fora = img.crop(caixa).resize((int(round(altura * alvo)), altura), Image.LANCZOS)
+    saida = io.BytesIO()
+    fora.save(saida, "PNG", optimize=True)
+    return saida.getvalue(), "recorte central %s, %dx%d LANCZOS" % (proporcao, fora.size[0], fora.size[1])
+
+
 def fatiar_grade(dados_png, cols, linhas, destino, nome):
     """Corta uma tira em células de tamanho igual.
 
@@ -343,6 +381,9 @@ def processar(cliente, man, asset, forcar, tentativas):
     if fundo == "chroma":
         lado = int(asset.get("size", padroes.get("size", 512)))
         dados, pos = recortar_chroma(dados, lado)
+    elif asset.get("crop_aspect"):
+        altura = int(asset.get("size", padroes.get("size", 512)))
+        dados, pos = recortar_proporcao(dados, asset["crop_aspect"], altura)
 
     png.parent.mkdir(parents=True, exist_ok=True)
     # Grava em .tmp e só então renomeia: sem isso, uma falha no meio deixaria um
