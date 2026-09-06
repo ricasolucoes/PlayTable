@@ -29,6 +29,7 @@ extends MultiMeshInstance3D
 enum Shape {
 	RING,  ## Anel vazado: marca a casa sem cobrir o que está nela.
 	DISC,  ## Disco cheio: para alvo pequeno, onde o anel fecharia num ponto.
+	FRAME, ## Moldura retangular vazada: o anel de quem tem alvo comprido (a canaleta do Nim).
 }
 
 ## Altura do anel sobre o ponto do alvo. Baixo o bastante para pousar na
@@ -54,11 +55,23 @@ func _init() -> void:
 ## Refaz o MultiMesh inteiro: chame quando o NÚMERO de alvos muda (o Nim troca
 ## de preset, o Ludo troca de jogador), não a cada jogada.
 func setup(count: int, radius: float = 0.34, shape: int = Shape.RING) -> void:
+	_setup_with_mesh(count, _build_mesh(radius, shape))
+
+
+## Prepara `count` alvos retangulares de `size` (largura em X, comprimento em
+## Z). E o anel de quem marca uma faixa inteira, e nao uma casa: a canaleta do
+## Nim tem sete pecas de comprimento, e um anel redondo ou cobriria uma peca ou
+## sairia da mesa.
+func setup_frames(count: int, size: Vector2) -> void:
+	_setup_with_mesh(count, _build_frame(size))
+
+
+func _setup_with_mesh(count: int, mesh: Mesh) -> void:
 	stop_pulse()
 	var mm: MultiMesh = MultiMesh.new()
 	mm.transform_format = MultiMesh.TRANSFORM_3D
 	mm.use_colors = true
-	mm.mesh = _build_mesh(radius, shape)
+	mm.mesh = mesh
 	mm.instance_count = maxi(count, 0)
 	mm.visible_instance_count = 0
 	multimesh = mm
@@ -70,8 +83,37 @@ func setup(count: int, radius: float = 0.34, shape: int = Shape.RING) -> void:
 		_colors.append(Color.TRANSPARENT)
 
 
+## Moldura vazada no plano XZ, virada para cima. A borda tem a mesma fracao do
+## anel (`ESPESSURA` do menor lado), para as duas formas lerem como o mesmo sinal.
+func _build_frame(size: Vector2) -> Mesh:
+	var meia: Vector2 = size * 0.5
+	var borda: float = minf(size.x, size.y) * 0.5 * ESPESSURA
+	var st := SurfaceTool.new()
+	st.begin(Mesh.PRIMITIVE_TRIANGLES)
+	# Quatro faixas: as duas ao longo de Z ocupam a altura inteira, as duas ao
+	# longo de X preenchem o que sobra entre elas.
+	var faixas: Array[Rect2] = [
+		Rect2(-meia.x, -meia.y, borda, size.y),
+		Rect2(meia.x - borda, -meia.y, borda, size.y),
+		Rect2(-meia.x + borda, -meia.y, size.x - 2.0 * borda, borda),
+		Rect2(-meia.x + borda, meia.y - borda, size.x - 2.0 * borda, borda),
+	]
+	for f in faixas:
+		var a := Vector3(f.position.x, 0.0, f.position.y)
+		var b := Vector3(f.end.x, 0.0, f.position.y)
+		var c := Vector3(f.end.x, 0.0, f.end.y)
+		var d := Vector3(f.position.x, 0.0, f.end.y)
+		# Sentido horario visto de cima: e a face da frente para o `cull_back`
+		# do StateShader3D, a mesma ordem que o conves do `ship_hull()` usa.
+		for v in [a, b, c, a, c, d]:
+			st.set_normal(Vector3.UP)
+			st.add_vertex(v)
+	return st.commit()
+
+
 func _build_mesh(radius: float, shape: int) -> Mesh:
 	if shape == Shape.DISC:
+
 		var disc: CylinderMesh = CylinderMesh.new()
 		disc.top_radius = radius
 		disc.bottom_radius = radius
@@ -131,6 +173,25 @@ func clear() -> void:
 	for i in _colors.size():
 		_colors[i] = Color.TRANSPARENT
 	_refresh()
+
+
+## A cor pedida para um alvo (`Color.TRANSPARENT` apagado). E o registro deste
+## no, nao o do RenderingServer: em modo headless o MultiMesh nao devolve o que
+## recebeu, e e por aqui que a suite confere o estado.
+func color_of(index: int) -> Color:
+	if index < 0 or index >= _colors.size():
+		return Color.TRANSPARENT
+	return _colors[index]
+
+
+func position_of(index: int) -> Vector3:
+	if index < 0 or index >= _positions.size():
+		return Vector3.INF
+	return _positions[index]
+
+
+func target_count() -> int:
+	return _positions.size()
 
 
 ## Pulso de atenção, para a dica: um alvo pisca até alguém tocá-lo. Só um por

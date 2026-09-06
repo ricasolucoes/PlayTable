@@ -360,9 +360,57 @@ static func _radial_falloff_texture() -> ImageTexture:
 	return tex
 
 # ---------------------------------------------------------------------------
+# Arte gerada
+# ---------------------------------------------------------------------------
+
+## O material de uma peca com a arte gerada pelo Gemini por cima -- ou o
+## `fallback` procedural, intacto, quando o arquivo nao existe.
+##
+## `art_key` e "<jogo>/<nome>" e aponta para `shared/assets/<jogo>/<nome>.png`,
+## o mesmo caminho que `tools/gen_art.py` grava. O fallback e o contrato: a
+## cena pede a arte, e enquanto ela nao existe nada muda na tela. Foi assim que
+## o pipeline pode entrar antes da cota do Gemini liberar as imagens.
+##
+## A textura e projetada de cima em espaco de objeto (triplanar, sem mundo):
+## `extent` e o meio-lado da peca em XZ, de modo que a imagem inteira cubra
+## exatamente o topo. Serve ao disco que gira (`flip_180`) e a esfera que
+## salta, porque a projecao acompanha o objeto -- um billboard quebraria na
+## primeira virada.
+static func get_textured(art_key: String, fallback: StandardMaterial3D,
+		extent: float = 0.36, roughness: float = 0.45) -> StandardMaterial3D:
+	if art_key == "":
+		return fallback
+	var key := "art_%s_%.3f_%.2f" % [art_key, extent, roughness]
+	if _cache.has(key):
+		return _cache[key]
+	var tex: Texture2D = AssetCatalog.get_game_art_by_key(art_key)
+	if tex == null:
+		return fallback
+	var mat: StandardMaterial3D = fallback.duplicate() as StandardMaterial3D
+	mat.albedo_color = Color.WHITE
+	mat.albedo_texture = tex
+	# A arte ja traz o veio, o brilho e o poro; o relevo procedural por cima
+	# dela desenharia duas superficies diferentes na mesma peca.
+	mat.normal_enabled = false
+	mat.roughness_texture = null
+	mat.roughness = roughness
+	mat.uv1_triplanar = true
+	mat.uv1_world_triplanar = false
+	var escala: float = 1.0 / maxf(2.0 * extent, 0.0001)
+	mat.uv1_scale = Vector3(escala, escala, escala)
+	mat.uv1_offset = Vector3(0.5, 0.5, 0.5)
+	# Nitidez alta: o topo recebe a projecao de cima quase pura, e a lateral
+	# nao borra a imagem com a mistura dos outros dois eixos.
+	mat.uv1_triplanar_sharpness = 8.0
+	mat.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC
+	_cache[key] = mat
+	return mat
+
+# ---------------------------------------------------------------------------
 
 ## Resolve um material pelo nome usado pelos jogos.
 static func by_name(mat_name: String) -> StandardMaterial3D:
+
 	match mat_name:
 		"ivory": return get_ivory()
 		"obsidian": return get_obsidian()

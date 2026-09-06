@@ -112,6 +112,75 @@ def ler_hash_gravado(md):
     return None
 
 
+def eh_decalque(man, asset):
+    """Decalque = imagem lida como icone plano (algarismo, bandeira, navio, verso).
+
+    Sai do manifesto: `"import": "decal"` no asset ou em `defaults`. Albedo de
+    peca (damas, reversi, mancala) fica no padrao do Godot, com compressao de
+    VRAM, que e o certo para textura que envolve uma malha.
+    """
+    return asset.get("import", man.get("defaults", {}).get("import", "")) == "decal"
+
+
+def gravar_import(png, decalque):
+    """Semeia o `.import` de um decalque antes de o Godot o inventar.
+
+    O projeto reimporta textura 3D com compressao de VRAM (ASTC no Android), e
+    isso borra a borda do algarismo e o contorno recortado do icone. Para o
+    decalque o `.import` precisa nascer sem compressao (`compress/mode=0`), com
+    `detect_3d/compress_to=0` para o Godot nao trocar por VRAM ao ver o uso em
+    3D, mipmaps ligados e a borda alfa corrigida. Escrito so quando ainda nao
+    existe: o Godot completa `uid` e caminhos na primeira importacao, e depois
+    disso o arquivo e dele.
+    """
+    if not decalque:
+        return
+    imp = png.with_name(png.name + ".import")
+    if imp.exists():
+        return
+    rel = "res://" + png.relative_to(RAIZ).as_posix()
+    imp.write_text("\n".join([
+        "[remap]",
+        "",
+        'importer="texture"',
+        'type="CompressedTexture2D"',
+        "metadata={",
+        '"vram_texture": false',
+        "}",
+        "",
+        "[deps]",
+        "",
+        'source_file="%s"' % rel,
+        "",
+        "[params]",
+        "",
+        "compress/mode=0",
+        "compress/high_quality=false",
+        "compress/lossy_quality=0.7",
+        "compress/uastc_level=0",
+        "compress/rdo_quality_loss=0.0",
+        "compress/hdr_compression=1",
+        "compress/normal_map=0",
+        "compress/channel_pack=0",
+        "mipmaps/generate=true",
+        "mipmaps/limit=-1",
+        "roughness/mode=0",
+        'roughness/src_normal=""',
+        "process/channel_remap/red=0",
+        "process/channel_remap/green=1",
+        "process/channel_remap/blue=2",
+        "process/channel_remap/alpha=3",
+        "process/fix_alpha_border=true",
+        "process/premult_alpha=false",
+        "process/normal_map_invert_y=false",
+        "process/hdr_as_srgb=false",
+        "process/hdr_clamp_exposure=false",
+        "process/size_limit=0",
+        "detect_3d/compress_to=0",
+        "",
+    ]), encoding="utf-8")
+
+
 def gravar_proveniencia(man, asset, modelo, pos, extras):
     """Sem o .md ao lado ninguém consegue regenerar nem variar o asset."""
     md = caminho_md(man, asset)
@@ -281,13 +350,17 @@ def processar(cliente, man, asset, forcar, tentativas):
     tmp = png.with_suffix(".png.tmp")
     tmp.write_bytes(dados)
     os.replace(tmp, png)
+    gravar_import(png, eh_decalque(man, asset))
 
     extras = ""
     if asset.get("grid"):
         g = asset["grid"]
         fatias = fatiar_grade(dados, int(g["cols"]), int(g.get("rows", 1)), png.parent, nome)
+        for fatia in fatias:
+            gravar_import(png.parent / fatia, eh_decalque(man, asset))
         extras = "Fatiado em %d célula(s): %s" % (len(fatias), ", ".join(fatias))
         pos += "; grade %dx%d" % (int(g["cols"]), int(g.get("rows", 1)))
+
 
     gravar_proveniencia(man, asset, modelo, pos, extras)
     print("      %s (%.0f KB)" % (png.relative_to(RAIZ), png.stat().st_size / 1024))

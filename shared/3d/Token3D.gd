@@ -17,6 +17,13 @@ signal token_clicked(token: Token3D)
 @export var material_name: String = "ivory"
 @export var token_radius: float = 0.36
 
+## Arte gerada por material: `{"ivory": "damas/peca_clara", "obsidian":
+## "damas/peca_escura"}`. Fica indexada pelo NOME do material, e nao pela peca,
+## porque a peca troca de material no meio da partida -- o Reversi vira o disco
+## com `flip_180("obsidian")` -- e a arte tem de acompanhar a troca sem que a
+## cena saiba disso. Chave sem arquivo em `shared/assets/` cai no procedural.
+@export var art_by_material: Dictionary = {}
+
 @onready var mesh_instance: MeshInstance3D = $MeshInstance3D
 @onready var crown_mesh: MeshInstance3D = $CrownMesh
 @onready var contact_shadow: MeshInstance3D = $ContactShadow
@@ -73,7 +80,10 @@ func _setup_contact_shadow() -> void:
 func apply_material(mat_name: String) -> void:
 	material_name = mat_name
 	if mesh_instance:
-		mesh_instance.material_override = MaterialFactory3D.by_name(mat_name)
+		var base := MaterialFactory3D.by_name(mat_name)
+		var arte: String = str(art_by_material.get(mat_name, ""))
+		mesh_instance.material_override = MaterialFactory3D.get_textured(arte, base, token_radius)
+
 
 # ---------------------------------------------------------------------------
 # Movimento

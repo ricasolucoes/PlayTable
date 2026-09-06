@@ -1,51 +1,51 @@
 class_name AssetCatalog
 extends RefCounted
 
-## AssetCatalog: Acesso centralizado e programático para todos os assets e sprites fatiados.
-## Fornece métodos estáticos seguros para obter texturas de UI, Peças, Cartas, Dados e Recompensas.
+## Acesso central as texturas de `shared/assets/`.
+##
+## Duas familias. A arte GERADA por jogo (`get_game_art`) mora em
+## `shared/assets/<jogo>/<nome>.png`, o caminho que `tools/gen_art.py` grava
+## a partir dos manifestos de `tools/art/`. E os tres PNG legados que o Memoria
+## ainda carrega (`get_card_back`, `get_gem`), unicos sobreviventes de um lote
+## de 32 do qual 29 nunca foram lidos por cena nenhuma.
+##
+## Arquivo que nao existe devolve `null`, de proposito: quem consome tem um
+## fallback procedural, e a cena nao pode depender de a cota do Gemini ter
+## liberado a imagem naquele dia.
 
-const UI_DIR := "res://shared/assets/ui/"
-const PIECES_DIR := "res://shared/assets/pieces/"
-const TOKENS_DIR := "res://shared/assets/tokens/"
-const REWARDS_DIR := "res://shared/assets/rewards/"
-const CARDS_DIR := "res://shared/assets/cards/"
+const ROOT := "res://shared/assets/"
+const CARDS_DIR := ROOT + "cards/"
+const REWARDS_DIR := ROOT + "rewards/"
 
-# --- UI BUTTONS ---
-static func get_ui_button(action: String, style_index: int = 1) -> Texture2D:
-	var filename := "btn_%s_%02d.png" % [action.to_lower(), style_index]
-	return _load_texture(UI_DIR + filename)
 
-# --- PIECES ---
-static func get_checker_piece(color: String = "red") -> Texture2D:
-	var filename := "checker_%s.png" % color.to_lower()
-	return _load_texture(PIECES_DIR + filename)
+## A arte gerada de um jogo: `get_game_art("damas", "peca_escura")`.
+static func get_game_art(game_id: String, key: String) -> Texture2D:
+	return _load_texture(game_art_path(game_id, key))
 
-static func get_reversi_piece(color: String = "black") -> Texture2D:
-	var filename := "reversi_%s.png" % color.to_lower()
-	return _load_texture(PIECES_DIR + filename)
 
-static func get_mancala_stone(color: String = "blue") -> Texture2D:
-	var filename := "mancala_stone_%s.png" % color.to_lower()
-	return _load_texture(PIECES_DIR + filename)
+## O mesmo, pela chave composta "<jogo>/<nome>" que `Token3D.art_by_material`
+## e `MaterialFactory3D.get_textured()` carregam.
+static func get_game_art_by_key(art_key: String) -> Texture2D:
+	var partes := art_key.split("/", false)
+	if partes.size() != 2:
+		return null
+	return get_game_art(partes[0], partes[1])
 
-# --- TOKENS & DICE ---
-static func get_dice(color: String = "red") -> Texture2D:
-	var filename := "dice_%s.png" % color.to_lower()
-	return _load_texture(TOKENS_DIR + filename)
 
-static func get_pawn(color: String = "red") -> Texture2D:
-	var filename := "pawn_%s.png" % color.to_lower()
-	return _load_texture(TOKENS_DIR + filename)
+static func has_game_art(game_id: String, key: String) -> bool:
+	return ResourceLoader.exists(game_art_path(game_id, key))
 
-# --- CARDS ---
+
+static func game_art_path(game_id: String, key: String) -> String:
+	return ROOT + game_id + "/" + key + ".png"
+
+
+# --- Legado do Memoria ---
+
 static func get_card_back(color: String = "blue") -> Texture2D:
 	var filename := "card_back_%s.png" % color.to_lower()
 	return _load_texture(CARDS_DIR + filename)
 
-# --- REWARDS, COINS & GEMS ---
-static func get_coin(is_stack: bool = false) -> Texture2D:
-	var filename := "coin_stack.png" if is_stack else "coin_gold.png"
-	return _load_texture(REWARDS_DIR + filename)
 
 static func get_gem(gem_type: String = "ruby") -> Texture2D:
 	var filename := "gem_%s.png" % gem_type.to_lower()
