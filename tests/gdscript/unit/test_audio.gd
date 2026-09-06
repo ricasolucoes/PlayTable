@@ -10,10 +10,29 @@ func test_todo_efeito_que_a_api_promete_existe() -> void:
 		assert_true(AudioManager.has_sound(nome), "efeito '%s' sintetizado" % nome)
 
 
-func test_os_efeitos_sao_de_16_bits() -> void:
-	var wav: AudioStreamWAV = AudioManager._cached_sounds["win"]
+func test_os_efeitos_sintetizados_sao_de_16_bits() -> void:
+	# "dice" nao tem arquivo: e sempre sintetizado.
+	var wav: AudioStreamWAV = AudioManager._cached_sounds["dice"]
 	assert_eq(wav.format, AudioStreamWAV.FORMAT_16_BITS, "16 bits: o piso de ruido de 8 bits era audivel")
-	assert_true(wav.data.size() > 22050, "a fanfarra dura mais de meio segundo")
+	assert_true(wav.data.size() > 8000, "os dados batem mais de um decimo de segundo")
+
+
+func test_efeito_em_arquivo_so_entra_quando_o_arquivo_existe() -> void:
+	for nome in AudioManager.EFEITOS_ARQUIVO:
+		var caminho: String = AudioManager.EFEITOS_ARQUIVO[nome]
+		assert_eq(AudioManager.is_file_backed(nome), ResourceLoader.exists(caminho),
+			"'%s' vem do arquivo exatamente quando %s existe" % [nome, caminho])
+	assert_false(AudioManager.is_file_backed("dice"), "sem arquivo, a sintese continua")
+
+
+func test_a_faixa_em_arquivo_quando_existe_repete() -> void:
+	var faixa: AudioStream = AudioManager._carregar_faixa()
+	if not ResourceLoader.exists(AudioManager.MUSICA_ARQUIVO):
+		assert_null(faixa, "sem music.mp3 a musica e sintetizada")
+		return
+	assert_not_null(faixa, "music.mp3 carrega")
+	if faixa is AudioStreamMP3:
+		assert_true((faixa as AudioStreamMP3).loop, "e repete")
 
 
 func test_som_e_musica_sao_chaves_separadas_e_gravadas() -> void:

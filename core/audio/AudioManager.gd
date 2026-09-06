@@ -21,6 +21,31 @@ const MUSIC_FADE := 1.2
 const CHAVE_SOM := "sound_enabled"
 const CHAVE_MUSICA := "music_enabled"
 
+## Audio em arquivo, opcional (ver core/audio/AUDIO_LICENSES.md). Quando o
+## arquivo existe e esta importado ele substitui a sintese de mesmo nome; quando
+## nao existe, nada muda. `load()` em tempo de execucao, nunca `preload()`: o
+## preload de um arquivo ausente derruba a compilacao do autoload inteiro.
+const MUSICA_ARQUIVO := "res://core/audio/music.mp3"
+const EFEITOS_ARQUIVO := {
+	"click": "res://core/audio/click.mp3",
+	"chip_drop": "res://core/audio/chip_place.mp3",
+	"piece_place": "res://core/audio/piece_place.mp3",
+	"card_flip": "res://core/audio/card_flip.mp3",
+	"win": "res://core/audio/win.mp3",
+	"lose": "res://core/audio/lose.mp3",
+	"explosion": "res://core/audio/explosion.mp3",
+	"splash": "res://core/audio/splash.mp3",
+	"capture": "res://core/audio/capture.mp3",
+	"shuffle": "res://core/audio/shuffle.mp3",
+	"error": "res://core/audio/error.mp3",
+	"flag": "res://core/audio/flag.mp3",
+}
+## Alguns arquivos sao series (26 s de viradas de carta, 16 s de respingos);
+## no jogo so o primeiro evento interessa. Em segundos.
+const DURACAO_MAXIMA := {
+	"card_flip": 0.5, "splash": 1.3, "error": 0.7, "flag": 0.6, "shuffle": 1.2,
+}
+
 var sfx_players: Array[AudioStreamPlayer] = []
 
 var sound_enabled: bool = true:
@@ -116,6 +141,11 @@ func play_sound(name: String, volume_db: float = 0.0, pitch_scale: float = 1.0) 
 	player.volume_db = volume_db
 	player.pitch_scale = pitch_scale
 	player.play()
+	if DURACAO_MAXIMA.has(name) and is_file_backed(name) and is_inside_tree():
+		var stream: AudioStream = player.stream
+		get_tree().create_timer(float(DURACAO_MAXIMA[name])).timeout.connect(func() -> void:
+			if is_instance_valid(player) and player.stream == stream:
+				player.stop())
 
 
 func has_sound(name: String) -> bool:
@@ -193,7 +223,34 @@ func play_music(mood: String) -> void:
 	if _music_cache.has(mood):
 		_tocar(mood)
 		return
+	# A faixa em arquivo, quando existe e esta importada, vale para todos os
+	# climas; sem ela, o clima e sintetizado.
+	var faixa := _carregar_faixa()
+	if faixa != null:
+		_music_cache[mood] = faixa
+		_tocar(mood)
+		return
 	_renderizar(mood)
+
+
+## A musica de fundo em arquivo (`MUSICA_ARQUIVO`), ou null quando o arquivo
+## nao existe ou ainda nao foi importado. `load()` e nao `preload()`: o preload
+## de um arquivo ausente ou nao importado e erro de compilacao do script
+## inteiro, e o AudioManager e autoload -- o aplicativo abriria sem som nenhum.
+func _carregar_faixa() -> AudioStream:
+	if _music_cache.has("__arquivo"):
+		return _music_cache["__arquivo"]
+	var stream: AudioStream = null
+	if ResourceLoader.exists(MUSICA_ARQUIVO):
+		var carregado := load(MUSICA_ARQUIVO)
+		if carregado is AudioStream:
+			stream = carregado
+			if stream is AudioStreamMP3:
+				(stream as AudioStreamMP3).loop = true
+			elif stream is AudioStreamOggVorbis:
+				(stream as AudioStreamOggVorbis).loop = true
+	_music_cache["__arquivo"] = stream
+	return stream
 
 
 func stop_music() -> void:
@@ -317,6 +374,25 @@ func _generate_all_sounds() -> void:
 	_cached_sounds["shuffle"] = _gen_shuffle_sound()
 	_cached_sounds["error"] = _gen_error_sound()
 	_cached_sounds["flag"] = _gen_flag_sound()
+	_carregar_efeitos_em_arquivo()
+
+
+## Os efeitos gravados substituem a sintese de mesmo nome quando existem.
+func _carregar_efeitos_em_arquivo() -> void:
+	for nome in EFEITOS_ARQUIVO:
+		var caminho: String = EFEITOS_ARQUIVO[nome]
+		if not ResourceLoader.exists(caminho):
+			continue
+		var stream := load(caminho)
+		if stream is AudioStream:
+			if stream is AudioStreamMP3:
+				(stream as AudioStreamMP3).loop = false
+			_cached_sounds[nome] = stream
+
+
+## Verdadeiro quando o efeito vem de um arquivo, e nao da sintese.
+func is_file_backed(name: String) -> bool:
+	return _cached_sounds.has(name) and not (_cached_sounds[name] is AudioStreamWAV)
 
 
 ## Grava em 16 bits. Os efeitos nasceram em 8 bits e o piso de ruido de 8 bits
