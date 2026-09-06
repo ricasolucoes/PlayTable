@@ -25,8 +25,19 @@ render_mode unshaded, cull_back, shadows_disabled;
 
 uniform float energy = 1.0;
 
+// A cor da instancia do MultiMesh chega ao fragmento CRUA: o Godot nao a
+// converte de sRGB para linear como faz com `source_color` e com o albedo do
+// StandardMaterial3D. Os tokens (`Tokens3D.COLOR_*`) sao sRGB, e usa-los como
+// linear e o que fazia o verde de jogada legal sair mint e o ouro da peca
+// escolhida sair creme -- (0.24, 0.78, 0.46) lido como linear e (135, 228,
+// 182) na tela, nao (61, 198, 117). O ambiente (ACES + glow) so acrescentava
+// um pouco por cima; a lavagem era esta conversao que faltava.
+vec3 srgb_para_linear(vec3 c) {
+	return mix(pow((c + 0.055) / 1.055, vec3(2.4)), c / 12.92, lessThan(c, vec3(0.04045)));
+}
+
 void fragment() {
-	ALBEDO = COLOR.rgb * energy;
+	ALBEDO = srgb_para_linear(COLOR.rgb) * energy;
 	ALPHA = COLOR.a;
 }
 """
