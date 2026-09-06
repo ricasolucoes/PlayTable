@@ -29,6 +29,17 @@ def get_publisher_service(key_path: str):
     if not os.path.exists(key_path):
         raise FileNotFoundError(f"Arquivo de credenciais JSON não encontrado em: {key_path}")
     
+    # Suporte a credenciais em base64 ou JSON puro
+    raw = Path(key_path).read_text(encoding="utf-8").strip()
+    if not raw.startswith("{"):
+        import base64
+        try:
+            decoded = base64.b64decode(raw).decode("utf-8")
+            if decoded.strip().startswith("{"):
+                Path(key_path).write_text(decoded, encoding="utf-8")
+        except Exception:
+            pass
+
     creds = service_account.Credentials.from_service_account_file(
         key_path,
         scopes=["https://www.googleapis.com/auth/androidpublisher"]
@@ -314,6 +325,8 @@ def main():
             release_name=args.release_name
         )
     except Exception as e:
+        import traceback
+        traceback.print_exc()
         sys.exit(1)
 
 if __name__ == "__main__":
