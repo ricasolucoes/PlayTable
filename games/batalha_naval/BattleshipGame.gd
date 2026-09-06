@@ -9,13 +9,18 @@ extends BaseGame
 ## na mesa, o de ataque grande em cima e a frota aliada menor embaixo.
 
 ## Tamanho da casa em cada mapa. O de ataque recebe o toque, entao precisa de
-## casa grande; o da frota so e consultado.
-const RADAR_CELL := 0.58
-const FLEET_CELL := 0.33
+## casa grande; o da frota so e consultado -- mas e consultado: e nele que o
+## jogador ve o tiro que levou, e com 0,33 a casa saia com ~33 px e o pino da
+## IA era um ponto. Os dois mapas empilhados sao mais fundos que largos, entao
+## em retrato e a ALTURA que manda no enquadramento: cada decimo que a frota
+## ganha e um decimo que o radar perde. 0,56 e 0,40 e o ponto em que o pino da
+## frota se le sem o radar cair abaixo de ~50 px.
+const RADAR_CELL := 0.56
+const FLEET_CELL := 0.40
 const GRID := 10
 
-## Folga entre os dois mapas.
-const BOARD_GAP := 0.55
+## Folga entre os dois mapas: cabe o rotulo do de baixo.
+const BOARD_GAP := 0.5
 
 ## Altura do casco sobre a casa.
 const HULL_HEIGHT := 0.22
