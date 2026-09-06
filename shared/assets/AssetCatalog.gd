@@ -17,6 +17,11 @@ const ROOT := "res://shared/assets/"
 const CARDS_DIR := ROOT + "cards/"
 const REWARDS_DIR := ROOT + "rewards/"
 
+## draw_texture_rect guarda o RID, nao uma referencia forte ao Resource.
+## Sem este cache a textura local de MemoryCard._draw() morre antes do render
+## e as cartas viram retangulos brancos, mesmo com o PNG presente.
+static var _textures: Dictionary = {}
+
 
 ## A arte gerada de um jogo: `get_game_art("damas", "peca_escura")`.
 static func get_game_art(game_id: String, key: String) -> Texture2D:
@@ -53,6 +58,10 @@ static func get_gem(gem_type: String = "ruby") -> Texture2D:
 
 
 static func _load_texture(path: String) -> Texture2D:
+	if _textures.has(path):
+		return _textures[path] as Texture2D
 	if ResourceLoader.exists(path):
-		return load(path) as Texture2D
+		var texture := load(path) as Texture2D
+		_textures[path] = texture
+		return texture
 	return null

@@ -1,0 +1,1 @@
+Corregido el juego de Memoria: las cartas muestran sus imágenes en lugar de rectángulos blancos. Mayor estabilidad en la carga de texturas.

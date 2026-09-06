@@ -149,3 +149,12 @@ func test_atlas_entregue_tem_oito_celulas_quadradas() -> void:
 	for n in range(1, 9):
 		jogo._mostrar_numero(0, n - 1, n)
 		assert_eq(jogo.numbers_grid.cell_of(Vector2i(0, n - 1)), n - 1)
+
+
+func test_textura_sobrevive_ao_fim_da_chamada_de_desenho() -> void:
+	var texture: Texture2D = AssetCatalog.get_card_back("blue")
+	assert_not_null(texture)
+	var reference: WeakRef = weakref(texture)
+	texture = null
+	await wait_process_frames(1)
+	assert_not_null(reference.get_ref(), "o RID desenhado continua valido ate o render")

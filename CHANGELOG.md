@@ -7,7 +7,19 @@
 - [ ] **Overlay de vitória de 3 s com o Veo** — só se o orçamento do APK sobreviver ao lote acima; senão vai para `fastlane/` com `.gdignore`
 - [ ] **Os 70 ids vazios em `core/configs/play_games_ids.json`** — só o Play Console resolve
 
-## [Unreleased](https://github.com/ricasolucoes/PlayTable/compare/v0.8.0...develop)
+## [Unreleased](https://github.com/ricasolucoes/PlayTable/compare/v0.8.1...develop)
+
+---
+
+## [v0.8.1 (2026-09-06)](https://github.com/ricasolucoes/PlayTable/compare/v0.8.0...v0.8.1)
+
+### 🐛 Correções
+
+- [x] **Cartas do Memória voltam a mostrar a arte** — o catálogo mantém as texturas vivas entre a chamada de desenho e a renderização. Antes o PNG existia, mas era liberado e as cartas apareciam como retângulos brancos. Conferido por captura antes/depois e teste de vida útil da textura.
+
+### 🔧 Técnico
+
+- [x] **Android 0.8.1, código 15** — correção posterior à tag v0.8.0, sem reescrever a versão publicada.
 
 ---
 

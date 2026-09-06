@@ -1,0 +1,1 @@
+Corrigido o Jogo da Memória: as cartas agora exibem sua arte corretamente, em vez de retângulos brancos. Melhor estabilidade no carregamento de texturas.
