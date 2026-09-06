@@ -13,8 +13,11 @@ const GameScene := preload("res://games/gamao/BackgammonGame.tscn")
 ## como falha. Sem espera nenhuma nao ha erro; e a espera curta que expoe.
 func _cena() -> Node:
 	var jogo = add_child_autofree(GameScene.instantiate())
-	await wait_process_frames(2)
-	await wait_physics_frames(2)
+	await wait_process_frames(3)
+	# Sob carga dois quadros de fisica cabem num quadro de process, e a
+	# corrotina do refit ainda estaria no ar: espera ela baixar a bandeira.
+	await wait_until(func() -> bool:
+		return not ("_refit_pending" in jogo) or not jogo._refit_pending, 2.0)
 	return jogo
 
 
