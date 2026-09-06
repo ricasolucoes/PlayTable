@@ -36,6 +36,9 @@ mkdir -p "$PROJECT_DIR/android/build/assetPackInstallTime/src/main/assets"
 # compilacao apaga o plugin, o manifesto e o games_ids.xml. O instalador
 # reaplica tudo a partir de android/pgs/, que e versionado. E idempotente.
 "$PROJECT_DIR/android/pgs/install.sh"
+# Icones de launcher: o exportador do Godot nao roda aqui, e e ele quem os
+# escreveria em res/mipmap-*. Sem esta copia o pacote sai com o robo do Godot.
+"$PROJECT_DIR/android/icons/install.sh" "$PROJECT_DIR/android/build"
 PGS_DEPS="$(tr '\n' '|' < "$PROJECT_DIR/android/pgs/gradle_deps.txt" | sed 's/|$//')"
 
 # As ABIs precisam vir na linha do gradle: estes builds nao passam pelo
