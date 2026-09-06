@@ -1,0 +1,1 @@
+Hafıza oyunu düzeltildi: kartlar artık beyaz kutular yerine görselleri düzgün gösteriyor. Doku yükleme kararlılığı artırıldı.

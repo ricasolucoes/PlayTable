@@ -1,0 +1,1 @@
+Minnesspelet åtgärdat: korten visar nu rätt bilder istället för vita rektanglar. Förbättrad stabilitet vid texturinläsning.

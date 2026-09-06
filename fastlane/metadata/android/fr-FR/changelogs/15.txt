@@ -1,0 +1,1 @@
+Correction du jeu de mémoire : les cartes affichent désormais leurs illustrations au lieu de rectangles blancs. Stabilité améliorée.

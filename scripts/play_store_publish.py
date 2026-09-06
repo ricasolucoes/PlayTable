@@ -173,6 +173,17 @@ def get_release_notes(metadata_dir: Path, version_code: int):
             content = changelog_file.read_text(encoding="utf-8").strip()
         elif default_changelog.exists():
             content = default_changelog.read_text(encoding="utf-8").strip()
+        else:
+            # Fallback para o changelog numerico mais recente disponivel
+            changelogs_dir = locale_dir / "changelogs"
+            if changelogs_dir.is_dir():
+                candidates = []
+                for p in changelogs_dir.glob("*.txt"):
+                    if p.stem.isdigit():
+                        candidates.append((int(p.stem), p))
+                if candidates:
+                    candidates.sort(reverse=True)
+                    content = candidates[0][1].read_text(encoding="utf-8").strip()
 
         if content:
             notes.append({
@@ -291,6 +302,22 @@ def publish(package_name: str, aab_path: str = None, track: str = "production",
 
     except Exception as err:
         print(f"\n❌ Erro durante o processo de edição: {err}")
+        if "The caller does not have permission" in str(err):
+            print("\n" + "=" * 60)
+            print("🚨 PERMISSÃO INSUFICIENTE NA CONTA DE SERVIÇO (HTTP 403)")
+            print("=" * 60)
+            print("A Service Account está autenticada, mas NÃO possui permissão para")
+            print(f"lançar versões no Play Console (faixa '{track}').")
+            print("\n👉 Para resolver definitivamente:")
+            print("1. Acesse: https://play.google.com/console/u/0/developers/5681511308297082418/users-and-permissions")
+            print("2. Clique na Service Account (play-store-publisher@sierratecnologiabrasil.iam.gserviceaccount.com)")
+            print("3. Em 'Permissões do app' para 'org.playtable.app', marque:")
+            print("   - 'Lançar para produção, excluir dispositivos e usar o Play App Signing'")
+            print("   - 'Gerenciar faixas de teste e editar versões de teste'")
+            print("   - 'Editar e excluir versões preliminares'")
+            print("   (ou conceda a permissão de Administrador da conta)")
+            print("4. Clique no botão 'Salvar alterações' no canto inferior direito.")
+            print("=" * 60 + "\n")
         try:
             service.edits().delete(packageName=package_name, editId=edit_id).execute()
             print("   (Sessão de edição cancelada)")

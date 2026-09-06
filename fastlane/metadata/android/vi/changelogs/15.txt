@@ -1,0 +1,1 @@
+Đã sửa trò chơi Trí nhớ: thẻ bài hiển thị hình ảnh chuẩn xác thay vì hình chữ nhật trắng. Cải thiện độ ổn định.

@@ -1,0 +1,1 @@
+Naprawiono grę Memory: karty wyświetlają teraz właściwe ilustracje zamiast białych prostokątów. Zwiększono stabilność ładowania tekstur.

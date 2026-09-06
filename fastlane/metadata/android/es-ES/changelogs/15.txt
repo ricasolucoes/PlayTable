@@ -1,1 +1,1 @@
-Corregido el juego de Memoria: las cartas muestran sus imágenes en lugar de rectángulos blancos. Mayor estabilidad en la carga de texturas.
+Juego de Memoria corregido: las cartas ahora muestran su arte correctamente en lugar de rectángulos blancos. Mayor estabilidad al cargar texturas.

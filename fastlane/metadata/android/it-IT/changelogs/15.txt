@@ -1,0 +1,1 @@
+Risolto il gioco della memoria: le carte mostrano ora le figure corrette anziché rettangoli bianchi. Migliorata la stabilità di caricamento.

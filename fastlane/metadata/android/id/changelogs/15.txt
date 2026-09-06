@@ -1,0 +1,1 @@
+Perbaikan game Memori: kartu kini menampilkan gambar dengan benar dan bukan kotak putih. Peningkatan stabilitas tekstur.
