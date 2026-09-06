@@ -1,0 +1,1 @@
+22 spel, inklusive Sudoku och Nummerväg. Ny grafik, bakgrundsmusik och drag-och-släpp-kontroller. Bättre brädvyer, tydligare kort och regler för alla spel. Rättelser för Senet, omstart av Sudoku, layout och sparningar. Gratis, reklamfritt och offline.

@@ -1,0 +1,1 @@
+22 jeux, dont le Sudoku et le Chemin Numérique. Nouveaux graphismes, musique et commandes par glisser-déposer. Plateaux mieux cadrés, cartes plus lisibles et règles pour chaque jeu. Corrections pour le Senet, le redémarrage du Sudoku, l'affichage et les sauvegardes. Gratuit, sans pub et hors-ligne.

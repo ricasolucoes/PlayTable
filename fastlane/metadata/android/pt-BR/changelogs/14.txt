@@ -1,0 +1,1 @@
+22 jogos: Sudoku e Caminho Numérico, novas artes, música de fundo e controles por arrasto. Tabuleiros melhor enquadrados, cartas mais legíveis e regras em cada jogo. Correções no Senet, no reinício do Sudoku, nas telas e no salvamento do progresso. Grátis, sem anúncios e jogável offline.

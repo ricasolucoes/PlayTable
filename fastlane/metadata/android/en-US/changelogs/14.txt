@@ -1,0 +1,1 @@
+22 games, including Sudoku and Number Path. New artwork, background music and drag controls. Better board framing, readable cards and instructions for every game. Fixes for Senet, restarting Sudoku, screen layouts and saved progress. Free, ad-free and playable offline.
