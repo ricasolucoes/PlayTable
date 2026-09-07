@@ -979,3 +979,5 @@ NET_ONLINE_UNAVAILABLE,"Servidor online indisponível","Online server unavailabl
 NET_CONNECTING,"Conectando a %s...","Connecting to %s...","Conectando a %s..."
 NET_CONNECTED,"Conectado!","Connected!","¡Conectado!"
 NET_PICK_GAME,"Jogo da partida","Game to play","Juego de la partida"
+"MENU_CAT_NET","Em rede","Online","En red"
+"FILTER_NET","Em rede","Online","En red"

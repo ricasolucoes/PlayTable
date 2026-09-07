@@ -431,6 +431,7 @@ func _chave_do_modo(modo: int) -> String:
 		GameDefinition.Mode.SOLO: return "FILTER_SOLO"
 		GameDefinition.Mode.AI: return "FILTER_AI"
 		GameDefinition.Mode.VERSUS: return "FILTER_VERSUS"
+		GameDefinition.Mode.ONLINE: return "FILTER_NET"
 		_: return "FILTER_ALL"
 
 
@@ -501,6 +502,7 @@ func _montar_painel_filtro() -> Control:
 	caixa.add_child(_grade_opcoes([
 		["FILTER_ALL", 0], ["FILTER_SOLO", GameDefinition.Mode.SOLO],
 		["FILTER_AI", GameDefinition.Mode.AI], ["FILTER_VERSUS", GameDefinition.Mode.VERSUS],
+		["FILTER_NET", GameDefinition.Mode.ONLINE],
 	], filtro_modo, _on_escolher_modo))
 
 	var risca := HSeparator.new()

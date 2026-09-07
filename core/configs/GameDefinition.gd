@@ -39,6 +39,7 @@ enum Mode {
 	SOLO = 1,    ## Sem oponente — quebra-cabeça, paciência, contra o relógio.
 	AI = 2,      ## Contra o computador.
 	VERSUS = 4,  ## Duas pessoas passando o aparelho.
+	ONLINE = 8,  ## Duas pessoas, cada uma no seu aparelho (`NetworkManager`).
 }
 
 ## Gênero curto que aparece na tag do cartão. Chave de tradução, não texto:
@@ -48,7 +49,7 @@ enum Mode {
 
 ## Bandeira de `Mode`. Zero é "não classificado", e o filtro do menu deixa a
 ## entrada passar em vez de escondê-la.
-@export_flags("Solo", "IA", "2 Jogadores") var modes: int = 0
+@export_flags("Solo", "IA", "2 Jogadores", "Em rede") var modes: int = 0
 
 ## Create a GameDefinition with the given parameters
 static func create(p_title: String, p_icon: String, p_scene_path: String, p_category: StringName, p_description: String = "", p_implemented: bool = true) -> GameDefinition:

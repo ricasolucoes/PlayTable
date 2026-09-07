@@ -14,21 +14,24 @@ extends RefCounted
 const SOLO := GameDefinition.Mode.SOLO
 const IA := GameDefinition.Mode.AI
 const DUPLA := GameDefinition.Mode.VERSUS
+## Dois aparelhos, pela rede (`NetworkManager`). So os jogos cujo codigo aceita
+## a jogada do outro lado por `_on_net_move()`.
+const REDE := GameDefinition.Mode.ONLINE
 
 
 ## Returns all board game definitions.
 static func get_board_games() -> Array[GameDefinition]:
 	return [
 		GameDefinition.create("GAME_CONNECT4", "🔴", "res://games/quatro_em_linha/ConnectFourGame.tscn", &"board", "GAME_DESC_CONNECT_FOUR")
-			.tagged("GENRE_STRATEGY", IA | DUPLA),
+			.tagged("GENRE_STRATEGY", IA | DUPLA | REDE),
 		GameDefinition.create("GAME_TICTACTOE", "❌", "res://games/jogo_da_velha/TicTacToeGame.tscn", &"board", "GAME_DESC_TIC_TAC_TOE")
-			.tagged("GENRE_CLASSIC", IA | DUPLA),
+			.tagged("GENRE_CLASSIC", IA | DUPLA | REDE),
 		GameDefinition.create("GAME_CHECKERS", "⬛", "res://games/damas/CheckersGame.tscn", &"board", "GAME_DESC_CHECKERS")
 			.tagged("GENRE_CLASSIC", IA),
 		GameDefinition.create("GAME_BATTLESHIP", "🚢", "res://games/batalha_naval/BattleshipGame.tscn", &"board", "GAME_DESC_BATTLESHIP")
 			.tagged("GENRE_STRATEGY", IA),
 		GameDefinition.create("GAME_REVERSI", "⚫", "res://games/reversi/ReversiGame.tscn", &"board", "GAME_DESC_REVERSI")
-			.tagged("GENRE_STRATEGY", IA),
+			.tagged("GENRE_STRATEGY", IA | REDE),
 		GameDefinition.create("GAME_MANCALA", "💎", "res://games/mancala/MancalaGame.tscn", &"board", "GAME_DESC_MANCALA")
 			.tagged("GENRE_ANCESTRAL", IA),
 		GameDefinition.create("GAME_LUDO", "🎲", "res://games/ludo/LudoGame.tscn", &"board", "GAME_DESC_LUDO")
@@ -81,14 +84,17 @@ static func get_all_games() -> Array[GameDefinition]:
 	return all
 
 
-## Returns all games available for local network / online multiplayer.
+## Os jogos que aceitam partida em rede, na ordem dos menus.
+##
+## Sai da bandeira `REDE` de cada entrada, e nao de uma lista de ids a parte:
+## jogo novo que ganhe `_on_net_move()` entra aqui marcando a bandeira, e a
+## lista nao pode discordar do que o cartao do menu mostra.
 static func get_net_games() -> Array[GameDefinition]:
-	var net: Array[GameDefinition] = []
-	for id in ["jogo_da_velha", "quatro_em_linha", "reversi"]:
-		var def := find_by_id(id)
-		if def != null:
-			net.append(def)
-	return net
+	var saida: Array[GameDefinition] = []
+	for def in get_all_games():
+		if def.has_mode(GameDefinition.Mode.ONLINE):
+			saida.append(def)
+	return saida
 
 
 ## Identificador do jogo no barramento de eventos e no perfil, tirado da pasta

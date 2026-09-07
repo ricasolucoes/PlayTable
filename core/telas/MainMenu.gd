@@ -26,6 +26,7 @@ extends Control
 const PERFIL := "res://core/telas/PerfilScreen.tscn"
 const MENU_TABULEIRO := "res://core/telas/MenuTabuleiro.tscn"
 const MENU_CARTAS := "res://core/telas/MenuCartas.tscn"
+const LOBBY := "res://core/telas/LobbyScreen.tscn"
 
 ## Margem lateral. A mesma de `MenuTabuleiro.tscn` e da barra dos jogos, para
 ## uma tela virar a outra sem o conteúdo escorregar de lado.
@@ -75,6 +76,7 @@ const ACENTOS := {
 const ACENTO_PADRAO := "#263b56"
 const ACENTO_TABULEIRO := "#1f3a5f"
 const ACENTO_CARTAS := "#5a2f38"
+const ACENTO_REDE := "#24524a"
 
 var _corpo: VBoxContainer
 var _barra: Button
@@ -603,6 +605,10 @@ func _secao_categorias() -> HBoxContainer:
 		GameCatalog.get_board_games().size(), Color(ACENTO_TABULEIRO), MENU_TABULEIRO))
 	fila.add_child(_cartao_categoria("🃏", tr("MENU_CAT_CARDS"),
 		GameCatalog.get_card_games().size(), Color(ACENTO_CARTAS), MENU_CARTAS))
+	# Jogar com alguem em outro aparelho: mesma rede Wi-Fi hoje, internet
+	# quando o servidor existir. E navegacao, nao ajuste, por isso fica aqui.
+	fila.add_child(_cartao_categoria("📶", tr("MENU_CAT_NET"),
+		GameCatalog.get_net_games().size(), Color(ACENTO_REDE), LOBBY))
 	return fila
 
 
