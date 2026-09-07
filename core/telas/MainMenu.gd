@@ -665,6 +665,7 @@ func _secao_ajustes() -> VBoxContainer:
 	som.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	som.clip_text = true
 	som.pressed.connect(_on_som_pressed)
+	_apagar(som, AudioManager != null and not AudioManager.sound_enabled)
 	fila.add_child(som)
 
 	var musica := UIKit.botao(_rotulo_musica(), UIKit.FONTE_MIUDA)
@@ -672,6 +673,7 @@ func _secao_ajustes() -> VBoxContainer:
 	musica.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	musica.clip_text = true
 	musica.pressed.connect(_on_musica_pressed)
+	_apagar(musica, AudioManager != null and not AudioManager.music_enabled)
 	fila.add_child(musica)
 
 	var idioma := UIKit.botao(tr("BTN_LANGUAGE"), UIKit.FONTE_MIUDA)
@@ -703,6 +705,14 @@ func _on_som_pressed() -> void:
 	var b: Button = _corpo.find_child("BtnSom", true, false)
 	if b != null:
 		b.text = _rotulo_som()
+		_apagar(b, not AudioManager.sound_enabled)
+
+
+## Desligado se le pela cor, nao so pelo emoji riscado: os tres botoes desta
+## linha cortam o texto para caber, e a palavra "desligado" nao sobrevive ao
+## corte.
+func _apagar(b: Button, apagado: bool) -> void:
+	b.modulate = Color(1, 1, 1, 0.55) if apagado else Color.WHITE
 
 
 func _rotulo_musica() -> String:
@@ -719,6 +729,7 @@ func _on_musica_pressed() -> void:
 	var b: Button = _corpo.find_child("BtnMusica", true, false)
 	if b != null:
 		b.text = _rotulo_musica()
+		_apagar(b, not AudioManager.music_enabled)
 
 
 func _on_idioma_pressed() -> void:

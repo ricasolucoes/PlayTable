@@ -4,9 +4,9 @@ APP_TITLE,"🎲 PlayTable","🎲 PlayTable","🎲 PlayTable"
 APP_SUBTITLE,"Coleção Clássica Offline","Classic Offline Collection","Colección Clásica Offline"
 MENU_BOARD_GAMES,"♟️  Jogos de Tabuleiro","♟️  Board Games","♟️  Juegos de Mesa"
 MENU_CARD_GAMES,"🃏  Jogos de Cartas","🃏  Card Games","🃏  Juegos de Cartas"
-SOUND_ON,"🔊 Som ligado","🔊 Sound on","🔊 Sonido activado"
-SOUND_OFF,"🔇 Som desligado","🔇 Sound off","🔇 Sonido apagado"
-FOOTER_OFFLINE_PROMISE,"100% Offline • Sem Anúncios • Gratuito","100% Offline • No Ads • Free","100% Offline • Sin Anuncios • Gratis"
+SOUND_ON,"🔊 Som","🔊 Sound","🔊 Sonido"
+SOUND_OFF,"🔇 Som","🔇 Sound","🔇 Sonido"
+FOOTER_OFFLINE_PROMISE,"Joga sem internet • Sem Anúncios • Gratuito","Plays offline • No Ads • Free","Juega sin internet • Sin Anuncios • Gratis"
 BTN_BACK,"‹ Voltar","‹ Back","‹ Volver"
 BTN_LANGUAGE,"🌐 Português","🌐 English","🌐 Español"
 BTN_RESTART,"Jogar Novamente","Play Again","Jugar de Nuevo"
@@ -944,8 +944,8 @@ GAME_LOCKED_LEVEL,Desbloqueia no nível,Unlocks at level,Se desbloquea en el niv
 "BTN_MENU","Menu","Menu","Menú"
 "RESULT_END_TITLE","Fim de partida","Game over","Fin de la partida"
 "HANOI_AUTO_DONE","Demonstração concluída. Toque em reiniciar para jogar você.","Demo finished. Tap restart to play it yourself.","Demostración terminada. Toca reiniciar para jugar tú."
-"MUSIC_ON","🎵 Música ligada","🎵 Music on","🎵 Música activada"
-"MUSIC_OFF","🎵 Música desligada","🎵 Music off","🎵 Música apagada"
+"MUSIC_ON","🎵 Música","🎵 Music","🎵 Música"
+"MUSIC_OFF","🔇 Música","🔇 Music","🔇 Música"
 
 NET_PLAYER_DEFAULT,Jogador,Player,Jugador
 NET_ERROR_HOST,Não foi possível criar a sala.,Could not create the room.,No se pudo crear la sala.
