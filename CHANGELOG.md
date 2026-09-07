@@ -9,10 +9,6 @@
 
 ## [Unreleased](https://github.com/ricasolucoes/PlayTable/compare/v0.9.0...develop)
 
-### 🐛 Correções
-
-- [x] **A abertura é do jogo, não do Godot** (`tools/make_splash.py`) — o robô da engine aparecia duas vezes antes do menu. O Android 12+ desenha a abertura a partir de `res/drawable/splash_icon`, e quem escreve esse arquivo é o exportador do Godot, por onde este repositório não passa (`--export-pack` e gradle direto): sem ele o gradle empacotava o que vem dentro do `godot-lib.aar`. Logo depois a engine desenhava o próprio logo, porque `application/boot_splash/image` estava vazio. As duas telas passam a sair da mesma composição — a arte do `icon.png` sobre o mesmo azul-marinho do ícone, com a marca da Rica Soluções embaixo — e a troca de uma para a outra não dá salto. A escala é **medida**: o sistema mostra só os 2/3 centrais mascarados num círculo, e herdar os 78% do ícone do launcher, que só precisa caber numa zona segura quadrada, cortava a borda da mesa e as faíscas. `android/icons/install.sh` copia `drawable*` junto dos `mipmap*`, e um teste cobra o que falha calado: os dois arquivos existirem, os dois fundos serem a mesma cor, a marca ser 2,5:1 (a vista do Android tem 200x80 dp fixos e deforma o resto) e a arte caber no círculo
-
 ---
 
 ## [v0.9.0 (2026-09-06)](https://github.com/ricasolucoes/PlayTable/compare/v0.8.1...v0.9.0)
@@ -30,6 +26,10 @@
 - [x] **A casa aberta do Campo Minado se distingue da fechada** — era a mesma ardósia com 20% mais luz e sumia na mesa; virou uma placa de arenito claro e mais baixa, forma **e** cor, como o botão alto e o chão raso do Campo Minado de sempre
 - [x] **Cartas legíveis no telefone** — o índice do canto ocupava 11% da altura da carta, uns 12 px na mesa a meio metro do rosto; agora ocupa 30% da altura e 34% da largura, com contorno da própria cor para engrossar o traço e o naipe embaixo. O atlas sobe de 150x210 para 180x252 fora do tier baixo, porque o telefone mostra a carta com quase o dobro dos pixels que o atlas tinha
 - [x] **O ícone do aplicativo aparece** — os builds fazem `--export-pack` e chamam o gradle direto, e era o exportador do Godot quem escreveria os ícones em `res/mipmap-*`: o pacote saía com o robô do Godot. `tools/make_launcher_icons.py` gera, a partir de `icon.png`, o ícone legado por densidade, as duas camadas do adaptativo e a silhueta monocromática do tema; `android/icons/install.sh` copia em todo build
+
+### 🐛 Correções
+
+- [x] **A abertura é do jogo, não do Godot** (`tools/make_splash.py`) — o robô da engine aparecia duas vezes antes do menu. O Android 12+ desenha a abertura a partir de `res/drawable/splash_icon`, e quem escreve esse arquivo é o exportador do Godot, por onde este repositório não passa (`--export-pack` e gradle direto): sem ele o gradle empacotava o que vem dentro do `godot-lib.aar`. Logo depois a engine desenhava o próprio logo, porque `application/boot_splash/image` estava vazio. As duas telas passam a sair da mesma composição — a arte do `icon.png` sobre o mesmo azul-marinho do ícone, com a marca da Rica Soluções embaixo — e a troca de uma para a outra não dá salto. A escala é **medida**: o sistema mostra só os 2/3 centrais mascarados num círculo, e herdar os 78% do ícone do launcher, que só precisa caber numa zona segura quadrada, cortava a borda da mesa e as faíscas. `android/icons/install.sh` copia `drawable*` junto dos `mipmap*`, e um teste cobra o que falha calado: os dois arquivos existirem, os dois fundos serem a mesma cor, a marca ser 2,5:1 (a vista do Android tem 200x80 dp fixos e deforma o resto) e a arte caber no círculo
 
 ### 🔧 Técnico
 

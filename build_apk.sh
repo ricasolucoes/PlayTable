@@ -40,7 +40,12 @@ rm -f "$TEMP_ZIP"
 echo "=> Extraindo assets para src/main/assets..."
 rm -rf "$PROJECT_DIR/android/build/src/main/assets"
 mkdir -p "$PROJECT_DIR/android/build/src/main/assets"
-unzip -q "$TEMP_ZIP" -d "$PROJECT_DIR/android/build/src/main/assets"
+# `-o` e obrigatorio, nao preferencia: sem ele, um arquivo que ja exista na
+# pasta -- outra sessao escrevendo ali ao mesmo tempo, um build anterior
+# interrompido -- faz o unzip PERGUNTAR se sobrescreve. Sem terminal a
+# pergunta le EOF, ele responde "nenhum", e o APK sai com o pacote pela
+# metade sem nenhum erro visivel.
+unzip -qo "$TEMP_ZIP" -d "$PROJECT_DIR/android/build/src/main/assets"
 rm -f "$TEMP_ZIP"
 
 echo "=> Compilando APK via Gradle..."
