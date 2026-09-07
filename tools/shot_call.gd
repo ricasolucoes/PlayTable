@@ -34,10 +34,19 @@ func _initialize() -> void:
 		var args: Array = []
 		for i in range(1, parts.size()):
 			var a := parts[i]
+			# `true` e `false` viravam a STRING "true", e o metodo que recebe um
+			# `bool` era recusado em silencio -- a captura saia sem o efeito
+			# pedido e nada dizia por que.
 			if a == "null":
 				args.append(null)
+			elif a == "true":
+				args.append(true)
+			elif a == "false":
+				args.append(false)
 			elif a.is_valid_int():
 				args.append(int(a))
+			elif a.is_valid_float():
+				args.append(float(a))
 			else:
 				args.append(a)
 		inst.callv(parts[0], args)
