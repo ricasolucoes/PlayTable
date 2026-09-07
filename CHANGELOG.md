@@ -9,6 +9,10 @@
 
 ## [Unreleased](https://github.com/ricasolucoes/PlayTable/compare/v0.9.0...develop)
 
+### 🐛 Correções
+
+- [x] **A abertura é do jogo, não do Godot** (`tools/make_splash.py`) — o robô da engine aparecia duas vezes antes do menu. O Android 12+ desenha a abertura a partir de `res/drawable/splash_icon`, e quem escreve esse arquivo é o exportador do Godot, por onde este repositório não passa (`--export-pack` e gradle direto): sem ele o gradle empacotava o que vem dentro do `godot-lib.aar`. Logo depois a engine desenhava o próprio logo, porque `application/boot_splash/image` estava vazio. As duas telas passam a sair da mesma composição — a arte do `icon.png` sobre o mesmo azul-marinho do ícone, com a marca da Rica Soluções embaixo — e a troca de uma para a outra não dá salto. A escala é **medida**: o sistema mostra só os 2/3 centrais mascarados num círculo, e herdar os 78% do ícone do launcher, que só precisa caber numa zona segura quadrada, cortava a borda da mesa e as faíscas. `android/icons/install.sh` copia `drawable*` junto dos `mipmap*`, e um teste cobra o que falha calado: os dois arquivos existirem, os dois fundos serem a mesma cor, a marca ser 2,5:1 (a vista do Android tem 200x80 dp fixos e deforma o resto) e a arte caber no círculo
+
 ---
 
 ## [v0.9.0 (2026-09-06)](https://github.com/ricasolucoes/PlayTable/compare/v0.8.1...v0.9.0)
