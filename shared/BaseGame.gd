@@ -89,10 +89,21 @@ func _enter_tree() -> void:
 	_montar_ajuda()
 	_montar_resultado()
 	_ligar_rede()
+	# A mao de cartas do UNO, a grade do Memoria, as pecas do Nim e do Hanoi:
+	# toda rolagem de cena de jogo passa a rolar no dedo. Adiado porque em
+	# `_enter_tree` os filhos da cena ainda nao entraram na arvore.
+	_ligar_rolagens.call_deferred()
 
 
 func _exit_tree() -> void:
 	_desligar_rede()
+
+
+## Poe `DragScroll` em todo ScrollContainer da cena. O da engine nao rola no
+## arrasto do dedo -- a medicao esta no proprio `DragScroll`.
+func _ligar_rolagens() -> void:
+	if is_inside_tree():
+		DragScroll.attach_all(self)
 
 
 ## Pendura o cartao de fim de partida. Entra por ultimo e numa camada propria,

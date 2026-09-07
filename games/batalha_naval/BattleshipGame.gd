@@ -41,6 +41,31 @@ var player_ships: Array = []
 var ai_ships: Array = []
 var is_player_turn: bool = true
 
+## Em que ponto da partida estamos.
+##
+## Ate aqui nao havia ponto nenhum: `_start_new_game()` sorteava a frota do
+## jogador junto com a da IA e a partida ja comecava com os cinco navios
+## postos. Metade de uma batalha naval e esconder a frota onde o adversario nao
+## procura -- sem a escolha, o jogador so aperta casas do mapa de cima.
+enum Fase { POSICIONANDO, BATALHA }
+var fase: int = Fase.POSICIONANDO
+
+## Qual navio de `BattleshipRules.SHIP_DEFS` esta na mao agora, e como ele deita.
+var _navio_atual: int = 0
+var _vertical: bool = false
+
+## Preview da casa sob o dedo/ponteiro durante o posicionamento.
+var _preview: Array = []
+
+## O retangulo que a camera enquadra. Guardado porque a barra de posicionar
+## some quando a batalha comeca, e a faixa util cresce com ela.
+var _conteudo_da_mesa: Vector2 = Vector2.ZERO
+
+@onready var setup_bar: HBoxContainer = $SetupBar
+@onready var btn_rotate: Button = $SetupBar/BtnRotate
+@onready var btn_random: Button = $SetupBar/BtnRandom
+@onready var btn_start: Button = $SetupBar/BtnStart
+
 ## Degrau de 1 a 10 do DifficultyManager. Vira a chance de a IA largar o mapa
 ## de densidade e sortear casa.
 var ai_level: int = DifficultyManager.DEFAULT_LEVEL
@@ -82,6 +107,10 @@ func _ready() -> void:
 	# O toque entra pelo proprio tabuleiro: a casa tocada e a casa desenhada.
 	radar_board.cell_clicked.connect(_on_radar_cell_clicked)
 	fleet_board.cell_clicked.connect(_on_fleet_cell_clicked)
+	# No computador o ponteiro passeia antes de clicar, e o navio acompanha; no
+	# telefone o `emulate_mouse_from_touch` faz o dedo arrastando gerar o mesmo
+	# movimento, entao arrastar tambem mostra onde o navio vai cair.
+	fleet_board.cell_hovered.connect(_on_fleet_cell_hovered)
 
 	_start_new_game()
 
@@ -105,7 +134,8 @@ func _place_boards() -> void:
 	_board_caption(fleet_board, tr("BATTLESHIP_YOUR_FLEET"), Color(0.52, 0.86, 1.0), fleet_size)
 
 	# A HUD ocupa os 230 px de cima; a camera enquadra a faixa que sobra.
-	fit_table(Vector2(maxf(radar_size.x, fleet_size.x) + 0.45, total_depth + 0.45))
+	_conteudo_da_mesa = Vector2(maxf(radar_size.x, fleet_size.x) + 0.45, total_depth + 0.45)
+	fit_table(_conteudo_da_mesa)
 
 
 func _board_caption(board: Board3D, text: String, color: Color, board_size: Vector2) -> void:
@@ -145,7 +175,7 @@ func _start_new_game() -> void:
 
 	player_grid = Grid2D.new(GRID, GRID, 0)
 	ai_grid = Grid2D.new(GRID, GRID, 0)
-	player_ships = BattleshipRules.place_all_ships_random(player_grid)
+	player_ships = []
 	ai_ships = BattleshipRules.place_all_ships_random(ai_grid)
 	ai_level = DifficultyManager.get_level(game_id)
 	ai_memoria = BattleshipAI.nova_memoria()
@@ -158,12 +188,13 @@ func _start_new_game() -> void:
 	radar_board.clear_states()
 	fleet_board.clear_states()
 
-	# A frota aliada fica a vista o tempo todo: e o mapa que o jogador consulta.
-	for i in player_ships.size():
-		_render_player_hull(player_ships[i], i)
-
+	fase = Fase.POSICIONANDO
+	_navio_atual = 0
+	_preview = []
+	setup_bar.visible = true
+	_pintar_botao_de_giro()
 	_update_fleet_status_labels()
-	set_status(tr("BATTLESHIP_YOUR_TURN"))
+	_anunciar_posicionamento()
 
 
 # ---------------------------------------------------------------------------
@@ -344,17 +375,224 @@ func _update_fleet_status_labels() -> void:
 
 
 # ---------------------------------------------------------------------------
+# Posicionamento da frota
+# ---------------------------------------------------------------------------
+
+## O navio que esta na mao agora, ou `{}` quando os cinco ja estao na agua.
+func _def_do_navio_atual() -> Dictionary:
+	if _navio_atual < 0 or _navio_atual >= BattleshipRules.SHIP_DEFS.size():
+		return {}
+	return BattleshipRules.SHIP_DEFS[_navio_atual]
+
+
+## As casas que o navio da mao ocuparia se o dedo largasse em (r, c).
+func _casas_da_previa(r: int, c: int) -> Array:
+	var def := _def_do_navio_atual()
+	if def.is_empty():
+		return []
+	var tamanho := int(def["size"])
+	var ancora := BattleshipRules.anchor_for(r, c, tamanho, _vertical)
+	return BattleshipRules.cells_for(ancora.x, ancora.y, tamanho, _vertical)
+
+
+## Acende no mapa da frota onde o navio vai cair: verde se cabe, vermelho se
+## nao. Sem isto o jogador so descobre a posicao depois de o casco aparecer.
+func _mostrar_previa(r: int, c: int) -> void:
+	var casas := _casas_da_previa(r, c)
+	if casas == _preview:
+		return
+	_preview = casas
+	fleet_board.clear_states()
+	if casas.is_empty():
+		return
+	var cabe := BattleshipRules.can_place(player_grid, casas)
+	fleet_board.set_cells_state(casas,
+		Board3D.CellState.VALID if cabe else Board3D.CellState.INVALID)
+
+
+## Poe o navio da mao no mapa, ou recolhe o que ja estava na casa tocada.
+func _posicionar_em(r: int, c: int) -> void:
+	var def := _def_do_navio_atual()
+
+	# Com a mao vazia -- os cinco ja na agua --, tocar num navio o devolve para a
+	# mao: e como se corrige uma posicao sem recomecar a frota inteira. Com um
+	# navio na mao o toque e sempre uma tentativa de POR, nunca de tirar: pegar
+	# um segundo navio deixaria dois na mao e ninguem saberia qual esta indo.
+	if def.is_empty():
+		var posto := _navio_em(r, c)
+		if posto >= 0:
+			_recolher_navio(posto)
+		else:
+			set_status(tr("BATTLESHIP_PLACE_DONE"))
+		return
+
+	var casas := _casas_da_previa(r, c)
+	if not BattleshipRules.can_place(player_grid, casas):
+		set_status(tr("BATTLESHIP_PLACE_BLOCKED"))
+		if AudioManager:
+			AudioManager.play_error()
+		return
+
+	for cell in casas:
+		var v: Vector2i = cell
+		player_grid.set_cell(v.x, v.y, 1)
+	var navio := {
+		"name": def["name"],
+		"size": int(def["size"]),
+		"cells": casas,
+		"hits": 0,
+		"sunk": false,
+	}
+	player_ships.append(navio)
+	_render_player_hull(navio, player_ships.size() - 1)
+	if AudioManager:
+		AudioManager.play_piece_place()
+
+	# O proximo da mao e sempre o primeiro que FALTA, e nao o seguinte na lista:
+	# depois de recolher o Cruzador e repo-lo, "o seguinte" seria o Submarino,
+	# que ja estava na agua -- e ele acabava posto duas vezes.
+	_navio_atual = _primeiro_faltando()
+	_preview = []
+	fleet_board.clear_states()
+	_anunciar_posicionamento()
+
+
+## O indice do navio do jogador que ocupa esta casa, ou -1.
+func _navio_em(r: int, c: int) -> int:
+	var alvo := Vector2i(r, c)
+	for i in range(player_ships.size()):
+		if alvo in player_ships[i]["cells"]:
+			return i
+	return -1
+
+
+## Tira o navio do mapa e o devolve para a mao.
+func _recolher_navio(indice: int) -> void:
+	var navio: Dictionary = player_ships[indice]
+	for cell in navio["cells"]:
+		var v: Vector2i = cell
+		player_grid.set_cell(v.x, v.y, 0)
+	player_ships.remove_at(indice)
+	_redesenhar_frota()
+	# A ordem dos navios e a de `SHIP_DEFS`, e a mao anda por essa ordem: o
+	# proximo a posicionar e sempre o primeiro que faltar.
+	_navio_atual = _primeiro_faltando()
+	_preview = []
+	fleet_board.clear_states()
+	if AudioManager:
+		AudioManager.play_click()
+	set_status(tr("BATTLESHIP_PLACE_PICKUP") % tr(str(navio["name"])))
+	_atualizar_botoes_de_posicionar()
+
+
+## O primeiro navio de `SHIP_DEFS` que ainda nao esta na agua.
+func _primeiro_faltando() -> int:
+	for i in range(BattleshipRules.SHIP_DEFS.size()):
+		var nome: String = BattleshipRules.SHIP_DEFS[i]["name"]
+		var achou := false
+		for navio in player_ships:
+			if str(navio["name"]) == nome:
+				achou = true
+				break
+		if not achou:
+			return i
+	return BattleshipRules.SHIP_DEFS.size()
+
+
+func _redesenhar_frota() -> void:
+	for c in _fleet_hulls.get_children():
+		c.queue_free()
+	_player_hull_nodes.clear()
+	for i in range(player_ships.size()):
+		_render_player_hull(player_ships[i], i)
+
+
+func _anunciar_posicionamento() -> void:
+	_atualizar_botoes_de_posicionar()
+	var def := _def_do_navio_atual()
+	if def.is_empty():
+		set_status(tr("BATTLESHIP_PLACE_DONE"))
+		return
+	set_status(tr("BATTLESHIP_PLACE_SHIP") % [tr(str(def["name"])), int(def["size"])])
+
+
+func _atualizar_botoes_de_posicionar() -> void:
+	var completa := player_ships.size() >= BattleshipRules.SHIP_DEFS.size()
+	btn_start.disabled = not completa
+	_pintar_botao_de_giro()
+
+
+func _pintar_botao_de_giro() -> void:
+	btn_rotate.text = tr("BATTLESHIP_BTN_ROTATE_V" if _vertical else "BATTLESHIP_BTN_ROTATE_H")
+
+
+func _on_btn_rotate_pressed() -> void:
+	_vertical = not _vertical
+	_pintar_botao_de_giro()
+	_preview = []
+	fleet_board.clear_states()
+	play_click()
+
+
+func _on_btn_random_pressed() -> void:
+	play_click()
+	player_grid.fill(0)
+	player_ships = BattleshipRules.place_all_ships_random(player_grid)
+	_redesenhar_frota()
+	_navio_atual = _primeiro_faltando()
+	_preview = []
+	fleet_board.clear_states()
+	_anunciar_posicionamento()
+
+
+## Fecha o posicionamento e comeca a batalha.
+func _on_btn_start_pressed() -> void:
+	if player_ships.size() < BattleshipRules.SHIP_DEFS.size():
+		return
+	play_click()
+	_comecar_batalha()
+
+
+func _comecar_batalha() -> void:
+	fase = Fase.BATALHA
+	_preview = []
+	fleet_board.clear_states()
+	setup_bar.visible = false
+	# A barra some, a faixa util cresce: os dois mapas reenquadram sozinhos.
+	if _conteudo_da_mesa != Vector2.ZERO:
+		fit_table(_conteudo_da_mesa)
+	is_player_turn = true
+	_update_fleet_status_labels()
+	set_status(tr("BATTLESHIP_YOUR_TURN"))
+	begin_match("solo")
+
+
+# ---------------------------------------------------------------------------
 # Turnos
 # ---------------------------------------------------------------------------
 
-func _on_fleet_cell_clicked(_r: int, _c: int) -> void:
+func _on_fleet_cell_clicked(r: int, c: int) -> void:
 	if game_over:
+		return
+	if fase == Fase.POSICIONANDO:
+		_posicionar_em(r, c)
 		return
 	set_status(tr("BATTLESHIP_WRONG_BOARD"))
 
 
+func _on_fleet_cell_hovered(r: int, c: int) -> void:
+	if fase != Fase.POSICIONANDO or game_over:
+		return
+	_mostrar_previa(r, c)
+
+
 func _on_radar_cell_clicked(r: int, c: int) -> void:
-	if game_over or not is_player_turn:
+	if game_over:
+		return
+	if fase == Fase.POSICIONANDO:
+		set_status(tr("BATTLESHIP_PLACE_WAIT"))
+		return
+	if not is_player_turn:
 		return
 	var cell_val: int = ai_grid.get_cell(r, c)
 	if cell_val == 2 or cell_val == 3:

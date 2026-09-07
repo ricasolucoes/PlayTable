@@ -31,6 +31,10 @@ const VERDE := Color(0.42, 0.82, 0.52)
 
 static func cartao(preenchido: bool = true) -> PanelContainer:
 	var p := PanelContainer.new()
+	# O cartao e moldura, nao alvo: em `MOUSE_FILTER_STOP` ele engolia o
+	# arrasto do dedo e a lista dentro do ScrollContainer nao rolava. Ver
+	# `rolavel()` logo abaixo.
+	p.mouse_filter = Control.MOUSE_FILTER_PASS
 	var st := StyleBoxFlat.new()
 	st.bg_color = FUNDO_CARTAO if preenchido else Color(0.09, 0.10, 0.14, 0.55)
 	st.border_color = Color(0.30, 0.28, 0.22, 0.85)
@@ -65,15 +69,23 @@ static func paragrafo(texto: String, tamanho: int = FONTE_MIUDA, cor: Color = TE
 	return l
 
 
+## Caixas de arrumacao. Nascem em `MOUSE_FILTER_PASS` porque um Container em
+## `STOP` -- o padrao do Godot -- e uma parede invisivel no meio do caminho do
+## dedo: o `InputEventScreenDrag` sobe do botao (que ja e `PASS`), bate na
+## HBox que o segura e morre ali, sem nunca chegar ao ScrollContainer. Foi
+## assim que a tira de abas do perfil e a lista da colecao ficaram sem rolagem
+## no telefone enquanto a roda do mouse continuava rolando no computador.
 static func vbox(separacao: int = 8) -> VBoxContainer:
 	var v := VBoxContainer.new()
 	v.add_theme_constant_override("separation", separacao)
+	v.mouse_filter = Control.MOUSE_FILTER_PASS
 	return v
 
 
 static func hbox(separacao: int = 12) -> HBoxContainer:
 	var h := HBoxContainer.new()
 	h.add_theme_constant_override("separation", separacao)
+	h.mouse_filter = Control.MOUSE_FILTER_PASS
 	return h
 
 
@@ -92,6 +104,9 @@ static func expandir(c: Control) -> Control:
 ## lado, que dá para ler.
 static func barra(valor: int, total: int, cor: Color = OURO, altura: float = 14.0) -> ProgressBar:
 	var b := ProgressBar.new()
+	# Desenho puro: nao recebe toque nenhum, e sair da frente e o que deixa o
+	# dedo alcancar a rolagem por cima dela.
+	b.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	b.max_value = maxf(1.0, float(total))
 	b.value = clampf(float(valor), 0.0, b.max_value)
 	b.show_percentage = false
@@ -141,6 +156,21 @@ static func botao(texto: String, tamanho: int = FONTE_CORPO) -> Button:
 static func rolavel(c: Control) -> Control:
 	c.mouse_filter = Control.MOUSE_FILTER_PASS
 	return c
+
+
+## ScrollContainer que rola no dedo. O da engine so rola na roda do mouse e na
+## barra lateral -- ver `DragScroll`, que explica a medicao. Todo lugar que
+## rola no PlayTable passa por aqui ou por `DragScroll.attach()`.
+static func rolagem(vertical: bool = true, horizontal: bool = false) -> ScrollContainer:
+	var r := ScrollContainer.new()
+	r.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO if vertical \
+		else ScrollContainer.SCROLL_MODE_DISABLED
+	r.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO if horizontal \
+		else ScrollContainer.SCROLL_MODE_DISABLED
+	if vertical:
+		r.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	DragScroll.attach(r)
+	return r
 
 
 ## Linha "rótulo à esquerda, valor à direita" -- o formato de toda estatística.

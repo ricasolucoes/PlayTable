@@ -81,9 +81,7 @@ func build(game_id: String, titulo: String) -> void:
 
 	# Rolagem porque regra de gamão não cabe numa tela de telefone, e cortar a
 	# regra pela metade é pior do que não tê-la.
-	var rolagem := ScrollContainer.new()
-	rolagem.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	rolagem.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	var rolagem := UIKit.rolagem()
 	UIKit.rolavel(rolagem)
 	caixa.add_child(rolagem)
 

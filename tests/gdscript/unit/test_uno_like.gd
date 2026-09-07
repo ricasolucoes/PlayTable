@@ -149,6 +149,66 @@ func test_primeira_carta_da_mesa_nunca_e_curinga() -> void:
 		assert_eq(jogo.active_color, topo.color_type, "a cor ativa comeca igual a do topo")
 
 
+## O modal de escolha de cor: cada botao tem de pousar a cor que ele anuncia.
+##
+## As ligacoes moravam no `.tscn` com a cor passada como numero cru -- 0, 1, 2,
+## 3 --, e em `Card.ColorType` esses numeros sao NONE, RED, BLACK e BLUE.
+## Escolher "Vermelho" punha a mesa em "sem cor" e dai em diante nenhuma carta
+## combinava: a partida travava depois de todo curinga. Nada apontava para o
+## defeito porque o numero e um numero valido.
+func test_cada_botao_do_modal_pousa_a_cor_que_anuncia() -> void:
+	var esperado := {
+		"BtnRed": VERMELHO,
+		"BtnBlue": AZUL,
+		"BtnGreen": VERDE,
+		"BtnYellow": AMARELO,
+	}
+	for nome in esperado:
+		var jogo = add_child_autofree(GameScene.instantiate())
+		await wait_process_frames(1)
+		jogo.waiting_color_pick = true
+		jogo.active_color = CURINGA
+		var botao: Button = jogo.color_picker_grid.get_node(nome)
+		botao.emit_signal("pressed")
+		assert_eq(jogo.active_color, esperado[nome],
+			"%s deixa a mesa em %s" % [nome, Card.COLOR_NAMES[esperado[nome]]])
+
+
+## O curinga abre o modal com o veu por tras dele. Sem o veu o modal flutua
+## sobre uma mesa que continua parecendo tocavel, e a mao debaixo dele recebia
+## o toque.
+func test_o_curinga_abre_o_modal_com_veu() -> void:
+	var jogo = add_child_autofree(GameScene.instantiate())
+	await wait_process_frames(1)
+	assert_false(jogo.color_picker_modal.visible, "o modal nasce fechado")
+	var curinga := Card.new(0, Card.Suit.NONE, CURINGA, "wild")
+	jogo.player_hand.add(curinga)
+	jogo.is_player_turn = true
+	jogo._on_player_card_clicked(jogo.player_hand.size() - 1)
+	assert_true(jogo.color_picker_modal.visible, "jogar o curinga abre a escolha")
+	assert_true(jogo.color_picker_veil.visible, "e o veu escurece a mesa atras")
+	jogo._on_color_chosen(VERDE)
+	assert_false(jogo.color_picker_modal.visible, "escolher fecha o modal")
+	assert_false(jogo.color_picker_veil.visible, "e tira o veu junto")
+
+
+## A mao da IA aparece na mesa, de costas, com uma carta por carta. O numero no
+## canto da barra existia, mas ninguem o via no meio da partida.
+func test_o_leque_da_ia_tem_uma_carta_por_carta_da_mao() -> void:
+	var jogo = add_child_autofree(GameScene.instantiate())
+	await wait_process_frames(1)
+	assert_eq(jogo.ai_cards_3d.size(), jogo.ai_hand.size(), "sete de costas na mesa")
+	for carta in jogo.ai_cards_3d:
+		assert_false((carta as Card3D).is_face_up, "a mao do adversario fica escondida")
+	jogo.ai_hand.add(jogo.draw_pile.draw())
+	jogo._update_ui()
+	assert_eq(jogo.ai_cards_3d.size(), jogo.ai_hand.size(), "comprou uma, o leque cresceu")
+	jogo.ai_hand.remove_at(0)
+	jogo.ai_hand.remove_at(0)
+	jogo._update_ui()
+	assert_eq(jogo.ai_cards_3d.size(), jogo.ai_hand.size(), "jogou duas, o leque encolheu")
+
+
 func test_partida_completa_nao_trava() -> void:
 	# Guarda contra deadlock: substitui test_e2e_unolike_simulation.
 	for _partida in range(10):

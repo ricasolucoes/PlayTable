@@ -12,6 +12,11 @@ func _initialize() -> void:
 	var h: int = int(argv[4])
 	var calls: PackedStringArray = argv[5].split(",") if argv.size() > 5 else PackedStringArray()
 
+	# Sem redimensionar a JANELA a captura sai nos 360x640 do
+	# `window_width_override` do projeto, com a HUD ocupando o dobro da fracao
+	# de tela que ocupa no aparelho. Mesmo motivo, e mesma correcao, do
+	# `shot.gd` ao lado.
+	DisplayServer.window_set_size(Vector2i(w, h))
 	root.content_scale_mode = Window.CONTENT_SCALE_MODE_CANVAS_ITEMS
 	root.content_scale_aspect = Window.CONTENT_SCALE_ASPECT_EXPAND
 	root.content_scale_size = Vector2i(w, h)

@@ -22,3 +22,40 @@ script = ExtResource("1_script")
 [node name="FleetBoard" parent="." instance=ExtResource("3_board")]
 
 [node name="GameShell" parent="." instance=ExtResource("4_shell")]
+
+[node name="SetupBar" type="HBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 16.0
+offset_top = -124.0
+offset_right = -16.0
+offset_bottom = -28.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_constants/separation = 12
+alignment = 1
+
+[node name="BtnRotate" type="Button" parent="SetupBar"]
+custom_minimum_size = Vector2(190.0, 88.0)
+layout_mode = 2
+text = "BATTLESHIP_BTN_ROTATE_H"
+
+[node name="BtnRandom" type="Button" parent="SetupBar"]
+custom_minimum_size = Vector2(190.0, 88.0)
+layout_mode = 2
+text = "BATTLESHIP_BTN_RANDOM"
+
+[node name="BtnStart" type="Button" parent="SetupBar"]
+custom_minimum_size = Vector2(190.0, 88.0)
+layout_mode = 2
+disabled = true
+text = "BATTLESHIP_BTN_START"
+
+[connection signal="pressed" from="SetupBar/BtnRotate" to="." method="_on_btn_rotate_pressed"]
+
+[connection signal="pressed" from="SetupBar/BtnRandom" to="." method="_on_btn_random_pressed"]
+
+[connection signal="pressed" from="SetupBar/BtnStart" to="." method="_on_btn_start_pressed"]

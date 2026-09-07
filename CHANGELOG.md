@@ -9,6 +9,22 @@
 
 ## [Unreleased](https://github.com/ricasolucoes/PlayTable/compare/v0.9.0...develop)
 
+### ✨ Novidades
+
+- [x] **A frota da Batalha Naval é posicionada pelo jogador** (`games/batalha_naval/`) — a partida abre num modo de posicionamento: navio a navio, do porta-aviões ao destroyer, tocando no próprio mapa; o navio nasce centrado no dedo e encostado na borda quando falta espaço, **Deitado/De pé** troca o eixo, **Sortear** resolve a frota inteira de uma vez e **Começar** só acende com os cinco na água. Tocar num navio já posto o devolve para a mão. Antes a frota do jogador era sorteada junto com a da IA: metade de uma batalha naval é escolher onde esconder os navios, e essa metade não existia
+- [x] **A mão do adversário no UNO fica na mesa** (`games/unolike/UnoLikeGame.gd`) — um leque de cartas de costas no alto do feltro, uma por carta, que cresce e encolhe com a mão da IA. O número existia só como um dígito no canto da barra, ao lado do próprio placar; agora quem está com uma carta só se lê de relance
+
+### 🎨 Melhorias
+
+- [x] **Escolher o peão no Ludo é tocar no peão** (`games/ludo/`) — a tira de botões "Peão 1".."Peão 4" no pé da tela saiu. O peão que pode andar levanta, o anel acende na casa onde ele pararia, e vale tocar no peão, tocar no anel, ou arrastar um até o outro. O próprio dado da mesa também rola no toque
+- [x] **O modal de cor do UNO cabe e escurece a mesa** — os quatro botões estavam espremidos numa caixa de 360x200 e pintados por `self_modulate`, que o tema comia; agora são quatro alvos de 176x96 na cor de verdade, com véu por trás
+
+### 🐛 Correções
+
+- [x] **Escolher a cor depois do curinga não travava mais a partida** (`games/unolike/UnoLikeGame.tscn`) — as ligações dos quatro botões moravam na cena com a cor passada como número cru (`binds = [0]`, `[1]`, `[2]`, `[3]`), e em `Card.ColorType` esses números são `NONE`, `RED`, `BLACK` e `BLUE`: escolher "Vermelho" punha a mesa em "sem cor" e, dali em diante, carta nenhuma combinava. A cor agora sai do enum, no código
+- [x] **As listas rolam no dedo** (`shared/ui/DragScroll.gd`) — a coleção do perfil, a tira de abas, os menus de jogos, o lobby, o painel de regras e a mão cheia do UNO ficavam presos na primeira tela. O `ScrollContainer` da engine rola na roda do mouse e na barra lateral, mas não no arrasto de toque: medido no 4.7.2 com evento sintético fiel, no `SubViewport` e na janela raiz, com e sem `--headless`, `scroll_vertical` termina em zero e `scroll_started` nunca sai. A rolagem passou a ser nossa — zona morta, inércia e `NOTIFICATION_SCROLL_BEGIN` para o botão sob o dedo não disparar quando o gesto vira rolagem
+- [x] **O cartão do perfil deixa o dedo passar** (`shared/ui/UIKit.gd`) — `PanelContainer` nasce em `MOUSE_FILTER_STOP` e engolia o arrasto antes de ele chegar à rolagem; a carta do UNO fazia o mesmo com `accept_event()`, e por isso a mão cheia só respondia nas cartas já visíveis
+
 ---
 
 ## [v0.9.0 (2026-09-06)](https://github.com/ricasolucoes/PlayTable/compare/v0.8.1...v0.9.0)

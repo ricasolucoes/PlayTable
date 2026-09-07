@@ -63,6 +63,9 @@ static var _degrade_scrim: GradientTexture2D = null
 
 
 func _ready() -> void:
+	# A lista de jogos rola no dedo: o ScrollContainer da cena sozinho so rola
+	# na roda do mouse. Ver `DragScroll`.
+	DragScroll.attach_all(self)
 	_ler_filtro_salvo()
 	var botao := _btn_filtro()
 	if botao != null:

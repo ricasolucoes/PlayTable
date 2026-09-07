@@ -35,61 +35,6 @@ horizontal_alignment = 1
 clip_text = true
 mouse_filter = 2
 
-[node name="ColorPickerModal" type="PanelContainer" parent="UI"]
-visible = false
-layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -180.0
-offset_top = -100.0
-offset_right = 180.0
-offset_bottom = 100.0
-grow_horizontal = 2
-grow_vertical = 2
-
-[node name="VBox" type="VBoxContainer" parent="UI/ColorPickerModal"]
-layout_mode = 2
-theme_override_constants/separation = 12
-alignment = 1
-
-[node name="Label" type="Label" parent="UI/ColorPickerModal/VBox"]
-layout_mode = 2
-text = "UNO_PICK_COLOR_SHORT"
-horizontal_alignment = 1
-
-[node name="Grid" type="GridContainer" parent="UI/ColorPickerModal/VBox"]
-layout_mode = 2
-theme_override_constants/h_separation = 10
-theme_override_constants/v_separation = 10
-columns = 2
-
-[node name="BtnRed" type="Button" parent="UI/ColorPickerModal/VBox/Grid"]
-self_modulate = Color(0.9, 0.25, 0.25, 1)
-custom_minimum_size = Vector2(160.0, 88.0)
-layout_mode = 2
-text = "COLOR_RED"
-
-[node name="BtnBlue" type="Button" parent="UI/ColorPickerModal/VBox/Grid"]
-self_modulate = Color(0.2, 0.55, 0.9, 1)
-custom_minimum_size = Vector2(160.0, 88.0)
-layout_mode = 2
-text = "COLOR_BLUE"
-
-[node name="BtnGreen" type="Button" parent="UI/ColorPickerModal/VBox/Grid"]
-self_modulate = Color(0.2, 0.75, 0.35, 1)
-custom_minimum_size = Vector2(160.0, 88.0)
-layout_mode = 2
-text = "COLOR_GREEN"
-
-[node name="BtnYellow" type="Button" parent="UI/ColorPickerModal/VBox/Grid"]
-self_modulate = Color(0.95, 0.8, 0.1, 1)
-custom_minimum_size = Vector2(160.0, 88.0)
-layout_mode = 2
-text = "COLOR_YELLOW"
-
 [node name="Actions" type="HBoxContainer" parent="UI"]
 layout_mode = 1
 anchors_preset = 12
@@ -137,8 +82,72 @@ size_flags_horizontal = 3
 theme_override_constants/separation = 8
 alignment = 1
 
-[connection signal="pressed" from="UI/ColorPickerModal/VBox/Grid/BtnRed" to="." method="_on_color_chosen" binds= [0]]
-[connection signal="pressed" from="UI/ColorPickerModal/VBox/Grid/BtnBlue" to="." method="_on_color_chosen" binds= [1]]
-[connection signal="pressed" from="UI/ColorPickerModal/VBox/Grid/BtnGreen" to="." method="_on_color_chosen" binds= [2]]
-[connection signal="pressed" from="UI/ColorPickerModal/VBox/Grid/BtnYellow" to="." method="_on_color_chosen" binds= [3]]
+[node name="ColorPickerVeil" type="ColorRect" parent="UI"]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.02, 0.02, 0.04, 0.62)
+
+[node name="ColorPickerModal" type="PanelContainer" parent="UI"]
+visible = false
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -210.0
+offset_top = -170.0
+offset_right = 210.0
+offset_bottom = 170.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBox" type="VBoxContainer" parent="UI/ColorPickerModal"]
+layout_mode = 2
+theme_override_constants/separation = 12
+alignment = 1
+
+[node name="Label" type="Label" parent="UI/ColorPickerModal/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 32
+text = "UNO_PICK_COLOR_SHORT"
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="Grid" type="GridContainer" parent="UI/ColorPickerModal/VBox"]
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_constants/h_separation = 14
+theme_override_constants/v_separation = 14
+columns = 2
+
+[node name="BtnRed" type="Button" parent="UI/ColorPickerModal/VBox/Grid"]
+self_modulate = Color(0.9, 0.25, 0.25, 1)
+custom_minimum_size = Vector2(176.0, 96.0)
+layout_mode = 2
+text = "COLOR_RED"
+
+[node name="BtnBlue" type="Button" parent="UI/ColorPickerModal/VBox/Grid"]
+self_modulate = Color(0.2, 0.55, 0.9, 1)
+custom_minimum_size = Vector2(176.0, 96.0)
+layout_mode = 2
+text = "COLOR_BLUE"
+
+[node name="BtnGreen" type="Button" parent="UI/ColorPickerModal/VBox/Grid"]
+self_modulate = Color(0.2, 0.75, 0.35, 1)
+custom_minimum_size = Vector2(176.0, 96.0)
+layout_mode = 2
+text = "COLOR_GREEN"
+
+[node name="BtnYellow" type="Button" parent="UI/ColorPickerModal/VBox/Grid"]
+self_modulate = Color(0.95, 0.8, 0.1, 1)
+custom_minimum_size = Vector2(176.0, 96.0)
+layout_mode = 2
+text = "COLOR_YELLOW"
+
 [connection signal="pressed" from="UI/Actions/BtnDraw" to="." method="_on_btn_draw_pressed"]

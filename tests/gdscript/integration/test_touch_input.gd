@@ -126,8 +126,85 @@ func test_tocar_uma_peca_das_damas_a_seleciona() -> void:
 
 # ---------------------------------------------------------- Batalha Naval
 
-func test_tocar_uma_coordenada_do_radar_atira() -> void:
+## A partida agora comeca com o jogador posicionando a propria frota. Quem
+## quiser testar a batalha sorteia a frota e manda comecar -- que e tambem o
+## caminho mais curto para quem joga.
+func _batalha_naval_em_combate() -> Node:
 	var jogo := await _montar(BATALHA_NAVAL)
+	jogo._on_btn_random_pressed()
+	jogo._on_btn_start_pressed()
+	await wait_process_frames(1)
+	return jogo
+
+
+func test_a_partida_comeca_posicionando_a_frota() -> void:
+	# Metade de uma batalha naval e escolher onde esconder os navios. Antes a
+	# frota do jogador era sorteada junto com a da IA e a escolha nao existia.
+	var jogo := await _montar(BATALHA_NAVAL)
+	assert_eq(jogo.fase, jogo.Fase.POSICIONANDO, "comeca posicionando")
+	assert_eq(jogo.player_ships.size(), 0, "nenhum navio na agua ainda")
+	assert_true(jogo.setup_bar.visible, "a barra de posicionar esta a vista")
+	assert_true(jogo.btn_start.disabled, "e nao da para comecar sem frota")
+
+
+func test_tocar_o_radar_antes_de_posicionar_nao_atira() -> void:
+	var jogo := await _montar(BATALHA_NAVAL)
+	jogo._on_radar_cell_clicked(3, 3)
+	assert_true(jogo.ai_grid.get_cell(3, 3) in [0, 1], "nada foi atacado")
+	assert_eq(jogo._radar_marks.get_child_count(), 0, "nenhum pino no radar")
+
+
+func test_posicionar_navio_a_navio_libera_o_comecar() -> void:
+	var jogo := await _montar(BATALHA_NAVAL)
+	for linha in range(BattleshipRules.SHIP_DEFS.size()):
+		jogo._on_fleet_cell_clicked(linha * 2, 4)
+	assert_eq(jogo.player_ships.size(), BattleshipRules.SHIP_DEFS.size(), "os cinco na agua")
+	assert_false(jogo.btn_start.disabled, "com a frota completa da para comecar")
+	var casas := 0
+	for r in range(10):
+		for c in range(10):
+			if jogo.player_grid.get_cell(r, c) == 1:
+				casas += 1
+	assert_eq(casas, 17, "as dezessete casas dos cinco navios")
+	jogo._on_btn_start_pressed()
+	await wait_process_frames(1)
+	assert_eq(jogo.fase, jogo.Fase.BATALHA, "e a batalha comeca")
+	assert_false(jogo.setup_bar.visible, "a barra de posicionar sai da tela")
+
+
+func test_navio_por_cima_de_outro_e_recusado() -> void:
+	var jogo := await _montar(BATALHA_NAVAL)
+	jogo._on_fleet_cell_clicked(0, 4)            # porta-avioes na linha 0
+	var antes: int = jogo.player_ships.size()
+	jogo._on_fleet_cell_clicked(0, 4)            # o encouracado na mesma linha
+	assert_eq(jogo.player_ships.size(), antes, "o segundo navio nao entrou")
+	assert_string_contains(jogo.status_label.text, "cima de outro", "e o aviso diz por que")
+
+
+func test_tocar_um_navio_ja_posto_o_devolve_para_a_mao() -> void:
+	var jogo := await _montar(BATALHA_NAVAL)
+	jogo._on_btn_random_pressed()
+	assert_eq(jogo.player_ships.size(), BattleshipRules.SHIP_DEFS.size(), "frota sorteada")
+	var alvo: Vector2i = jogo.player_ships[0]["cells"][0]
+	jogo._on_fleet_cell_clicked(alvo.x, alvo.y)
+	assert_eq(jogo.player_ships.size(), BattleshipRules.SHIP_DEFS.size() - 1, "o navio saiu do mapa")
+	assert_eq(jogo.player_grid.get_cell(alvo.x, alvo.y), 0, "e a casa ficou livre")
+	assert_true(jogo.btn_start.disabled, "com a frota incompleta nao se comeca")
+
+
+func test_o_navio_deitado_e_o_de_pe_ocupam_eixos_diferentes() -> void:
+	var jogo := await _montar(BATALHA_NAVAL)
+	jogo._on_fleet_cell_clicked(0, 4)
+	var deitado: Array = jogo.player_ships[0]["cells"]
+	assert_eq(deitado[0].x, deitado[deitado.size() - 1].x, "deitado anda na coluna")
+	jogo._on_btn_rotate_pressed()
+	jogo._on_fleet_cell_clicked(5, 8)
+	var de_pe: Array = jogo.player_ships[1]["cells"]
+	assert_eq(de_pe[0].y, de_pe[de_pe.size() - 1].y, "de pe anda na linha")
+
+
+func test_tocar_uma_coordenada_do_radar_atira() -> void:
+	var jogo := await _batalha_naval_em_combate()
 	var board: Board3D = jogo.radar_board
 	var alvo := Vector2i(4, 4)
 	assert_true(jogo.ai_grid.get_cell(alvo.x, alvo.y) in [0, 1], "coordenada ainda nao atacada")
@@ -140,7 +217,7 @@ func test_tocar_uma_coordenada_do_radar_atira() -> void:
 func test_tocar_a_propria_frota_avisa_em_vez_de_calar() -> void:
 	# Os dois mapas ficam na mesa ao mesmo tempo: tocar o de baixo nao pode
 	# atirar, mas tambem nao pode ficar calado.
-	var jogo := await _montar(BATALHA_NAVAL)
+	var jogo := await _batalha_naval_em_combate()
 	jogo._on_fleet_cell_clicked(0, 0)
 	assert_string_contains(jogo.status_label.text, "de cima", "manda atirar no mapa de cima")
 	assert_true(jogo.ai_grid.get_cell(0, 0) in [0, 1], "e nao atira")
@@ -148,7 +225,7 @@ func test_tocar_a_propria_frota_avisa_em_vez_de_calar() -> void:
 
 func test_a_frota_e_visivel_sobre_o_oceano() -> void:
 	# O casco antigo tinha a mesma luminancia das casas do oceano.
-	var jogo := await _montar(BATALHA_NAVAL)
+	var jogo := await _batalha_naval_em_combate()
 	await wait_process_frames(1)
 	assert_eq(jogo._fleet_hulls.get_child_count(), jogo.player_ships.size(), "um casco por navio")
 	var casco: MeshInstance3D = jogo._fleet_hulls.get_child(0)
@@ -160,7 +237,7 @@ func test_a_frota_e_visivel_sobre_o_oceano() -> void:
 func test_afundar_um_navio_inimigo_revela_o_casco_inteiro() -> void:
 	# Antes o jogador so ficava com os pinos vermelhos e nunca via o que tinha
 	# derrubado.
-	var jogo := await _montar(BATALHA_NAVAL)
+	var jogo := await _batalha_naval_em_combate()
 	var navio: Dictionary = jogo.ai_ships[0]
 	assert_eq(jogo._radar_wrecks.get_child_count(), 0, "nenhum destroco antes de afundar")
 	for casa in navio["cells"]:

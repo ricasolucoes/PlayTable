@@ -81,9 +81,7 @@ func _montar() -> void:
 
 	# O conteudo rola; o cabecalho e as abas ficam parados. Numa lista de 55
 	# conquistas o jogador perde a referencia de onde esta sem isso.
-	var rolagem := ScrollContainer.new()
-	rolagem.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	rolagem.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	var rolagem := UIKit.rolagem()
 	coluna.add_child(rolagem)
 
 	_conteudo = UIKit.vbox(12)
@@ -110,8 +108,7 @@ func _barra_superior() -> HBoxContainer:
 
 
 func _barra_de_abas() -> ScrollContainer:
-	var rolagem := ScrollContainer.new()
-	rolagem.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	var rolagem := UIKit.rolagem(false, true)
 	rolagem.custom_minimum_size = Vector2(0, UIKit.TOQUE_MIN + 8)
 
 	_tira_abas = rolagem

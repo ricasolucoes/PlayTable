@@ -123,9 +123,7 @@ func _montar() -> void:
 	# O corpo rola e a barra não. Em 3:4 (720x960) o conteúdo passa da tela, e
 	# é a régua de layout que cobra isso: fora de um ScrollContainer, um rótulo
 	# abaixo da dobra conta como interface fora da tela.
-	var rolagem := ScrollContainer.new()
-	rolagem.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	rolagem.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	var rolagem := UIKit.rolagem()
 	coluna.add_child(rolagem)
 
 	# `SIZE_EXPAND_FILL` dentro de um ScrollContainer nao e enfeite: sem ele o

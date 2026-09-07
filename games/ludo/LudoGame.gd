@@ -44,9 +44,12 @@ var pawns_3d = [[], [], [], []]
 
 ## Anel na casa de destino de cada peao que pode andar, e o arrasto do peao
 ## ate la. Levantar o peao dizia QUAL pode andar; nada dizia para ONDE, e a
-## unica maneira de escolher era o botao "Peao N" da HUD, que nao aponta para
-## nenhum peao da mesa. O anel e o mesmo do Board3D; o arrasto e o mesmo
-## `DragPicker3D` das Damas e do Gamao. Os botoes continuam valendo.
+## unica maneira de escolher era uma tira de botoes "Peao 1".."Peao 4" no pe da
+## tela -- um rotulo que nao aponta para peao nenhum do tabuleiro, e que obriga
+## a olhar para baixo no meio da jogada. Os botoes sairam: escolhe-se o peao
+## tocando NELE, ou no anel da casa de destino, ou arrastando um ate o outro.
+## O anel e o mesmo do Board3D; o arrasto e o mesmo `DragPicker3D` das Damas e
+## do Gamao.
 var halos: CellHalo3D = null
 var picker: DragPicker3D = null
 
@@ -62,7 +65,6 @@ const ALTURA_DA_CASA := 0.055
 @onready var pawns_root: Node3D = $PawnsRoot
 @onready var dice_3d: Dice3D = $Dice3D
 @onready var btn_dice: Button = $UI/DiceArea/BtnDice
-@onready var pawn_buttons_container: HBoxContainer = $UI/PawnSelectionArea/PawnButtons
 @onready var shell: GameShell = $GameShell
 
 func _ready() -> void:
@@ -208,6 +210,10 @@ func _refresh_picker_targets() -> void:
 		alvos[idx] = _get_track_position_3d(0, players_pawns[0][idx], idx)
 	for idx in _movable_atual:
 		alvos["dest_%d" % int(idx)] = _destino_do_peao(int(idx), last_roll)
+	# O proprio dado rola quando e a vez de rolar: e o objeto da mesa que
+	# corresponde ao gesto, e nao so a barra de 320 px no pe da tela.
+	if can_roll and current_turn == 0 and not game_over:
+		alvos["dado"] = dice_3d.position
 	picker.set_targets(alvos)
 
 
@@ -219,13 +225,27 @@ func _destino_do_peao(idx: int, roll: int) -> Vector3:
 	return _get_track_position_3d(0, passo, idx)
 
 
-## Tocou um peao levantado: e a escolha, sem passar pelo botao.
+## Tocou alguma coisa da mesa. Tres alvos valem: o peao levantado, o anel da
+## casa onde ele pararia, e o dado quando e a vez de rolar.
 func _on_peao_tocado(id: Variant) -> void:
 	if id is int and int(id) in _movable_atual:
 		_on_pawn_choice_selected(int(id), last_roll)
+		return
+	if id is String:
+		var texto := str(id)
+		if texto == "dado":
+			_on_btn_dice_pressed()
+		elif texto.begins_with("dest_"):
+			var idx := int(texto.substr(5))
+			if idx in _movable_atual:
+				_on_pawn_choice_selected(idx, last_roll)
 
 
 func _on_peao_pego(id: Variant) -> void:
+	if id is String and str(id) == "dado":
+		picker.cancel_drag()
+		_on_btn_dice_pressed()
+		return
 	if not (id is int) or not (int(id) in _movable_atual):
 		picker.cancel_drag()
 		return
@@ -323,6 +343,7 @@ func _start_new_game() -> void:
 	btn_dice.disabled = false
 	set_status(tr("LUDO_YOUR_TURN"))
 	_sync_pawns_positions(true)
+	_refresh_picker_targets()
 
 ## Peoes que chegaram ao centro, o unico placar que o Ludo tem -- e o unico
 ## jogo da casa que nao mostrava numero nenhum na tela ate agora. Sao quatro
@@ -361,6 +382,7 @@ func _on_btn_dice_pressed() -> void:
 	if not can_roll or game_over or current_turn != 0: return
 	can_roll = false
 	btn_dice.disabled = true
+	_refresh_picker_targets()
 	
 	var rolled := randi_range(1, 6)
 	set_status(tr("LUDO_ROLLING"))
@@ -408,6 +430,7 @@ func _handle_player_roll(roll: int) -> void:
 			set_status(tr("LUDO_TRY_AGAIN") % [roll, tentativas_restantes])
 			can_roll = true
 			btn_dice.disabled = false
+			_refresh_picker_targets()
 			return
 		set_status(tr("NO_MOVES_WITH") % roll)
 		await get_tree().create_timer(0.9).timeout
@@ -416,16 +439,8 @@ func _handle_player_roll(roll: int) -> void:
 		_move_player_pawn(movable[0], roll)
 	else:
 		set_status(tr("LUDO_PICK_PAWN"))
-		for c in pawn_buttons_container.get_children(): c.queue_free()
-		for idx in movable:
-			var btn := Button.new()
-			# 50 px de altura ficava abaixo do alvo minimo de toque do projeto.
-			btn.custom_minimum_size = Vector2(140, UIKit.TOQUE_MIN)
-			btn.text = tr("LUDO_MOVE_PAWN") % (idx + 1)
-			btn.pressed.connect(_on_pawn_choice_selected.bind(idx, roll))
-			pawn_buttons_container.add_child(btn)
-		# "Peao 1" e "Peao 2" nao dizem qual e qual no tabuleiro: o peao que pode
-		# andar levanta, e ai o numero do botao tem a quem se referir.
+		# Quem pode andar levanta e acende o anel na casa de destino: e o
+		# tabuleiro que faz a pergunta, e a resposta e um toque nele.
 		_levantar_peoes(movable)
 
 ## Levanta os peoes do jogador que podem andar e baixa o resto; acende o anel
@@ -448,7 +463,6 @@ func _levantar_peoes(indices: Array) -> void:
 	_refresh_picker_targets()
 
 func _on_pawn_choice_selected(pawn_idx: int, roll: int) -> void:
-	for c in pawn_buttons_container.get_children(): c.queue_free()
 	_levantar_peoes([])
 	_move_player_pawn(pawn_idx, roll)
 
@@ -468,6 +482,7 @@ func _move_player_pawn(idx: int, roll: int) -> void:
 		set_status(tr("LUDO_ROLLED_SIX"))
 		can_roll = true
 		btn_dice.disabled = false
+		_refresh_picker_targets()
 	else:
 		_next_turn()
 
@@ -478,6 +493,7 @@ func _next_turn() -> void:
 		tentativas_restantes = TENTATIVAS_NA_BASE
 		can_roll = true
 		btn_dice.disabled = false
+		_refresh_picker_targets()
 	else:
 		set_status(tr("LUDO_TURN_OF") % tr(PLAYER_NAMES[current_turn]))
 		can_roll = false

@@ -41,11 +41,12 @@ anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
 offset_left = 16.0
-offset_top = -216.0
+offset_top = -124.0
 offset_right = -16.0
-offset_bottom = -120.0
+offset_bottom = -28.0
 grow_horizontal = 2
 grow_vertical = 0
+mouse_filter = 2
 
 [node name="BtnDice" type="Button" parent="UI/DiceArea"]
 layout_mode = 1
@@ -62,28 +63,5 @@ offset_bottom = 44.0
 grow_horizontal = 2
 grow_vertical = 2
 text = "LUDO_BTN_ROLL"
-
-[node name="PawnSelectionArea" type="Control" parent="UI"]
-layout_mode = 1
-anchors_preset = 12
-anchor_top = 1.0
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = 16.0
-offset_top = -112.0
-offset_right = -16.0
-offset_bottom = -16.0
-grow_horizontal = 2
-grow_vertical = 0
-
-[node name="PawnButtons" type="HBoxContainer" parent="UI/PawnSelectionArea"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-theme_override_constants/separation = 16
-alignment = 1
 
 [connection signal="pressed" from="UI/DiceArea/BtnDice" to="." method="_on_btn_dice_pressed"]

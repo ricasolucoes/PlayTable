@@ -26,8 +26,22 @@ signal pressed()
 		queue_redraw()
 
 
+## Verdadeiro entre o toque e o soltar. So conta como jogada quem solta o dedo
+## na propria carta sem ter arrastado no meio do caminho.
+var _apertada: bool = false
+
+## Com `emulate_mouse_from_touch` ligado -- o padrao, e o que vale no Android --
+## um dedo chega duas vezes: como toque cru e como mouse emulado. Tratar as
+## duas familias jogaria a carta duas vezes. O mesmo cuidado que `Board3D` toma.
+var _toque_vira_mouse: bool = ProjectSettings.get_setting(
+	"input_devices/pointing/emulate_mouse_from_touch", true)
+
+
 func _ready() -> void:
-	mouse_filter = Control.MOUSE_FILTER_STOP
+	# `PASS` e nao `STOP`: com a mao cheia a fileira nao cabe na largura do
+	# telefone e passa a rolar, e em `STOP` a carta engolia o arrasto -- o dedo
+	# so conseguia mexer nas cartas que ja estavam a vista. Ver `UIKit.rolavel`.
+	mouse_filter = Control.MOUSE_FILTER_PASS
 
 
 func setup(card: Card) -> void:
@@ -35,18 +49,42 @@ func setup(card: Card) -> void:
 	color_key = UnoCardArt2D.color_key(card.color_type)
 
 
+## O ScrollContainer avisa a arvore quando o arrasto vira rolagem. Aqui isso
+## desarma a carta: sem o aviso, arrastar a mao para o lado comecando em cima
+## de uma carta a jogava ao levantar o dedo.
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_SCROLL_BEGIN:
+		_apertada = false
+
+
 func _gui_input(event: InputEvent) -> void:
 	if not playable:
 		return
-	var hit := false
 	if event is InputEventMouseButton:
 		var mb := event as InputEventMouseButton
-		hit = mb.pressed and mb.button_index == MOUSE_BUTTON_LEFT
-	elif event is InputEventScreenTouch:
-		hit = (event as InputEventScreenTouch).pressed
-	if hit:
-		accept_event()
-		pressed.emit()
+		if mb.button_index != MOUSE_BUTTON_LEFT:
+			return
+		if mb.pressed:
+			_apertada = true
+		elif _apertada:
+			_apertada = false
+			_disparar(mb.position)
+	elif event is InputEventScreenTouch and not _toque_vira_mouse:
+		var st := event as InputEventScreenTouch
+		if st.pressed:
+			_apertada = true
+		elif _apertada:
+			_apertada = false
+			_disparar(st.position)
+
+
+## Solta a jogada, mas so se o dedo subiu DENTRO da carta -- deslizar para fora
+## e desistir, como em qualquer botao.
+func _disparar(ponto: Vector2) -> void:
+	if not Rect2(Vector2.ZERO, size).has_point(ponto):
+		return
+	accept_event()
+	pressed.emit()
 
 
 func _draw() -> void:

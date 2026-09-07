@@ -83,9 +83,7 @@ func _montar() -> void:
 	titulo.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	linha.add_child(UIKit.expandir(titulo))
 
-	var rolagem := ScrollContainer.new()
-	rolagem.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	rolagem.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	var rolagem := UIKit.rolagem()
 	coluna.add_child(rolagem)
 
 	var margem := MarginContainer.new()

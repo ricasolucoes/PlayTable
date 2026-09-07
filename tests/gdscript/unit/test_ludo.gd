@@ -330,3 +330,61 @@ func test_a_escada_de_perfis_e_monotonica() -> void:
 		"o degrau de baixo erra com frequencia")
 	assert_lt(float(AIScript.PERFIS[0]["erro"]), 0.55,
 		"mas nao sorteia a maioria das jogadas: fraco e inexperiente, nao aleatorio")
+
+
+# ------------------------------------------------------- escolha pelo tabuleiro
+
+## Nao ha mais tira de botoes "Peao 1".."Peao 4" no pe da tela. O rotulo nao
+## apontava para peao nenhum do tabuleiro e obrigava a olhar para baixo no meio
+## da jogada; quem escolhe agora e o proprio peao.
+func test_a_tira_de_botoes_de_peao_nao_existe_mais() -> void:
+	var jogo := _jogo()
+	assert_null(jogo.get_node_or_null("UI/PawnSelectionArea"),
+		"a tira de botoes saiu da cena")
+
+
+func test_tocar_o_peao_levantado_o_move() -> void:
+	var jogo := _jogo()
+	await wait_process_frames(1)
+	jogo.players_pawns[0] = [-1, -1, 3, 9]
+	jogo.can_roll = false
+	jogo._sync_pawns_positions(true)
+	jogo._handle_player_roll(6)
+	await wait_process_frames(1)
+	assert_gt(jogo._movable_atual.size(), 1, "com o seis ha mais de uma escolha")
+	var idx: int = int(jogo._movable_atual[0])
+	var antes: int = jogo.players_pawns[0][idx]
+	jogo._on_peao_tocado(idx)
+	var esperado: int = 0 if antes == -1 else antes + 6
+	assert_eq(jogo.players_pawns[0][idx], esperado, "o peao tocado andou")
+
+
+## O anel na casa de destino tambem responde: ele e o alvo que diz PARA ONDE o
+## peao vai, e tocar nele e a leitura mais natural do tabuleiro.
+func test_tocar_o_anel_de_destino_move_o_peao_dele() -> void:
+	var jogo := _jogo()
+	await wait_process_frames(1)
+	jogo.players_pawns[0] = [-1, -1, 3, 9]
+	jogo.can_roll = false
+	jogo._sync_pawns_positions(true)
+	jogo._handle_player_roll(6)
+	await wait_process_frames(1)
+	var idx: int = int(jogo._movable_atual[jogo._movable_atual.size() - 1])
+	var antes: int = jogo.players_pawns[0][idx]
+	jogo._on_peao_tocado("dest_%d" % idx)
+	assert_eq(jogo.players_pawns[0][idx], antes + 6, "o peao do anel andou")
+
+
+## O dado da mesa e um alvo de toque enquanto e a vez de rolar -- e sai dos
+## alvos assim que ele rola, para nao rolar duas vezes.
+func test_o_dado_da_mesa_rola_no_toque() -> void:
+	var jogo := _jogo()
+	await wait_process_frames(1)
+	jogo.game_over = false
+	jogo.current_turn = 0
+	jogo.can_roll = true
+	jogo._refresh_picker_targets()
+	assert_ne(jogo.picker.screen_of("dado"), Vector2.INF, "o dado esta entre os alvos")
+	jogo._on_peao_tocado("dado")
+	assert_false(jogo.can_roll, "tocar o dado gastou a tirada")
+	assert_eq(jogo.picker.screen_of("dado"), Vector2.INF, "e ele saiu dos alvos")

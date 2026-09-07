@@ -29,6 +29,19 @@ var pending_wild4: bool = false
 
 var discard_cards_3d: Array[Card3D] = []
 
+## A mao da IA, de costas, no alto da mesa. O numero de cartas do adversario e
+## a informacao que decide a jogada -- e quem esta com uma carta so leva o
+## curinga +4 na cara --, e ate aqui ele existia apenas como um digito de 34 px
+## no canto da barra, ao lado do proprio placar e do rotulo de dificuldade.
+## Agora e um leque: sete cartas de costas se leem de relance, uma carta so
+## grita.
+var ai_cards_3d: Array[Card3D] = []
+
+## Onde o leque da IA pousa, e o quanto ele se abre.
+const AI_FAN_Z := -1.75
+const AI_FAN_LARGURA := 1.9
+const AI_FAN_ESCALA := 0.62
+
 ## Moldura no feltro em volta do descarte, na cor que esta valendo. Depois de um
 ## curinga a carta de cima e preta: sem esta marca so o texto do topo diz que
 ## cor foi escolhida, e ele fica longe de onde a jogada acontece.
@@ -38,7 +51,9 @@ var _color_marker: CellHalo3D = null
 @onready var shell: GameShell = $UI/GameShell
 @onready var active_color_banner: Label = $UI/ActiveColorBanner
 @onready var player_cards_container: HBoxContainer = $UI/PlayerArea/ScrollContainer/CardsContainer
+@onready var color_picker_veil: ColorRect = $UI/ColorPickerVeil
 @onready var color_picker_modal: PanelContainer = $UI/ColorPickerModal
+@onready var color_picker_grid: GridContainer = $UI/ColorPickerModal/VBox/Grid
 @onready var btn_draw: Button = $UI/Actions/BtnDraw
 
 func _ready() -> void:
@@ -52,12 +67,51 @@ func _ready() -> void:
 	# Sem informar a area util e o tamanho do conteudo, a camera enquadrava as
 	# 6x6 unidades padrao para um monte de descarte de uma carta so: a carta da
 	# mesa saia do tamanho de uma unha.
-	fit_table(Vector2(2.4, 2.4), Vector3(0.0, 0.0, -0.3))
+	# O leque da IA fica no alto da mesa, entao o retangulo a enquadrar vai do
+	# leque ate a beirada de baixo do descarte -- e nao so o descarte.
+	fit_table(Vector2(2.6, 3.3), Vector3(0.0, 0.0, -0.85))
 	_build_color_marker()
+	_ligar_botoes_de_cor()
 	player_hand = CardHand.new()
 	ai_hand = CardHand.new()
 	discard_pile = CardPile.new()
 	_start_new_game()
+
+
+## Liga os quatro botoes do modal a cor que cada um anuncia.
+##
+## As ligacoes moravam no `.tscn`, com a cor passada como numero cru:
+## `binds = [0]` no vermelho, `[1]` no azul, `[2]` no verde, `[3]` no amarelo.
+## Em `Card.ColorType` esses numeros sao NONE, RED, BLACK e BLUE -- escolher
+## "Vermelho" punha a mesa em "sem cor", e dai em diante nenhuma carta
+## combinava e a partida parava. Aqui a cor vem do enum, que e o unico lugar
+## onde ela e definida, e o botao ainda ganha a propria cor no fundo em vez de
+## um `self_modulate` que o tema come.
+const CORES_DO_MODAL := [
+	Card.ColorType.RED, Card.ColorType.BLUE,
+	Card.ColorType.GREEN, Card.ColorType.YELLOW,
+]
+
+func _ligar_botoes_de_cor() -> void:
+	var botoes := color_picker_grid.get_children()
+	for i in range(mini(botoes.size(), CORES_DO_MODAL.size())):
+		var b := botoes[i] as Button
+		if b == null:
+			continue
+		var cor_tipo: int = CORES_DO_MODAL[i]
+		var cor := UnoCardArt2D.color_of(UnoCardArt2D.color_key(cor_tipo))
+		for estado in ["normal", "hover", "pressed", "focus"]:
+			var st := StyleBoxFlat.new()
+			st.bg_color = cor.lightened(0.12) if estado == "pressed" else cor
+			st.set_corner_radius_all(14)
+			st.set_border_width_all(3)
+			st.border_color = Color(0.05, 0.05, 0.08, 0.85)
+			b.add_theme_stylebox_override(estado, st)
+		b.add_theme_color_override("font_color", Color(0.06, 0.06, 0.09))
+		b.add_theme_color_override("font_hover_color", Color(0.06, 0.06, 0.09))
+		b.add_theme_color_override("font_pressed_color", Color(0.06, 0.06, 0.09))
+		b.self_modulate = Color.WHITE
+		b.pressed.connect(_on_color_chosen.bind(cor_tipo))
 
 
 func _build_color_marker() -> void:
@@ -85,7 +139,7 @@ func _start_new_game() -> void:
 	waiting_color_pick = false
 	pending_wild4 = false
 	btn_restart.hide()
-	color_picker_modal.hide()
+	_mostrar_modal_de_cor(false)
 	
 	# So as cartas: `cards_root.get_children()` levaria junto a marca da cor
 	# ativa, que mora no mesmo no e tem de sobreviver entre partidas.
@@ -93,6 +147,10 @@ func _start_new_game() -> void:
 		if is_instance_valid(c):
 			c.queue_free()
 	discard_cards_3d.clear()
+	for c in ai_cards_3d:
+		if is_instance_valid(c):
+			c.queue_free()
+	ai_cards_3d.clear()
 	
 	ai_level = DifficultyManager.get_level(game_id)
 	draw_pile = Deck.create_uno_deck()
@@ -165,6 +223,8 @@ func _update_ui() -> void:
 	active_color_banner.add_theme_color_override("font_color", col)
 	_paint_active_color(col)
 	
+	_pintar_mao_da_ia()
+
 	# Mão do jogador
 	for c in player_cards_container.get_children(): c.queue_free()
 	var top_card := discard_pile.peek()
@@ -195,7 +255,7 @@ func _on_player_card_clicked(idx: int) -> void:
 	if card.color_type == Card.ColorType.WILD:
 		waiting_color_pick = true
 		pending_wild4 = (card.special_type == Card.SpecialType.WILD_DRAW_FOUR)
-		color_picker_modal.show()
+		_mostrar_modal_de_cor(true)
 		set_status(tr("UNO_PICK_COLOR"))
 		_update_ui()
 		return
@@ -204,8 +264,10 @@ func _on_player_card_clicked(idx: int) -> void:
 	_handle_card_effects_and_advance(card, true)
 
 func _on_color_chosen(col_type: Card.ColorType) -> void:
+	if not waiting_color_pick:
+		return
 	waiting_color_pick = false
-	color_picker_modal.hide()
+	_mostrar_modal_de_cor(false)
 	active_color = col_type
 	
 	var played_card := discard_pile.peek()
@@ -349,3 +411,52 @@ func _on_btn_draw_pressed() -> void:
 func _end_game(msg: String, is_player_win: bool) -> void:
 	shell.timer.stop()
 	finish_game(msg, is_player_win, {"time": shell.timer.get_time()})
+
+
+## O veu escurece a mesa junto com o modal: sem ele o modal de 420x340 flutuava
+## sobre um tabuleiro que continuava parecendo tocavel, e a mao do jogador
+## debaixo dele continuava recebendo o toque.
+func _mostrar_modal_de_cor(visivel: bool) -> void:
+	color_picker_veil.visible = visivel
+	color_picker_modal.visible = visivel
+
+
+## Redesenha o leque de costas da IA para casar com o tamanho da mao dela.
+##
+## Cartas entram e saem uma a uma, entao o leque so cresce ou encolhe pela
+## ponta: as que ficam apenas deslizam para a nova posicao, e a que entra cai
+## do alto como qualquer carta distribuida.
+func _pintar_mao_da_ia() -> void:
+	var quantas := ai_hand.size()
+
+	while ai_cards_3d.size() > quantas:
+		var fora: Card3D = ai_cards_3d.pop_back()
+		if is_instance_valid(fora):
+			fora.queue_free()
+
+	while ai_cards_3d.size() < quantas:
+		var c_3d: Card3D = preload("res://shared/3d/Card3D.tscn").instantiate()
+		c_3d.atlas = UnoCardAtlas3D
+		c_3d.scale = Vector3.ONE * AI_FAN_ESCALA
+		# De costas: e a mao do adversario. O verso e o mesmo do baralho da mesa.
+		c_3d.setup(UnoCardArt2D.KINDS[0], UnoCardArt2D.RED, false)
+		cards_root.add_child(c_3d)
+		ai_cards_3d.append(c_3d)
+		c_3d.position = _lugar_no_leque(ai_cards_3d.size() - 1, quantas) + Vector3(0.0, 1.6, 0.0)
+
+	for i in range(ai_cards_3d.size()):
+		var carta: Card3D = ai_cards_3d[i]
+		if not is_instance_valid(carta):
+			continue
+		carta.move_to(_lugar_no_leque(i, quantas), Tokens3D.DUR_FAST)
+
+
+## Onde a i-esima carta do leque da IA pousa. O leque nao passa de
+## `AI_FAN_LARGURA`: com dezoito cartas na mao ele aperta em vez de sair da
+## mesa, e a pilha densa ainda diz "muita carta" de relance.
+func _lugar_no_leque(i: int, total: int) -> Vector3:
+	if total <= 1:
+		return Vector3(0.0, 0.02, AI_FAN_Z)
+	var passo: float = minf(0.30, AI_FAN_LARGURA / float(total - 1))
+	var x: float = (float(i) - float(total - 1) * 0.5) * passo
+	return Vector3(x, 0.02 + float(i) * 0.002, AI_FAN_Z)

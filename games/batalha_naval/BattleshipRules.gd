@@ -53,6 +53,47 @@ static func check_all_sunk(fleet: Array) -> bool:
 		if not s.get("sunk", false): return false
 	return true
 
+## As casas que um navio de `size` ocupa comecando em (r, c). Vazio quando o
+## navio sairia do tabuleiro.
+static func cells_for(r: int, c: int, size: int, vertical: bool) -> Array[Vector2i]:
+	var cells: Array[Vector2i] = []
+	for i in range(size):
+		var cr: int = r + i if vertical else r
+		var cc: int = c if vertical else c + i
+		if cr < 0 or cr >= GRID_SIZE or cc < 0 or cc >= GRID_SIZE:
+			return [] as Array[Vector2i]
+		cells.append(Vector2i(cr, cc))
+	return cells
+
+
+## Verdadeiro quando todas as casas estao livres. A regra da casa e a mesma do
+## sorteio automatico: navios nao se sobrepoem, mas podem encostar.
+static func can_place(grid: Grid2D, cells: Array) -> bool:
+	if cells.is_empty():
+		return false
+	for cell in cells:
+		var v: Vector2i = cell
+		if grid.get_cell(v.x, v.y) != 0:
+			return false
+	return true
+
+
+## Onde o navio comeca para ficar CENTRADO na casa tocada, sem sair do
+## tabuleiro. O dedo mira o meio do navio, nao a proa: ancorar na proa faz o
+## porta-avioes de cinco casas nascer sempre para a direita do toque, e perto
+## da borda nao nascer de jeito nenhum.
+static func anchor_for(r: int, c: int, size: int, vertical: bool) -> Vector2i:
+	var recuo: int = int(floor(float(size - 1) * 0.5))
+	var ar: int = (r - recuo) if vertical else r
+	var ac: int = c if vertical else (c - recuo)
+	var limite: int = GRID_SIZE - size
+	if vertical:
+		ar = clampi(ar, 0, limite)
+	else:
+		ac = clampi(ac, 0, limite)
+	return Vector2i(ar, ac)
+
+
 static func place_all_ships_randomly(grid: Grid2D) -> Array[Dictionary]:
 	grid.fill(0)
 	var placed_ships: Array[Dictionary] = []
