@@ -1,0 +1,1 @@
+Partidas em rede: Jogo da Velha, Quatro em Linha e Reversi entre dois aparelhos na mesma rede Wi-Fi, sem servidor nem cadastro. Fim de partida com o próximo nível: a Torre de Hanói ganha um disco a cada vitória e o Campo Minado cresce de 8x8 a 16x10. Música de fundo baixinha e sons novos. Cartas com o número grande, legível no telefone. O ícone do aplicativo volta a aparecer.

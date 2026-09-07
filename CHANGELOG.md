@@ -7,7 +7,33 @@
 - [ ] **Overlay de vitória de 3 s com o Veo** — só se o orçamento do APK sobreviver ao lote acima; senão vai para `fastlane/` com `.gdignore`
 - [ ] **Os 70 ids vazios em `core/configs/play_games_ids.json`** — só o Play Console resolve
 
-## [Unreleased](https://github.com/ricasolucoes/PlayTable/compare/v0.8.1...develop)
+## [Unreleased](https://github.com/ricasolucoes/PlayTable/compare/v0.9.0...develop)
+
+---
+
+## [v0.9.0 (2026-09-06)](https://github.com/ricasolucoes/PlayTable/compare/v0.8.1...v0.9.0)
+
+### ✨ Novidades
+
+- [x] **Partidas em rede** (`core/net/NetworkManager.gd`, `core/telas/LobbyScreen.tscn`) — Jogo da Velha, Quatro em Linha e Reversi entre dois aparelhos na mesma rede Wi‑Fi, ou no hotspot de um deles, sem servidor e sem cadastro: quem cria a sala vira servidor ENet e responde por UDP a quem procura na rede; o outro toca na sala da lista ou digita o endereço. Cada jogo ganhou o assento (quem abriu a sala é o 1), a trava de só tocar na própria vez e o `_on_net_move()` que aplica a jogada do outro pelo mesmo caminho da local — no Reversi isso virou um `_aplicar_jogada()` só, para a pessoa, a IA e o outro aparelho. Reiniciar recomeça nos dois; se o outro sai, a partida trava sem mexer na escada. A porta "pela internet" já está no lobby e fala o mesmo protocolo por um relay WebSocket (`docs/server/api-contract.md` §7.1); enquanto o servidor não existir ela cai em "online indisponível" depois de 8 s e o resto do aplicativo segue inteiro. Cartão "Em rede" no menu e filtro "Em rede" nas listas
+- [x] **Cartão de fim de partida** (`shared/ui/ResultPanel.gd`) — em todos os jogos: o resultado, o degrau em que a partida foi jogada e para onde a escada foi, com **Próximo nível** quando ela subiu, jogar de novo caso contrário, e o menu. Tocar fora esconde o cartão para olhar a mesa. Era o que faltava na Torre de Hanói ("depois que ganhei não deu pra fazer mais nada"): cada vitória agora é um disco a mais, de 3 a 8, em vez da reta esticada em que metade das vitórias devolvia a mesma torre, e a demonstração automática deixa de contar como vitória
+- [x] **Campo Minado com progressão** — o degrau monta o campo: de 8x8 com 6 minas a 16x10 com 36, a densidade do *expert* clássico, com as colunas presas em 10 para a casa caber no dedo. Antes só o número de minas mudava, sempre no mesmo 9x9, e vencer sete vezes levava ao topo da escada pagando o dobro de XP pelo mesmo jogo
+- [x] **Música de fundo, bem baixa** — quatro climas gerados no próprio aplicativo (`core/audio/MusicSynth.gd`: menu, tabuleiro, cartas, quebra-cabeça), escritos como acordes, escala e arpejo com semente fixa, renderizados numa thread e tocados a -21 dB com fade a cada troca de tela. Livre de licença porque nasce aqui, e o loop emenda sem estalo porque as caudas do último compasso já somam no primeiro. Chave própria ao lado da do som, as duas gravadas no perfil
+- [x] **Efeitos em 16 bits e seis sons novos** — derrota, subida de nível, dados, embaralhar, erro e bandeira; a vitória ganhou colchão e cauda. Já ligados na derrota de todo jogo, na bandeira e na casa aberta do Campo Minado, na jogada recusada do Reversi e no embaralhar dos quatro jogos de baralho. Os catorze arquivos de áudio de `core/audio/` (YouTube Audio Library, ver `AUDIO_LICENSES.md`) substituem a síntese de mesmo nome quando existem
+
+### 🎨 Melhorias
+
+- [x] **A casa aberta do Campo Minado se distingue da fechada** — era a mesma ardósia com 20% mais luz e sumia na mesa; virou uma placa de arenito claro e mais baixa, forma **e** cor, como o botão alto e o chão raso do Campo Minado de sempre
+- [x] **Cartas legíveis no telefone** — o índice do canto ocupava 11% da altura da carta, uns 12 px na mesa a meio metro do rosto; agora ocupa 30% da altura e 34% da largura, com contorno da própria cor para engrossar o traço e o naipe embaixo. O atlas sobe de 150x210 para 180x252 fora do tier baixo, porque o telefone mostra a carta com quase o dobro dos pixels que o atlas tinha
+- [x] **O ícone do aplicativo aparece** — os builds fazem `--export-pack` e chamam o gradle direto, e era o exportador do Godot quem escreveria os ícones em `res/mipmap-*`: o pacote saía com o robô do Godot. `tools/make_launcher_icons.py` gera, a partir de `icon.png`, o ícone legado por densidade, as duas camadas do adaptativo e a silhueta monocromática do tema; `android/icons/install.sh` copia em todo build
+
+### 🔧 Técnico
+
+**Asset opcional nunca por `preload()`:** o preload de um arquivo ausente ou ainda não importado é erro de compilação do script inteiro, e o `AudioManager` é autoload — o aplicativo abria sem som nenhum e sem `SceneManager` junto. Os arquivos entram por `ResourceLoader.exists()` + `load()`, com a síntese de reserva; sem eles nada muda na tela nem no ouvido.
+
+**O refit do `BaseGame` sem `await`:** uma corrotina que acorda depois de o nó ter sido liberado imprime "Resumed function after await, but class instance is gone" no meio da suíte. A espera de dois quadros virou uma cadeia de `call_deferred`, que num objeto já liberado é descartada em silêncio.
+
+**Ordem das tags:** o cartão de resultado, o áudio, as cartas, o Campo Minado e o ícone entraram nos commits imediatamente anteriores às tags `v0.8.0` e `v0.8.1`, que foram fechadas por outra frente de trabalho antes de estes itens serem descritos. Ficam aqui porque é aqui que o leitor os encontra.
 
 ---
 

@@ -1,0 +1,1 @@
+Network play: Tic-Tac-Toe, Connect Four and Reversi between two phones on the same Wi-Fi, no server and no sign-up. End-of-match card with a next level: the Tower of Hanoi gains a disc per win and Minesweeper grows from 8x8 to 16x10. Quiet background music and new sounds. Card numbers large enough to read on a phone. The app icon shows up again.
