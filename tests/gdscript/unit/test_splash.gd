@@ -130,10 +130,15 @@ func test_o_boot_splash_nao_entra_duas_vezes_no_pacote() -> void:
 	var caminho: String = ProjectSettings.get_setting("application/boot_splash/image", "")
 	var relativo: String = caminho.trim_prefix("res://")
 	assert_ne(relativo, "", "o boot splash esta configurado")
-	var achou: bool = false
+	# TODO preset, nao um qualquer: a exportacao forcada e da classe base do
+	# exportador, nao do backend Android, entao a duplicata acontece em
+	# qualquer plataforma. No iOS nao ha apksigner para recusar, e o sintoma
+	# seria um .ipa com entrada repetida em vez de um build quebrado.
+	var presets: int = 0
 	for linha: String in texto.split("\n"):
-		if linha.begins_with("exclude_filter=") and linha.contains(relativo):
-			achou = true
-			break
-	assert_true(achou,
-		"%s esta no exclude_filter, senao entra duas vezes e o apksigner recusa o APK" % relativo)
+		if not linha.begins_with("exclude_filter="):
+			continue
+		presets += 1
+		assert_true(linha.contains(relativo),
+			"%s esta no exclude_filter deste preset, senao entra duas vezes no pacote" % relativo)
+	assert_gt(presets, 0, "o preset declara exclude_filter")
