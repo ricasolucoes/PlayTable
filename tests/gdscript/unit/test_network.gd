@@ -176,6 +176,9 @@ func test_quando_o_outro_sai_a_partida_trava_sem_mexer_na_escada() -> void:
 	assert_eq(DifficultyManager.get_level("jogo_da_velha"), degrau, "a escada nao anda")
 	assert_true(jogo.result_panel.is_showing(), "o cartao aparece")
 	assert_false(jogo.result_panel.offers_next_level(), "sem proximo nivel")
+	# Quem abandona nao empata: o cartao dizia "Empate!" para quem ficou na mesa.
+	assert_eq(jogo.result_panel.title_text(), tr("RESULT_END_TITLE"), "o cartao diz fim de partida")
+	assert_ne(jogo.result_panel.title_text(), tr("DRAW_TITLE"), "e nao diz empate")
 	assert_false(NetworkManager.is_active(), "e a rede fechou")
 
 

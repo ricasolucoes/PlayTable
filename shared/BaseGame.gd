@@ -196,7 +196,9 @@ func _on_net_peer_left() -> void:
 	set_status(aviso)
 	if result_panel != null and uses_result_panel:
 		var nivel := DifficultyManager.get_level(game_id) if DifficultyManager != null else 1
-		result_panel.present_now(false, true, nivel, 0, aviso)
+		# Nao e empate: ninguem empatou, o outro foi embora. O cartao diz "Fim de
+		# partida", e a linha de baixo conta o que houve.
+		result_panel.present_now(false, false, nivel, 0, aviso)
 
 
 ## O botao principal do cartao: recomecar no degrau em que a escada ficou. Se

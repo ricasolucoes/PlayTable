@@ -951,6 +951,7 @@ NET_PLAYER_DEFAULT,Jogador,Player,Jugador
 NET_ERROR_HOST,Não foi possível criar a sala.,Could not create the room.,No se pudo crear la sala.
 NET_ERROR_JOIN,Não foi possível entrar na sala.,Could not join the room.,No se pudo entrar en la sala.
 NET_VERSION_MISMATCH,Os aparelhos precisam da mesma versão.,Both devices need the same version.,Ambos dispositivos necesitan la misma versión.
+NET_YOU,"Você","You","Tú"
 NET_OPPONENT,"Adversário","Opponent","Oponente"
 NET_OPPONENT_LEFT,"%s saiu da partida","%s left the match","%s abandonó la partida"
 NET_MODE_LABEL,"Partida com %s","Match vs %s","Partida con %s"
