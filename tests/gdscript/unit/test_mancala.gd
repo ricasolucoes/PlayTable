@@ -71,7 +71,13 @@ func test_a_cova_e_tocada_na_mesa_e_a_contagem_esta_ao_lado_dela() -> void:
 	assert_not_null(jogo.picker, "ha um DragPicker3D")
 	for i in range(6):
 		assert_ne(jogo.picker.screen_of(i), Vector2.INF, "a cova %d esta projetada" % i)
-	assert_eq(jogo.picker.screen_of(7), Vector2.INF, "as covas da IA nao sao alvo")
+	# As doze covas sao alvo desde que a mesa compartilhada existe -- o segundo
+	# jogador semeia as de cima. Quem recusa e a vez, nao a projecao: contra a
+	# maquina, tocar numa cova dela nao semeia nada.
+	assert_ne(jogo.picker.screen_of(7), Vector2.INF, "a cova de cima tambem esta projetada")
+	var antes: int = jogo.pits[7]
+	jogo.picker.target_tapped.emit(7)
+	assert_eq(jogo.pits[7], antes, "mas contra a maquina o toque nela nao semeia")
 	assert_eq(jogo.count_labels.size(), 14, "um numero por cova")
 	assert_eq(jogo.count_labels[2].text, "4", "a cova 2 comeca com 4")
 	assert_eq(jogo.count_labels[13].text, "0", "a Kalah da IA tambem tem numero")
@@ -364,3 +370,50 @@ func test_o_degrau_do_topo_ganha_do_degrau_de_baixo() -> void:
 			vitorias += 1
 
 	assert_gt(vitorias, 3, "o degrau 10 venceu %d de 6 partidas contra o degrau 1" % vitorias)
+
+
+# ------------------------------------------------------- dois no mesmo aparelho
+
+func _cena_em_dupla() -> Node:
+	var jogo := await _cena()
+	jogo.vs_ai = false
+	jogo._start_new_game()
+	return jogo
+
+
+func test_a_mesa_compartilhada_oferece_o_botao_de_modo() -> void:
+	var jogo := await _cena()
+	assert_not_null(jogo.get_node_or_null("ModeSwitch"), "o jogo monta o botao de modo")
+	assert_true(jogo.vs_ai, "a partida abre contra a maquina")
+
+
+func test_em_dupla_a_vez_atravessa_a_mesa_e_a_ia_nao_semeia() -> void:
+	var jogo := await _cena_em_dupla()
+	assert_eq(jogo._lado(), 0, "o primeiro jogador abre")
+
+	# A cova 2 tem 4 gemas: a ultima cai na 6, que e a Kalah dele -- turno extra.
+	# A cova 5 termina fora da Kalah e passa a vez, que e o que se quer medir.
+	jogo._on_player_pit_clicked(5)
+	assert_eq(jogo._lado(), 1, "a vez passou para o outro lado da mesa")
+	assert_true(jogo.is_player_turn, "e o toque continua valendo")
+
+	# Contra a maquina a IA ja teria semeado. Aqui as covas de cima estao
+	# intactas, menos as que a propria semeadura do jogador 1 alcancou.
+	assert_eq(jogo.pits[5], 0, "a cova semeada esvaziou")
+
+
+func test_em_dupla_o_segundo_jogador_semeia_as_covas_de_cima() -> void:
+	var jogo := await _cena_em_dupla()
+	jogo._on_player_pit_clicked(5)
+	assert_eq(jogo._lado(), 1, "e a vez dele")
+	var antes: int = jogo.pits[9]
+	assert_gt(antes, 0, "a cova 9 tem gema para semear")
+	jogo._on_player_pit_clicked(9)
+	assert_eq(jogo.pits[9], 0, "o toque na cova dele semeou")
+
+
+func test_em_dupla_tocar_na_cova_do_outro_nao_semeia() -> void:
+	var jogo := await _cena_em_dupla()
+	var antes: int = jogo.pits[9]
+	jogo._on_player_pit_clicked(9)
+	assert_eq(jogo.pits[9], antes, "na vez do jogador 1 as covas de cima nao respondem")

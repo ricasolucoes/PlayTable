@@ -40,6 +40,13 @@ var can_roll: bool = true
 
 ## Degrau de 1 a 10 do DifficultyManager, o mesmo para as tres IAs.
 var ai_level: int = DifficultyManager.DEFAULT_LEVEL
+
+## Dois no mesmo aparelho. O Ludo tem quatro assentos; a mesa de dois usa os
+## dois opostos -- vermelho e verde --, que e como se joga um Ludo de dois de
+## verdade. Os outros dois nao entram na roda e os peoes deles somem da mesa,
+## porque peao parado na base parece peao esquecido, nao cadeira vazia.
+var vs_ai: bool = true
+var mode_switch: ModeSwitch = null
 var pawns_3d = [[], [], [], []]
 
 ## Anel na casa de destino de cada peao que pode andar, e o arrasto do peao
@@ -79,6 +86,8 @@ func _ready() -> void:
 	board_root.add_child(halos)
 	halos.setup(PAWNS_PER_PLAYER, 0.30)
 	_setup_picker()
+	mode_switch = ModeSwitch.montar(self, vs_ai)
+	mode_switch.trocou.connect(_on_modo_trocado)
 	dice_3d.roll_finished.connect(_on_dice_roll_finished)
 	# O tabuleiro tem 6,5 unidades; sem isto a camera usava as 6x6 padrao com a
 	# area util errada e sobrava meia tela de feltro vazio.
@@ -191,6 +200,38 @@ func _setup_3d_pawns() -> void:
 ## onde estao, e a casa de destino de cada um que pode andar (`"dest_N"`).
 ## `PawnsRoot` e `BoardRoot` ficam na origem sem giro, entao a posicao local
 ## de um peao e a sua posicao no mundo.
+## Os assentos que uma pessoa controla.
+func _assentos_humanos() -> Array:
+	return [0] if vs_ai else [0, 2]
+
+
+## Verdadeiro quando quem joga agora esta com o aparelho na mao.
+func _vez_humana() -> bool:
+	return current_turn in _assentos_humanos()
+
+
+## O assento que o toque comanda agora.
+func _assento() -> int:
+	return current_turn if _vez_humana() else 0
+
+
+## De quantos em quantos a vez anda: de um em um com tres maquinas na mesa, de
+## dois em dois quando so os quadrantes opostos jogam.
+func _passo_da_vez() -> int:
+	return 1 if vs_ai else 2
+
+
+## O assento como numero de jogador, para as frases da mesa compartilhada.
+func _numero_do_assento(assento: int) -> int:
+	return 1 if assento == 0 else 2
+
+
+## O jogador trocou o modo: a partida recomeca.
+func _on_modo_trocado(novo_vs_ai: bool) -> void:
+	vs_ai = novo_vs_ai
+	restart_game()
+
+
 func _setup_picker() -> void:
 	picker = DragPicker3D.new()
 	add_child(picker)
@@ -206,13 +247,14 @@ func _refresh_picker_targets() -> void:
 	if picker == null:
 		return
 	var alvos: Dictionary = {}
+	var assento := _assento()
 	for idx in range(PAWNS_PER_PLAYER):
-		alvos[idx] = _get_track_position_3d(0, players_pawns[0][idx], idx)
+		alvos[idx] = _get_track_position_3d(assento, players_pawns[assento][idx], idx)
 	for idx in _movable_atual:
 		alvos["dest_%d" % int(idx)] = _destino_do_peao(int(idx), last_roll)
 	# O proprio dado rola quando e a vez de rolar: e o objeto da mesa que
 	# corresponde ao gesto, e nao so a barra de 320 px no pe da tela.
-	if can_roll and current_turn == 0 and not game_over:
+	if can_roll and _vez_humana() and not game_over:
 		alvos["dado"] = dice_3d.position
 	picker.set_targets(alvos)
 
@@ -220,9 +262,10 @@ func _refresh_picker_targets() -> void:
 ## Onde o peao do jogador para com esta tirada: da base entra na casa 0, na
 ## pista anda o valor do dado.
 func _destino_do_peao(idx: int, roll: int) -> Vector3:
-	var pos: int = int(players_pawns[0][idx])
+	var assento := _assento()
+	var pos: int = int(players_pawns[assento][idx])
 	var passo: int = 0 if pos == -1 else pos + roll
-	return _get_track_position_3d(0, passo, idx)
+	return _get_track_position_3d(assento, passo, idx)
 
 
 ## Tocou alguma coisa da mesa. Tres alvos valem: o peao levantado, o anel da
@@ -250,7 +293,7 @@ func _on_peao_pego(id: Variant) -> void:
 		picker.cancel_drag()
 		return
 	_drag_idx = int(id)
-	var pawn = pawns_3d[0][_drag_idx]
+	var pawn = pawns_3d[_assento()][_drag_idx]
 	if pawn and pawn.has_method("set_lift"):
 		pawn.set_lift(Tokens3D.LIFT_DRAG)
 
@@ -258,7 +301,7 @@ func _on_peao_pego(id: Variant) -> void:
 func _on_peao_movido(_from: Variant, _over: Variant, world: Vector3) -> void:
 	if _drag_idx < 0 or world == Vector3.INF:
 		return
-	var pawn: Node3D = pawns_3d[0][_drag_idx]
+	var pawn: Node3D = pawns_3d[_assento()][_drag_idx]
 	pawn.position = Vector3(world.x, pawn.position.y, world.z)
 
 
@@ -272,8 +315,9 @@ func _on_peao_solto(_from: Variant, to: Variant) -> void:
 		return
 	# Soltou fora do destino: o peao volta para a casa, continua levantado e a
 	# escolha fica de pe, para quem prefere o botao ou um toque.
-	var pawn = pawns_3d[0][idx]
-	pawn.jump_to(_get_track_position_3d(0, players_pawns[0][idx], idx), 0.3, 0.2)
+	var assento := _assento()
+	var pawn = pawns_3d[assento][idx]
+	pawn.jump_to(_get_track_position_3d(assento, players_pawns[assento][idx], idx), 0.3, 0.2)
 	if pawn.has_method("set_lift"):
 		pawn.set_lift(Tokens3D.LIFT_SELECTED)
 
@@ -337,11 +381,19 @@ func _start_new_game() -> void:
 	if halos:
 		halos.clear()
 	
+	# Peao de assento que nao joga sai da mesa: parado na base ele parece peao
+	# esquecido, e nao cadeira vazia.
+	var jogando := _assentos_humanos() if not vs_ai else [0, 1, 2, 3]
+	for assento in range(4):
+		for pawn in pawns_3d[assento]:
+			if pawn:
+				pawn.visible = assento in jogando
+
 	dice_3d.position = Vector3(0, 0.35, 0)
 	dice_3d.set_value_immediate(6)
 	btn_dice.text = tr("LUDO_BTN_ROLL")
 	btn_dice.disabled = false
-	set_status(tr("LUDO_YOUR_TURN"))
+	set_status(tr("LUDO_YOUR_TURN") if vs_ai else tr("TURN_PLAYER") % 1)
 	_sync_pawns_positions(true)
 	_refresh_picker_targets()
 
@@ -356,13 +408,19 @@ func _pintar_placar() -> void:
 			if players_pawns[p][idx] >= 32:
 				n += 1
 		return n
+	var time_str := "%02d:%02d" % [shell.timer.get_time() / 60, shell.timer.get_time() % 60]
+	if not vs_ai:
+		# Mesa de dois: o placar e vermelho contra verde, nao voce contra a maquina.
+		set_duel_score("%d/%d" % [em_casa.call(0), PAWNS_PER_PLAYER],
+			"%d/%d" % [em_casa.call(2), PAWNS_PER_PLAYER],
+			"SCORE_PLAYER_1", "SCORE_PLAYER_2")
+		shell.set_level(tr("MODE_LABEL") % tr("MODE_TWO_PLAYERS") + "  •  " + time_str)
+		return
 	var melhor_ia := 0
 	for p in range(1, 4):
 		melhor_ia = maxi(melhor_ia, em_casa.call(p))
 	set_duel_score("%d/%d" % [em_casa.call(0), PAWNS_PER_PLAYER],
 		"%d/%d" % [melhor_ia, PAWNS_PER_PLAYER])
-	
-	var time_str := "%02d:%02d" % [shell.timer.get_time() / 60, shell.timer.get_time() % 60]
 	shell.set_level(DifficultyManager.label_for(game_id) + "  •  " + time_str)
 
 func _sync_pawns_positions(immediate: bool = false) -> void:
@@ -379,7 +437,7 @@ func _sync_pawns_positions(immediate: bool = false) -> void:
 	_refresh_picker_targets()
 
 func _on_btn_dice_pressed() -> void:
-	if not can_roll or game_over or current_turn != 0: return
+	if not can_roll or game_over or not _vez_humana(): return
 	can_roll = false
 	btn_dice.disabled = true
 	_refresh_picker_targets()
@@ -392,7 +450,7 @@ func _on_dice_roll_finished(val: int) -> void:
 	last_roll = val
 	btn_dice.text = tr("LUDO_DICE_VALUE") % last_roll
 	
-	if current_turn == 0:
+	if _vez_humana():
 		_handle_player_roll(last_roll)
 	else:
 		_handle_ai_roll(last_roll)
@@ -419,14 +477,15 @@ func _todos_na_base(p: int) -> bool:
 
 func _handle_player_roll(roll: int) -> void:
 	last_roll = roll
-	var movable: Array = _movable_pawns(0, roll)
+	var assento := _assento()
+	var movable: Array = _movable_pawns(assento, roll)
 
 	if movable.is_empty():
 		# Tudo na base e o dado nao deu 6: a regra oficial da mais uma tirada,
 		# ate tres. Sem isto a abertura travava rodada apos rodada sem que nada
 		# se mexesse na tela.
 		tentativas_restantes -= 1
-		if _todos_na_base(0) and tentativas_restantes > 0:
+		if _todos_na_base(assento) and tentativas_restantes > 0:
 			set_status(tr("LUDO_TRY_AGAIN") % [roll, tentativas_restantes])
 			can_roll = true
 			btn_dice.disabled = false
@@ -448,8 +507,9 @@ func _handle_player_roll(roll: int) -> void:
 ## arrasto.
 func _levantar_peoes(indices: Array) -> void:
 	_movable_atual = indices.duplicate()
+	var assento := _assento()
 	for idx in range(PAWNS_PER_PLAYER):
-		var pawn = pawns_3d[0][idx]
+		var pawn = pawns_3d[assento][idx]
 		if pawn and pawn.has_method("set_lift"):
 			pawn.set_lift(Tokens3D.LIFT_SELECTED if idx in indices else 0.0)
 		if halos == null:
@@ -467,16 +527,17 @@ func _on_pawn_choice_selected(pawn_idx: int, roll: int) -> void:
 	_move_player_pawn(pawn_idx, roll)
 
 func _move_player_pawn(idx: int, roll: int) -> void:
-	var pos = players_pawns[0][idx]
-	if pos == -1: players_pawns[0][idx] = 0
-	else: players_pawns[0][idx] += roll
+	var assento := _assento()
+	var pos = players_pawns[assento][idx]
+	if pos == -1: players_pawns[assento][idx] = 0
+	else: players_pawns[assento][idx] += roll
 	
 	_sync_pawns_positions()
 	if AudioManager:
 		AudioManager.play_piece_place()
-	_check_captures(0, idx)
+	_check_captures(assento, idx)
 	
-	if _check_win(0): return
+	if _check_win(assento): return
 	
 	if roll == 6:
 		set_status(tr("LUDO_ROLLED_SIX"))
@@ -487,9 +548,9 @@ func _move_player_pawn(idx: int, roll: int) -> void:
 		_next_turn()
 
 func _next_turn() -> void:
-	current_turn = (current_turn + 1) % 4
-	if current_turn == 0:
-		set_status(tr("LUDO_YOUR_TURN"))
+	current_turn = (current_turn + _passo_da_vez()) % 4
+	if _vez_humana():
+		set_status(tr("LUDO_YOUR_TURN") if vs_ai else tr("TURN_PLAYER") % _numero_do_assento(current_turn))
 		tentativas_restantes = TENTATIVAS_NA_BASE
 		can_roll = true
 		btn_dice.disabled = false
@@ -550,6 +611,12 @@ func _check_win(p: int) -> bool:
 			break
 	if all_finished:
 		shell.timer.stop()
+		if not vs_ai:
+			# Os dois estao na mesma mesa: o cartao anuncia o lado.
+			var numero := _numero_do_assento(p)
+			finish_game(tr("PLAYER_WINS") % numero, numero == 1,
+				{"time": shell.timer.get_time(), "mode": "versus"})
+			return true
 		if p == 0:
 			finish_game(tr("LUDO_WIN"), true, {"time": shell.timer.get_time(), "xp": 100})
 		else:

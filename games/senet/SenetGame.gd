@@ -25,6 +25,11 @@ var pieces_3d: Dictionary = {}
 ## avaliacao e sortear a jogada.
 var ai_level: int = DifficultyManager.DEFAULT_LEVEL
 
+## Dois no mesmo aparelho: as pecas de obsidiana deixam de ser da maquina. Cada
+## um lanca os proprios bastonetes na sua vez -- o mesmo botao, o mesmo gesto.
+var vs_ai: bool = true
+var mode_switch: ModeSwitch = null
+
 @onready var board_3d: Board3D = $Board3D
 @onready var pieces_root: Node3D = $PiecesRoot
 @onready var shell: GameShell = $UI/GameShell
@@ -38,6 +43,8 @@ func _ready() -> void:
 	shell.restart_requested.connect(_on_restart_pressed)
 	btn_cast_sticks.pressed.connect(_on_btn_cast_sticks_pressed)
 	ai_level = DifficultyManager.get_level(game_id)
+	mode_switch = ModeSwitch.montar(self, vs_ai)
+	mode_switch.trocou.connect(_on_modo_trocado)
 	board_3d.setup_board(3, 10, 0.65, "wood_checkered")
 	# O toque entra pelo proprio tabuleiro: a casa tocada e a casa desenhada.
 	board_3d.cell_clicked.connect(_on_cell_clicked)
@@ -108,8 +115,13 @@ func _sync_pieces_3d() -> void:
 			pieces_root.add_child(piece)
 			pieces_3d[sq] = piece
 			
-	set_duel_score("%d/5" % player_borne_off, "%d/5" % ai_borne_off)
-	shell.set_level(DifficultyManager.label_for(game_id))
+	if vs_ai:
+		set_duel_score("%d/5" % player_borne_off, "%d/5" % ai_borne_off)
+		shell.set_level(DifficultyManager.label_for(game_id))
+	else:
+		set_duel_score("%d/5" % player_borne_off, "%d/5" % ai_borne_off,
+			"SCORE_PLAYER_1", "SCORE_PLAYER_2")
+		shell.set_level(tr("MODE_LABEL") % tr("MODE_TWO_PLAYERS"))
 
 func _on_btn_cast_sticks_pressed() -> void:
 	if not can_throw or game_over: return
@@ -122,20 +134,40 @@ func _on_btn_cast_sticks_pressed() -> void:
 	
 	sticks_label.text = tr("SENET_STICKS") % [throw_res["display"], current_throw]
 	
-	if is_player_turn:
-		valid_moves = _get_valid_moves(1, current_throw)
+	if _vez_humana():
+		valid_moves = _get_valid_moves(_lado(), current_throw)
 		if valid_moves.is_empty():
 			set_status(tr("NO_MOVES_WITH") % current_throw)
 			await get_tree().create_timer(0.9).timeout
 			_handle_end_of_turn()
 		else:
-			set_status(tr("SENET_PICK_PIECE") % current_throw)
+			var escolha := tr("SENET_PICK_PIECE") % current_throw
+			if not vs_ai:
+				escolha = "%s — %s" % [tr("TURN_PLAYER") % _lado(), escolha]
+			set_status(escolha)
 			var origens: Array = []
 			for m in valid_moves:
 				origens.append(_get_square_row_col(m["from"]))
 			board_3d.set_cells_state(origens, Board3D.CellState.VALID)
 	else:
 		_play_ai_move()
+
+## De quem sao as pecas que o toque move agora: ouro (1) ou obsidiana (2).
+## Contra a maquina so o ouro e da pessoa; na mesa compartilhada, os dois sao.
+func _lado() -> int:
+	return 1 if is_player_turn else 2
+
+
+## Verdadeiro quando quem joga agora esta com o aparelho na mao.
+func _vez_humana() -> bool:
+	return is_player_turn or not vs_ai
+
+
+## O jogador trocou o modo: a partida recomeca.
+func _on_modo_trocado(novo_vs_ai: bool) -> void:
+	vs_ai = novo_vs_ai
+	restart_game()
+
 
 func _cast_sticks() -> Dictionary:
 	var white_count: int = 0
@@ -171,11 +203,11 @@ func _get_valid_moves(player_id: int, steps: int) -> Array:
 	return moves
 
 func _on_square_clicked(sq_num: int) -> void:
-	if game_over or not is_player_turn or can_throw: return
+	if game_over or not _vez_humana() or can_throw: return
 	
 	for m in valid_moves:
 		if m["from"] == sq_num:
-			_execute_move(1, m["from"], m["to"])
+			_execute_move(_lado(), m["from"], m["to"])
 			return
 
 func _execute_move(player_id: int, from_sq: int, to_sq: int) -> void:
@@ -216,7 +248,7 @@ func _handle_end_of_turn() -> void:
 	if has_extra_throw:
 		status_label.text += " Jogada extra concedida!"
 		can_throw = true
-		if is_player_turn:
+		if _vez_humana():
 			btn_cast_sticks.disabled = false
 		else:
 			await get_tree().create_timer(0.7).timeout
@@ -224,7 +256,12 @@ func _handle_end_of_turn() -> void:
 	else:
 		is_player_turn = not is_player_turn
 		can_throw = true
-		if is_player_turn:
+		# Mesa compartilhada: quem esta com o aparelho muda, o botao continua
+		# ligado, e o status diz de quem e a vez.
+		if not vs_ai:
+			set_status(tr("TURN_PLAYER") % _lado())
+			btn_cast_sticks.disabled = false
+		elif is_player_turn:
 			set_status(tr("SENET_YOUR_TURN"))
 			btn_cast_sticks.disabled = false
 		else:
@@ -252,7 +289,11 @@ func _end_game(winner: int) -> void:
 		"score_ai": ai_borne_off,
 		"winner": winner
 	}
-	if winner == 1:
+	if not vs_ai:
+		# Os dois estao na mesma mesa: o cartao anuncia o lado, nao "voce".
+		extra["mode"] = "versus"
+		finish_game(tr("PLAYER_WINS") % winner, winner == 1, extra)
+	elif winner == 1:
 		finish_game(tr("SENET_WIN"), true, extra)
 	else:
 		finish_game(tr("SENET_LOSE"), false, extra)

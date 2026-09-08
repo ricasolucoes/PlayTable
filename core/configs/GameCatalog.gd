@@ -27,17 +27,17 @@ static func get_board_games() -> Array[GameDefinition]:
 		GameDefinition.create("GAME_TICTACTOE", "❌", "res://games/jogo_da_velha/TicTacToeGame.tscn", &"board", "GAME_DESC_TIC_TAC_TOE")
 			.tagged("GENRE_CLASSIC", IA | DUPLA | REDE),
 		GameDefinition.create("GAME_CHECKERS", "⬛", "res://games/damas/CheckersGame.tscn", &"board", "GAME_DESC_CHECKERS")
-			.tagged("GENRE_CLASSIC", IA),
+			.tagged("GENRE_CLASSIC", IA | DUPLA),
 		GameDefinition.create("GAME_BATTLESHIP", "🚢", "res://games/batalha_naval/BattleshipGame.tscn", &"board", "GAME_DESC_BATTLESHIP")
 			.tagged("GENRE_STRATEGY", IA),
 		GameDefinition.create("GAME_REVERSI", "⚫", "res://games/reversi/ReversiGame.tscn", &"board", "GAME_DESC_REVERSI")
-			.tagged("GENRE_STRATEGY", IA | REDE),
+			.tagged("GENRE_STRATEGY", IA | DUPLA | REDE),
 		GameDefinition.create("GAME_MANCALA", "💎", "res://games/mancala/MancalaGame.tscn", &"board", "GAME_DESC_MANCALA")
-			.tagged("GENRE_ANCESTRAL", IA),
+			.tagged("GENRE_ANCESTRAL", IA | DUPLA),
 		GameDefinition.create("GAME_LUDO", "🎲", "res://games/ludo/LudoGame.tscn", &"board", "GAME_DESC_LUDO")
-			.tagged("GENRE_RACE", IA),
+			.tagged("GENRE_RACE", IA | DUPLA),
 		GameDefinition.create("GAME_SENET", "𓁹", "res://games/senet/SenetGame.tscn", &"board", "GAME_DESC_SENET")
-			.tagged("GENRE_EGYPT", IA),
+			.tagged("GENRE_EGYPT", IA | DUPLA),
 		GameDefinition.create("GAME_SOLITAIRE", "🔘", "res://games/solitario/PegSolitaireGame.tscn", &"board", "GAME_DESC_PEG_SOLITAIRE")
 			.tagged("GENRE_PUZZLE", SOLO),
 		GameDefinition.create("GAME_MINESWEEPER", "💣", "res://games/campo_minado/MinesweeperGame.tscn", &"board", "GAME_DESC_MINESWEEPER")

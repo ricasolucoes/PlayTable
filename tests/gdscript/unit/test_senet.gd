@@ -305,3 +305,49 @@ func test_botao_de_varetas_inicia_uma_jogada() -> void:
 	assert_true(jogo.btn_cast_sticks.pressed.is_connected(jogo._on_btn_cast_sticks_pressed))
 	jogo.btn_cast_sticks.pressed.emit()
 	assert_between(jogo.current_throw, 1, 5)
+
+
+# ------------------------------------------------------- dois no mesmo aparelho
+
+func _cena_em_dupla() -> Node:
+	var jogo := _jogo()
+	jogo.vs_ai = false
+	jogo._start_new_game()
+	return jogo
+
+
+func test_a_mesa_compartilhada_oferece_o_botao_de_modo() -> void:
+	var jogo := _jogo()
+	assert_not_null(jogo.get_node_or_null("ModeSwitch"), "o jogo monta o botao de modo")
+	assert_true(jogo.vs_ai, "a partida abre contra a maquina")
+
+
+func test_em_dupla_os_dois_lados_lancam_os_bastonetes() -> void:
+	var jogo := _cena_em_dupla()
+	assert_eq(jogo._lado(), 1, "o ouro abre")
+	assert_true(jogo._vez_humana(), "e quem joga esta com o aparelho")
+
+	# A vez passa sem jogada extra: o segundo lado assume, com o botao ligado.
+	jogo.has_extra_throw = false
+	jogo.is_player_turn = true
+	jogo._handle_end_of_turn()
+	assert_eq(jogo._lado(), 2, "a vez passou para a obsidiana")
+	assert_true(jogo._vez_humana(), "que tambem esta na mesa")
+	assert_false(jogo.btn_cast_sticks.disabled, "e pode lancar os bastonetes")
+
+
+func test_contra_a_maquina_o_botao_de_lancar_fecha_na_vez_dela() -> void:
+	var jogo := _jogo()
+	jogo._start_new_game()
+	assert_true(jogo.vs_ai, "contra a maquina")
+	assert_eq(jogo._lado(), 1, "o ouro abre")
+	assert_true(jogo._vez_humana(), "e a vez e da pessoa")
+	jogo.is_player_turn = false
+	assert_false(jogo._vez_humana(), "na vez da maquina o aparelho nao joga")
+
+
+func test_em_dupla_o_fim_anuncia_o_lado_e_nao_voce() -> void:
+	var jogo := _cena_em_dupla()
+	jogo._end_game(2)
+	assert_true(jogo.game_over, "a partida fechou")
+	assert_eq(jogo.status_label.text, tr("PLAYER_WINS") % 2, "quem venceu foi o jogador 2")

@@ -14,6 +14,17 @@ var em_rede: bool = false
 ## Degrau de 1 a 10 do DifficultyManager. Vira orcamento de busca da IA.
 var ai_level: int = DifficultyManager.DEFAULT_LEVEL
 
+## Dois no mesmo aparelho: as brancas deixam de ser da maquina e passam a ser
+## da pessoa ao lado. O tabuleiro e o mesmo, e quem esta jogando agora se le
+## nas casas acesas -- so as do lado da vez acendem.
+var vs_ai: bool = true
+var mode_switch: ModeSwitch = null
+
+## Na mesa compartilhada, o lado que o toque controla agora. Fora dela nao
+## significa nada: contra a maquina quem toca e sempre as pretas, e em rede
+## quem manda e o assento da sala.
+var _lado_local: int = 1
+
 @onready var board_3d: Board3D = $Board3D
 
 ## A arte gerada de cada face do disco (`tools/art/reversi.json`). Indexada pelo
@@ -39,12 +50,19 @@ func _ready() -> void:
 	# 74 graus do padrao.
 	env_3d.apply_theme(GameTheme3D.stone_gallery())
 
+	mode_switch = ModeSwitch.montar(self, vs_ai)
+	mode_switch.trocou.connect(_on_modo_trocado)
+
 	fit_table(board_3d.content_size())
 	_start_new_game()
 
 func _start_new_game() -> void:
 	game_over = false
 	em_rede = net_active()
+	_lado_local = 1
+	if mode_switch != null:
+		# Com dois aparelhos na mesa nao ha modo para escolher.
+		mode_switch.visible = not em_rede
 	# As pretas abrem. Em rede, o convidado (brancas) espera a primeira jogada.
 	is_player_turn = _meu() == 1
 	btn_restart.hide()
@@ -54,13 +72,18 @@ func _start_new_game() -> void:
 	_sync_pieces_3d()
 	if em_rede and not is_player_turn:
 		set_status(tr("NET_THEIR_TURN") % net_opponent_name())
+	elif not vs_ai:
+		set_status(tr("TURN_PLAYER") % _lado_local)
 	else:
 		set_status(tr("REVERSI_YOUR_TURN_LONG"))
 
 
-## O lado deste aparelho: pretas (1) fora da rede, o assento da sala em rede.
+## O lado que este aparelho controla agora: o assento da sala em rede, o lado
+## da vez na mesa compartilhada, e sempre as pretas contra a maquina.
 func _meu() -> int:
-	return NetworkManager.local_seat if em_rede else 1
+	if em_rede:
+		return NetworkManager.local_seat
+	return 1 if vs_ai else _lado_local
 
 
 func _rival() -> int:
@@ -214,6 +237,11 @@ func _pintar_placar(pretas: int, brancas: int) -> void:
 		set_duel_score(meu, dele, "NET_YOU", "NET_OPPONENT")
 		level_label.text = tr("NET_MODE_LABEL") % net_opponent_name()
 		return
+	if not vs_ai:
+		# Sem maquina na mesa, "voce" e "IA" nao dizem nada: sao dois jogadores.
+		set_duel_score(pretas, brancas, "SCORE_PLAYER_1", "SCORE_PLAYER_2")
+		level_label.text = tr("MODE_LABEL") % tr("MODE_TWO_PLAYERS")
+		return
 	set_duel_score(pretas, brancas)
 	level_label.text = DifficultyManager.label_for(game_id)
 
@@ -225,6 +253,18 @@ func _after_player_move() -> void:
 		_end_game()
 		return
 		
+	# Mesa compartilhada: o tabuleiro passa para o outro lado sem sair do
+	# aparelho. `is_player_turn` continua verdadeiro porque quem joga agora
+	# tambem esta aqui -- o que muda e de quem sao as casas que acendem.
+	if not vs_ai and not em_rede:
+		if rival_moves.size() > 0:
+			_lado_local = _rival()
+			set_status(tr("TURN_PLAYER") % _lado_local)
+		else:
+			set_status(tr("PLAYER_PASSES") % _rival())
+		_highlight_valid_moves()
+		return
+
 	if rival_moves.size() > 0:
 		is_player_turn = false
 		if em_rede:
@@ -289,9 +329,23 @@ func _play_ai_turn() -> void:
 		await get_tree().create_timer(0.6).timeout
 		_play_ai_turn()
 
+## O jogador trocou o modo: a partida recomeca, porque metade de um Reversi
+## contra a maquina nao vira meia partida entre duas pessoas.
+func _on_modo_trocado(novo_vs_ai: bool) -> void:
+	vs_ai = novo_vs_ai
+	restart_game()
+
+
 func _end_game() -> void:
 	# get_winner devolve {"winner", "black", "white"}, nao o id do vencedor.
 	var winner: int = ReversiRules.get_winner(grid_data)["winner"]
+	if not vs_ai and not em_rede:
+		# Os dois estao na mesma mesa: o cartao anuncia o lado, nao "voce".
+		if winner == 0:
+			finish_game(tr("DRAW_TITLE"), false, {"draw": true, "mode": "versus"})
+		else:
+			finish_game(tr("PLAYER_WINS") % winner, winner == 1, {"mode": "versus"})
+		return
 	if winner == _meu():
 		finish_game(tr("RESULT_YOU_WIN"), true, {"mode": "online" if em_rede else "ai"})
 	elif winner == _rival():

@@ -12,6 +12,16 @@ var pieces_3d: Dictionary = {}
 ## Degrau de 1 a 10 do DifficultyManager. Vira profundidade de busca da IA.
 var ai_level: int = DifficultyManager.DEFAULT_LEVEL
 
+## Dois no mesmo aparelho: as obsidianas deixam de ser da maquina e passam a
+## ser da pessoa ao lado. O tabuleiro nao muda -- o que muda e de quem sao as
+## pecas que respondem ao toque agora.
+var vs_ai: bool = true
+var mode_switch: ModeSwitch = null
+
+## O lado da vez na mesa compartilhada: 1 marfim, -1 obsidiana. Contra a
+## maquina nao significa nada, porque quem toca e sempre o marfim.
+var _lado_local: int = 1
+
 @onready var board_3d: Board3D = $Board3D
 @onready var pieces_root: Node3D = $PiecesRoot
 @onready var game_shell: GameShell = $GameShell
@@ -38,6 +48,12 @@ func _ready() -> void:
 	ai_level = DifficultyManager.get_level(game_id)
 	env_3d.apply_theme(_build_theme())
 	board_3d.setup_board(CheckersRules.ROWS, CheckersRules.COLS, 0.75, "wood_checkered")
+	# O botao de modo entra ANTES do enquadramento: ele e HUD ancorada no topo,
+	# `measure_hud_bands()` o mede, e o tabuleiro desce o suficiente para nao
+	# ficar por baixo dele. Montado depois, a mesa era enquadrada sem saber que
+	# ele existia e o botao comia o toque das casas de cima.
+	mode_switch = ModeSwitch.montar(self, vs_ai)
+	mode_switch.trocou.connect(_on_modo_trocado)
 	# O tabuleiro se anuncia para a camera: nao existe distancia escrita a mao.
 	fit_table(board_3d.content_size())
 	board_3d.cell_clicked.connect(_on_cell_clicked)
@@ -75,6 +91,7 @@ func _build_theme() -> GameTheme3D:
 func _start_new_game() -> void:
 	game_over = false
 	is_player_turn = true
+	_lado_local = 1
 	selected_pos = Vector2i(-1, -1)
 	continuing_capture_pos = Vector2i(-1, -1)
 	valid_moves.clear()
@@ -84,12 +101,35 @@ func _start_new_game() -> void:
 	_update_level_label()
 	grid_data = CheckersRules.create_initial_board()
 	_sync_pieces_3d()
-	set_status(tr("CHECKERS_YOUR_TURN"))
+	set_status(tr("CHECKERS_YOUR_TURN") if vs_ai else tr("TURN_PLAYER") % 1)
+
+
+## De quem sao as pecas que o toque move agora. Contra a maquina e sempre o
+## marfim; na mesa compartilhada alterna.
+func _lado() -> int:
+	return 1 if vs_ai else _lado_local
+
+
+## O lado como numero de jogador, para as frases: marfim e o 1, obsidiana o 2.
+static func _numero_do_lado(lado: int) -> int:
+	return 1 if lado > 0 else 2
+
+
+## O jogador trocou o modo: a partida recomeca, porque meia partida contra a
+## maquina nao vira meia partida entre duas pessoas.
+func _on_modo_trocado(novo_vs_ai: bool) -> void:
+	vs_ai = novo_vs_ai
+	restart_game()
 
 
 func _update_level_label() -> void:
-	if level_label:
-		level_label.text = DifficultyManager.label_for(game_id)
+	if level_label == null:
+		return
+	if not vs_ai:
+		# Sem maquina na mesa nao ha degrau de IA para mostrar.
+		level_label.text = tr("MODE_LABEL") % tr("MODE_TWO_PLAYERS")
+		return
+	level_label.text = DifficultyManager.label_for(game_id)
 
 func _sync_pieces_3d() -> void:
 	for p in pieces_root.get_children(): p.queue_free()
@@ -126,7 +166,10 @@ func _update_score() -> void:
 			var val: int = grid_data.get_cell(r, c)
 			if val > 0: player_count += 1
 			elif val < 0: ai_count += 1
-	set_duel_score(player_count, ai_count)
+	if vs_ai:
+		set_duel_score(player_count, ai_count)
+	else:
+		set_duel_score(player_count, ai_count, "SCORE_PLAYER_1", "SCORE_PLAYER_2")
 
 func _on_cell_clicked(r: int, c: int) -> void:
 	if game_over or not is_player_turn: return
@@ -142,7 +185,7 @@ func _on_cell_clicked(r: int, c: int) -> void:
 		return
 		
 	var val: int = grid_data.get_cell(r, c)
-	if val > 0: # Peça do jogador
+	if val != 0 and signi(val) == _lado(): # Peça de quem joga agora
 		# Captura e obrigatoria -- e sempre foi, em `get_all_valid_moves`. Só a
 		# tela nao cobrava: dava para deixar a captura de lado e passear com
 		# outra peca enquanto a IA, que joga pelas regras, era obrigada a comer.
@@ -165,7 +208,7 @@ func _on_cell_clicked(r: int, c: int) -> void:
 ## so as que capturam entram na lista.
 func _playable_origins() -> Array[Vector2i]:
 	var origens: Array[Vector2i] = []
-	for m in CheckersRules.get_all_valid_moves(grid_data, 1):
+	for m in CheckersRules.get_all_valid_moves(grid_data, _lado()):
 		if not origens.has(m["from"]):
 			origens.append(m["from"])
 	return origens
@@ -265,6 +308,14 @@ func _check_game_end_or_ai_turn() -> void:
 		_end_game(winner)
 		return
 		
+	# Mesa compartilhada: a vez atravessa o tabuleiro sem sair do aparelho, e
+	# `is_player_turn` continua verdadeiro porque quem joga agora tambem esta aqui.
+	if not vs_ai:
+		_lado_local = -_lado_local
+		_clear_selection()
+		set_status(tr("TURN_PLAYER") % _numero_do_lado(_lado_local))
+		return
+
 	is_player_turn = false
 	set_status(tr("CHECKERS_AI_TURN"))
 
@@ -356,7 +407,8 @@ func _is_queen(pos: Vector2i) -> bool:
 
 func _on_peca_pega(id: Variant) -> void:
 	var origem: Vector2i = id
-	if game_over or not is_player_turn or grid_data.get_cell(origem.x, origem.y) <= 0:
+	var dono := signi(int(grid_data.get_cell(origem.x, origem.y)))
+	if game_over or not is_player_turn or dono != _lado():
 		picker.cancel_drag()
 		return
 	# No meio de uma captura em cadeia so a peca que esta comendo pode andar.
@@ -414,6 +466,11 @@ func _on_peca_solta(_from_id: Variant, to: Variant) -> void:
 
 
 func _end_game(winner: int) -> void:
+	if not vs_ai:
+		# Os dois estao na mesma mesa: o cartao anuncia o lado que venceu.
+		var numero := _numero_do_lado(winner)
+		finish_game(tr("PLAYER_WINS") % numero, numero == 1, {"mode": "versus"})
+		return
 	var antes := DifficultyManager.get_level(game_id)
 	if winner == 1:
 		finish_game(tr("RESULT_YOU_WIN"), true)

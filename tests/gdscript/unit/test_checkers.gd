@@ -426,3 +426,66 @@ func test_o_degrau_alto_ganha_do_degrau_baixo() -> void:
 		if fim == forte:
 			vitorias += 1
 	assert_true(vitorias >= 3, "degrau 5 venceu so %d de 4 partidas contra o degrau 1" % vitorias)
+
+
+# ------------------------------------------------------- dois no mesmo aparelho
+
+const GameScene = preload("res://games/damas/CheckersGame.tscn")
+
+
+func _cena_em_dupla() -> Node:
+	var jogo = add_child_autofree(GameScene.instantiate())
+	jogo.vs_ai = false
+	jogo._start_new_game()
+	return jogo
+
+
+func test_a_mesa_compartilhada_oferece_o_botao_de_modo() -> void:
+	var jogo = add_child_autofree(GameScene.instantiate())
+	assert_not_null(jogo.get_node_or_null("ModeSwitch"), "o jogo monta o botao de modo")
+	assert_true(jogo.vs_ai, "a partida abre contra a maquina")
+
+
+func test_em_dupla_a_vez_atravessa_o_tabuleiro_e_a_ia_nao_joga() -> void:
+	var jogo = _cena_em_dupla()
+	assert_eq(jogo._lado(), 1, "o marfim abre")
+
+	var lances: Array = RulesScript.get_all_valid_moves(jogo.grid_data, 1)
+	assert_gt(lances.size(), 0, "o marfim tem por onde comecar")
+	var lance: Dictionary = lances[0]
+	jogo._on_cell_clicked(lance["from"].x, lance["from"].y)
+	jogo._on_cell_clicked(lance["to"].x, lance["to"].y)
+
+	assert_eq(jogo._lado(), -1, "a vez passou para a obsidiana, na mesma mesa")
+	assert_true(jogo.is_player_turn, "e o toque continua valendo")
+
+	# Contra a maquina a obsidiana ja teria respondido. Aqui o tabuleiro tem as
+	# 24 pecas da abertura, nem uma a menos, e a peca movida esta no destino.
+	var pecas := 0
+	for cell in jogo.grid_data.cells:
+		if cell != 0:
+			pecas += 1
+	assert_eq(pecas, 24, "ninguem comeu ninguem")
+	assert_eq(signi(int(jogo.grid_data.get_cell(lance["to"].x, lance["to"].y))), 1, "a peca andou")
+
+
+func test_em_dupla_a_obsidiana_responde_ao_toque_na_vez_dela() -> void:
+	var jogo = _cena_em_dupla()
+	var lances: Array = RulesScript.get_all_valid_moves(jogo.grid_data, 1)
+	var lance: Dictionary = lances[0]
+	jogo._on_cell_clicked(lance["from"].x, lance["from"].y)
+	jogo._on_cell_clicked(lance["to"].x, lance["to"].y)
+
+	var dela: Array = RulesScript.get_all_valid_moves(jogo.grid_data, -1)
+	assert_gt(dela.size(), 0, "a obsidiana tem jogada")
+	var origem: Vector2i = dela[0]["from"]
+	jogo._on_cell_clicked(origem.x, origem.y)
+	assert_eq(jogo.selected_pos, origem, "tocar na peca dela seleciona")
+	assert_gt(jogo.valid_moves.size(), 0, "e os destinos acendem")
+
+
+func test_em_dupla_o_fim_anuncia_o_lado_e_nao_voce() -> void:
+	var jogo = _cena_em_dupla()
+	jogo._end_game(-1)
+	assert_true(jogo.game_over, "a partida fechou")
+	assert_eq(jogo.status_label.text, tr("PLAYER_WINS") % 2, "quem venceu foi o jogador 2")

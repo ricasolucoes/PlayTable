@@ -313,3 +313,55 @@ func test_a_ia_pega_o_canto_livre_no_degrau_do_topo() -> void:
 	g.set_cell(0, 4, BRANCO)
 	g.set_cell(7, 7, BRANCO)
 	assert_eq(AIScript.choose_move(g, BRANCO, 10), Vector2i(0, 0), "canto antes de tudo")
+
+
+# ------------------------------------------------------- dois no mesmo aparelho
+
+func _cena_em_dupla() -> Node:
+	var jogo = add_child_autofree(GameScene.instantiate())
+	jogo.vs_ai = false
+	jogo._start_new_game()
+	return jogo
+
+
+func test_a_mesa_compartilhada_oferece_o_botao_de_modo() -> void:
+	var jogo = add_child_autofree(GameScene.instantiate())
+	var botao = jogo.get_node_or_null("ModeSwitch")
+	assert_not_null(botao, "o jogo monta o botao de modo")
+	assert_true(botao.visible, "e ele aparece fora da rede")
+	assert_true(jogo.vs_ai, "a partida abre contra a maquina")
+
+
+func test_em_dupla_a_vez_passa_para_o_outro_lado_sem_a_ia_jogar() -> void:
+	var jogo = _cena_em_dupla()
+	assert_eq(jogo._meu(), PRETO, "as pretas abrem")
+
+	# (2,3) flanqueia a branca de (3,3): jogada legal de abertura.
+	jogo._on_cell_clicked(2, 3)
+	assert_eq(jogo.grid_data.get_cell(2, 3), PRETO, "a preta pousou")
+	assert_eq(jogo.grid_data.get_cell(3, 3), PRETO, "e virou a branca do meio")
+	assert_eq(jogo._meu(), BRANCO, "a vez passou para as brancas, na mesma mesa")
+	assert_true(jogo.is_player_turn, "e o toque continua valendo: quem joga agora tambem esta aqui")
+
+	# Contra a maquina, a esta altura a IA ja teria posto uma branca. Aqui nao:
+	# o tabuleiro tem exatamente as quatro da abertura mais a que a pessoa pos.
+	var contagem: Dictionary = RulesScript.count_scores(jogo.grid_data)
+	assert_eq(int(contagem["black"]) + int(contagem["white"]), 5, "so a jogada da pessoa entrou")
+
+
+func test_em_dupla_o_placar_fala_de_jogadores_e_nao_de_ia() -> void:
+	var jogo = _cena_em_dupla()
+	assert_eq(jogo.level_label.text, tr("MODE_LABEL") % tr("MODE_TWO_PLAYERS"),
+		"a linha do degrau vira a linha do modo")
+
+
+func test_em_dupla_o_fim_anuncia_o_lado_e_nao_voce() -> void:
+	var jogo = _cena_em_dupla()
+	var g := _vazio()
+	for c in range(5):
+		g.set_cell(0, c, PRETO)
+	g.set_cell(1, 0, BRANCO)
+	jogo.grid_data = g
+	jogo._end_game()
+	assert_true(jogo.game_over, "a partida fechou")
+	assert_eq(jogo.status_label.text, tr("PLAYER_WINS") % PRETO, "o cartao anuncia o jogador 1")

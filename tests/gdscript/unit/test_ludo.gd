@@ -388,3 +388,63 @@ func test_o_dado_da_mesa_rola_no_toque() -> void:
 	jogo._on_peao_tocado("dado")
 	assert_false(jogo.can_roll, "tocar o dado gastou a tirada")
 	assert_eq(jogo.picker.screen_of("dado"), Vector2.INF, "e ele saiu dos alvos")
+
+
+# ------------------------------------------------------- dois no mesmo aparelho
+
+func _cena_em_dupla() -> Node:
+	var jogo := _jogo()
+	jogo.vs_ai = false
+	jogo._start_new_game()
+	return jogo
+
+
+func test_a_mesa_compartilhada_oferece_o_botao_de_modo() -> void:
+	var jogo := _jogo()
+	assert_not_null(jogo.get_node_or_null("ModeSwitch"), "o jogo monta o botao de modo")
+	assert_true(jogo.vs_ai, "a partida abre contra a maquina")
+
+
+func test_em_dupla_jogam_os_quadrantes_opostos() -> void:
+	var jogo := _cena_em_dupla()
+	assert_eq(jogo._assentos_humanos(), [0, 2], "vermelho e verde, que ficam frente a frente")
+	assert_eq(jogo._passo_da_vez(), 2, "a vez pula os assentos que nao jogam")
+	assert_true(jogo._vez_humana(), "o vermelho abre")
+	assert_eq(jogo._assento(), 0, "e o toque comanda o vermelho")
+
+
+func test_em_dupla_a_vez_vai_do_vermelho_ao_verde_sem_passar_pela_maquina() -> void:
+	var jogo := _cena_em_dupla()
+	jogo._next_turn()
+	assert_eq(jogo.current_turn, 2, "a vez pulou o azul e chegou ao verde")
+	assert_true(jogo._vez_humana(), "que tambem esta na mesa")
+	assert_eq(jogo._assento(), 2, "e agora o toque comanda o verde")
+	assert_false(jogo.btn_dice.disabled, "o dado continua ligado para quem esta com o aparelho")
+	jogo._next_turn()
+	assert_eq(jogo.current_turn, 0, "e volta ao vermelho")
+
+
+func test_contra_a_maquina_a_vez_continua_andando_de_um_em_um() -> void:
+	var jogo := _jogo()
+	jogo._start_new_game()
+	assert_eq(jogo._passo_da_vez(), 1, "os quatro assentos jogam")
+	jogo._next_turn()
+	assert_eq(jogo.current_turn, 1, "a vez foi para o azul, que e da maquina")
+	assert_false(jogo._vez_humana(), "e o aparelho nao joga por ela")
+
+
+func test_em_dupla_os_peoes_dos_assentos_vazios_saem_da_mesa() -> void:
+	var jogo := _cena_em_dupla()
+	for idx in range(jogo.PAWNS_PER_PLAYER):
+		assert_true(jogo.pawns_3d[0][idx].visible, "o vermelho esta na mesa")
+		assert_true(jogo.pawns_3d[2][idx].visible, "o verde tambem")
+		assert_false(jogo.pawns_3d[1][idx].visible, "o azul nao joga esta partida")
+		assert_false(jogo.pawns_3d[3][idx].visible, "o amarelo tampouco")
+
+
+func test_em_dupla_o_fim_anuncia_o_lado_e_nao_voce() -> void:
+	var jogo := _cena_em_dupla()
+	for idx in range(jogo.PAWNS_PER_PLAYER):
+		jogo.players_pawns[2][idx] = 32
+	assert_true(jogo._check_win(2), "o verde levou os quatro peoes ao centro")
+	assert_eq(jogo.status_label.text, tr("PLAYER_WINS") % 2, "e o cartao anuncia o jogador 2")

@@ -9,6 +9,20 @@ var gems_3d: Dictionary = {}
 ## Degrau de 1 a 10 do DifficultyManager. Vira orcamento de busca da IA.
 var ai_level: int = DifficultyManager.DEFAULT_LEVEL
 
+## Dois no mesmo aparelho: as seis covas de cima deixam de ser da maquina e
+## passam a ser da pessoa do outro lado da mesa. O tabuleiro ja e simetrico --
+## o que faltava era o toque e o anel chegarem la.
+var vs_ai: bool = true
+var mode_switch: ModeSwitch = null
+
+## O lado da vez na mesa compartilhada: 0 e quem tem as covas 0..5, 1 e quem
+## tem as 7..12. Contra a maquina e sempre 0.
+var _lado_local: int = 0
+
+## As doze covas que se semeiam, na ordem dos aneis. As duas Kalahs (6 e 13)
+## ficam de fora: ninguem semeia a partir do proprio deposito.
+const COVAS := [0, 1, 2, 3, 4, 5, 7, 8, 9, 10, 11, 12]
+
 @onready var board_root: Node3D = $BoardRoot
 @onready var gems_root: Node3D = $GemsRoot
 @onready var shell: GameShell = $UI/GameShell
@@ -83,14 +97,18 @@ func _ready() -> void:
 	_setup_3d_mancala_board()
 	_setup_count_labels()
 	_setup_picker()
+	mode_switch = ModeSwitch.montar(self, vs_ai)
+	mode_switch.trocou.connect(_on_modo_trocado)
 
 	halos = CellHalo3D.new()
 	$BoardRoot.add_child(halos)
-	# Só as seis covas do jogador ganham anel: as da IA não são tocáveis, e um
-	# anel onde não se pode tocar é ruído, não informação.
-	halos.setup(6, 0.30)
+	# As doze covas ganham anel, mas so acendem as de quem joga agora -- contra a
+	# maquina, as seis de baixo; na mesa compartilhada, as seis do lado da vez.
+	# Anel onde nao se pode tocar continua sendo ruido, e por isso quem decide e
+	# `light_only`, nao a montagem.
+	halos.setup(COVAS.size(), 0.30)
 	var alvos: Array[Vector3] = []
-	for i in range(6):
+	for i in COVAS:
 		alvos.append(PIT_POSITIONS_3D[i])
 	halos.set_targets(alvos)
 	# Sem tema proprio a cena herda o `casino_green`, mesa de carteado, cujo teto de
@@ -170,7 +188,7 @@ func _setup_picker() -> void:
 	add_child(picker)
 	picker.attach(env_3d, 0.08)
 	var alvos: Dictionary = {}
-	for i in range(6):
+	for i in COVAS:
 		alvos[i] = board_root.to_global(PIT_POSITIONS_3D[i])
 	picker.set_targets(alvos)
 	picker.target_tapped.connect(func(id: Variant) -> void: _on_player_pit_clicked(int(id)))
@@ -178,9 +196,26 @@ func _setup_picker() -> void:
 		if ate != null and ate == de:
 			_on_player_pit_clicked(int(de)))
 
+## De quem sao as covas que o toque semeia agora.
+func _lado() -> int:
+	return 0 if vs_ai else _lado_local
+
+
+## A cova pertence ao lado? As de 0 a 5 sao do primeiro, as de 7 a 12 do segundo.
+static func _dono_da_cova(cova: int) -> int:
+	return 0 if cova <= 5 else 1
+
+
+## O jogador trocou o modo: a partida recomeca.
+func _on_modo_trocado(novo_vs_ai: bool) -> void:
+	vs_ai = novo_vs_ai
+	restart_game()
+
+
 func _start_new_game() -> void:
 	game_over = false
 	is_player_turn = true
+	_lado_local = 0
 	btn_restart.hide()
 	
 	ai_level = DifficultyManager.get_level(game_id)
@@ -188,7 +223,7 @@ func _start_new_game() -> void:
 	for i in range(14):
 		pits.append(0 if (i == 6 or i == 13) else 4)
 		
-	set_status(tr("MANCALA_YOUR_TURN_LONG"))
+	set_status(tr("MANCALA_YOUR_TURN_LONG") if vs_ai else tr("TURN_PLAYER") % 1)
 	_sync_gems_3d()
 	_update_ui()
 
@@ -226,16 +261,24 @@ func _sync_gems_3d() -> void:
 		gems_3d[pit_idx] = gem_list
 
 func _update_ui() -> void:
-	set_duel_score(pits[6], pits[13])
-	shell.set_level(DifficultyManager.label_for(game_id))
+	if vs_ai:
+		set_duel_score(pits[6], pits[13])
+		shell.set_level(DifficultyManager.label_for(game_id))
+	else:
+		set_duel_score(pits[6], pits[13], "SCORE_PLAYER_1", "SCORE_PLAYER_2")
+		shell.set_level(tr("MODE_LABEL") % tr("MODE_TWO_PLAYERS"))
 
 	for i in range(mini(14, count_labels.size())):
 		count_labels[i].text = "%d" % int(pits[i])
 
+	# So acendem as covas de quem joga agora: e o anel que diz de quem e a vez.
 	var jogaveis: Array = []
-	for i in range(6):
-		if is_player_turn and int(pits[i]) > 0 and not game_over:
-			jogaveis.append(i)
+	for indice in range(COVAS.size()):
+		var cova: int = COVAS[indice]
+		if _dono_da_cova(cova) != _lado():
+			continue
+		if is_player_turn and int(pits[cova]) > 0 and not game_over:
+			jogaveis.append(indice)
 	if halos:
 		halos.light_only(jogaveis)
 	if picker:
@@ -248,8 +291,12 @@ func _update_ui() -> void:
 ## cena de fato jogava.
 func _on_player_pit_clicked(pit_idx: int) -> void:
 	if game_over or not is_player_turn or pits[pit_idx] == 0: return
+	# A cova tem de ser de quem joga agora. Contra a maquina isso quer dizer as
+	# seis de baixo; na mesa compartilhada, as do lado da vez.
+	var lado := _lado()
+	if _dono_da_cova(pit_idx) != lado: return
 
-	var ganhou := _semear(pit_idx, 0)
+	var ganhou := _semear(pit_idx, lado)
 	if ganhou["capturou"] > 0:
 		set_status(tr("MANCALA_YOU_CAPTURE") % ganhou["capturou"])
 		if AudioManager:
@@ -259,6 +306,14 @@ func _on_player_pit_clicked(pit_idx: int) -> void:
 
 	if ganhou["extra"]:
 		set_status(tr("MANCALA_FREE_TURN"))
+		_update_ui()
+		return
+
+	# Mesa compartilhada: a vez atravessa o tabuleiro e os aneis mudam de lado.
+	if not vs_ai:
+		_lado_local = 1 - _lado_local
+		set_status(tr("TURN_PLAYER") % (_lado_local + 1))
+		_update_ui()
 		return
 
 	is_player_turn = false
@@ -343,6 +398,15 @@ func _check_game_over() -> bool:
 		_sync_gems_3d()
 		_update_ui()
 		
+		if not vs_ai:
+			# Os dois estao na mesma mesa: o cartao anuncia o lado, nao "voce".
+			if pits[6] > pits[13]:
+				finish_game(tr("PLAYER_WINS") % 1, true, {"mode": "versus"})
+			elif pits[13] > pits[6]:
+				finish_game(tr("PLAYER_WINS") % 2, false, {"mode": "versus"})
+			else:
+				finish_game(tr("RESULT_DRAW_SCORE") % [pits[6], pits[13]], false, {"draw": true, "mode": "versus"})
+			return true
 		if pits[6] > pits[13]:
 			finish_game(tr("RESULT_YOU_WIN_SCORE") % [pits[6], pits[13]], true)
 		elif pits[13] > pits[6]:

@@ -9,6 +9,10 @@
 
 ## [Unreleased](https://github.com/ricasolucoes/PlayTable/compare/v0.9.1...develop)
 
+### ✨ Novidades
+
+- [x] **Cinco jogos ganharam a mesa compartilhada** (`shared/ui/ModeSwitch.gd`) — Damas, Reversi, Mancala, Senet e Ludo passam a aceitar duas pessoas no mesmo aparelho, e não só uma pessoa contra a máquina. Eram cinco jogos anunciando "vs IA" e nada mais; agora o menu diz "2 Jogadores" neles porque o jogo faz jus ao rótulo. O botão de modo é um só, no mesmo canto de todos: no Ludo a mesa de dois usa os quadrantes opostos — vermelho e verde, como se joga um Ludo de dois de verdade —, e os peões dos assentos que não jogam saem da mesa em vez de ficarem parados na base parecendo esquecidos. No Mancala as seis covas de cima passaram a ter anel e a responder ao toque, que era o que faltava para o segundo jogador existir
+
 ---
 
 ## [v0.9.1 (2026-09-08)](https://github.com/ricasolucoes/PlayTable/compare/v0.9.0...v0.9.1)
