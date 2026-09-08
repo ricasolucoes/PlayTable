@@ -8,12 +8,15 @@ extends Node
 ##     (servidor ENet na porta `PORT`) e responde a quem procura na rede por UDP
 ##     (`DISCOVERY_PORT`); o outro encontra a sala na lista ou digita o endereco.
 ##     Nao precisa de servidor nenhum -- funciona no hotspot do proprio celular.
-##   - **Pela internet** (`Transport.RELAY`): os dois entram como clientes num
-##     relay WebSocket no servidor do contrato (`docs/server/api-contract.md`,
-##     grupo Salas). O servidor ainda nao existe; ate existir, este caminho
-##     termina em `State.ONLINE_UNAVAILABLE` depois de `RELAY_TIMEOUT`, e a tela
-##     de sala diz que o online esta fora -- o resto do aplicativo segue inteiro,
-##     como o contrato exige (secao 4).
+##   - **Pela internet** (`Transport.RELAY`): em dois tempos, porque sao duas
+##     coisas diferentes. Primeiro a **sala**, que e cadastro: uma chamada HTTP
+##     comum ao RicaGames (`POST /api/v1/rooms`) devolve um codigo de cinco
+##     letras e o endereco do socket daquela partida. So depois a **partida**,
+##     que e conversa: os dois aparelhos abrem o WebSocket do relay e ficam
+##     ligados enquanto jogam. Servidor fora do ar em qualquer um dos dois
+##     tempos termina em `State.ONLINE_UNAVAILABLE`, a tela de sala diz que o
+##     online esta fora, e o resto do aplicativo segue inteiro -- como o
+##     contrato exige (`docs/server/api-contract.md`, secao 4).
 ##
 ## Os dois transportes falam o mesmo protocolo: RPCs deste autoload, que existe
 ## no mesmo caminho (`/root/NetworkManager`) nos dois aparelhos. O jogo nao
@@ -28,6 +31,7 @@ signal state_changed(state: int)
 signal room_found(info: Dictionary)
 signal rooms_changed(rooms: Array)
 signal match_started(game_id: String)
+signal room_ready(code: String)
 signal move_received(payload: Dictionary)
 signal restart_received
 signal peer_left
@@ -45,8 +49,16 @@ const BEACON_TAG := "PLAYTABLE!"
 ## com versoes diferentes nao entram na mesma sala.
 const PROTOCOL := 1
 
-## Endereco do relay do contrato. `wss://` e obrigatorio (secao 2 do contrato).
-const RELAY_URL := "wss://playtable.ricasolucoes.com.br/api/v1/rooms/ws"
+## Onde a sala e cadastrada. `https://` e obrigatorio (secao 2 do contrato); o
+## endereco do socket da partida nao esta escrito aqui de proposito -- quem diz
+## e a resposta da sala, e assim mudar o relay de lugar nao pede aplicativo novo.
+const API_BASE := "https://games.ricasolucoes.com.br/api/v1"
+
+## Quanto tempo o cadastro tem para responder. Curto, como manda a secao 4: sem
+## servidor, o jogador espera segundos e volta a jogar offline.
+const API_TIMEOUT := 12.0
+
+## Quanto tempo o socket da partida tem para abrir depois de a sala existir.
 const RELAY_TIMEOUT := 8.0
 
 ## Quanto tempo uma sala vista na rede fica na lista sem responder de novo.
@@ -61,6 +73,7 @@ var opponent_name: String = ""
 var room_code: String = ""
 
 var _peer: MultiplayerPeer = null
+var _http: HTTPRequest = null
 var _udp: PacketPeerUDP = null
 var _scan_timer: float = 0.0
 var _relay_timer: float = 0.0
@@ -187,30 +200,135 @@ func stop_scan() -> void:
 		set_process(false)
 
 
-## Sala pela internet: `code` vazio cria uma sala nova no relay; com codigo,
-## entra na sala de um amigo. Sem servidor, termina em ONLINE_UNAVAILABLE.
+## Sala pela internet: `code` vazio abre uma sala nova; com codigo, entra na
+## sala de um amigo. A sala nasce numa chamada HTTP -- e cadastro, nao partida --
+## e o socket so abre depois, no endereco que a resposta trouxer. Sem servidor,
+## termina em ONLINE_UNAVAILABLE sem atrapalhar o resto do aplicativo.
 func connect_online(p_game_id: String, code: String = "") -> void:
 	leave()
-	var ws := WebSocketMultiplayerPeer.new()
-	var url := RELAY_URL + ("/new?game=%s&v=%d" % [p_game_id, PROTOCOL] if code == "" else "/%s?v=%d" % [code.strip_edges().to_upper(), PROTOCOL])
-	var erro := ws.create_client(url)
-	if erro != OK:
-		_set_state(State.ONLINE_UNAVAILABLE)
-		return
-	_peer = ws
-	multiplayer.multiplayer_peer = ws
 	transport = Transport.RELAY
 	game_id = p_game_id
 	local_seat = 1 if code == "" else 2
 	room_code = code.strip_edges().to_upper()
+	_set_state(State.JOINING)
+	_pedir_sala()
+
+
+## O endereco da API. A variavel de ambiente existe para a suite e para o teste
+## de mesa apontarem a um servidor local; no aparelho ela nunca esta definida.
+static func api_base() -> String:
+	var escolhido := OS.get_environment("PLAYTABLE_API")
+	return escolhido if escolhido != "" else API_BASE
+
+
+## Abre a sala (sem codigo) ou entra na de um amigo (com codigo).
+func _pedir_sala() -> void:
+	_http = HTTPRequest.new()
+	_http.timeout = API_TIMEOUT
+	add_child(_http)
+	_http.request_completed.connect(_on_sala_respondida)
+
+	var cabecalhos := PackedStringArray([
+		"Content-Type: application/json",
+		"Accept: application/json",
+	])
+	var url := ""
+	var corpo := {"player_name": player_name(), "protocol": PROTOCOL}
+	if room_code == "":
+		url = "%s/rooms" % api_base()
+		corpo["game"] = game_id
+		# Retentativa nao pode virar sala duplicada (contrato, secao 6).
+		cabecalhos.append("Idempotency-Key: %s" % _nova_chave())
+	else:
+		url = "%s/rooms/%s/join" % [api_base(), room_code]
+
+	if _http.request(url, cabecalhos, HTTPClient.METHOD_POST, JSON.stringify(corpo)) != OK:
+		_online_fora()
+
+
+func _on_sala_respondida(resultado: int, codigo_http: int, _cabecalhos: PackedStringArray, corpo: PackedByteArray) -> void:
+	_soltar_http()
+	if state != State.JOINING or transport != Transport.RELAY:
+		return  # o jogador desistiu enquanto o servidor pensava
+	if resultado != HTTPRequest.RESULT_SUCCESS:
+		# Tempo esgotado, DNS que nao resolve, conexao recusada: tudo a mesma
+		# coisa para o jogador -- nao ha servidor agora (contrato, secao 4).
+		_online_fora()
+		return
+
+	var lido: Variant = JSON.parse_string(corpo.get_string_from_utf8())
+	var resposta: Dictionary = lido if lido is Dictionary else {}
+
+	if codigo_http >= 400:
+		var motivo := ""
+		if resposta.has("erro") and resposta["erro"] is Dictionary:
+			motivo = str((resposta["erro"] as Dictionary).get("codigo", ""))
+		match motivo:
+			"sala_inexistente":
+				_falhar("NET_ROOM_NOT_FOUND")
+			"sala_cheia":
+				_falhar("NET_ROOM_FULL")
+			"protocolo_diferente":
+				_falhar("NET_VERSION_MISMATCH")
+			_:
+				_online_fora()
+		return
+
+	var dados: Dictionary = resposta.get("data", {}) if resposta.get("data") is Dictionary else {}
+	var endereco := str(dados.get("ws_url", ""))
+	if endereco == "":
+		_online_fora()
+		return
+
+	room_code = str(dados.get("code", room_code))
+	if dados.get("game", "") != "":
+		game_id = str(dados["game"])
+	room_ready.emit(room_code)
+	_abrir_socket(endereco)
+
+
+## O socket da partida. Daqui para a frente e o mesmo caminho da rede local:
+## os RPCs nao sabem por onde a jogada viajou.
+func _abrir_socket(url: String) -> void:
+	var ws := WebSocketMultiplayerPeer.new()
+	if ws.create_client(url) != OK:
+		_online_fora()
+		return
+	_peer = ws
+	multiplayer.multiplayer_peer = ws
 	_relay_timer = RELAY_TIMEOUT
 	set_process(true)
-	_set_state(State.JOINING)
+
+
+## Uma chave por tentativa de abrir sala, no formato do contrato.
+func _nova_chave() -> String:
+	var bytes := PackedByteArray()
+	for i in 16:
+		bytes.append(randi() % 256)
+	return "%d-%s" % [Time.get_unix_time_from_system(), bytes.hex_encode()]
+
+
+func _online_fora() -> void:
+	_desligar_peer()
+	_relay_timer = 0.0
+	_set_state(State.ONLINE_UNAVAILABLE)
+
+
+## `cancelar` so quando a resposta ainda nao chegou: cancelar de dentro do
+## `request_completed` seria pedir para interromper o que ja terminou.
+func _soltar_http(cancelar: bool = false) -> void:
+	if _http == null:
+		return
+	if cancelar:
+		_http.cancel_request()
+	_http.queue_free()
+	_http = null
 
 
 ## Sai da sala, seja qual for o estado. O outro lado recebe `peer_left`.
 func leave() -> void:
 	_fechar_udp()
+	_soltar_http(true)
 	if _peer != null:
 		_peer.close()
 		_peer = null
@@ -315,12 +433,15 @@ func _on_connected_to_server() -> void:
 	# convidado se apresenta a sala em vez de a um peer.
 	_relay_timer = 0.0
 	_rpc_hello.rpc_id(1, player_name(), PROTOCOL, game_id)
+	# Quem abriu a sala online passa a esperar o amigo, e a tela mostra o codigo
+	# enquanto isso -- o convidado continua em JOINING ate a partida comecar.
+	if transport == Transport.RELAY and is_host():
+		_set_state(State.HOSTING)
 
 
 func _on_connection_failed() -> void:
 	if transport == Transport.RELAY:
-		_set_state(State.ONLINE_UNAVAILABLE)
-		_desligar_peer()
+		_online_fora()
 	else:
 		_falhar("NET_ERROR_JOIN")
 
@@ -381,8 +502,7 @@ func _process(delta: float) -> void:
 	if _relay_timer > 0.0:
 		_relay_timer -= delta
 		if _relay_timer <= 0.0 and state == State.JOINING and transport == Transport.RELAY:
-			_desligar_peer()
-			_set_state(State.ONLINE_UNAVAILABLE)
+			_online_fora()
 	if _udp == null:
 		return
 	if state == State.HOSTING:

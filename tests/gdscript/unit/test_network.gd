@@ -87,6 +87,37 @@ func test_a_sala_de_espera_instancia_e_lista_os_jogos() -> void:
 	assert_not_null(lobby.find_child("BtnOnlineHost", true, false), "tem a porta da internet")
 
 
+# --------------------------------------------------------------- pela internet
+
+func test_o_endereco_da_api_sai_do_ambiente_quando_ha_um() -> void:
+	var antes := OS.get_environment("PLAYTABLE_API")
+	OS.set_environment("PLAYTABLE_API", "")
+	assert_eq(NetworkManager.api_base(), NetworkManager.API_BASE, "sem variavel, o endereco de producao")
+	OS.set_environment("PLAYTABLE_API", "http://127.0.0.1:8099/api/v1")
+	assert_eq(NetworkManager.api_base(), "http://127.0.0.1:8099/api/v1", "com variavel, o servidor de teste")
+	OS.set_environment("PLAYTABLE_API", antes)
+
+
+func test_servidor_fora_do_ar_derruba_so_o_online() -> void:
+	# A porta 45999 nao tem ninguem ouvindo: e a recusa mais rapida que existe,
+	# e para o jogador ela vale o mesmo que DNS que nao resolve (contrato, secao 4).
+	var antes := OS.get_environment("PLAYTABLE_API")
+	OS.set_environment("PLAYTABLE_API", "http://127.0.0.1:45999/api/v1")
+
+	NetworkManager.connect_online("jogo_da_velha")
+	assert_eq(NetworkManager.state, NetworkManager.State.JOINING, "pediu a sala")
+	while NetworkManager.state == NetworkManager.State.JOINING:
+		await wait_frames(1)
+
+	assert_eq(NetworkManager.state, NetworkManager.State.ONLINE_UNAVAILABLE, "o online sai de cena")
+	assert_false(NetworkManager.is_active(), "e ninguem fica em partida")
+
+	# O que precisa continuar de pe: a rede local nao depende de servidor nenhum.
+	assert_true(NetworkManager.host("reversi"), "a sala na rede local abre do mesmo jeito")
+	NetworkManager.leave()
+	OS.set_environment("PLAYTABLE_API", antes)
+
+
 # ---------------------------------------------------------------- Jogo da Velha
 
 func test_velha_em_rede_manda_a_propria_jogada_e_recebe_a_do_outro() -> void:

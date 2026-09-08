@@ -36,6 +36,7 @@ func _ready() -> void:
 	if NetworkManager != null:
 		NetworkManager.state_changed.connect(_on_state_changed)
 		NetworkManager.rooms_changed.connect(_on_rooms_changed)
+		NetworkManager.room_ready.connect(_on_room_ready)
 		NetworkManager.failed.connect(_on_failed)
 		if NetworkManager.state == NetworkManager.State.OFFLINE:
 			NetworkManager.start_scan()
@@ -49,6 +50,8 @@ func _exit_tree() -> void:
 		NetworkManager.state_changed.disconnect(_on_state_changed)
 	if NetworkManager.rooms_changed.is_connected(_on_rooms_changed):
 		NetworkManager.rooms_changed.disconnect(_on_rooms_changed)
+	if NetworkManager.room_ready.is_connected(_on_room_ready):
+		NetworkManager.room_ready.disconnect(_on_room_ready)
 	if NetworkManager.failed.is_connected(_on_failed):
 		NetworkManager.failed.disconnect(_on_failed)
 	NetworkManager.stop_scan()
@@ -225,9 +228,14 @@ func _refrescar() -> void:
 	_btn_cancelar.visible = not parado
 	match estado:
 		NetworkManager.State.HOSTING:
-			var ip: String = NetworkManager.local_address()
-			_lan_status.text = tr("NET_WAITING") % ip if ip != "" else tr("NET_WAITING_NO_IP")
-			_online_status.text = ""
+			if NetworkManager.transport == NetworkManager.Transport.RELAY:
+				# O codigo e a sala: e o que o jogador dita ao amigo por telefone.
+				_online_status.text = tr("NET_ONLINE_WAITING") % NetworkManager.room_code
+				_lan_status.text = ""
+			else:
+				var ip: String = NetworkManager.local_address()
+				_lan_status.text = tr("NET_WAITING") % ip if ip != "" else tr("NET_WAITING_NO_IP")
+				_online_status.text = ""
 		NetworkManager.State.JOINING:
 			if NetworkManager.transport == NetworkManager.Transport.RELAY:
 				_online_status.text = tr("NET_CONNECTING") % tr("NET_ONLINE_TITLE")
@@ -264,6 +272,11 @@ func _on_rooms_changed(salas: Array) -> void:
 
 
 func _on_state_changed(_estado: int) -> void:
+	_refrescar()
+
+
+## A sala existe antes de o socket abrir: o codigo ja pode ir para a tela.
+func _on_room_ready(_code: String) -> void:
 	_refrescar()
 
 
