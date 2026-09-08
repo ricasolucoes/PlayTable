@@ -24,12 +24,28 @@ source "$PROJECT_DIR/scripts/android_version.sh"
 # contra a engine do modelo Android, senao o AAB publicado crasha no boot.
 GODOT_BIN="$("$PROJECT_DIR/scripts/godot_bin.sh")"
 
-echo "=> PlayTable :: Exportando PCK do Godot ($VERSION_NAME - code $VERSION_CODE)..."
-# Gradle carrega src/main/assets; limpar a exportacao anterior evita empacotar
-# arquivos soltos antigos junto com o PCK novo.
+echo "=> PlayTable :: Exportando assets do Godot ($VERSION_NAME - code $VERSION_CODE)..."
+# O pacote vai SOLTO em src/main/assets, arquivo por arquivo -- nao como um
+# main.pck. No Android a engine le `res://` pelo AssetManager: `Main::setup`
+# procura `project.binary` na raiz de assets e nada mais. Ela nao conhece o
+# nome "main.pck"; so carregaria um pacote com `--main-pack` na linha de
+# comando, e a linha de comando do aplicativo sai de `assets/_cl_`, que este
+# build nao escreve. Um AAB com `assets/main.pck` e mais nada instala, abre e
+# morre em "Unable to set up the Godot Engine! Aborting" em qualquer aparelho
+# -- foi o que subiu para a loja da v0.8.0 (code 14) a v0.9.0 (code 16).
+# Mesmo tratamento do build_apk.sh, de proposito: os dois pacotes tem de
+# carregar exatamente o mesmo conteudo.
+TEMP_ZIP="/tmp/playtable_aab_assets_$$.zip"
+rm -f "$TEMP_ZIP"
+"$GODOT_BIN" --headless --path "$PROJECT_DIR" --export-pack "Android" "$TEMP_ZIP"
+
+echo "=> Extraindo assets para src/main/assets..."
 rm -rf "$PROJECT_DIR/android/build/src/main/assets"
 mkdir -p "$PROJECT_DIR/android/build/src/main/assets"
-"$GODOT_BIN" --headless --path "$PROJECT_DIR" --export-pack "Android" "$PROJECT_DIR/android/build/src/main/assets/main.pck"
+# `-o` e obrigatorio: sem ele o unzip PERGUNTA se sobrescreve, le EOF, responde
+# "nenhum", e o pacote sai pela metade sem erro nenhum.
+unzip -qo "$TEMP_ZIP" -d "$PROJECT_DIR/android/build/src/main/assets"
+rm -f "$TEMP_ZIP"
 
 echo "=> Compilando AAB via Gradle..."
 mkdir -p "$PROJECT_DIR/android/build/assetPackInstallTime/src/main/assets"
@@ -78,6 +94,24 @@ jarsigner -sigalg SHA256withRSA -digestalg SHA-256 \
 
 echo "=> Verificando assinatura do AAB..."
 jarsigner -verify "$OUT_AAB"
+
+# A conferencia que faltava. Um AAB sem `base/assets/project.binary` compila,
+# assina e sobe para a loja sem uma linha de erro -- e morre no boot de todo
+# mundo. Custa um `unzip -l`; pagar isso e barato perto de uma versao morta na
+# producao.
+echo "=> Conferindo que o pacote de dados esta dentro do AAB..."
+# A listagem sai inteira para uma variavel antes de ser filtrada, de proposito:
+# `unzip -Z1 ... | grep -q` faz o grep fechar o cano na primeira linha que
+# casa, o unzip morre de SIGPIPE, e com `pipefail` o pipeline inteiro devolve
+# 141 -- o teste acusaria "faltando" justamente quando o arquivo esta la.
+ENTRADAS_AAB="$(unzip -Z1 "$OUT_AAB")"
+if ! printf '%s\n' "$ENTRADAS_AAB" | grep -qx "base/assets/project.binary"; then
+    echo "ERRO: o AAB nao tem base/assets/project.binary." >&2
+    echo "A engine procura esse arquivo no AssetManager; sem ele o aplicativo" >&2
+    echo "aborta em \"Unable to set up the Godot Engine!\" em qualquer aparelho." >&2
+    exit 1
+fi
+echo "   OK: $(printf '%s\n' "$ENTRADAS_AAB" | grep -c '^base/assets/') arquivos em base/assets/"
 
 echo "=> Build concluída com sucesso! AAB assinado gerado em: $OUT_AAB"
 ls -lh "$OUT_AAB"

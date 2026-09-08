@@ -106,5 +106,18 @@ echo "=> Assinando APK com $APKSIGNER..."
 echo "=> Verificando assinatura do APK..."
 "$APKSIGNER" verify --verbose "$OUT_APK"
 
+# Mesma conferencia do build_aab.sh. No Android a engine procura
+# `project.binary` na raiz de assets pelo AssetManager: um pacote sem esse
+# arquivo instala, abre e aborta em "Unable to set up the Godot Engine!".
+# A listagem sai inteira para uma variavel antes do filtro porque `| grep -q`
+# mata o unzip com SIGPIPE e o `pipefail` leria isso como "faltando".
+echo "=> Conferindo que o pacote de dados esta dentro do APK..."
+ENTRADAS_APK="$(unzip -Z1 "$OUT_APK")"
+if ! printf '%s\n' "$ENTRADAS_APK" | grep -qx "assets/project.binary"; then
+    echo "ERRO: o APK nao tem assets/project.binary." >&2
+    exit 1
+fi
+echo "   OK: $(printf '%s\n' "$ENTRADAS_APK" | grep -c '^assets/') arquivos em assets/"
+
 echo "=> Build concluida com sucesso! APK assinado: $OUT_APK"
 ls -lh "$OUT_APK"
