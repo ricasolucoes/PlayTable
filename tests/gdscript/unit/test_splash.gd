@@ -16,11 +16,18 @@ extends GutTest
 const ICONE := "res://android/icons/drawable/splash_icon.webp"
 const MARCA := "res://android/icons/drawable/splash_branding_image.webp"
 const FUNDO_ADAPTATIVO := "res://android/icons/mipmap-xxxhdpi-v4/icon_background.png"
+const PRESET := "res://export_presets.cfg"
 
 ## O Android mascara os 2/3 centrais do icone num circulo (192 dp de 288 dp).
 const FRACAO_VISIVEL := 2.0 / 3.0
 ## Pixel que conta como arte, na mesma conta do gerador.
 const LIMIAR_ARTE := 260.0 / 255.0
+
+
+func _preset() -> String:
+	if not FileAccess.file_exists(PRESET):
+		return ""
+	return FileAccess.get_file_as_string(PRESET)
 
 
 func _imagem(caminho: String) -> Image:
@@ -106,3 +113,27 @@ func test_a_arte_do_splash_cabe_no_circulo_do_sistema() -> void:
 	# E ocupa o circulo: arte encolhida demais vira um selo perdido no meio da tela.
 	assert_gt(raio_da_arte, raio_do_circulo * 0.7,
 		"a arte preenche o circulo (raio %.0f px de %.0f px)" % [raio_da_arte, raio_do_circulo])
+
+
+func test_o_boot_splash_nao_entra_duas_vezes_no_pacote() -> void:
+	# O PNG chega ao pacote por dois caminhos: o walk de recursos, porque o
+	# `.import` e "keep" e o `export_filter` e `all_resources`; e a exportacao
+	# forcada, que o exportador faz SEMPRE com o boot splash, logo depois do
+	# walk. Sao duas entradas com o mesmo nome, e o apksigner recusa o APK
+	# inteiro: "Multiple ZIP entries with the same name". A forcada nao
+	# consulta o exclude_filter, entao tirar o arquivo do walk deixa
+	# exatamente uma -- e ela continua no pacote, que e o que a engine le.
+	var texto: String = _preset()
+	assert_ne(texto, "", "o preset existe")
+	if texto == "":
+		return
+	var caminho: String = ProjectSettings.get_setting("application/boot_splash/image", "")
+	var relativo: String = caminho.trim_prefix("res://")
+	assert_ne(relativo, "", "o boot splash esta configurado")
+	var achou: bool = false
+	for linha: String in texto.split("\n"):
+		if linha.begins_with("exclude_filter=") and linha.contains(relativo):
+			achou = true
+			break
+	assert_true(achou,
+		"%s esta no exclude_filter, senao entra duas vezes e o apksigner recusa o APK" % relativo)
