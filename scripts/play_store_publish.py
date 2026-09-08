@@ -7,12 +7,19 @@ Uses Google Play Android Developer API v3 with Service Account credentials.
 
 import argparse
 import os
+import socket
 import sys
 import json
 from pathlib import Path
 import warnings
 
 warnings.filterwarnings("ignore")
+
+# O cliente da Google poe 60 s de timeout em toda requisicao quando o socket
+# nao tem um padrao proprio. O AAB do PlayTable tem 83 MB: numa linha
+# domestica o envio passa de 60 s e morre em socket.timeout no meio, com a
+# sessao de edicao cancelada e nada publicado. Dez minutos cobrem o pior caso.
+socket.setdefaulttimeout(600)
 
 try:
     from googleapiclient.discovery import build
@@ -229,17 +236,28 @@ def publish(package_name: str, aab_path: str = None, track: str = "production",
             file_size_mb = os.path.getsize(aab_path) / (1024 * 1024)
             print(f"=> Fazendo upload do App Bundle ({file_size_mb:.2f} MB)...")
             
+            # Em pedacos de 8 MB, e nao o arquivo inteiro de uma vez: com
+            # chunksize padrao o `resumable=True` nao resume nada -- ele manda
+            # tudo numa requisicao so, e um engasgo na linha derruba o envio
+            # inteiro. Em pedacos, cada um tem seu proprio timeout e o
+            # progresso aparece enquanto sobe.
             media = MediaFileUpload(
                 aab_path,
                 mimetype="application/octet-stream",
-                resumable=True
+                resumable=True,
+                chunksize=8 * 1024 * 1024,
             )
 
-            bundle_response = service.edits().bundles().upload(
+            pedido = service.edits().bundles().upload(
                 packageName=package_name,
                 editId=edit_id,
                 media_body=media
-            ).execute()
+            )
+            bundle_response = None
+            while bundle_response is None:
+                progresso, bundle_response = pedido.next_chunk()
+                if progresso:
+                    print(f"   ... {int(progresso.progress() * 100)}%", flush=True)
 
             version_code = bundle_response.get("versionCode")
             print(f"   ✓ AAB enviado com sucesso! Versão (versionCode): {version_code}")
