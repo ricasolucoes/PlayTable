@@ -1,0 +1,1 @@
+Urgent fix: The previous version would not open — the published package was missing game files and stopped at "Unable to set up the Godot Engine". Fixed. Also in this version: online play with a 5-letter room code; in Battleship, position your own fleet; the opponent's hand in UNO shows up on the table; in Ludo, simply tap or drag the token; and lists scroll with your finger.

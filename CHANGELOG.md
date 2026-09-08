@@ -7,7 +7,11 @@
 - [ ] **Overlay de vitória de 3 s com o Veo** — só se o orçamento do APK sobreviver ao lote acima; senão vai para `fastlane/` com `.gdignore`
 - [ ] **Os 70 ids vazios em `core/configs/play_games_ids.json`** — só o Play Console resolve
 
-## [Unreleased](https://github.com/ricasolucoes/PlayTable/compare/v0.9.0...develop)
+## [Unreleased](https://github.com/ricasolucoes/PlayTable/compare/v0.9.1...develop)
+
+---
+
+## [v0.9.1 (2026-09-08)](https://github.com/ricasolucoes/PlayTable/compare/v0.9.0...v0.9.1)
 
 ### ✨ Novidades
 
@@ -22,6 +26,7 @@
 
 ### 🐛 Correções
 
+- [x] **O aplicativo da loja abria em “Unable to set up the Godot Engine! Aborting”** (`build_aab.sh`) — o AAB publicado não levava o jogo dentro: `base/assets/` tinha **um** arquivo, `main.pck`, e nenhum `project.binary`. No Android a engine lê `res://` pelo AssetManager e o `Main::setup` procura `project.binary` na raiz de assets — o nome `main.pck` não existe em lugar nenhum da engine (conferido na `libgodot_android.so` e na `godot-lib.aar`), e um pacote só entraria por `--main-pack`, que sai de `assets/_cl_`, que este build não escreve. Sem achar o projeto o `Main::setup` falha, o `GodotLib.initialize` devolve `false` e o Java abre o alerta. Até a v0.7.0 o pck era escrito em `android/build/assets/`, que o gradle não lê: ele era ignorado e o AAB saía com os arquivos soltos que o `build_apk.sh` tinha deixado em `src/main/assets` — abria por acidente. A v0.8.0 apontou o pck para a pasta certa e passou a apagar a pasta antes, e com isso apagou a única coisa que fazia o pacote abrir: da v0.8.0 (code 14) à v0.9.0 (code 16), tudo o que subiu para a loja estava morto no boot, em qualquer aparelho. O AAB agora extrai os assets soltos como o APK já fazia (496 arquivos em `base/assets/`), e os dois scripts conferem `project.binary` dentro do artefato antes de dar o build por pronto
 - [x] **O código da sala online aparece para quem a abriu** (`core/telas/LobbyScreen.gd`) — quem criava a sala ficava olhando "Conectando a Pela internet...", sem nada para dizer ao amigo. Agora lê-se "Sala ABCDE — esperando o amigo entrar", e o código chega antes mesmo de o socket abrir
 - [x] **Escolher a cor depois do curinga não travava mais a partida** (`games/unolike/UnoLikeGame.tscn`) — as ligações dos quatro botões moravam na cena com a cor passada como número cru (`binds = [0]`, `[1]`, `[2]`, `[3]`), e em `Card.ColorType` esses números são `NONE`, `RED`, `BLACK` e `BLUE`: escolher "Vermelho" punha a mesa em "sem cor" e, dali em diante, carta nenhuma combinava. A cor agora sai do enum, no código
 - [x] **As listas rolam no dedo** (`shared/ui/DragScroll.gd`) — a coleção do perfil, a tira de abas, os menus de jogos, o lobby, o painel de regras e a mão cheia do UNO ficavam presos na primeira tela. O `ScrollContainer` da engine rola na roda do mouse e na barra lateral, mas não no arrasto de toque: medido no 4.7.2 com evento sintético fiel, no `SubViewport` e na janela raiz, com e sem `--headless`, `scroll_vertical` termina em zero e `scroll_started` nunca sai. A rolagem passou a ser nossa — zona morta, inércia e `NOTIFICATION_SCROLL_BEGIN` para o botão sob o dedo não disparar quando o gesto vira rolagem
