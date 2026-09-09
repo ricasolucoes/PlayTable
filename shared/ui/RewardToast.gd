@@ -37,6 +37,7 @@ func _ready() -> void:
 		GameEventBus.player_leveled_up.connect(_on_level_up)
 		GameEventBus.achievement_unlocked.connect(_on_achievement)
 		GameEventBus.daily_streak_updated.connect(_on_streak)
+		GameEventBus.toast_requested.connect(_on_toast_requested)
 
 
 func _build() -> void:
@@ -163,6 +164,10 @@ func _on_streak(days: int) -> void:
 	if days <= 1:
 		return
 	_push("🔥", tr("TOAST_STREAK") % days, tr("TOAST_STREAK_DESC"))
+
+
+func _on_toast_requested(message: String, _duration: float = 2.0) -> void:
+	_push("🔒", message, "")
 
 
 # --------------------------------------------------------------------- fila

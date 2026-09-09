@@ -18,7 +18,6 @@ var ai_level: int = DifficultyManager.DEFAULT_LEVEL
 ## da pessoa ao lado. O tabuleiro e o mesmo, e quem esta jogando agora se le
 ## nas casas acesas -- so as do lado da vez acendem.
 var vs_ai: bool = true
-var mode_switch: ModeSwitch = null
 
 ## Na mesa compartilhada, o lado que o toque controla agora. Fora dela nao
 ## significa nada: contra a maquina quem toca e sempre as pretas, e em rede
@@ -50,8 +49,9 @@ func _ready() -> void:
 	# 74 graus do padrao.
 	env_3d.apply_theme(GameTheme3D.stone_gallery())
 
-	mode_switch = ModeSwitch.montar(self, vs_ai)
-	mode_switch.trocou.connect(_on_modo_trocado)
+	if top_bar != null:
+		top_bar.oferecer_modo(vs_ai)
+		top_bar.mode_pressed.connect(_on_modo_trocado)
 
 	fit_table(board_3d.content_size())
 	_start_new_game()
@@ -60,9 +60,12 @@ func _start_new_game() -> void:
 	game_over = false
 	em_rede = net_active()
 	_lado_local = 1
-	if mode_switch != null:
+	if top_bar != null:
 		# Com dois aparelhos na mesa nao ha modo para escolher.
-		mode_switch.visible = not em_rede
+		if em_rede:
+			top_bar.esconder_modo()
+		else:
+			top_bar.oferecer_modo(vs_ai)
 	# As pretas abrem. Em rede, o convidado (brancas) espera a primeira jogada.
 	is_player_turn = _meu() == 1
 	btn_restart.hide()

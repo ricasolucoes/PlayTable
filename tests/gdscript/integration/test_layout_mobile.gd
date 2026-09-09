@@ -173,12 +173,19 @@ func _cantos_do_tabuleiro(board: Board3D) -> Array[Vector3]:
 	]
 
 
+## Os tabuleiros que estao NA MESA agora.
+##
+## Fora de cena nao entra: a Batalha Naval tira o mapa de ataque enquanto o
+## jogador posiciona a frota, para que o mapa que recebe o dedo fique com a tela
+## inteira. Cobrar da camera um tabuleiro invisivel obrigaria a enquadrar espaco
+## vazio -- e o vazio em volta do tabuleiro e justamente o que estas reguas
+## existem para impedir.
 func _tabuleiros_3d(raiz: Node) -> Array[Board3D]:
 	var achados: Array[Board3D] = []
 	var fila: Array[Node] = [raiz]
 	while not fila.is_empty():
 		var no: Node = fila.pop_back()
-		if no is Board3D:
+		if no is Board3D and (no as Board3D).is_visible_in_tree():
 			achados.append(no)
 		fila.append_array(no.get_children())
 	return achados

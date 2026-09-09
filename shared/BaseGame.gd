@@ -312,6 +312,7 @@ const FLAG_REGRAS := "viu_regras_%s"
 
 var _fit_size: Vector2 = Vector2.ZERO
 var _fit_center: Vector3 = Vector3.ZERO
+var _fit_max_tilt: float = -1.0
 var _refit_pending: bool = false
 
 
@@ -324,9 +325,14 @@ var _refit_pending: bool = false
 ##
 ## A faixa util nao e um numero escrito a mao: sai da HUD que a cena realmente
 ## tem. Mexer no cabecalho ou nos botoes reenquadra sozinho.
-func fit_table(content_size: Vector2, center: Vector3 = Vector3.ZERO) -> void:
+## `max_tilt` acima de zero levanta o teto de inclinacao da camera so para este
+## enquadramento -- para o conteudo que e uma grade rasa e aceita ser visto
+## quase de cima. Sem ele, vale o teto do tema.
+func fit_table(content_size: Vector2, center: Vector3 = Vector3.ZERO,
+		max_tilt: float = -1.0) -> void:
 	_fit_size = content_size
 	_fit_center = center
+	_fit_max_tilt = max_tilt
 	if env_3d == null:
 		return
 	_apply_fit()
@@ -344,7 +350,7 @@ func _apply_fit() -> void:
 		return
 	var bandas := measure_hud_bands()
 	env_3d.set_safe_area(bandas.x, bandas.y)
-	env_3d.frame_content(_fit_size, _fit_center)
+	env_3d.frame_content(_fit_size, _fit_center, _fit_max_tilt)
 
 
 ## Espera dois quadros sem `await`: uma cadeia de `call_deferred`. Uma corrotina
@@ -428,6 +434,21 @@ func go_back_to_menu() -> void:
 	if NetworkManager != null and NetworkManager.state != NetworkManager.State.OFFLINE:
 		NetworkManager.leave()
 	SceneManager.goto_scene(menu_scene_path)
+
+
+## O Voltar do aparelho, dentro de um jogo.
+##
+## Com as regras abertas, fecha as regras: é o que está por cima da mesa, e é o
+## que o jogador quer fechar. Fora isso — inclusive com o cartão de fim de
+## partida à vista, quando sair do jogo é justamente o que ele quer — volta ao
+## menu da categoria. Nunca devolve `false`: de dentro de uma partida o Voltar
+## não fecha o aplicativo.
+func voltar_do_aparelho() -> bool:
+	if rules_panel != null and rules_panel.is_open():
+		hide_rules()
+		return true
+	go_back_to_menu()
+	return true
 
 
 # ----------------------------------------------------------------- reinício

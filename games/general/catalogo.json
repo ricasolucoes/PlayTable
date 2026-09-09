@@ -1,0 +1,1 @@
+{"id":"general","scene":"res://games/general/GeneralGame.tscn","title_key":"GAME_GENERAL","desc_key":"GAME_DESC_GENERAL","icon":"⚄","category":"board","genre_key":"GENRE_DICE","modes":["SOLO","AI","VERSUS","ONLINE"],"seats":2,"unlock_level":1}

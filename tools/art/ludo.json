@@ -1,0 +1,43 @@
+{
+  "game_id": "ludo",
+  "out_dir": "shared/assets/ludo",
+  "hero": "peao_vermelho",
+  "style_bible": "Coleção PlayTable de jogos de mesa: peões clássicos de tabuleiro, luz quente vinda do alto-esquerda com especular. Vista em isometria frontal suave.",
+  "defaults": {
+    "model": "gemini-3.1-flash-image",
+    "background": "chroma",
+    "size": 512,
+    "import": "decal"
+  },
+  "assets": [
+    {
+      "name": "peao_vermelho",
+      "prompt": "Um peão de ludo clássico de acrílico rubi (vermelho) brilhante. Ocupa o centro da imagem.",
+      "size": 256
+    },
+    {
+      "name": "peao_verde",
+      "prompt": "Um peão de ludo clássico de acrílico esmeralda (verde) brilhante.",
+      "size": 256,
+      "reference": [
+        "peao_vermelho"
+      ]
+    },
+    {
+      "name": "peao_azul",
+      "prompt": "Um peão de ludo clássico de acrílico safira (azul) brilhante.",
+      "size": 256,
+      "reference": [
+        "peao_vermelho"
+      ]
+    },
+    {
+      "name": "peao_amarelo",
+      "prompt": "Um peão de ludo clássico de acrílico topázio (amarelo) brilhante.",
+      "size": 256,
+      "reference": [
+        "peao_vermelho"
+      ]
+    }
+  ]
+}

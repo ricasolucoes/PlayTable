@@ -1,0 +1,18 @@
+{
+  "game_id": "sudoku",
+  "out_dir": "shared/assets/sudoku",
+  "hero": "papel_fundo",
+  "style_bible": "Fotorrealismo macro. Texturas planas.",
+  "defaults": {
+    "model": "gemini-3.1-flash-image",
+    "size": 512
+  },
+  "assets": [
+    {
+      "name": "papel_fundo",
+      "background": "none",
+      "prompt": "Uma textura uniforme de papel reciclado poroso levemente amarelado, sem dobras, iluminada uniformemente, preenchendo a tela toda.",
+      "size": 512
+    }
+  ]
+}

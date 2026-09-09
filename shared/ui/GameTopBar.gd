@@ -24,6 +24,11 @@ signal back_pressed
 ## Emitido pelo "?". Quem abre as regras e o `BaseGame`.
 signal help_pressed
 
+## O jogador trocou entre jogar contra a maquina e dois no mesmo aparelho.
+## `vs_ai` ja vem com o valor novo. So os jogos que oferecem os dois modos
+## mostram o botao -- os outros nem sabem que ele existe.
+signal mode_pressed(vs_ai: bool)
+
 ## Margem lateral -- a mesma de `MenuTabuleiro.tscn`, para a barra do jogo e a
 ## do menu alinharem quando uma vira a outra.
 const MARGEM := 24.0
@@ -43,6 +48,10 @@ const VEU := 168.0
 
 ## Separação entre voltar, nome e placar.
 const RESPIRO := 16
+
+## O respiro quando o botao de modo entra na fila: com cinco itens, 16 px entre
+## eles custam o nome do jogo.
+const RESPIRO_APERTADO := 8
 
 ## Largura do botão voltar. Cabe "‹ Voltar", "‹ Back" e "‹ Volver".
 const LARGURA_VOLTAR := 150.0
@@ -81,6 +90,10 @@ var _lado_ativo := -1
 var _label_titulo: Label = null
 var _caixa_placar: HBoxContainer = null
 var _btn_ajuda: Button = null
+var _btn_modo: Button = null
+
+## O modo em que a partida esta, quando o jogo oferece os dois.
+var _vs_ai := true
 
 ## Formato desenhado agora ("duelo:2"), para saber quando dá para só reescrever.
 var _assinatura := ""
@@ -180,6 +193,18 @@ func _montar_linha() -> void:
 	_caixa_placar.size_flags_horizontal = Control.SIZE_SHRINK_END
 	linha.add_child(_caixa_placar)
 
+	# O modo mora aqui, e nao num botao solto na cena, por falta de lugar: em
+	# cima o texto de status atravessa a tela, embaixo cada jogo tem a sua fila
+	# (o dado do Ludo, as varetas do Senet). A barra e a unica faixa que ja e de
+	# todos os jogos -- e, por ser faixa que ja existe, o botao nao custa um
+	# milimetro de mesa.
+	_btn_modo = UIKit.botao(tr("MODE_ICON_AI"), UIKit.FONTE_TITULO)
+	_btn_modo.name = "BtnMode"
+	_btn_modo.custom_minimum_size = Vector2(LARGURA_AJUDA, ALTURA)
+	_btn_modo.visible = false
+	_btn_modo.pressed.connect(_on_modo_tocado)
+	linha.add_child(_btn_modo)
+
 	_btn_ajuda = UIKit.botao(tr("BTN_RULES_ICON"), UIKit.FONTE_TITULO)
 	_btn_ajuda.name = "BtnRules"
 	_btn_ajuda.custom_minimum_size = Vector2(LARGURA_AJUDA, ALTURA)
@@ -187,6 +212,43 @@ func _montar_linha() -> void:
 	_btn_ajuda.visible = false
 	_btn_ajuda.pressed.connect(func() -> void: help_pressed.emit())
 	linha.add_child(_btn_ajuda)
+
+
+## Poe o botao de modo na barra. Chamado pelos jogos que sabem jogar de dois;
+## quem nao chama nao ganha botao nenhum.
+func oferecer_modo(vs_ai: bool) -> void:
+	_vs_ai = vs_ai
+	if _btn_modo == null:
+		return
+	_btn_modo.visible = true
+	# Um botao a mais na fila tira 88 px de quem cede espaco, que e o nome do
+	# jogo: "Mancala" saia "Mancal". O respiro entre os itens encolhe SO nestes
+	# jogos -- os outros continuam com a barra folgada de sempre.
+	var linha := get_node_or_null("Linha") as HBoxContainer
+	if linha != null:
+		linha.add_theme_constant_override("separation", RESPIRO_APERTADO)
+	_pintar_modo()
+
+
+## Tira o botao da barra -- em partida de rede nao ha modo para escolher.
+func esconder_modo() -> void:
+	if _btn_modo != null:
+		_btn_modo.visible = false
+
+
+func _on_modo_tocado() -> void:
+	_vs_ai = not _vs_ai
+	_pintar_modo()
+	mode_pressed.emit(_vs_ai)
+
+
+func _pintar_modo() -> void:
+	if _btn_modo == null:
+		return
+	_btn_modo.text = tr("MODE_ICON_AI") if _vs_ai else tr("MODE_ICON_VERSUS")
+	# Sem tooltip no telefone, quem diz o modo por extenso e a linha do degrau
+	# de cada jogo; o icone aqui e o interruptor.
+	_btn_modo.tooltip_text = tr("MODE_LABEL") % tr("MODE_VS_AI" if _vs_ai else "MODE_TWO_PLAYERS")
 
 
 ## Um degrau de fonte antes das reticencias.
@@ -205,9 +267,22 @@ func _ajustar_fonte_do_nome() -> void:
 	var fonte := _label_titulo.get_theme_font("font")
 	if fonte == null:
 		return
+	# Dois degraus, e nao um: com o botao de modo na barra o "Mancala" saia
+	# "Mancal" -- sem reticencias sequer, que e pior que um nome pequeno.
 	var tamanho := UIKit.FONTE_SECAO
-	if fonte.get_string_size(_titulo, HORIZONTAL_ALIGNMENT_LEFT, -1, tamanho).x > largura:
-		tamanho = UIKit.FONTE_CORPO
+	var preciso := 0.0
+	for candidato in [UIKit.FONTE_SECAO, UIKit.FONTE_CORPO, UIKit.FONTE_MIUDA]:
+		tamanho = candidato
+		preciso = fonte.get_string_size(_titulo, HORIZONTAL_ALIGNMENT_LEFT, -1, tamanho).x
+		if preciso <= largura:
+			break
+
+	# Quando nem no menor corpo cabe metade do nome, o rotulo some. "Ludo" virado
+	# em "Lu" nao e o nome do jogo -- e um toco, e um toco ocupa o lugar que o
+	# placar e os botoes usariam melhor. Quem chegou aqui acabou de tocar no
+	# cartao do jogo: o nome ja foi dito.
+	_label_titulo.visible = preciso <= largura or largura >= preciso * 0.6
+
 	if _label_titulo.get_theme_font_size("font_size") != tamanho:
 		_label_titulo.add_theme_font_size_override("font_size", tamanho)
 

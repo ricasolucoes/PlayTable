@@ -16,7 +16,6 @@ var ai_level: int = DifficultyManager.DEFAULT_LEVEL
 ## ser da pessoa ao lado. O tabuleiro nao muda -- o que muda e de quem sao as
 ## pecas que respondem ao toque agora.
 var vs_ai: bool = true
-var mode_switch: ModeSwitch = null
 
 ## O lado da vez na mesa compartilhada: 1 marfim, -1 obsidiana. Contra a
 ## maquina nao significa nada, porque quem toca e sempre o marfim.
@@ -52,8 +51,9 @@ func _ready() -> void:
 	# `measure_hud_bands()` o mede, e o tabuleiro desce o suficiente para nao
 	# ficar por baixo dele. Montado depois, a mesa era enquadrada sem saber que
 	# ele existia e o botao comia o toque das casas de cima.
-	mode_switch = ModeSwitch.montar(self, vs_ai)
-	mode_switch.trocou.connect(_on_modo_trocado)
+	if top_bar != null:
+		top_bar.oferecer_modo(vs_ai)
+		top_bar.mode_pressed.connect(_on_modo_trocado)
 	# O tabuleiro se anuncia para a camera: nao existe distancia escrita a mao.
 	fit_table(board_3d.content_size())
 	board_3d.cell_clicked.connect(_on_cell_clicked)

@@ -131,6 +131,12 @@ func _voltar() -> void:
 	SceneManager.goto_scene("res://core/telas/MainMenu.tscn")
 
 
+## O Voltar do aparelho: sobe para o menu principal.
+func voltar_do_aparelho() -> bool:
+	_voltar()
+	return true
+
+
 func _trocar_aba(aba: String) -> void:
 	_aba = aba
 	for id in _botoes_aba:

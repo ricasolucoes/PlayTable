@@ -284,6 +284,76 @@ Plans:
 Plans:
 - [ ] TBD (run /gsd-plan-phase 24 to break down)
 
+### Phase 25: Jogo de Cartas - Pife (Pif-Paf)
+
+**Goal:** Implementar o clássico Pife (Pif-Paf).
+**Requirements**: Criar módulo `games/pife/`. Regras de trincas e sequências simples com baralho padrão para bater com 9 cartas (sem morto ou lixo complexo). IA para fechar jogo rapidamente. Multiplayer via RicaGames. (Ver arquivo `REQUIREMENTS.md` na pasta da fase)
+**Depends on:** Phase 24
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd-plan-phase 25 to break down)
+
+### Phase 26: Jogo de Cartas - Sueca
+
+**Goal:** Implementar o popular jogo de vazas Sueca.
+**Requirements**: Criar módulo `games/sueca/`. Mecânica de 4 jogadores em duplas, manilhas e sistema de trunfo cortado. Pontuação de vazas. Multiplayer 2v2 obrigatório (Fase 7.1) com proibição de chat ou sinais (conforme a regra clássica). (Ver arquivo `REQUIREMENTS.md` na pasta da fase)
+**Depends on:** Phase 25
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd-plan-phase 26 to break down)
+
+### Phase 27: Jogo de Cartas - Rouba Monte
+
+**Goal:** Implementar o jogo infantil Rouba Monte.
+**Requirements**: Criar módulo `games/rouba_monte/`. Empate de números rouba o topo do monte adversário. Altamente casual, arte convidativa e foco em gamificação (XP rápido por vitória). (Ver arquivo `REQUIREMENTS.md` na pasta da fase)
+**Depends on:** Phase 26
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd-plan-phase 27 to break down)
+
+### Phase 28: Jogo de Mesa - Purrinha
+
+**Goal:** Implementar o jogo clássico de adivinhação Purrinha.
+**Requirements**: Criar módulo `games/purrinha/`. Seleção secreta de 0 a 3 palitos, soma e tentativa de acerto exato da mesa. UI super rápida. Foco total em multijogador em salas online. (Ver arquivo `REQUIREMENTS.md` na pasta da fase)
+**Depends on:** Phase 27
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd-plan-phase 28 to break down)
+
+### Phase 29: Jogo de Cartas - Mau-Mau
+
+**Goal:** Implementar o clássico Mau-Mau.
+**Requirements**: Criar módulo `games/mau_mau/`. Variante do Uno usando o baralho de 52 cartas padrão (Valete = Inverte, 7 = Compra duas, Ás = Pula). Reutilizar assets já existentes. (Ver arquivo `REQUIREMENTS.md` na pasta da fase)
+**Depends on:** Phase 28
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd-plan-phase 29 to break down)
+
+### Phase 30: Jogo de Cartas - Presidente
+
+**Goal:** Implementar Presidente (Corta a Tampa / Cu de Cachorro).
+**Requirements**: Criar módulo `games/presidente/`. Sistema de hierarquia persistente entre as rodadas (Presidente, Vice, Trabalhador, Lixeiro) e troca de cartas fortes pelas fracas no início da partida. IA inteligente que saiba valorizar 2 e Ases. (Ver arquivo `REQUIREMENTS.md` na pasta da fase)
+**Depends on:** Phase 29
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd-plan-phase 30 to break down)
+
+### Phase 31: Jogo Social - Detetive (Cidade Dorme)
+
+**Goal:** Implementar o party game Cidade Dorme (Mafia/Detetive).
+**Requirements**: Criar módulo `games/detetive/`. Distribuir roles (Assassino, Detetive, Anjo, Cidadão). Jogo totalmente baseado nas salas multijogador da RicaGames (Fase 7.1) operando em turnos de Dia/Noite com votações. (Ver arquivo `REQUIREMENTS.md` na pasta da fase)
+**Depends on:** Phase 30
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd-plan-phase 31 to break down)
+
 ---
 
 ## Estrutura Core e Menus

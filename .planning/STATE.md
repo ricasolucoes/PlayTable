@@ -10,7 +10,7 @@ stopped_at: Completed 01-03-PLAN.md
 last_updated: "2026-09-01T03:19:23.128Z"
 last_activity: 2026-09-01
 progress:
-  total_phases: 25
+  total_phases: 32
   completed_phases: 1
   total_plans: 4
   completed_plans: 4
@@ -35,7 +35,7 @@ See: .planning/PROJECT.md (updated 2026-08-31)
 **Status:** Ready to plan
 **Last Activity:** 2026-09-01
 
-Phase: 1 of 25 (Discovery e Auditoria)
+Phase: 1 of 32 (Discovery e Auditoria)
 Plan: 2 of 4 in current phase (01-01 concluído)
 Progress: [███░░░░░░░] 25%
 
@@ -132,3 +132,10 @@ Todos os 16 jogos solicitados foram completamente implementados e testados no pr
 - Phase 22 added: Jogo Social - Bingo
 - Phase 23 added: Jogo de Lógica - Mastermind
 - Phase 24 added: Jogo Social - Stop
+- Phase 25 added: Jogo de Cartas - Pife
+- Phase 26 added: Jogo de Cartas - Sueca
+- Phase 27 added: Jogo de Cartas - Rouba Monte
+- Phase 28 added: Jogo de Mesa - Purrinha
+- Phase 29 added: Jogo de Cartas - Mau-Mau
+- Phase 30 added: Jogo de Cartas - Presidente
+- Phase 31 added: Jogo Social - Detetive

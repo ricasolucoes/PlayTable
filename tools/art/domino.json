@@ -1,0 +1,19 @@
+{
+  "game_id": "domino",
+  "out_dir": "shared/assets/domino",
+  "hero": "peca_branca",
+  "style_bible": "Coleção PlayTable de jogos de mesa: peças de resina, madeira nobre, marfim e metal escovado, fotografadas como miniatura real sobre estúdio, luz quente vinda do alto-esquerda com uma única especular limpa. Realismo de objeto de tabuleiro caro. Vista ortogonal frontal.",
+  "defaults": {
+    "model": "gemini-3.1-flash-image",
+    "background": "chroma",
+    "size": 512,
+    "import": "decal"
+  },
+  "assets": [
+    {
+      "name": "peca_branca",
+      "prompt": "Uma peça lisa de dominó em marfim envelhecido, retangular com cantos levemente arredondados e um pino central prateado. Completamente lisa, SEM furos, SEM pontos. Ocupa o centro do quadro.",
+      "size": 512
+    }
+  ]
+}

@@ -51,7 +51,9 @@ class PublisherTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as folder:
             bundle = Path(folder) / "test.aab"
             bundle.write_bytes(b"test")
-            self.edits.bundles.return_value.upload.return_value.execute.return_value = {"versionCode": 13}
+            upload_mock = self.edits.bundles.return_value.upload.return_value
+            upload_mock.next_chunk.return_value = (None, {"versionCode": 13})
+            upload_mock.execute.return_value = {"versionCode": 13}
             self.publish(aab_path=str(bundle), release_name="0.8.0")
         body = self.edits.tracks.return_value.update.call_args.kwargs["body"]
         self.assertEqual(body["releases"][0]["name"], "0.8.0")

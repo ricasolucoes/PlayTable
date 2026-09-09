@@ -442,7 +442,7 @@ func _cena_em_dupla() -> Node:
 
 func test_a_mesa_compartilhada_oferece_o_botao_de_modo() -> void:
 	var jogo = add_child_autofree(GameScene.instantiate())
-	assert_not_null(jogo.get_node_or_null("ModeSwitch"), "o jogo monta o botao de modo")
+	assert_not_null(jogo.top_bar.find_child("BtnMode", true, false), "a barra de cima ganhou o botao de modo")
 	assert_true(jogo.vs_ai, "a partida abre contra a maquina")
 
 

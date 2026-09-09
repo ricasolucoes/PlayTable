@@ -63,6 +63,10 @@ static var _degrade_scrim: GradientTexture2D = null
 
 
 func _ready() -> void:
+	if get_node_or_null("RewardToast") == null:
+		var toast := RewardToast.new()
+		toast.name = "RewardToast"
+		add_child(toast)
 	# A lista de jogos rola no dedo: o ScrollContainer da cena sozinho so rola
 	# na roda do mouse. Ver `DragScroll`.
 	DragScroll.attach_all(self)
@@ -260,16 +264,35 @@ func _create_game_card(game: GameDefinition) -> Button:
 	tag.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	textos.add_child(tag)
 
-	var is_locked = false
+	var is_locked := false
 	if PlayerProfile != null and PlayerProfile.level < game.unlock_level:
 		is_locked = true
-		fundo.modulate = Color(0.4, 0.4, 0.4, 1.0)
+		fundo.modulate = Color(0.45, 0.45, 0.45, 1.0)
+		
+		var cadeado_badge := PanelContainer.new()
+		cadeado_badge.set_anchors_preset(Control.PRESET_TOP_RIGHT)
+		cadeado_badge.offset_left = -180.0
+		cadeado_badge.offset_top = 18.0
+		cadeado_badge.offset_right = -18.0
+		cadeado_badge.offset_bottom = 66.0
+		cadeado_badge.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		
+		var bstyle := StyleBoxFlat.new()
+		bstyle.bg_color = Color(0.1, 0.1, 0.14, 0.88)
+		bstyle.border_color = Color(0.9, 0.35, 0.35, 0.9)
+		bstyle.set_border_width_all(2)
+		bstyle.set_corner_radius_all(14)
+		bstyle.content_margin_left = 12
+		bstyle.content_margin_right = 12
+		bstyle.content_margin_top = 4
+		bstyle.content_margin_bottom = 4
+		cadeado_badge.add_theme_stylebox_override("panel", bstyle)
 		
 		var cadeado_box := HBoxContainer.new()
-		cadeado_box.alignment = BoxContainer.ALIGNMENT_END
-		cadeado_box.add_theme_constant_override("separation", 8)
+		cadeado_box.alignment = BoxContainer.ALIGNMENT_CENTER
+		cadeado_box.add_theme_constant_override("separation", 6)
 		cadeado_box.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		textos.add_child(cadeado_box)
+		cadeado_badge.add_child(cadeado_box)
 		
 		var cadeado_icon := Label.new()
 		cadeado_icon.text = "🔒"
@@ -279,8 +302,10 @@ func _create_game_card(game: GameDefinition) -> Button:
 		var cadeado_texto := Label.new()
 		cadeado_texto.text = tr("LEVEL") + " " + str(game.unlock_level)
 		cadeado_texto.add_theme_font_size_override("font_size", FONTE_TAG)
-		cadeado_texto.add_theme_color_override("font_color", Color(1.0, 0.4, 0.4))
+		cadeado_texto.add_theme_color_override("font_color", Color(1.0, 0.5, 0.5))
 		cadeado_box.add_child(cadeado_texto)
+		
+		fundo.add_child(cadeado_badge)
 
 	# A moldura entra por último e por dentro do recorte: desenhada pelo botão
 	# ela ficaria atrás da arte, que cobre o cartão inteiro.
@@ -292,8 +317,10 @@ func _create_game_card(game: GameDefinition) -> Button:
 
 	# Num telefone não existe passar o mouse por cima: o único aviso de que o
 	# toque pegou é o cartão afundar enquanto o dedo está nele.
-	btn.button_down.connect(func() -> void: fundo.modulate = Color(0.78, 0.78, 0.80))
-	btn.button_up.connect(func() -> void: fundo.modulate = Color.WHITE)
+	var cor_normal := Color(0.45, 0.45, 0.45, 1.0) if is_locked else Color.WHITE
+	var cor_apertado := Color(0.3, 0.3, 0.3, 1.0) if is_locked else Color(0.78, 0.78, 0.80)
+	btn.button_down.connect(func() -> void: fundo.modulate = cor_apertado)
+	btn.button_up.connect(func() -> void: fundo.modulate = cor_normal)
 	btn.pressed.connect(_on_game_pressed.bind(game))
 	return btn
 
@@ -632,6 +659,12 @@ func _on_game_pressed(game: GameDefinition) -> void:
 func _on_btn_voltar_pressed() -> void:
 	play_click()
 	SceneManager.goto_scene(MAIN_MENU)
+
+
+## O Voltar do aparelho: sobe um degrau, para o menu principal.
+func voltar_do_aparelho() -> bool:
+	_on_btn_voltar_pressed()
+	return true
 
 
 func play_click() -> void:

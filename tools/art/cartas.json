@@ -1,0 +1,28 @@
+{
+  "game_id": "cartas",
+  "out_dir": "shared/assets/cards",
+  "hero": "verso_cassino",
+  "style_bible": "Coleção PlayTable de jogos de mesa. Cartas de papelão acetinado.",
+  "defaults": {
+    "model": "gemini-3.1-flash-image",
+    "background": "chroma",
+    "size": 512,
+    "import": "decal"
+  },
+  "assets": [
+    {
+      "name": "verso_cassino",
+      "background": "none",
+      "crop_aspect": "5:8",
+      "prompt": "O VERSO de uma carta de baralho premium de cassino, preenchendo o quadro INTEIRO. Veludo vermelho carmim com um padrão geométrico intrincado e espelhado de losangos dourados. Sem texto.",
+      "size": 480
+    },
+    {
+      "name": "verso_vintage",
+      "background": "none",
+      "crop_aspect": "5:8",
+      "prompt": "O VERSO de uma carta de baralho vintage, preenchendo o quadro INTEIRO. Fundo em tom de pergaminho amarelado com intricadas gavinhas florais e raminhos em azul marinho desbotado. Sem texto.",
+      "size": 480
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "game_id": "hanoi",
+  "out_dir": "shared/assets/hanoi",
+  "hero": "disco_madeira",
+  "style_bible": "Coleção PlayTable de jogos de mesa: peças de madeira polida, fotografadas como miniatura real sobre estúdio. Vista frontal chapada.",
+  "defaults": {
+    "model": "gemini-3.1-flash-image",
+    "background": "chroma",
+    "size": 512,
+    "import": "decal"
+  },
+  "assets": [
+    {
+      "name": "disco_madeira",
+      "prompt": "Um disco retangular arredondado, visto de frente (como um prato achatado), feito de mogno envernizado e brilhante. Ocupa a maior parte da largura da imagem.",
+      "size": 512
+    }
+  ]
+}

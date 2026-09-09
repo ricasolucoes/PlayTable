@@ -356,3 +356,9 @@ func _on_voltar() -> void:
 	if NetworkManager != null and NetworkManager.state != NetworkManager.State.CONNECTED:
 		NetworkManager.leave()
 	SceneManager.goto_scene(MAIN_MENU)
+
+
+## O Voltar do aparelho: sai da sala e sobe para o menu principal.
+func voltar_do_aparelho() -> bool:
+	_on_voltar()
+	return true

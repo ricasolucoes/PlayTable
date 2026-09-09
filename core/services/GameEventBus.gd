@@ -48,6 +48,7 @@ signal xp_gained(amount: int, source: String)
 signal reward_granted(reward_id: String, kind: String)
 signal mastery_leveled(game_id: String, new_level: int)
 signal league_changed(league_id: String, promoted: bool)
+signal toast_requested(message: String, duration: float)
 
 # ==============================================================================
 # PLAY GAMES

@@ -46,7 +46,6 @@ var ai_level: int = DifficultyManager.DEFAULT_LEVEL
 ## verdade. Os outros dois nao entram na roda e os peoes deles somem da mesa,
 ## porque peao parado na base parece peao esquecido, nao cadeira vazia.
 var vs_ai: bool = true
-var mode_switch: ModeSwitch = null
 var pawns_3d = [[], [], [], []]
 
 ## Anel na casa de destino de cada peao que pode andar, e o arrasto do peao
@@ -86,8 +85,9 @@ func _ready() -> void:
 	board_root.add_child(halos)
 	halos.setup(PAWNS_PER_PLAYER, 0.30)
 	_setup_picker()
-	mode_switch = ModeSwitch.montar(self, vs_ai)
-	mode_switch.trocou.connect(_on_modo_trocado)
+	if top_bar != null:
+		top_bar.oferecer_modo(vs_ai)
+		top_bar.mode_pressed.connect(_on_modo_trocado)
 	dice_3d.roll_finished.connect(_on_dice_roll_finished)
 	# O tabuleiro tem 6,5 unidades; sem isto a camera usava as 6x6 padrao com a
 	# area util errada e sobrava meia tela de feltro vazio.

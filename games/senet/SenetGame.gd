@@ -28,7 +28,6 @@ var ai_level: int = DifficultyManager.DEFAULT_LEVEL
 ## Dois no mesmo aparelho: as pecas de obsidiana deixam de ser da maquina. Cada
 ## um lanca os proprios bastonetes na sua vez -- o mesmo botao, o mesmo gesto.
 var vs_ai: bool = true
-var mode_switch: ModeSwitch = null
 
 @onready var board_3d: Board3D = $Board3D
 @onready var pieces_root: Node3D = $PiecesRoot
@@ -43,8 +42,9 @@ func _ready() -> void:
 	shell.restart_requested.connect(_on_restart_pressed)
 	btn_cast_sticks.pressed.connect(_on_btn_cast_sticks_pressed)
 	ai_level = DifficultyManager.get_level(game_id)
-	mode_switch = ModeSwitch.montar(self, vs_ai)
-	mode_switch.trocou.connect(_on_modo_trocado)
+	if top_bar != null:
+		top_bar.oferecer_modo(vs_ai)
+		top_bar.mode_pressed.connect(_on_modo_trocado)
 	board_3d.setup_board(3, 10, 0.65, "wood_checkered")
 	# O toque entra pelo proprio tabuleiro: a casa tocada e a casa desenhada.
 	board_3d.cell_clicked.connect(_on_cell_clicked)
