@@ -1,0 +1,1 @@
+PlayTable v0.9.2: Stabilitetsförbättringar för lokala och onlinematcher (Dam, Reversi, Mancala, Senet och Ludo för 2 spelare på samma enhet) och UI-optimeringar.

@@ -1,0 +1,1 @@
+PlayTable v0.9.2: Melhorias na estabilidade das partidas locais e em rede (Damas, Reversi, Mancala, Senet e Ludo para 2 jogadores no mesmo aparelho), aprimoramentos de interface e otimizações de carregamento.

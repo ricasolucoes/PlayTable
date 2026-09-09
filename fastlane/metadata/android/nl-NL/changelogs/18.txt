@@ -1,0 +1,1 @@
+PlayTable v0.9.2: Stabiliteitsverbeteringen voor lokale en online spellen (Dammen, Reversi, Mancala, Senet en Ludo voor 2 spelers op hetzelfde apparaat) en interfaceverbeteringen.

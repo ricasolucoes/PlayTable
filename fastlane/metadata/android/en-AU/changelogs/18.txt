@@ -1,0 +1,1 @@
+PlayTable v0.9.2: Stability improvements for local and network matches (Checkers, Reversi, Mancala, Senet, and Ludo for 2 players on the same device), UI enhancements, and loading optimizations.
