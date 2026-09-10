@@ -212,7 +212,7 @@ func test_a_cena_instancia_com_cinco_dados_e_a_folha_de_dez() -> void:
 
 func test_a_folha_e_medida_como_hud_e_a_mesa_cabe_acima_dela() -> void:
 	var jogo := await _cena()
-	var vp := jogo.get_viewport_rect().size
+	var vp: Vector2 = jogo.get_viewport_rect().size
 	var r: Rect2 = jogo.rodape.get_global_rect()
 	assert_gte(r.size.y, 5.0 * 88.0 + 88.0, "cinco linhas mais o botao")
 	assert_lte(r.end.y, vp.y, "nada sai pelo pe da tela")

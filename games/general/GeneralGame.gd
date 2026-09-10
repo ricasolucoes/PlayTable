@@ -73,14 +73,28 @@ var _st_toque: StyleBoxFlat
 
 
 ## Tres modos, nao dois: o General tem partida solo (bater a meta do degrau)
-## alem de contra a maquina e dois no aparelho. Herda do ModeSwitch para ficar
-## no mesmo canto, com o mesmo texto e a mesma medicao de HUD; so o ciclo muda.
-class ModoGeneral extends ModeSwitch:
+## alem de contra a maquina e dois no aparelho.
+class ModoGeneral extends Button:
 	enum Modo { SOLO, IA, VERSUS }
 
 	signal trocou_modo(modo: int)
 
+	const LARGURA := 230.0
+	const TOPO := 134.0
+
 	var modo: int = Modo.IA
+	var vs_ai: bool = true
+
+	func _init() -> void:
+		anchors_preset = Control.PRESET_TOP_RIGHT
+		anchor_left = 1.0
+		anchor_right = 1.0
+		offset_left = -LARGURA - 24.0
+		offset_top = TOPO
+		offset_right = -24.0
+		offset_bottom = TOPO + 56.0
+		pressed.connect(_on_pressed)
+		_pintar()
 
 	func _on_pressed() -> void:
 		if AudioManager:

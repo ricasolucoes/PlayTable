@@ -23,7 +23,9 @@
       "reference": [
         "gem_ruby"
       ],
-      "size": 256
+      "size": 256,
+      "background": "none",
+      "_nota": "Arte aprovada com alpha nativo; nao aplicar chroma-key a pixels verdes."
     },
     {
       "name": "card_back_blue",
