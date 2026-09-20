@@ -1,0 +1,1 @@
+jogos,tabuleiro,cartas,offline,damas,sudoku,solitario,dominó,logica,multiplayer

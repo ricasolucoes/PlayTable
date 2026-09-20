@@ -1,0 +1,1 @@
+PlayTable nao exige login. Todos os jogos podem ser jogados offline; o multiplayer usa apenas a mesma rede Wi-Fi local. O app nao tem anuncios, compras ou conteudo gerado por usuarios.

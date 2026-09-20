@@ -65,8 +65,35 @@ class IOSReleaseConfigTests(unittest.TestCase):
         self.assertIn("destination", workflow)
         self.assertIn("testflight", workflow)
         self.assertIn("appstore", workflow)
+        self.assertIn("startsWith(github.ref, 'refs/tags/ios-v')", workflow)
+        self.assertIn("IOS_EXPORT_COMPLIANCE_USES_ENCRYPTION", workflow)
+        self.assertIn("IOS_EXPORT_COMPLIANCE_IS_EXEMPT", workflow)
         self.assertNotIn("Banlek", workflow)
         self.assertNotIn("banlek", workflow)
+
+    def test_app_store_delivery_includes_all_localized_metadata_and_screenshots(self):
+        fastfile = (ROOT / "fastlane/Fastfile").read_text(encoding="utf-8")
+        self.assertIn('skip_metadata: false', fastfile)
+        self.assertIn('skip_screenshots: false', fastfile)
+        self.assertIn('submit_for_review:', fastfile)
+        self.assertIn('automatic_release:', fastfile)
+        self.assertIn('app_review_information:', fastfile)
+        self.assertIn('submission_information:', fastfile)
+
+        for locale in ("pt-BR", "en-US", "es-ES"):
+            metadata_dir = ROOT / "fastlane/metadata" / locale
+            self.assertTrue((metadata_dir / "name.txt").is_file())
+            self.assertTrue((metadata_dir / "description.txt").is_file())
+            self.assertTrue((metadata_dir / "keywords.txt").is_file())
+            self.assertTrue((metadata_dir / "support_url.txt").is_file())
+            self.assertTrue((metadata_dir / "privacy_url.txt").is_file())
+            screenshots_dir = ROOT / "fastlane/screenshots" / locale
+            self.assertEqual(3, len(list(screenshots_dir.glob("iPhone 6.5-*.png"))))
+
+    def test_ios_export_checks_the_embedded_app_icon(self):
+        export_script = (ROOT / "scripts/ios_export.sh").read_text(encoding="utf-8")
+        self.assertIn("AppIcon.appiconset/Icon-1024.png", export_script)
+        self.assertIn("1024x1024", export_script)
 
 
 if __name__ == "__main__":

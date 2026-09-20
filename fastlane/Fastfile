@@ -88,12 +88,32 @@ platform :ios do
     deliver(
       api_key: playtable_app_store_connect_api_key,
       ipa: File.join(PROJECT_ROOT, "build/ios/PlayTable.ipa"),
-      skip_metadata: true,
-      skip_screenshots: true,
+      app_identifier: ENV.fetch("IOS_BUNDLE_ID", "org.playtable.app"),
+      metadata_path: File.join(PROJECT_ROOT, "fastlane/metadata"),
+      screenshots_path: File.join(PROJECT_ROOT, "fastlane/screenshots"),
+      skip_metadata: false,
+      skip_screenshots: false,
       submit_for_review: ENV.fetch("IOS_SUBMIT_FOR_REVIEW", "false") == "true",
-      automatic_release: false,
+      automatic_release: ENV.fetch("IOS_AUTOMATIC_RELEASE", "true") == "true",
       force: true,
-      run_precheck_before_submit: false
+      run_precheck_before_submit: false,
+      app_review_information: {
+        first_name: ENV.fetch("IOS_REVIEW_FIRST_NAME", "Ricardo"),
+        last_name: ENV.fetch("IOS_REVIEW_LAST_NAME", "Sierra"),
+        email_address: ENV.fetch("IOS_REVIEW_EMAIL", "sierra.csi@gmail.com"),
+        notes: "PlayTable nao exige login. Todos os jogos podem ser jogados offline; o multiplayer usa apenas a mesma rede Wi-Fi local. O app nao tem anuncios, compras ou conteudo gerado por usuarios."
+      },
+      submission_information: {
+        add_id_info_serves_ads: false,
+        add_id_info_tracks_action: false,
+        add_id_info_tracks_install: false,
+        content_rights_has_rights: true,
+        content_rights_contains_third_party_content: false,
+        export_compliance_uses_encryption: ENV.fetch("IOS_EXPORT_COMPLIANCE_USES_ENCRYPTION").casecmp("true").zero?,
+        export_compliance_is_exempt: ENV.fetch("IOS_EXPORT_COMPLIANCE_IS_EXEMPT").casecmp("true").zero?,
+        export_compliance_contains_proprietary_cryptography: false,
+        export_compliance_contains_third_party_cryptography: false
+      }
     )
   end
 end

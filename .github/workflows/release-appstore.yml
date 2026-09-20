@@ -173,7 +173,7 @@ jobs:
   publish-testflight:
     name: Enviar para TestFlight
     needs: build
-    if: ${{ github.event_name != 'workflow_dispatch' || inputs.destination == 'testflight' }}
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.destination == 'testflight' }}
     runs-on: macos-latest
     timeout-minutes: 20
     environment: testflight
@@ -202,7 +202,7 @@ jobs:
   publish-appstore:
     name: Enviar para App Store
     needs: build
-    if: ${{ github.event_name == 'workflow_dispatch' && inputs.destination == 'appstore' }}
+    if: ${{ (github.event_name == 'workflow_dispatch' && inputs.destination == 'appstore') || (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/ios-v')) }}
     runs-on: macos-latest
     timeout-minutes: 30
     environment: appstore-production
@@ -221,10 +221,38 @@ jobs:
           name: playtable-ios-${{ needs.build.outputs.version }}-${{ needs.build.outputs.build }}
           path: build/ios
 
+      - name: Preparar capturas iPhone para o App Store Connect
+        shell: bash
+        run: |
+          set -euo pipefail
+          brew list imagemagick >/dev/null 2>&1 || brew install imagemagick
+          bash scripts/ios_store_screenshots.sh
+
+      - name: Validar respostas de compliance do App Store Connect
+        shell: bash
+        env:
+          IOS_EXPORT_COMPLIANCE_USES_ENCRYPTION: ${{ vars.IOS_EXPORT_COMPLIANCE_USES_ENCRYPTION }}
+          IOS_EXPORT_COMPLIANCE_IS_EXEMPT: ${{ vars.IOS_EXPORT_COMPLIANCE_IS_EXEMPT }}
+        run: |
+          set -euo pipefail
+          : "${IOS_EXPORT_COMPLIANCE_USES_ENCRYPTION:?Configure a variável IOS_EXPORT_COMPLIANCE_USES_ENCRYPTION no ambiente appstore-production}"
+          : "${IOS_EXPORT_COMPLIANCE_IS_EXEMPT:?Configure a variável IOS_EXPORT_COMPLIANCE_IS_EXEMPT no ambiente appstore-production}"
+          case "$IOS_EXPORT_COMPLIANCE_USES_ENCRYPTION" in
+            true|false) ;;
+            *) echo "IOS_EXPORT_COMPLIANCE_USES_ENCRYPTION deve ser true ou false" >&2; exit 1 ;;
+          esac
+          case "$IOS_EXPORT_COMPLIANCE_IS_EXEMPT" in
+            true|false) ;;
+            *) echo "IOS_EXPORT_COMPLIANCE_IS_EXEMPT deve ser true ou false" >&2; exit 1 ;;
+          esac
+
       - name: Enviar para App Store Connect
         env:
           APPSTORE_CONNECT_API_KEY_ID: ${{ secrets.APPSTORE_CONNECT_API_KEY_ID }}
           APPSTORE_CONNECT_ISSUER_ID: ${{ secrets.APPSTORE_CONNECT_ISSUER_ID }}
           APPSTORE_CONNECT_API_PRIVATE_KEY_BASE64: ${{ secrets.APPSTORE_CONNECT_API_PRIVATE_KEY_BASE64 }}
-          IOS_SUBMIT_FOR_REVIEW: ${{ inputs.submit_for_review }}
+          IOS_SUBMIT_FOR_REVIEW: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/tags/ios-v') || inputs.submit_for_review }}
+          IOS_AUTOMATIC_RELEASE: "true"
+          IOS_EXPORT_COMPLIANCE_USES_ENCRYPTION: ${{ vars.IOS_EXPORT_COMPLIANCE_USES_ENCRYPTION }}
+          IOS_EXPORT_COMPLIANCE_IS_EXEMPT: ${{ vars.IOS_EXPORT_COMPLIANCE_IS_EXEMPT }}
         run: bundle exec fastlane ios upload_appstore

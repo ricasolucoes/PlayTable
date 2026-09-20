@@ -1,0 +1,22 @@
+PlayTable brings 22 classic board, card and logic games together in one app: free, ad-free and built for offline play.
+
+Play at your own pace with no account, no in-app purchases and no personal data collection. Settings, statistics and records stay on your device. Local multiplayer works between devices on the same Wi-Fi network, with no server and no sign-up.
+
+BOARD AND LOGIC GAMES
+• Checkers, Battleship, Minesweeper and Sudoku.
+• Dominoes, Backgammon, Reversi, Ludo and Connect Four.
+• Tic-Tac-Toe, Mancala, Senet, Peg Solitaire and Tower of Hanoi.
+• Nim and Number Path.
+
+CARD GAMES
+• Klondike Solitaire and Spider Solitaire.
+• Blackjack, Memory Match, UnoLike and Video Poker.
+
+HIGHLIGHTS
+• Play solo against AI or pass-and-play with friends.
+• Local multiplayer for Tic-Tac-Toe, Connect Four and Reversi.
+• Phone and tablet-friendly interface.
+• Portuguese, English and Spanish with in-app language switching.
+• Open source, built with Godot.
+
+Take a table full of classics with you, even without an internet connection.

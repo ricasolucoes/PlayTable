@@ -1,0 +1,1 @@
+games,board,card,offline,checkers,sudoku,solitaire,domino,logic,multiplayer

@@ -52,6 +52,7 @@ func test_gravar_e_reler_do_disco() -> void:
 
 func test_arquivo_de_configuracao_fica_em_user() -> void:
 	SaveManager.set_setting("master_volume", 0.5)
+	SaveManager.save_data()
 	assert_true(FileAccess.file_exists(SaveManager.SAVE_PATH),
 		"arquivo criado em %s" % SaveManager.SAVE_PATH)
 

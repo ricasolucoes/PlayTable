@@ -17,4 +17,19 @@ echo "=> PlayTable :: exportando projeto Xcode iOS"
   exit 1
 }
 
+APP_ICON_PATH="$(dirname "$OUTPUT_PATH")/PlayTable/Images.xcassets/AppIcon.appiconset/Icon-1024.png"
+[[ -f "$APP_ICON_PATH" ]] || {
+  echo "ERRO: o exportador não incluiu o ícone iOS em $APP_ICON_PATH" >&2
+  exit 1
+}
+
+if command -v sips >/dev/null 2>&1; then
+  icon_dimensions="$(sips -g pixelWidth -g pixelHeight "$APP_ICON_PATH" | awk '/pixelWidth|pixelHeight/ { print $2 }' | paste -sd'x' -)"
+  [[ "$icon_dimensions" == "1024x1024" ]] || {
+    echo "ERRO: o ícone iOS deve ter 1024x1024 px, mas tem $icon_dimensions" >&2
+    exit 1
+  }
+fi
+
 echo "Projeto Xcode iOS exportado em: $OUTPUT_PATH"
+echo "Ícone iOS conferido: $APP_ICON_PATH"
