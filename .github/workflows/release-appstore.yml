@@ -85,6 +85,9 @@ jobs:
           cp -R "$RUNNER_TEMP/templates/templates/." "$template_dir/"
           test -f "$template_dir/ios.zip"
 
+      - name: Instalar dependências dos testes Python
+        run: python3 -m pip install --user --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2
+
       - name: Testes Python e GUT
         shell: bash
         run: |
