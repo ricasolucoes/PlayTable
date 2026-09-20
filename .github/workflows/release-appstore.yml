@@ -229,7 +229,7 @@ jobs:
           name: playtable-ios-${{ needs.build.outputs.version }}-${{ needs.build.outputs.build }}
           path: build/ios
 
-      - name: Preparar capturas iPhone para o App Store Connect
+      - name: Preparar capturas iPhone e iPad para o App Store Connect
         shell: bash
         run: |
           set -euo pipefail
