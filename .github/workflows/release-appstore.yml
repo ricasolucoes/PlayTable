@@ -85,14 +85,19 @@ jobs:
           cp -R "$RUNNER_TEMP/templates/templates/." "$template_dir/"
           test -f "$template_dir/ios.zip"
 
+      - name: Configurar Python para os testes
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
       - name: Instalar dependências dos testes Python
-        run: python3 -m pip install --user --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2
+        run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2
 
       - name: Testes Python e GUT
         shell: bash
         run: |
           set -euo pipefail
-          python3 -m unittest discover -s tests/python -v
+          python -m unittest discover -s tests/python -v
           tests/run_gut.sh
 
       - name: Importar certificado de distribuição e provisioning profile
