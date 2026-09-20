@@ -14,7 +14,7 @@ suíte Python/GUT, exporta o projeto Xcode, importa temporariamente o
 certificado e o provisioning profile, gera um IPA assinado e publica via
 Fastlane.
 
-- `ios-v1.0` publica no TestFlight.
+- `ios-v0.9.2` identifica o release iOS correto; o workflow_dispatch publica no TestFlight sem criar um envio para revisão.
 - `workflow_dispatch` permite escolher `testflight` ou `appstore`.
 - `appstore` usa o ambiente protegido `appstore-production`.
 - A opção `submit_for_review` só deve ser ligada depois que metadados,
