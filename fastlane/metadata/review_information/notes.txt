@@ -1,1 +1,26 @@
-PlayTable nao exige login. Todos os jogos podem ser jogados offline; o multiplayer usa apenas a mesma rede Wi-Fi local. O app nao tem anuncios, compras ou conteudo gerado por usuarios.
+PlayTable — App Review Information
+
+1. Screen recording
+Before submitting this build, attach a recording made on a physical iPhone running the latest supported iOS. It starts on the Home Screen, launches PlayTable, opens the catalog, starts a game, plays a turn, returns to the menu, and opens Settings. With two devices it may also show a local Wi-Fi match. There is no account creation, sign-in, account deletion, user-generated content, reporting/blocking, or paid feature.
+
+2. Purpose and target audience
+PlayTable is a free collection of 22 classic board, card, and logic games for casual players and families. It provides a private tabletop experience without registration, advertising, subscription, or internet access for the core games. Rules, AI opponents, local statistics, and settings run on the device.
+
+3. Setup and access
+Launch the app and choose Board Games or Card Games. Select any game to play against the local AI or in pass-and-play; no account, credentials, sample files, or special setup is required and all games are unlocked. For local multiplayer, open Network, choose Tic-Tac-Toe, Connect Four, or Reversi, tap Host on one device, and join from another on the same Wi-Fi. Those three games also support optional internet matches through a room code; no PlayTable account is required.
+
+4. External services
+Single-player uses the bundled Godot runtime and local device storage. Local multiplayer uses the iOS local-network capability and no third-party service. Optional internet multiplayer uses RicaGames, operated by Sierra Tecnologia LTDA, at https://games.ricasolucoes.com.br/api/v1 to create/join a temporary room; its returned WebSocket relays the match. Only room/game protocol data needed for the match is sent, and no account is required. The submitted iOS build uses no Google Play Games, ads, analytics, tracking, AI service, payment processor, or PlayTable authentication; Google Play Games is Android-only.
+
+5. Regional differences
+The app functions the same worldwide. The only variation is the selected interface language: Brazilian Portuguese, English, or Spanish. Catalog, rules, price (free), privacy behavior, and features are the same worldwide. Local matches require the same Wi-Fi; internet matches require access to RicaGames.
+
+6. Regulated industry and third-party material
+PlayTable is not a regulated service. It contains traditional game mechanics, no real-money gambling or wagering, and no medical, financial, or age-restricted service. There is no user-generated content or protected third-party media/brand. Code and content are original, procedural, owned, or covered by project licenses; source code is MIT-licensed. No authorization credentials are needed.
+
+Additional review answers
+- Accounts: none; there is no registration, login, profile, or deletion flow, so no demo credentials are needed.
+- User-generated content: none; players cannot publish, contact, report, or block users.
+- Paid content: none; there are no in-app purchases, subscriptions, ads, or paywalls.
+- Business model: general consumer app, not restricted to a business or employee group.
+- Screenshots: actual PlayTable menu and active gameplay in each listed language.

@@ -5,7 +5,7 @@
 set -euo pipefail
 
 PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-SOURCE_DIR="$PROJECT_ROOT/screenshots"
+SOURCE_DIR="$PROJECT_ROOT/screenshots/store"
 OUTPUT_ROOT="$PROJECT_ROOT/fastlane/screenshots"
 LOCALES=(pt-BR en-US es-ES)
 
@@ -14,11 +14,26 @@ command -v magick >/dev/null 2>&1 || {
   exit 1
 }
 
+for index in 01 02 03; do
+  reference="$SOURCE_DIR/pt-BR/$index.png"
+  test -f "$reference"
+  reference_hash="$(shasum -a 256 "$reference" | awk '{print $1}')"
+  for locale in "${LOCALES[@]}"; do
+    source="$SOURCE_DIR/$locale/$index.png"
+    test -f "$source"
+    source_hash="$(shasum -a 256 "$source" | awk '{print $1}')"
+    if [[ "$locale" != "pt-BR" && "$source_hash" == "$reference_hash" ]]; then
+      printf 'ERRO: captura %s de %s e identica a pt-BR; gere a captura localizada.\n' "$index" "$locale" >&2
+      exit 1
+    fi
+  done
+done
+
 for locale in "${LOCALES[@]}"; do
   output_dir="$OUTPUT_ROOT/$locale"
   mkdir -p "$output_dir"
   for index in 01 02 03; do
-    source="$SOURCE_DIR/$index.jpg"
+    source="$SOURCE_DIR/$locale/$index.png"
     output="$output_dir/iPhone 6.5-$((10#$index)).png"
     test -f "$source"
     magick "$source" \
@@ -31,7 +46,7 @@ for locale in "${LOCALES[@]}"; do
   done
 
   for index in 01 02 03; do
-    source="$SOURCE_DIR/$index.jpg"
+    source="$SOURCE_DIR/$locale/$index.png"
     output="$output_dir/iPad Pro (12.9-inch) (3rd generation)-$((10#$index)).png"
     test -f "$source"
     magick "$source" \

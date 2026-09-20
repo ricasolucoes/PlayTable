@@ -85,6 +85,17 @@ platform :ios do
 
   desc "Upload the signed IPA to the App Store version"
   lane :upload_appstore do
+    review_notes_path = File.join(PROJECT_ROOT, "fastlane/metadata/review_information/notes.txt")
+    review_notes = File.read(review_notes_path).strip
+    recording_reference = ENV.fetch("IOS_REVIEW_RECORDING_REFERENCE", "").strip
+    if ENV.fetch("IOS_SUBMIT_FOR_REVIEW", "false").casecmp("true").zero? && recording_reference.empty?
+      UI.user_error!("IOS_REVIEW_RECORDING_REFERENCE must point to the physical-device recording before submitting for review")
+    end
+    review_notes += "\n\nPhysical-device recording reference: #{recording_reference}" unless recording_reference.empty?
+    if review_notes.bytesize > 4000
+      UI.user_error!("App Review notes exceed Apple's 4000-byte limit")
+    end
+
     deliver(
       api_key: playtable_app_store_connect_api_key,
       ipa: File.join(PROJECT_ROOT, "build/ios/PlayTable.ipa"),
@@ -102,7 +113,7 @@ platform :ios do
         last_name: ENV.fetch("IOS_REVIEW_LAST_NAME", "Sierra"),
         phone_number: ENV.fetch("IOS_REVIEW_PHONE", "+55 21 99919-3898"),
         email_address: ENV.fetch("IOS_REVIEW_EMAIL", "sierra.csi@gmail.com"),
-        notes: "PlayTable nao exige login. Todos os jogos podem ser jogados offline; o multiplayer usa apenas a mesma rede Wi-Fi local. O app nao tem anuncios, compras ou conteudo gerado por usuarios."
+        notes: review_notes
       },
       submission_information: {
         add_id_info_serves_ads: false,

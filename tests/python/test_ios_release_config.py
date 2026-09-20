@@ -1,4 +1,6 @@
 import re
+import hashlib
+import struct
 import subprocess
 import unittest
 from pathlib import Path
@@ -110,6 +112,103 @@ class IOSReleaseConfigTests(unittest.TestCase):
         export_script = (ROOT / "scripts/ios_export.sh").read_text(encoding="utf-8")
         self.assertIn("AppIcon.appiconset/Icon-1024.png", export_script)
         self.assertIn("1024x1024", export_script)
+
+    def test_app_review_information_covers_every_apple_question(self):
+        notes = (ROOT / "fastlane/metadata/review_information/notes.txt").read_text(
+            encoding="utf-8"
+        )
+        fastfile = (ROOT / "fastlane/Fastfile").read_text(encoding="utf-8")
+
+        for heading in (
+            "1. Screen recording",
+            "2. Purpose and target audience",
+            "3. Setup and access",
+            "4. External services",
+            "5. Regional differences",
+            "6. Regulated industry and third-party material",
+        ):
+            self.assertIn(heading, notes)
+        notes_lower = notes.lower()
+        self.assertLessEqual(len(notes.encode("utf-8")), 4000)
+        for statement in (
+            "no account",
+            "no in-app purchases",
+            "no user-generated content",
+            "ricagames",
+            "same worldwide",
+        ):
+            self.assertIn(statement, notes_lower)
+
+        self.assertIn("File.read", fastfile)
+        self.assertNotIn("PlayTable nao exige login.", fastfile)
+
+    def test_ios_network_permissions_are_declared(self):
+        preset = (ROOT / "export_presets.cfg").read_text(encoding="utf-8")
+        export_script = (ROOT / "scripts/ios_export.sh").read_text(encoding="utf-8")
+        self.assertIn("application/additional_plist_content=", preset)
+        self.assertIn("NSLocalNetworkUsageDescription", preset)
+        self.assertIn("NSLocalNetworkUsageDescription", export_script)
+        self.assertIn("InfoPlist.strings", export_script)
+        for unused_key in (
+            "NSCameraUsageDescription",
+            "NSMicrophoneUsageDescription",
+            "NSPhotoLibraryUsageDescription",
+        ):
+            self.assertIn(unused_key, export_script)
+
+    def test_store_sources_are_real_localized_captures(self):
+        source_root = ROOT / "screenshots" / "store"
+        locales = ("pt-BR", "en-US", "es-ES")
+        source_hashes = {}
+
+        for locale in locales:
+            for index in (1, 2, 3):
+                source = source_root / locale / f"{index:02d}.png"
+                self.assertTrue(source.is_file(), source)
+                data = source.read_bytes()
+                self.assertGreater(len(data), 5000, source)
+                self.assertEqual(data[:8], b"\x89PNG\r\n\x1a\n", source)
+                width, height = struct.unpack(">II", data[16:24])
+                self.assertEqual((width, height), (720, 1280), source)
+                source_hashes[(locale, index)] = hashlib.sha256(data).hexdigest()
+
+        for index in (1, 2, 3):
+            self.assertNotEqual(
+                source_hashes[("pt-BR", index)],
+                source_hashes[("en-US", index)],
+                f"Portuguese and English source {index:02d} are identical",
+            )
+            self.assertNotEqual(
+                source_hashes[("pt-BR", index)],
+                source_hashes[("es-ES", index)],
+                f"Portuguese and Spanish source {index:02d} are identical",
+            )
+
+        screenshot_script = (ROOT / "scripts/ios_store_screenshots.sh").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn("screenshots/store", screenshot_script)
+        self.assertIn("shasum", screenshot_script)
+
+    def test_generated_store_screenshots_are_not_copied_between_locales(self):
+        reference = ROOT / "fastlane/screenshots/pt-BR/iPhone 6.5-1.png"
+        reference_hash = hashlib.sha256(reference.read_bytes()).hexdigest()
+        for locale in ("en-US", "es-ES"):
+            candidate = ROOT / f"fastlane/screenshots/{locale}/iPhone 6.5-1.png"
+            self.assertNotEqual(
+                reference_hash,
+                hashlib.sha256(candidate.read_bytes()).hexdigest(),
+                f"{locale} screenshot was copied from pt-BR",
+            )
+
+    def test_physical_qa_is_a_release_gate(self):
+        checklist = ROOT / "docs/app-store-connect/physical-device-qa.md"
+        workflow = (ROOT / ".github/workflows/release-appstore.yml").read_text(
+            encoding="utf-8"
+        )
+        self.assertTrue(checklist.is_file())
+        self.assertIn("IOS_REVIEW_RECORDING_REFERENCE", workflow)
+        self.assertIn("physical", checklist.read_text(encoding="utf-8").lower())
 
 
 if __name__ == "__main__":

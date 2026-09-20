@@ -20,6 +20,12 @@ Fastlane.
 - A opção `submit_for_review` só deve ser ligada depois que metadados,
   classificação etária, privacidade, export compliance e status de comerciante
   estiverem preenchidos no App Store Connect.
+- O texto completo do App Review Information fica em
+  `fastlane/metadata/review_information/notes.txt` e é lido pelo Fastfile; não
+  edite uma cópia diferente no pipeline.
+- O serviço opcional de partidas pela internet é o RicaGames
+  (`https://games.ricasolucoes.com.br/api/v1`); o multiplayer local continua
+  funcionando sem servidor.
 
 ## Secrets do GitHub
 
@@ -56,3 +62,9 @@ questionário de privacidade, export compliance e status de comerciante da UE.
 O texto de privacidade do projeto está em `docs/privacy.html`; ele precisa
 estar publicado em uma URL HTTPS acessível pela Apple antes do envio para
 revisão.
+
+Antes de usar `submit_for_review=true`, conclua
+[`docs/app-store-connect/physical-device-qa.md`](app-store-connect/physical-device-qa.md)
+em um iPhone/iPad físico e configure a variável protegida
+`IOS_REVIEW_RECORDING_REFERENCE` com a referência do vídeo anexado no App Store
+Connect. O lane falha deliberadamente se essa evidência estiver ausente.
