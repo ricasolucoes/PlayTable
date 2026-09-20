@@ -89,6 +89,22 @@ class IOSReleaseConfigTests(unittest.TestCase):
             self.assertTrue((metadata_dir / "privacy_url.txt").is_file())
             screenshots_dir = ROOT / "fastlane/screenshots" / locale
             self.assertEqual(3, len(list(screenshots_dir.glob("iPhone 6.5-*.png"))))
+            self.assertEqual(
+                3,
+                len(
+                    list(
+                        screenshots_dir.glob(
+                            "iPad Pro (12.9-inch) (3rd generation)-*.png"
+                        )
+                    )
+                ),
+            )
+
+        screenshot_script = (ROOT / "scripts/ios_store_screenshots.sh").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn("iPad Pro (12.9-inch) (3rd generation)", screenshot_script)
+        self.assertIn("2048x2732", screenshot_script)
 
     def test_ios_export_checks_the_embedded_app_icon(self):
         export_script = (ROOT / "scripts/ios_export.sh").read_text(encoding="utf-8")

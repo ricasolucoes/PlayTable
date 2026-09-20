@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# Prepara screenshots do app no tamanho iPhone 6,5" aceito pelo App Store Connect.
+# Prepara screenshots do app nos tamanhos iPhone e iPad aceitos pelo App Store Connect.
 # As imagens de origem sao capturas reais do PlayTable; a conversao apenas preserva
-# cada captura em uma tela 1242x2688, sem criar UI ficticia.
+# cada captura em uma tela de dispositivo, sem criar UI ficticia.
 set -euo pipefail
 
 PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -26,6 +26,19 @@ for locale in "${LOCALES[@]}"; do
       -gravity center \
       -resize '1242x2688' \
       -extent 1242x2688 \
+      -strip \
+      "$output"
+  done
+
+  for index in 01 02 03; do
+    source="$SOURCE_DIR/$index.jpg"
+    output="$output_dir/iPad Pro (12.9-inch) (3rd generation)-$((10#$index)).png"
+    test -f "$source"
+    magick "$source" \
+      -background '#0f172a' \
+      -gravity center \
+      -resize '2048x2732' \
+      -extent 2048x2732 \
       -strip \
       "$output"
   done
