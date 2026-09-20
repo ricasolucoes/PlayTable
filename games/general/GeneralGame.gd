@@ -81,6 +81,8 @@ class ModoGeneral extends Button:
 
 	const LARGURA := 230.0
 	const TOPO := 134.0
+	const MARGEM := 24.0
+	const RODAPE := 20.0
 
 	var modo: int = Modo.IA
 	var vs_ai: bool = true
@@ -204,10 +206,10 @@ func _montar_folha() -> void:
 	rodape.anchor_top = 1.0
 	rodape.anchor_bottom = 1.0
 	rodape.grow_vertical = Control.GROW_DIRECTION_BEGIN
-	rodape.offset_left = ModeSwitch.MARGEM
-	rodape.offset_right = -ModeSwitch.MARGEM
-	rodape.offset_top = -ModeSwitch.RODAPE
-	rodape.offset_bottom = -ModeSwitch.RODAPE
+	rodape.offset_left = ModoGeneral.MARGEM
+	rodape.offset_right = -ModoGeneral.MARGEM
+	rodape.offset_top = -ModoGeneral.RODAPE
+	rodape.offset_bottom = -ModoGeneral.RODAPE
 	ui.add_child(rodape)
 
 	var grade := GridContainer.new()
@@ -227,7 +229,7 @@ func _montar_folha() -> void:
 	rodape.add_child(linha)
 	_espaco_modo = Control.new()
 	_espaco_modo.name = "EspacoModo"
-	_espaco_modo.custom_minimum_size = Vector2(ModeSwitch.LARGURA, UIKit.TOQUE_MIN)
+	_espaco_modo.custom_minimum_size = Vector2(ModoGeneral.LARGURA, UIKit.TOQUE_MIN)
 	_espaco_modo.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	linha.add_child(_espaco_modo)
 	btn_rolar = UIKit.botao("", UIKit.FONTE_SECAO)

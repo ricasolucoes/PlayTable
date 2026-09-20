@@ -203,7 +203,7 @@ func test_navio_por_cima_de_outro_e_recusado() -> void:
 	var antes: int = jogo.player_ships.size()
 	_tocar_a_frota(jogo, 0, 4)                   # o encouracado na mesma linha
 	assert_eq(jogo.player_ships.size(), antes, "o segundo navio nao entrou")
-	assert_string_contains(jogo.status_label.text, "cima de outro", "e o aviso diz por que")
+	assert_eq(jogo.status_label.text, tr("BATTLESHIP_PLACE_BLOCKED"), "e o aviso diz por que")
 
 
 func test_tocar_um_navio_ja_posto_o_devolve_para_a_mao() -> void:
@@ -244,7 +244,7 @@ func test_tocar_a_propria_frota_avisa_em_vez_de_calar() -> void:
 	# atirar, mas tambem nao pode ficar calado.
 	var jogo := await _batalha_naval_em_combate()
 	jogo._on_fleet_cell_clicked(0, 0)
-	assert_string_contains(jogo.status_label.text, "de cima", "manda atirar no mapa de cima")
+	assert_eq(jogo.status_label.text, tr("BATTLESHIP_WRONG_BOARD"), "manda atirar no mapa de cima")
 	assert_true(jogo.ai_grid.get_cell(0, 0) in [0, 1], "e nao atira")
 
 

@@ -188,15 +188,15 @@ func test_fim_de_partida_anuncia_quem_venceu() -> void:
 	var vitoria := _cena_com_placar(10, 3)
 	vitoria._end_game()
 	assert_true(vitoria.game_over, "partida encerrada")
-	assert_string_contains(vitoria.status_label.text, "Você Venceu", "vitoria do jogador anunciada")
+	assert_eq(vitoria.status_label.text, tr("RESULT_YOU_WIN"), "vitoria do jogador anunciada")
 
 	var derrota := _cena_com_placar(3, 10)
 	derrota._end_game()
-	assert_string_contains(derrota.status_label.text, "IA Venceu", "vitoria da IA anunciada")
+	assert_eq(derrota.status_label.text, tr("RESULT_AI_WINS"), "vitoria da IA anunciada")
 
 	var empate := _cena_com_placar(4, 4)
 	empate._end_game()
-	assert_string_contains(empate.status_label.text, "Empate", "empate anunciado")
+	assert_eq(empate.status_label.text, tr("DRAW_TITLE"), "empate anunciado")
 
 
 # ---------------------------------------------------------------- ReversiAI

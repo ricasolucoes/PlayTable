@@ -49,6 +49,7 @@ var rng := RandomNumberGenerator.new()
 
 var _seeded: bool = false
 var _asking: bool = false
+var _stopped: bool = false
 
 
 func _init(p_game: BaseGame, p_table: SeatTable) -> void:
@@ -58,6 +59,7 @@ func _init(p_game: BaseGame, p_table: SeatTable) -> void:
 
 ## Abre a partida: sorteia (ou espera o sorteio do outro aparelho).
 func start() -> void:
+	_stopped = false
 	_seeded = false
 	if table.online() and not table.is_host():
 		seed = 0
@@ -68,9 +70,15 @@ func start() -> void:
 		game.net_send({"t": "deal", "seed": seed})
 
 
+## Encerra o sincronizador e cancela tarefas de rede ativas.
+func stop() -> void:
+	_stopped = true
+	_asking = false
+
+
 ## Verdadeiro enquanto o convidado espera a semente do anfitriao.
 func waiting_for_deal() -> bool:
-	return table.online() and not _seeded
+	return not _stopped and table != null and table.online() and not _seeded
 
 
 func seeded() -> bool:
@@ -80,7 +88,7 @@ func seeded() -> bool:
 ## Manda a jogada da cadeira `seat`. So sai se a cadeira e produzida aqui: a
 ## pessoa daqui ou a maquina que este aparelho calcula.
 func send(seat: int, action: Dictionary) -> void:
-	if not table.online() or not table.acts_here(seat):
+	if _stopped or not table.online() or not table.acts_here(seat):
 		return
 	game.net_send({"t": "act", "seat": seat, "a": action.duplicate(true)})
 
@@ -89,7 +97,7 @@ func send(seat: int, action: Dictionary) -> void:
 ## interessa: jogada de uma cadeira que este aparelho controla, sorteio
 ## repetido, pedido de sorteio quando nao se e o anfitriao.
 func accept(payload: Dictionary) -> Dictionary:
-	if not table.online():
+	if _stopped or not table.online():
 		return {}
 	match str(payload.get("t", "")):
 		"deal":
@@ -140,7 +148,7 @@ func _aplicar_semente(valor: int) -> void:
 ## Pede a semente ao anfitriao ate ela chegar. Corrotina presa ao jogo: se a
 ## cena for fechada no meio, para sozinha.
 func _pedir_sorteio() -> void:
-	if _asking:
+	if _asking or _stopped:
 		return
 	_asking = true
 	while is_instance_valid(game) and game.is_inside_tree() and waiting_for_deal():
