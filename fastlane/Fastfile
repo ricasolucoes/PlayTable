@@ -100,6 +100,7 @@ platform :ios do
       app_review_information: {
         first_name: ENV.fetch("IOS_REVIEW_FIRST_NAME", "Ricardo"),
         last_name: ENV.fetch("IOS_REVIEW_LAST_NAME", "Sierra"),
+        phone_number: ENV.fetch("IOS_REVIEW_PHONE", "+55 21 99919-3898"),
         email_address: ENV.fetch("IOS_REVIEW_EMAIL", "sierra.csi@gmail.com"),
         notes: "PlayTable nao exige login. Todos os jogos podem ser jogados offline; o multiplayer usa apenas a mesma rede Wi-Fi local. O app nao tem anuncios, compras ou conteudo gerado por usuarios."
       },
