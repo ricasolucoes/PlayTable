@@ -1,5 +1,7 @@
 default_platform(:android)
 
+PROJECT_ROOT = File.expand_path("..", __dir__)
+
 platform :android do
   desc "Build and publish PlayTable to Google Play Store"
   lane :deploy do |options|
@@ -26,6 +28,72 @@ platform :android do
       skip_upload_screenshots: true,
       json_key: '/Users/sierra/Dev/keystores/play-store-api-key.json',
       package_name: 'org.playtable.app'
+    )
+  end
+end
+
+platform :ios do
+  private_lane :playtable_app_store_connect_api_key do
+    app_store_connect_api_key(
+      key_id: ENV.fetch("APPSTORE_CONNECT_API_KEY_ID"),
+      issuer_id: ENV.fetch("APPSTORE_CONNECT_ISSUER_ID"),
+      key_content: ENV.fetch("APPSTORE_CONNECT_API_PRIVATE_KEY_BASE64"),
+      is_key_content_base64: true,
+      in_house: false
+    )
+  end
+
+  desc "Export, sign and archive the iOS Xcode project"
+  lane :build do
+    sh("bash #{File.join(PROJECT_ROOT, 'scripts', 'ios_export.sh')}")
+
+    team_id = ENV.fetch("APPLE_TEAM_ID", "28X7P94SF5")
+    profile_name = ENV.fetch("IOS_PROVISIONING_PROFILE_NAME")
+
+    gym(
+      project: File.join(PROJECT_ROOT, "build/ios/PlayTable.xcodeproj"),
+      scheme: "PlayTable",
+      configuration: "Release",
+      clean: true,
+      output_directory: File.join(PROJECT_ROOT, "build/ios"),
+      output_name: "PlayTable.ipa",
+      export_method: "app-store",
+      xcargs: "CODE_SIGN_STYLE=Manual DEVELOPMENT_TEAM=#{team_id} " \
+        "PROVISIONING_PROFILE_SPECIFIER='#{profile_name}' " \
+        "CODE_SIGN_IDENTITY='Apple Distribution'",
+      export_options: {
+        method: "app-store",
+        signingStyle: "manual",
+        teamID: team_id,
+        provisioningProfiles: {
+          ENV.fetch("IOS_BUNDLE_ID", "org.playtable.app") =>
+            ENV.fetch("IOS_PROVISIONING_PROFILE_NAME")
+        }
+      }
+    )
+  end
+
+  desc "Upload the signed IPA to TestFlight"
+  lane :upload_testflight do
+    pilot(
+      api_key: playtable_app_store_connect_api_key,
+      ipa: File.join(PROJECT_ROOT, "build/ios/PlayTable.ipa"),
+      skip_waiting_for_build_processing: true,
+      distribute_external: false
+    )
+  end
+
+  desc "Upload the signed IPA to the App Store version"
+  lane :upload_appstore do
+    deliver(
+      api_key: playtable_app_store_connect_api_key,
+      ipa: File.join(PROJECT_ROOT, "build/ios/PlayTable.ipa"),
+      skip_metadata: true,
+      skip_screenshots: true,
+      submit_for_review: ENV.fetch("IOS_SUBMIT_FOR_REVIEW", "false") == "true",
+      automatic_release: false,
+      force: true,
+      run_precheck_before_submit: false
     )
   end
 end
