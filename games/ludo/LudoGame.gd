@@ -88,6 +88,7 @@ func _ready() -> void:
 	if top_bar != null:
 		top_bar.oferecer_modo(vs_ai)
 		top_bar.mode_pressed.connect(_on_modo_trocado)
+	register_mobile_band($UI/DiceArea, &"bottom", 12.0)
 	dice_3d.roll_finished.connect(_on_dice_roll_finished)
 	# O tabuleiro tem 6,5 unidades; sem isto a camera usava as 6x6 padrao com a
 	# area util errada e sobrava meia tela de feltro vazio.
@@ -103,36 +104,65 @@ func _ready() -> void:
 
 func _setup_3d_ludo_board() -> void:
 	for c in board_root.get_children(): c.queue_free()
-	
-	# Base de madeira nobre
+
+	var surface_layer := _new_visual_layer(&"BoardSurface")
+	var border := MeshInstance3D.new()
+	var border_box := BoxMesh.new()
+	border_box.size = Vector3(6.78, 0.20, 6.78)
+	border.mesh = border_box
+	border.position = Vector3(0.0, -0.10, 0.0)
+	border.material_override = MaterialFactory3D.get_plastic(Color(0.78, 0.48, 0.16), true)
+	surface_layer.add_child(border)
+
 	var base := MeshInstance3D.new()
-	var box := BoxMesh.new()
-	box.size = Vector3(6.5, 0.15, 6.5)
-	base.mesh = box
-	base.position = Vector3(0, -0.075, 0)
-	base.material_override = MaterialFactory3D.get_wood_mahogany()
-	board_root.add_child(base)
-	
-	# 4 Quadrantes coloridos das bases
-	var quad_offsets = [
-		Vector3(-1.8, 0.01, 1.8),   # Vermelho (Canto inf-esq)
-		Vector3(-1.8, 0.01, -1.8),  # Azul (Canto sup-esq)
-		Vector3(1.8, 0.01, -1.8),   # Verde (Canto sup-dir)
-		Vector3(1.8, 0.01, 1.8)     # Amarelo (Canto inf-dir)
+	var base_box := BoxMesh.new()
+	base_box.size = Vector3(6.58, 0.18, 6.58)
+	base.mesh = base_box
+	base.position = Vector3(0.0, -0.005, 0.0)
+	base.material_override = MaterialFactory3D.get_plastic(Color(0.055, 0.09, 0.16), false)
+	surface_layer.add_child(base)
+
+	var home_layer := _new_visual_layer(&"HomeZones")
+	var quad_offsets := [
+		Vector3(-1.8, 0.0, 1.8),
+		Vector3(-1.8, 0.0, -1.8),
+		Vector3(1.8, 0.0, -1.8),
+		Vector3(1.8, 0.0, 1.8)
 	]
 	for p in range(4):
-		var q_mesh := MeshInstance3D.new()
-		var q_box := BoxMesh.new()
-		q_box.size = Vector3(2.4, 0.02, 2.4)
-		q_mesh.mesh = q_box
-		# 0,01 acima da base nao basta: os dois planos brigam em z e o quadrante
-		# sai com listras. Sobe para 0,03, que ja e o suficiente e continua
-		# rente a mesa.
-		q_mesh.position = quad_offsets[p] + Vector3(0.0, 0.02, 0.0)
-		q_mesh.material_override = MaterialFactory3D.get_plastic(QUAD_COLORS[p], false)
-		board_root.add_child(q_mesh)
+		var zone := Node3D.new()
+		zone.name = "Home%d" % p
+		zone.position = quad_offsets[p]
+		home_layer.add_child(zone)
+
+		var frame := MeshInstance3D.new()
+		var frame_box := BoxMesh.new()
+		frame_box.size = Vector3(2.58, 0.045, 2.58)
+		frame.mesh = frame_box
+		frame.position.y = 0.055
+		frame.material_override = MaterialFactory3D.get_paper(Color(0.82, 0.86, 0.92))
+		zone.add_child(frame)
+
+		var fill := MeshInstance3D.new()
+		var fill_box := BoxMesh.new()
+		fill_box.size = Vector3(2.40, 0.040, 2.40)
+		fill.mesh = fill_box
+		fill.position.y = 0.084
+		fill.material_override = MaterialFactory3D.get_state_overlay(QUAD_COLORS[p], 0.28)
+		zone.add_child(fill)
 
 	_desenhar_pista()
+
+
+func _new_visual_layer(layer_name: StringName) -> Node3D:
+	var layer := Node3D.new()
+	layer.name = str(layer_name)
+	board_root.add_child(layer)
+	return layer
+
+
+func visual_layer(layer_name: StringName) -> Node:
+	return board_root.get_node_or_null(NodePath(str(layer_name)))
 
 
 ## As vinte e oito casas do percurso, mais as quatro retas finais.
@@ -143,6 +173,15 @@ func _setup_3d_ludo_board() -> void:
 ## não tinha como saber por onde o peão anda nem onde ele entra.
 func _desenhar_pista() -> void:
 	var casa := MeshBuilder3D.disc_token(0.30, 0.03)
+	var track_layer := visual_layer(&"Track")
+	if track_layer == null:
+		track_layer = _new_visual_layer(&"Track")
+	var finish_layer := visual_layer(&"FinishLanes")
+	if finish_layer == null:
+		finish_layer = _new_visual_layer(&"FinishLanes")
+	var goal_layer := visual_layer(&"Goal")
+	if goal_layer == null:
+		goal_layer = _new_visual_layer(&"Goal")
 
 	# A casa de largada de cada cor recebe a cor dela; o resto é marfim. É assim
 	# que se vê de onde cada lado sai e para onde ele volta.
@@ -153,36 +192,54 @@ func _desenhar_pista() -> void:
 	for i in range(TRACK_LENGTH):
 		var ang := (float(i) / float(TRACK_LENGTH)) * TAU
 		var no := MeshInstance3D.new()
+		no.name = "TrackCell%02d" % i
 		no.mesh = casa
-		no.position = Vector3(cos(ang) * 2.4, 0.04, sin(ang) * 2.4)
+		no.position = Vector3(cos(ang) * 2.4, 0.055, sin(ang) * 2.4)
 		if largadas.has(i):
 			no.material_override = MaterialFactory3D.get_plastic(largadas[i], true)
 		else:
-			no.material_override = MaterialFactory3D.get_ivory()
-		board_root.add_child(no)
+			no.material_override = MaterialFactory3D.get_paper(
+				Color(0.86, 0.89, 0.94) if i % 2 == 0 else Color(0.67, 0.73, 0.82))
+		track_layer.add_child(no)
 
-	# Retas finais: da borda até o centro, na cor de cada lado.
+	# Retas finais: cinco casas com direção clara até o centro, na cor de cada lado.
 	for p in range(4):
-		for passo in range(1, 5):
-			var dist := float(32 - (28 + passo - 1)) * 0.45
+		for passo in range(1, 6):
+			var dist := float(5 - passo) * 0.45 + 0.22
 			var pos := Vector3.ZERO
 			match p:
-				0: pos = Vector3(0.0, 0.04, dist)
-				1: pos = Vector3(-dist, 0.04, 0.0)
-				2: pos = Vector3(0.0, 0.04, -dist)
-				3: pos = Vector3(dist, 0.04, 0.0)
+				0: pos = Vector3(0.0, 0.075, dist)
+				1: pos = Vector3(-dist, 0.075, 0.0)
+				2: pos = Vector3(0.0, 0.075, -dist)
+				3: pos = Vector3(dist, 0.075, 0.0)
 			var no := MeshInstance3D.new()
+			no.name = "Finish%d_%d" % [p, passo]
 			no.mesh = casa
 			no.position = pos
-			no.material_override = MaterialFactory3D.get_plastic(QUAD_COLORS[p], false)
-			board_root.add_child(no)
+			no.material_override = MaterialFactory3D.get_plastic(
+				QUAD_COLORS[p].lightened(0.10), false)
+			finish_layer.add_child(no)
 
-	# A casa do meio, que é a chegada.
-	var centro := MeshInstance3D.new()
-	centro.mesh = MeshBuilder3D.disc_token(0.52, 0.04)
-	centro.position = Vector3(0.0, 0.05, 0.0)
-	centro.material_override = MaterialFactory3D.get_gold()
-	board_root.add_child(centro)
+	# A chegada e uma medalha elevada com aro: o centro deixa de ser um disco
+	# dourado solto e passa a ser um destino visual inequívoco.
+	var goal := Node3D.new()
+	goal.name = "GoalMedallion"
+	goal_layer.add_child(goal)
+	var goal_pad := MeshInstance3D.new()
+	goal_pad.mesh = MeshBuilder3D.disc_token(0.72, 0.085)
+	goal_pad.position.y = 0.115
+	goal_pad.material_override = MaterialFactory3D.get_plastic(Color(0.08, 0.13, 0.22), false)
+	goal.add_child(goal_pad)
+	var goal_ring := MeshInstance3D.new()
+	var ring := TorusMesh.new()
+	ring.inner_radius = 0.52
+	ring.outer_radius = 0.62
+	ring.rings = Quality3D.radial_segments(28)
+	ring.ring_segments = 6
+	goal_ring.mesh = ring
+	goal_ring.position.y = 0.19
+	goal_ring.material_override = MaterialFactory3D.get_plastic(Color(0.96, 0.75, 0.25), true)
+	goal.add_child(goal_ring)
 
 func _setup_3d_pawns() -> void:
 	for c in pawns_root.get_children(): c.queue_free()
@@ -193,6 +250,12 @@ func _setup_3d_pawns() -> void:
 			var pawn := preload("res://shared/3d/Token3D.tscn").instantiate()
 			pawn.token_type = "pawn"
 			pawn.material_name = PLAYER_MAT_NAMES[p]
+			pawn.art_by_material = {
+				"plastic_red": "ludo/peao_vermelho",
+				"plastic_blue": "ludo/peao_azul",
+				"plastic_green": "ludo/peao_verde",
+				"plastic_yellow": "ludo/peao_amarelo",
+			}
 			pawns_root.add_child(pawn)
 			pawns_3d[p].append(pawn)
 

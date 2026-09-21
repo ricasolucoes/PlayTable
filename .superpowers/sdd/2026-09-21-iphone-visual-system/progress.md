@@ -28,4 +28,6 @@ Task 4: complete (RED `tests/run_gut.sh -gselect=card_rendering` → missing `is
 
 Task 5: complete (RED `tests/run_gut.sh -gselect=mobile_visuals`/`reversi` → missing `reversi_piece`; GREEN → mobile visuals 5/5, Reversi 26/26, exit 0). Added explicit side-based Reversi materials with stable fallback luminance, exposed `Token3D.get_visual_material`, preserved visual material through flips, and removed the fixed top HUD offset. Commit pending.
 
-Tasks: Tasks 1–5 complete; Task 6 in progress; Tasks 7–8 pending.
+Task 6: complete (RED `tests/run_gut.sh -gselect=mobile_visuals`/`ludo` → missing Ludo layer helper and pawn art mappings; GREEN → mobile visuals 7/7, 78 asserts; Ludo 32/32, 175 asserts, exit 0). Rebuilt the Ludo board into named layered visuals, added explicit bases/track/finish/goal geometry, assigned all pawn art fallbacks, and moved the die into the shared bottom band. Commit pending.
+
+Tasks: Tasks 1–6 complete; Task 7 in progress; Task 8 pending.

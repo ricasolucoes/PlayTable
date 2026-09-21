@@ -343,6 +343,14 @@ func test_a_tira_de_botoes_de_peao_nao_existe_mais() -> void:
 		"a tira de botoes saiu da cena")
 
 
+func test_dado_fica_no_trilho_inferior_sem_invadir_o_conteudo() -> void:
+	var jogo := await _cena()
+	var metrics: MobileHudMetrics = jogo.get_mobile_hud_metrics()
+	var dado: Rect2 = jogo.btn_dice.get_global_rect()
+	assert_true(metrics.bottom_rect.has_point(dado.get_center()), "dado dentro da banda inferior")
+	assert_false(metrics.content_rect.intersects(dado), "dado nao cobre a area do tabuleiro")
+
+
 func test_tocar_o_peao_levantado_o_move() -> void:
 	var jogo := _jogo()
 	await wait_process_frames(1)

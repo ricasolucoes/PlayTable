@@ -1,6 +1,7 @@
 extends GutTest
 
 const ReversiScene = preload("res://games/reversi/ReversiGame.tscn")
+const LudoScene = preload("res://games/ludo/LudoGame.tscn")
 
 const BAND_SCENES := [
 	"res://games/blackjack/BlackjackGame.tscn",
@@ -98,3 +99,23 @@ func test_reversi_scene_creates_both_piece_signatures() -> void:
 			tem_diferenca = true
 			break
 	assert_true(tem_diferenca, "as duas faces tem assinaturas diferentes")
+
+
+func test_ludo_pawns_have_procedural_fallback() -> void:
+	var jogo = add_child_autofree(LudoScene.instantiate())
+	await wait_process_frames(3)
+	assert_eq(jogo.pawns_3d[0].size(), 4)
+	for pawn in jogo.pawns_3d[0]:
+		assert_eq(pawn.art_by_material["plastic_red"], "ludo/peao_vermelho")
+		assert_not_null(pawn.get_visual_material())
+
+
+func test_ludo_has_four_bases_track_finish_and_center() -> void:
+	var jogo = add_child_autofree(LudoScene.instantiate())
+	await wait_process_frames(3)
+	assert_eq(jogo.visual_layer(&"HomeZones").get_child_count(), 4)
+	assert_gte(jogo.visual_layer(&"Track").get_child_count(), 28)
+	assert_gte(jogo.visual_layer(&"FinishLanes").get_child_count(), 16)
+	assert_gt(jogo.visual_layer(&"Goal").get_child_count(), 0)
+	assert_true(jogo.get_mobile_hud_metrics().bottom_rect.has_point(
+		jogo.btn_dice.get_global_rect().get_center()))
