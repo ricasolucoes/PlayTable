@@ -30,6 +30,7 @@ const SCENES := [
 	"res://games/reversi/ReversiGame.tscn",
 	"res://games/senet/SenetGame.tscn",
 	"res://games/solitario/PegSolitaireGame.tscn",
+	"res://games/sudoku/SudokuGame.tscn",
 	"res://games/unolike/UnoLikeGame.tscn",
 ]
 

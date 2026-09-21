@@ -32,4 +32,6 @@ Task 6: complete (RED `tests/run_gut.sh -gselect=mobile_visuals`/`ludo` → miss
 
 Task 7: complete (RED `tests/run_gut.sh -gselect=mobile_visuals` → missing `UIKit.COLOR_SURFACE`/`RADIUS_CARD`; GREEN same selector → 8/8 tests, 83 asserts, exit 0. Standalone mobile layout audit → `TOTAL VIOLATIONS: 0`, exit 0). Added shared blue-grafite surface, text, accent, spacing, radius and touch-target tokens; migrated UIKit factories, top-bar chrome, main menu styling and the global theme away from brown/90s controls; added modern badge/icon factories and raised button targets to 88 px. The audit still emits existing dummy-renderer material and event-bus teardown/rate diagnostics, but reports no layout violations.
 
-Tasks: Tasks 1–7 complete; Task 8 pending.
+Task 8: in progress (full GUT → 837/837 tests, 24,323 asserts, exit 0; fresh audit including Sudoku → `TOTAL VIOLATIONS: 0`, exit 0; `scripts/ios_export.sh` passed; Xcode Debug build signed with the local automatic profile `iOS Team Provisioning Profile: org.playtable.app`, installed and launched on UDID `00008030-001028D614DA802E`). Xcode's device screenshot action was exercised, but the captured image is black because the physical iPhone is locked; the macOS iPhone Mirroring/QuickTime views report the same lock-state blocker. Physical visual-flow inspection remains pending an unlocked foreground device.
+
+Tasks: Tasks 1–7 complete; Task 8 in progress.
