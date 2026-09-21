@@ -39,6 +39,15 @@ var current_path: String = ""
 var _navigating: bool = false
 
 
+## Focus is not the mobile lifecycle. iOS can report a focus change while the
+## app is still visible (for example when the device is mirrored or a pointer
+## is attached); pausing the whole SceneTree there leaves every button painted
+## but inert. Mobile background/foreground transitions arrive through the
+## application-paused/resumed notifications below.
+static func should_pause_on_focus_out(platform_name: String = OS.get_name()) -> bool:
+	return platform_name not in ["iOS", "Android"]
+
+
 func _ready() -> void:
 	overlay = JogosLoadingOverlay.new()
 	overlay.name = "LoadingOverlay"
@@ -132,15 +141,29 @@ func _notification(what: int) -> void:
 		NOTIFICATION_WM_GO_BACK_REQUEST:
 			go_back()
 		NOTIFICATION_APPLICATION_FOCUS_OUT:
-			# O OS pode notificar foco antes de o autoload entrar na árvore;
-			# `is_inside_tree()` e não `get_tree() == null`, que já imprime erro.
-			if is_inside_tree():
-				get_tree().paused = true
-				app_paused.emit()
+			if should_pause_on_focus_out():
+				_pause_for_background()
 		NOTIFICATION_APPLICATION_FOCUS_IN:
-			if is_inside_tree():
-				get_tree().paused = false
-				app_resumed.emit()
+			if should_pause_on_focus_out():
+				_resume_from_background()
+		NOTIFICATION_APPLICATION_PAUSED:
+			_pause_for_background()
+		NOTIFICATION_APPLICATION_RESUMED:
+			_resume_from_background()
+
+
+func _pause_for_background() -> void:
+	# O OS pode notificar foco antes de o autoload entrar na árvore;
+	# `is_inside_tree()` e não `get_tree() == null`, que já imprime erro.
+	if is_inside_tree():
+		get_tree().paused = true
+		app_paused.emit()
+
+
+func _resume_from_background() -> void:
+	if is_inside_tree():
+		get_tree().paused = false
+		app_resumed.emit()
 
 
 ## O Voltar do aparelho: a cena atual decide (`handle_back()` ou o alias do
