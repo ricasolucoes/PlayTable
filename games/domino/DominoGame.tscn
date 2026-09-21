@@ -40,6 +40,8 @@ grow_vertical = 2
 mouse_filter = 2
 
 [node name="Actions" type="HBoxContainer" parent="UI"]
+metadata/mobile_hud_band = "bottom"
+metadata/mobile_hud_margin = 12.0
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
@@ -80,6 +82,8 @@ layout_mode = 2
 text = "DOMINO_BTN_PASS"
 
 [node name="PlayerArea" type="PanelContainer" parent="UI"]
+metadata/mobile_hud_band = "bottom"
+metadata/mobile_hud_margin = 12.0
 layout_mode = 1
 anchors_preset = 12
 anchor_top = 1.0

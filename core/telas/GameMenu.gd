@@ -193,6 +193,9 @@ func _create_game_card(game: GameDefinition) -> Button:
 	var accent := _game_accent(game)
 
 	var btn: Button = TAP_BUTTON.new()
+	# O cartão é uma composição intencional: arte, véu, moldura e texto ocupam
+	# o mesmo retângulo, mas só o botão é a superfície interativa.
+	btn.set_meta("allow_overlay", true)
 	btn.custom_minimum_size = Vector2(0, ALTURA_CARTAO)
 	btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	btn.focus_mode = Control.FOCUS_NONE

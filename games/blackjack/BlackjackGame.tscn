@@ -21,6 +21,8 @@ script = ExtResource("1_script")
 [node name="GameShell" parent="." instance=ExtResource("3_shell")]
 
 [node name="ActionButtons" type="HBoxContainer" parent="."]
+metadata/mobile_hud_band = "bottom"
+metadata/mobile_hud_margin = 12.0
 layout_mode = 1
 anchors_preset = 12
 anchor_top = 1.0

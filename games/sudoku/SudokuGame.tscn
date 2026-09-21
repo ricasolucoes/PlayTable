@@ -22,6 +22,8 @@ layout_mode = 1
 layout_mode = 1
 
 [node name="Actions" type="HBoxContainer" parent="."]
+metadata/mobile_hud_band = "bottom"
+metadata/mobile_hud_margin = 12.0
 layout_mode = 1
 anchor_right = 1.0
 offset_left = 24.0
@@ -67,6 +69,8 @@ theme_override_constants/v_separation = 6
 columns = 3
 
 [node name="NumberPad" type="GridContainer" parent="."]
+metadata/mobile_hud_band = "bottom"
+metadata/mobile_hud_margin = 12.0
 layout_mode = 1
 anchors_preset = 12
 anchor_top = 1.0

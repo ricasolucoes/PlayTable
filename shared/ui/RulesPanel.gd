@@ -32,6 +32,7 @@ var _montado_para: String = ""
 
 func _init() -> void:
 	layer = CAMADA
+	set_meta("allow_overlay", true)
 
 
 ## Desenha as regras de `game_id`. Não faz nada se o jogo não tem entrada em

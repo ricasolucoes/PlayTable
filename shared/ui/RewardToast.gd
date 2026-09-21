@@ -29,6 +29,12 @@ var _title: Label
 var _detail: Label
 
 
+func _init() -> void:
+	# Toast é uma camada transitória intencionalmente acima da HUD; o audit de
+	# layout não deve tratá-lo como colisão de controles de jogo.
+	set_meta("allow_overlay", true)
+
+
 func _ready() -> void:
 	layer = 100
 	_build()

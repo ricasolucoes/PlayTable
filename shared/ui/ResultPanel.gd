@@ -36,6 +36,10 @@ var _mostrando: bool = false
 var _primario_e_proximo: bool = false
 
 
+func _init() -> void:
+	set_meta("allow_overlay", true)
+
+
 func _ready() -> void:
 	layer = 90
 	_montar()

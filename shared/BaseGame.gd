@@ -98,6 +98,10 @@ func _enter_tree() -> void:
 	# toda rolagem de cena de jogo passa a rolar no dedo. Adiado porque em
 	# `_enter_tree` os filhos da cena ainda nao entraram na arvore.
 	_ligar_rolagens.call_deferred()
+	# Algumas cenas têm HUD próprio (cartas, Sudoku, controles de tabuleiro).
+	# Elas declaram a banda no .tscn; o shell comum continua registrando os seus
+	# dois trilhos no próprio _ready().
+	_registrar_bandas_declaradas.call_deferred()
 
 
 func _exit_tree() -> void:
@@ -242,7 +246,7 @@ func register_mobile_band(control: Control, band: StringName,
 		margin: float = 16.0) -> void:
 	if control == null or not is_instance_valid(control):
 		return
-	if band != &"content" and band != &"bottom":
+	if band != &"content" and band != &"content_header" and band != &"bottom":
 		push_error("Banda mobile desconhecida: %s" % band)
 		return
 	for binding in _mobile_bands:
@@ -264,14 +268,25 @@ func _on_top_bar_layout_changed(_metrics: MobileHudMetrics) -> void:
 
 func _bottom_band_height() -> float:
 	var height := 0.0
+	var quantidade := 0
 	for binding in _mobile_bands:
 		if binding["band"] != &"bottom":
 			continue
 		var control := binding["control"] as Control
 		if control == null or not is_instance_valid(control):
 			continue
-		height = maxf(height, control.get_combined_minimum_size().y)
+		height += _mobile_band_height(control)
+		quantidade += 1
+	if quantidade > 1:
+		height += float(quantidade - 1) * 8.0
 	return height
+
+
+func _mobile_band_height(control: Control) -> float:
+	var measured := maxf(control.custom_minimum_size.y, control.get_combined_minimum_size().y)
+	if measured <= 1.0 or measured > get_viewport_rect().size.y * 0.55:
+		return 88.0
+	return measured
 
 
 func _recompute_mobile_hud_metrics() -> void:
@@ -284,9 +299,9 @@ func _recompute_mobile_hud_metrics() -> void:
 	if size.y <= 0.0:
 		return
 	var insets := JogosSafeArea.insets(viewport)
-	var chrome_height := GameTopBar.ALTURA
+	var chrome_height := GameTopBar.TOPO_BASE + GameTopBar.ALTURA
 	if top_bar != null:
-		chrome_height = top_bar.ALTURA
+		chrome_height = top_bar.BANDA - insets.y
 	mobile_hud_metrics = MobileHudMetrics.calculate(size, insets, chrome_height,
 		_bottom_band_height())
 	_layout_mobile_bands()
@@ -296,18 +311,59 @@ func _layout_mobile_bands() -> void:
 	if mobile_hud_metrics == null or _mobile_layouting:
 		return
 	_mobile_layouting = true
+	var bottom_cursor := mobile_hud_metrics.bottom_rect.end.y
+	var content_cursor := mobile_hud_metrics.content_rect.position.y
+	var content_end := mobile_hud_metrics.content_rect.end.y
+	var has_game_header := false
 	for binding in _mobile_bands:
 		var control := binding["control"] as Control
 		if control == null or not is_instance_valid(control):
 			continue
 		var margin: float = maxf(0.0, float(binding["margin"]))
-		var area := mobile_hud_metrics.content_rect if binding["band"] == &"content" else mobile_hud_metrics.bottom_rect
+		var area := mobile_hud_metrics.content_rect
+		if binding["band"] == &"content_header":
+			var header_row_height := maxf(88.0, _mobile_band_height(control))
+			area = Rect2(mobile_hud_metrics.content_rect.position.x, content_cursor,
+				mobile_hud_metrics.content_rect.size.x,
+				minf(header_row_height, content_end - content_cursor))
+			content_cursor = minf(content_end, content_cursor + header_row_height + 8.0)
+		elif binding["band"] == &"content":
+			var is_game_header := control.get_parent() is GameShell
+			if is_game_header:
+				has_game_header = true
+				var header_height := maxf(88.0, _mobile_band_height(control))
+				area = Rect2(mobile_hud_metrics.content_rect.position.x, content_cursor,
+					mobile_hud_metrics.content_rect.size.x, minf(header_height, content_end - content_cursor))
+				content_cursor = minf(content_end, content_cursor + header_height + 8.0)
+			elif has_game_header:
+				area = Rect2(mobile_hud_metrics.content_rect.position.x, content_cursor,
+					mobile_hud_metrics.content_rect.size.x, maxf(0.0, content_end - content_cursor))
+			else:
+				area = mobile_hud_metrics.content_rect
+		elif binding["band"] == &"bottom":
+			var band_height := _mobile_band_height(control)
+			bottom_cursor -= band_height
+			area = Rect2(mobile_hud_metrics.bottom_rect.position.x, bottom_cursor,
+				mobile_hud_metrics.bottom_rect.size.x, band_height)
 		var available := Vector2(maxf(0.0, area.size.x - margin * 2.0),
 			maxf(0.0, area.size.y - margin * 2.0))
 		control.set_anchors_preset(Control.PRESET_TOP_LEFT)
 		control.position = area.position + Vector2(margin, margin)
 		control.size = available
 	_mobile_layouting = false
+
+
+func _registrar_bandas_declaradas() -> void:
+	if not is_inside_tree():
+		return
+	var pending: Array[Node] = [self]
+	while not pending.is_empty():
+		var node: Node = pending.pop_back()
+		if node is Control and node.has_meta("mobile_hud_band"):
+			var band := StringName(str(node.get_meta("mobile_hud_band")))
+			var margin := float(node.get_meta("mobile_hud_margin", 12.0))
+			register_mobile_band(node as Control, band, margin)
+		pending.append_array(node.get_children())
 
 
 ## Pendura o painel de regras e liga o "?" da barra.
@@ -502,7 +558,7 @@ func _scan_hud(node: Node, altura: float) -> Vector2:
 			if banda == "bottom":
 				bandas.y = maxf(bandas.y, altura - ctrl.get_global_rect().position.y)
 				continue
-			if banda == "content":
+			if banda == "content" or banda == "content_header":
 				continue
 			if not (node is Container):
 				var r := ctrl.get_global_rect()

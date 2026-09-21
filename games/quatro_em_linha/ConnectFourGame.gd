@@ -56,6 +56,8 @@ func cell_center_y(row: int) -> float:
 func _ready() -> void:
 	status_label = $VBoxContainer/StatusCard/StatusLabel
 	board = Grid2D.new(ROWS, COLS, 0)
+	if top_bar != null and not top_bar.mode_pressed.is_connected(_on_top_bar_mode_pressed):
+		top_bar.mode_pressed.connect(_on_top_bar_mode_pressed)
 	ai_level = DifficultyManager.get_level(game_id)
 	_ler_modo_de_rede()
 	
@@ -74,7 +76,12 @@ func _ler_modo_de_rede() -> void:
 	if em_rede:
 		vs_ai = false
 	if btn_mode_toggle:
-		btn_mode_toggle.visible = not em_rede
+		btn_mode_toggle.visible = false
+	if top_bar != null:
+		if em_rede:
+			top_bar.esconder_modo()
+		else:
+			top_bar.oferecer_modo(vs_ai)
 
 
 func _modo() -> String:
@@ -318,6 +325,15 @@ func _on_mode_toggle_pressed() -> void:
 	restart_game()
 
 
+func _on_top_bar_mode_pressed(novo_vs_ai: bool) -> void:
+	play_click()
+	vs_ai = novo_vs_ai
+	_update_mode_button()
+	restart_game()
+
+
 func _update_mode_button() -> void:
 	if btn_mode_toggle:
-		btn_mode_toggle.text = tr("CONNECT4_BTN_VS_AI") if vs_ai else tr("CONNECT4_BTN_TWO_PLAYERS")
+		btn_mode_toggle.visible = false
+	if top_bar != null and not em_rede:
+		top_bar.oferecer_modo(vs_ai)

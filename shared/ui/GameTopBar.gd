@@ -197,6 +197,7 @@ func _montar_veu() -> void:
 	veu.texture = tex
 	veu.stretch_mode = TextureRect.STRETCH_SCALE
 	veu.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	veu.set_meta("allow_overlay", true)
 	veu.anchor_left = 0.0
 	veu.anchor_top = 0.0
 	veu.anchor_right = 1.0

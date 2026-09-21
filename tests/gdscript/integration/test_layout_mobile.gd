@@ -1,5 +1,7 @@
 extends GutTest
 
+const LayoutAudit = preload("res://tools/mobile_layout_audit.gd")
+
 ## Aparencia no telefone — a regua que mede M1, M3, M4 e M6 do plano.
 ##
 ## Os 349 testes anteriores exercitam regras, ciclo de vida e instanciacao.
@@ -405,3 +407,113 @@ func test_nada_da_interface_sai_da_tela() -> void:
 					violacoes.append("%s em %s: %s em %s" % [_nome_curto(caminho), rotulo, alvo.name, r])
 	_regua("M6", violacoes,
 		"todo rotulo e botao, ou a area de rolagem que o contem, dentro da tela nas %d proporcoes" % PROPORCOES.size())
+
+
+# ----------------------------------------------------------- M7: chrome e colisao
+
+func _achar_chrome(raiz: Node) -> GameTopBar:
+	for no in _controles(raiz, "Control"):
+		if no is GameTopBar:
+			return no as GameTopBar
+	return null
+
+
+func _controle_de_layout(no: Control, raiz: Node) -> bool:
+	if no == raiz or not no.is_visible_in_tree():
+		return false
+	if _tem_overlay(no):
+		return false
+	if no is Container and not no is PanelContainer:
+		return false
+	if no.size.x <= 0.0 or no.size.y <= 0.0:
+		return false
+	# Raizes de tela inteira são containers de composição, não superfícies que
+	# possam colidir com outro HUD. A proporção muda por iteração.
+	var viewport_size := no.get_viewport_rect().size
+	if no.size.x >= 0.98 * viewport_size.x and no.size.y >= 0.98 * viewport_size.y:
+		return false
+	return true
+
+
+func _tem_overlay(no: Node) -> bool:
+	var atual := no
+	while atual != null:
+		if atual.get_meta("allow_overlay", false):
+			return true
+		atual = atual.get_parent()
+	return false
+
+
+func _pares_de_controles_sobrepostos(raiz: Node) -> Array[Dictionary]:
+	var controles: Array[Control] = []
+	for no in _controles(raiz, "Control"):
+		if _controle_de_layout(no, raiz):
+			controles.append(no)
+	var pares: Array[Dictionary] = []
+	for i in controles.size():
+		for j in range(i + 1, controles.size()):
+			var a := controles[i]
+			var b := controles[j]
+			if a.is_ancestor_of(b) or b.is_ancestor_of(a):
+				continue
+			if _tem_overlay(a) or _tem_overlay(b):
+				continue
+			var inter := a.get_global_rect().intersection(b.get_global_rect())
+			if inter.size.x > 1.0 and inter.size.y > 1.0:
+				pares.append({"a": a, "b": b, "rect": inter})
+	return pares
+
+
+func test_nenhum_hud_fica_sob_a_faixa_ou_sobre_outro_controle() -> void:
+	var violacoes: Array[String] = []
+	for caminho in JOGOS + MENUS:
+		for rotulo in PROPORCOES:
+			var tamanho: Vector2i = PROPORCOES[rotulo]
+			var raiz := await _montar(caminho, tamanho)
+			if raiz == null:
+				continue
+			var chrome := _achar_chrome(raiz)
+			if chrome == null:
+				continue
+			var proibida := Rect2(0.0, 0.0, float(tamanho.x), chrome.content_top_px)
+			for controle in _controles(raiz, "Control"):
+				if not _controle_de_layout(controle, raiz) or controle == chrome or chrome.is_ancestor_of(controle):
+					continue
+				if proibida.intersects(controle.get_global_rect()):
+					violacoes.append("%s/%s: %s sob chrome em %s" % [
+						_nome_curto(caminho), rotulo, controle.get_path(), controle.get_global_rect()])
+			for par in _pares_de_controles_sobrepostos(raiz):
+				violacoes.append("%s/%s: %s sobre %s em %s" % [
+					_nome_curto(caminho), rotulo, par["a"].get_path(), par["b"].get_path(), par["rect"]])
+	_regua("M7", violacoes, "nenhum HUD sob chrome nem controles não modais sobrepostos")
+
+
+func test_audit_finds_nested_overlap() -> void:
+	var holder := Control.new()
+	holder.name = "NestedOverlap"
+	holder.size = Vector2(320.0, 240.0)
+	add_child_autofree(holder)
+	var box := VBoxContainer.new()
+	box.name = "Box"
+	box.position = Vector2(24.0, 24.0)
+	box.size = Vector2(240.0, 140.0)
+	holder.add_child(box)
+	var first := Button.new()
+	first.name = "First"
+	first.custom_minimum_size = Vector2(220.0, 80.0)
+	box.add_child(first)
+	var second := Button.new()
+	second.name = "Second"
+	second.position = Vector2(12.0, -48.0)
+	second.size = Vector2(220.0, 80.0)
+	box.add_child(second)
+	await wait_process_frames(2)
+	second.set_as_top_level(true)
+	second.global_position = first.global_position + Vector2(12.0, 24.0)
+	second.size = Vector2(220.0, 80.0)
+	var overlaps: Array = LayoutAudit.find_overlaps(holder)
+	assert_eq(overlaps.size(), 1, "auditoria deve detectar a colisão aninhada uma vez")
+	if overlaps.size() == 1:
+		var nomes := "%s %s" % [str(overlaps[0]["a"]), str(overlaps[0]["b"])]
+		assert_string_contains(nomes, "First")
+		assert_string_contains(nomes, "Second")

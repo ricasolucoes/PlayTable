@@ -20,4 +20,8 @@ Ruling: the shared `GameShell` restart action moved from `VBoxContainer` to `Act
 
 Task 2: complete (RED `tests/run_gut.sh -gtest=res://tests/gdscript/unit/test_mobile_hud.gd` → missing `MobileHudMetrics`/type errors and baseline 817 passing; GREEN same command → 821/821 tests, 24,054 asserts, exit 0). Added shared safe-area metrics, top-bar context badges, bottom action rail, and responsive mobile-band layout. Commit pending.
 
-Tasks: Tasks 1–2 complete; Task 3 in progress; Tasks 4–8 pending.
+Ruling: the layout audit compares drawable surfaces, not transparent composition containers. Cards, modal layers, reward/rules panels, and board-render/input layers declare `allow_overlay`; their descendants are still traversed, but intentional z-order is not reported as a HUD collision.
+
+Task 3: complete (RED `tests/run_gut.sh -gtest=res://tests/gdscript/integration/test_layout_mobile.gd` → missing audit helper plus M7 violations; GREEN `tests/run_gut.sh -gselect=layout_mobile` → 9/9 tests; visual contract `-gselect=mobile_visuals` → 3/3; standalone audit → `TOTAL VIOLATIONS: 0`). Migrated scene HUDs to shared content/header/bottom bands, stacked multiple bottom rails, moved mode controls into the shared top bar for Tic-Tac-Toe/Connect Four, and made the audit fail nonzero when violations remain. Commit pending.
+
+Tasks: Tasks 1–3 complete; Task 4 in progress; Tasks 5–8 pending.
