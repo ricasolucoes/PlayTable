@@ -363,6 +363,25 @@ static func _radial_falloff_texture() -> ImageTexture:
 # Arte gerada
 # ---------------------------------------------------------------------------
 
+## Material explicito dos dois lados do Reversi. A cor base e intencionalmente
+## preservada mesmo quando a arte PNG existe: no renderizador movel ela mantem
+## contraste estavel, e sem a textura a peca continua identificavel.
+static func reversi_piece(side: int, art_key: String) -> StandardMaterial3D:
+	var key := "reversi_%d_%s" % [side, art_key]
+	if _cache.has(key):
+		return _cache[key]
+	var mat := StandardMaterial3D.new()
+	mat.albedo_color = Color(0.055, 0.075, 0.12) if side == 1 else Color(0.94, 0.96, 1.0)
+	mat.roughness = 0.24 if side == 1 else 0.38
+	mat.metallic = 0.0
+	mat.rim_enabled = true
+	mat.rim = 0.38 if side == 1 else 0.12
+	var texture: Texture2D = AssetCatalog.get_game_art_by_key(art_key)
+	if texture != null:
+		mat.albedo_texture = texture
+	_cache[key] = mat
+	return mat
+
 ## O material de uma peca com a arte gerada pelo Gemini por cima -- ou o
 ## `fallback` procedural, intacto, quando o arquivo nao existe.
 ##

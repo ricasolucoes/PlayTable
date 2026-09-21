@@ -26,10 +26,10 @@ var _lado_local: int = 1
 
 @onready var board_3d: Board3D = $Board3D
 
-## A arte gerada de cada face do disco (`tools/art/reversi.json`). Indexada pelo
-## material porque a peca vira: `flip_180("obsidian")` troca o material e a
-## arte tem de ir junto. Sem o arquivo, fica o procedural.
-const ART_DISCOS := {"obsidian": "reversi/disco_preto", "ivory": "reversi/disco_branco"}
+## A arte gerada de cada face do disco (`tools/art/reversi.json`). O lado do
+## tabuleiro e a fonte de verdade; a cor base continua funcionando sem PNG.
+const ART_DISCO_PRETO := "reversi/disco_preto"
+const ART_DISCO_BRANCO := "reversi/disco_branco"
 
 @onready var pieces_root: Node3D = $PiecesRoot
 @onready var level_label: Label = $UI/VBoxContainer/LevelLabel
@@ -93,8 +93,11 @@ func _rival() -> int:
 	return 3 - _meu()
 
 
-static func _material_de(player: int) -> String:
-	return "obsidian" if player == 1 else "ivory"
+static func _art_de(player: int) -> String:
+	return ART_DISCO_PRETO if player == 1 else ART_DISCO_BRANCO
+
+static func _visual_de(player: int) -> StandardMaterial3D:
+	return MaterialFactory3D.reversi_piece(player, _art_de(player))
 
 func _sync_pieces_3d() -> void:
 	for p in pieces_root.get_children(): p.queue_free()
@@ -109,8 +112,7 @@ func _sync_pieces_3d() -> void:
 			if val != 0:
 				var piece := preload("res://shared/3d/Token3D.tscn").instantiate()
 				piece.token_type = "cylinder"
-				piece.material_name = "obsidian" if val == 1 else "ivory"
-				piece.art_by_material = ART_DISCOS
+				piece.visual_material = _visual_de(val)
 				piece.position = board_3d.get_cell_position_3d(r, c, 0.08)
 				pieces_root.add_child(piece)
 				pieces_3d[Vector2i(r, c)] = piece
@@ -177,18 +179,17 @@ func _on_net_move(payload: Dictionary) -> void:
 ## para a pessoa, a IA e o outro aparelho: a mesa nao sabe quem jogou.
 func _aplicar_jogada(pos: Vector2i, player: int) -> void:
 	var flipped := ReversiRules.get_flipped_pieces(grid_data, pos, player)
-	var mat := _material_de(player)
+	var material := _visual_de(player)
 	grid_data.set_cell(pos.x, pos.y, player)
 	for f in flipped:
 		grid_data.set_cell(f.x, f.y, player)
 		var p_3d = pieces_3d.get(f)
 		if p_3d:
-			p_3d.flip_180(mat, 0.35)
+			p_3d.flip_180_visual(material, 0.35)
 
 	var new_piece := preload("res://shared/3d/Token3D.tscn").instantiate()
 	new_piece.token_type = "cylinder"
-	new_piece.material_name = mat
-	new_piece.art_by_material = ART_DISCOS
+	new_piece.visual_material = material
 	var target_3d := board_3d.get_cell_position_3d(pos.x, pos.y, 0.08)
 	new_piece.position = target_3d + Vector3(0, 2.5, 0)
 	pieces_root.add_child(new_piece)

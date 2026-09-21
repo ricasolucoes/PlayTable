@@ -199,6 +199,22 @@ func test_fim_de_partida_anuncia_quem_venceu() -> void:
 	assert_eq(empate.status_label.text, tr("DRAW_TITLE"), "empate anunciado")
 
 
+func test_flip_de_reversi_troca_material_preto_por_branco() -> void:
+	var jogo = add_child_autofree(GameScene.instantiate())
+	await wait_process_frames(3)
+	jogo._sync_pieces_3d()
+	var preta: Token3D = jogo.pieces_3d[Vector2i(3, 4)] as Token3D
+	var branca: Token3D = jogo.pieces_3d[Vector2i(3, 3)] as Token3D
+	var material_preto: StandardMaterial3D = preta.get_visual_material() as StandardMaterial3D
+	var material_branco: StandardMaterial3D = branca.get_visual_material() as StandardMaterial3D
+	assert_lt(material_preto.albedo_color.get_luminance(), 0.25)
+	assert_gt(material_branco.albedo_color.get_luminance(), 0.65)
+	preta.flip_180_visual(MaterialFactory3D.reversi_piece(2, "reversi/disco_branco"), 0.0)
+	var material_depois: StandardMaterial3D = preta.get_visual_material() as StandardMaterial3D
+	assert_gt(material_depois.albedo_color.get_luminance(), 0.65,
+		"o disco virado assume o material branco")
+
+
 # ---------------------------------------------------------------- ReversiAI
 #
 # Os dois defeitos que a busca antiga tinha, cada um com o seu teste. Eles se

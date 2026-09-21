@@ -1,5 +1,7 @@
 extends GutTest
 
+const ReversiScene = preload("res://games/reversi/ReversiGame.tscn")
+
 const BAND_SCENES := [
 	"res://games/blackjack/BlackjackGame.tscn",
 	"res://games/paciencia/KlondikeGame.tscn",
@@ -69,3 +71,30 @@ func test_blackjack_monta_chrome_com_metricas_de_conteudo() -> void:
 		assert_gt(chrome.content_top_px, 0.0)
 		assert_not_null(chrome.mobile_metrics)
 		assert_gte(chrome.content_bottom_px, chrome.content_top_px)
+
+
+func test_reversi_fallback_materials_have_distinct_luminance() -> void:
+	var preto := MaterialFactory3D.reversi_piece(1, "")
+	var branco := MaterialFactory3D.reversi_piece(2, "")
+	assert_ne(preto.albedo_color, branco.albedo_color)
+	assert_lt(preto.albedo_color.get_luminance(), 0.25)
+	assert_gt(branco.albedo_color.get_luminance(), 0.65)
+
+
+func test_reversi_scene_creates_both_piece_signatures() -> void:
+	var jogo = add_child_autofree(ReversiScene.instantiate())
+	await wait_process_frames(3)
+	jogo._sync_pieces_3d()
+	var assinaturas: Array[String] = []
+	for p in jogo.pieces_root.get_children():
+		var material: StandardMaterial3D = p.call("get_visual_material") as StandardMaterial3D
+		assert_not_null(material)
+		if material != null:
+			assinaturas.append(str(material.albedo_color))
+	assert_true(assinaturas.size() >= 4)
+	var tem_diferenca := false
+	for assinatura in assinaturas.slice(1):
+		if assinatura != assinaturas[0]:
+			tem_diferenca = true
+			break
+	assert_true(tem_diferenca, "as duas faces tem assinaturas diferentes")

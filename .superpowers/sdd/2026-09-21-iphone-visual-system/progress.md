@@ -26,4 +26,6 @@ Task 3: complete (RED `tests/run_gut.sh -gtest=res://tests/gdscript/integration/
 
 Task 4: complete (RED `tests/run_gut.sh -gselect=card_rendering` → missing `is_valid_image` and fallback APIs; GREEN same selector → 4/4 tests, 57 asserts, exit 0. Card smoke tests: Blackjack 22/22, Spider 6/6, Poker 17/17, all exit 0). Added validated single-state atlas warm-up for standard and UNO cards, an immediate visible Card3D fallback, and non-blocking menu warm-up. GUT's dummy renderer reports teardown-only material/orphan diagnostics when a card scene is freed before three render frames; assertions and process exits remain green.
 
-Tasks: Tasks 1–4 complete; Task 5 in progress; Tasks 6–8 pending.
+Task 5: complete (RED `tests/run_gut.sh -gselect=mobile_visuals`/`reversi` → missing `reversi_piece`; GREEN → mobile visuals 5/5, Reversi 26/26, exit 0). Added explicit side-based Reversi materials with stable fallback luminance, exposed `Token3D.get_visual_material`, preserved visual material through flips, and removed the fixed top HUD offset. Commit pending.
+
+Tasks: Tasks 1–5 complete; Task 6 in progress; Tasks 7–8 pending.
