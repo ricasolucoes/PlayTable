@@ -49,7 +49,7 @@ class IOSReleaseConfigTests(unittest.TestCase):
             if "=" in line
         )
         self.assertEqual(values["VERSION_NAME"], "0.9.2")
-        self.assertEqual(values["BUILD_NUMBER"], "20")
+        self.assertEqual(values["BUILD_NUMBER"], "21")
 
     def test_app_store_workflow_is_mac_only_and_uses_runtime_secrets(self):
         workflow = (ROOT / ".github/workflows/release-appstore.yml").read_text(
