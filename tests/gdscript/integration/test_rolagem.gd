@@ -191,9 +191,9 @@ func test_um_toque_curto_no_cartao_de_categoria_dispara_a_navegacao() -> void:
 	var destinos: Array[String] = []
 	var ao_mudar := func(destino: String) -> void: destinos.append(destino)
 	SceneManager.scene_changing.connect(ao_mudar)
-	SceneManager.scene_swapper = func(_cena: Node) -> void: pass
+	SceneManager.scene_swapper = func(cena: Node) -> void: cena.free()
 	await _toque_curto(cartao.get_global_rect().get_center())
-	await wait_process_frames(12)
+	await wait_until(func() -> bool: return not SceneManager.is_navigating(), 2.0)
 	if SceneManager.scene_changing.is_connected(ao_mudar):
 		SceneManager.scene_changing.disconnect(ao_mudar)
 	SceneManager.scene_swapper = Callable()
