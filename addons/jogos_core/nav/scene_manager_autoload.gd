@@ -48,7 +48,21 @@ static func should_pause_on_focus_out(platform_name: String = OS.get_name()) -> 
 	return platform_name not in ["iOS", "Android"]
 
 
+## O iOS e o Android suspendem o processo quando o aplicativo vai para o
+## background. Pausar o SceneTree manualmente em resposta a
+## `NOTIFICATION_APPLICATION_PAUSED` duplica essa responsabilidade e, no iOS
+## com espelhamento/ponteiro, pode chegar sem o par `RESUMED`. O resultado é a
+## tela continuar desenhada, mas todos os controles ficarem inertes.
+static func should_pause_on_application_pause(platform_name: String = OS.get_name()) -> bool:
+	return platform_name not in ["iOS", "Android"]
+
+
 func _ready() -> void:
+	# Uma execução nova nunca deve herdar uma pausa lógica no mobile. O sistema
+	# operacional já suspende o processo quando necessário; a UI precisa começar
+	# interativa ao voltar do TestFlight ou do espelhamento.
+	if not should_pause_on_application_pause():
+		get_tree().paused = false
 	overlay = JogosLoadingOverlay.new()
 	overlay.name = "LoadingOverlay"
 	add_child(overlay)
@@ -147,9 +161,11 @@ func _notification(what: int) -> void:
 			if should_pause_on_focus_out():
 				_resume_from_background()
 		NOTIFICATION_APPLICATION_PAUSED:
-			_pause_for_background()
+			if should_pause_on_application_pause():
+				_pause_for_background()
 		NOTIFICATION_APPLICATION_RESUMED:
-			_resume_from_background()
+			if should_pause_on_application_pause():
+				_resume_from_background()
 
 
 func _pause_for_background() -> void:

@@ -13,6 +13,15 @@ func test_mobile_focus_out_is_not_treated_as_background_pause() -> void:
 		"no desktop perder foco continua pausando a aplicacao")
 
 
+func test_mobile_application_pause_is_left_to_the_operating_system() -> void:
+	assert_false(SCENE_MANAGER.should_pause_on_application_pause("iOS"),
+		"o iOS ja suspende o processo sem congelar a UI do app")
+	assert_false(SCENE_MANAGER.should_pause_on_application_pause("Android"),
+		"o Android ja suspende o processo sem congelar a UI do app")
+	assert_true(SCENE_MANAGER.should_pause_on_application_pause("macOS"),
+		"no desktop a pausa manual continua sendo necessaria")
+
+
 func test_mobile_navigation_uses_the_safe_resource_loading_path() -> void:
 	var loader: Node = add_child_autofree(SCENE_LOADER.new())
 	assert_true(loader.has_method("uses_threaded_loading"),
