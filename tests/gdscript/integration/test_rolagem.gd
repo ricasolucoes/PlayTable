@@ -42,6 +42,42 @@ func _montar(caminho: String) -> Node:
 	return tela
 
 
+func _controles(no: Node) -> Array[Control]:
+	var achados: Array[Control] = []
+	if no is Control:
+		achados.append(no as Control)
+	for filho in no.get_children():
+		achados.append_array(_controles(filho))
+	return achados
+
+
+func _toque_curto(ponto: Vector2) -> void:
+	var toque := InputEventScreenTouch.new()
+	toque.index = 0
+	toque.pressed = true
+	toque.position = ponto
+	_tela.push_input(toque)
+	var mouse := InputEventMouseButton.new()
+	mouse.button_index = MOUSE_BUTTON_LEFT
+	mouse.pressed = true
+	mouse.position = ponto
+	mouse.global_position = ponto
+	_tela.push_input(mouse)
+	await wait_process_frames(1)
+	toque = InputEventScreenTouch.new()
+	toque.index = 0
+	toque.pressed = false
+	toque.position = ponto
+	_tela.push_input(toque)
+	mouse = InputEventMouseButton.new()
+	mouse.button_index = MOUSE_BUTTON_LEFT
+	mouse.pressed = false
+	mouse.position = ponto
+	mouse.global_position = ponto
+	_tela.push_input(mouse)
+	await wait_process_frames(1)
+
+
 func _rolagens(no: Node, saida: Array) -> Array:
 	if no is ScrollContainer:
 		saida.append(no)
@@ -139,6 +175,31 @@ func test_um_toque_curto_continua_apertando_o_botao() -> void:
 	await _arrastar(Vector2(320, 270), Vector2(0, -1), 2)
 	assert_eq(rolagem.scroll_vertical, 0, "dois pixels de tremor nao rolam nada")
 	assert_eq(apertos[0], 1, "e o botao sob o dedo foi apertado")
+
+
+func test_um_toque_curto_no_cartao_de_categoria_dispara_a_navegacao() -> void:
+	var tela := await _montar(MENU_PRINCIPAL)
+	var cartao: Button = null
+	for no in _controles(tela):
+		if no is Button and is_equal_approx((no as Button).custom_minimum_size.y, 200.0):
+			cartao = no as Button
+			break
+	assert_not_null(cartao, "o menu principal tem um cartao de categoria")
+	if cartao == null:
+		return
+
+	var destinos: Array[String] = []
+	var ao_mudar := func(destino: String) -> void: destinos.append(destino)
+	SceneManager.scene_changing.connect(ao_mudar)
+	SceneManager.scene_swapper = func(_cena: Node) -> void: pass
+	await _toque_curto(cartao.get_global_rect().get_center())
+	await wait_process_frames(12)
+	if SceneManager.scene_changing.is_connected(ao_mudar):
+		SceneManager.scene_changing.disconnect(ao_mudar)
+	SceneManager.scene_swapper = Callable()
+
+	assert_eq(destinos, ["res://core/telas/MenuTabuleiro.tscn"],
+		"um toque no cartao abre o menu de tabuleiro")
 
 
 func test_o_eixo_travado_nao_engole_o_gesto() -> void:

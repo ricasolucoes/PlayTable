@@ -32,7 +32,7 @@ class IOSReleaseConfigTests(unittest.TestCase):
         ios_options = options.group(1)
         self.assertIn('application/app_store_team_id="28X7P94SF5"', ios_options)
         self.assertIn('application/bundle_identifier="org.playtable.app"', ios_options)
-        self.assertIn('application/min_ios_version="14.0"', ios_options)
+        self.assertIn('application/min_ios_version="15.0"', ios_options)
         self.assertNotRegex(ios_options, r"(?i)(password|private[_-]?key|secret)=")
 
     def test_ios_version_script_matches_the_app_version(self):
@@ -49,7 +49,12 @@ class IOSReleaseConfigTests(unittest.TestCase):
             if "=" in line
         )
         self.assertEqual(values["VERSION_NAME"], "0.9.2")
-        self.assertEqual(values["BUILD_NUMBER"], "21")
+        self.assertEqual(values["BUILD_NUMBER"], "22")
+
+    def test_touch_input_is_explicitly_emulated_for_ios_controls(self):
+        project = (ROOT / "project.godot").read_text(encoding="utf-8")
+        self.assertIn("[input_devices]", project)
+        self.assertIn("pointing/emulate_mouse_from_touch=true", project)
 
     def test_app_store_workflow_is_mac_only_and_uses_runtime_secrets(self):
         workflow = (ROOT / ".github/workflows/release-appstore.yml").read_text(

@@ -70,6 +70,11 @@ enabled=PackedStringArray("res://addons/jogos_core/plugin.cfg")
 locale/translations=PackedStringArray("res://core/i18n/translations.en.translation", "res://core/i18n/translations.es.translation", "res://core/i18n/translations.pt_BR.translation")
 
 
+[input_devices]
+
+pointing/emulate_mouse_from_touch=true
+
+
 [display]
 
 window/size/viewport_width=720

@@ -17,6 +17,15 @@ var _pending: Dictionary = {}
 var _done: Dictionary = {}
 
 
+## O carregador em thread funciona no desktop, mas o runtime iOS pode manter a
+## requisicao pendente depois que a tela recebe o primeiro toque. Isso deixa o
+## overlay de navegacao ativo e faz todos os botoes parecerem mortos. Em
+## mobile, carrega no mesmo fluxo da UI; as cenas do menu sao pequenas e a
+## troca deixa de depender do worker de recursos da plataforma.
+func uses_threaded_loading(platform_name: String = OS.get_name()) -> bool:
+	return platform_name not in ["iOS", "Android"]
+
+
 func is_loading(path: String = "") -> bool:
 	return not _pending.is_empty() if path == "" else _pending.has(path)
 
@@ -41,6 +50,14 @@ func load_scene(path: String, use_sub_threads: bool = false) -> bool:
 
 ## Versão `await`: devolve a cena ou `null` em falha.
 func load_async(path: String) -> PackedScene:
+	if not uses_threaded_loading():
+		var scene: PackedScene = ResourceLoader.load(path, "PackedScene") as PackedScene
+		if scene == null:
+			failed.emit(path, ERR_CANT_OPEN)
+			return null
+		progress.emit(path, 1.0)
+		loaded.emit(path, scene)
+		return scene
 	if not load_scene(path):
 		if _pending.has(path):
 			return await _wait_for(path)
