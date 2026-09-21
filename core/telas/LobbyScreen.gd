@@ -80,7 +80,7 @@ func _montar() -> void:
 	var voltar := UIKit.botao(tr("BTN_BACK"))
 	voltar.name = "BtnBack"
 	voltar.custom_minimum_size = Vector2(150, UIKit.TOQUE_MIN)
-	voltar.pressed.connect(_on_voltar)
+	UIKit.conectar_toque(voltar, _on_voltar)
 	linha.add_child(voltar)
 	var titulo := UIKit.rotulo(tr("NET_TITLE"), UIKit.FONTE_TITULO, UIKit.OURO)
 	titulo.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
@@ -128,7 +128,7 @@ func _secao_jogos() -> Control:
 		chip.name = "Jogo_" + id
 		chip.toggle_mode = true
 		chip.focus_mode = Control.FOCUS_NONE
-		chip.pressed.connect(_on_jogo.bind(id))
+		UIKit.conectar_toque(chip, _on_jogo.bind(id))
 		grade.add_child(chip)
 		_chips[id] = chip
 	return cartao
@@ -146,12 +146,12 @@ func _secao_lan() -> Control:
 	_btn_host = UIKit.botao(tr("NET_HOST"), UIKit.FONTE_CORPO)
 	_btn_host.name = "BtnHost"
 	_btn_host.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_btn_host.pressed.connect(_on_host)
+	UIKit.conectar_toque(_btn_host, _on_host)
 	fila.add_child(_btn_host)
 	_btn_cancelar = UIKit.botao(tr("NET_CANCEL"), UIKit.FONTE_CORPO)
 	_btn_cancelar.name = "BtnCancelar"
 	_btn_cancelar.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_btn_cancelar.pressed.connect(_on_cancelar)
+	UIKit.conectar_toque(_btn_cancelar, _on_cancelar)
 	fila.add_child(_btn_cancelar)
 
 	_lan_status = UIKit.paragrafo("", UIKit.FONTE_CORPO, UIKit.TEXTO)
@@ -176,7 +176,7 @@ func _secao_lan() -> Control:
 	var entrar := UIKit.botao(tr("NET_JOIN"), UIKit.FONTE_CORPO)
 	entrar.name = "BtnJoin"
 	entrar.custom_minimum_size = Vector2(150, UIKit.TOQUE_MIN)
-	entrar.pressed.connect(_on_join)
+	UIKit.conectar_toque(entrar, _on_join)
 	entrada.add_child(entrar)
 	return cartao
 
@@ -190,7 +190,7 @@ func _secao_online() -> Control:
 
 	var criar := UIKit.botao(tr("NET_ONLINE_HOST"), UIKit.FONTE_CORPO)
 	criar.name = "BtnOnlineHost"
-	criar.pressed.connect(_on_online_host)
+	UIKit.conectar_toque(criar, _on_online_host)
 	col.add_child(criar)
 
 	var entrada := UIKit.hbox(12)
@@ -206,7 +206,7 @@ func _secao_online() -> Control:
 	var entrar := UIKit.botao(tr("NET_JOIN"), UIKit.FONTE_CORPO)
 	entrar.name = "BtnOnlineJoin"
 	entrar.custom_minimum_size = Vector2(150, UIKit.TOQUE_MIN)
-	entrar.pressed.connect(_on_online_join)
+	UIKit.conectar_toque(entrar, _on_online_join)
 	entrada.add_child(entrar)
 
 	_online_status = UIKit.paragrafo("", UIKit.FONTE_CORPO, UIKit.TEXTO)
@@ -267,7 +267,7 @@ func _on_rooms_changed(salas: Array) -> void:
 		var def := GameCatalog.find_by_id(str(info["game_id"]))
 		var nome_jogo := def.display_name() if def != null else str(info["game_id"])
 		var b := UIKit.botao(tr("NET_ROOM_ROW") % [str(info["name"]), nome_jogo], UIKit.FONTE_CORPO)
-		b.pressed.connect(_on_sala.bind(str(info["ip"])))
+		UIKit.conectar_toque(b, _on_sala.bind(str(info["ip"])))
 		_lista_salas.add_child(b)
 
 

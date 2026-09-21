@@ -77,6 +77,7 @@ const ACENTO_PADRAO := "#263b56"
 const ACENTO_TABULEIRO := "#1f3a5f"
 const ACENTO_CARTAS := "#5a2f38"
 const ACENTO_REDE := "#24524a"
+const TAP_BUTTON := preload("res://addons/jogos_core/input/jogos_tap_button.gd")
 
 var _corpo: VBoxContainer
 var _barra: Button
@@ -182,7 +183,7 @@ func _preencher_corpo() -> void:
 ## A faixa inteira é um só botão, como já era o cartão de perfil: tocar no
 ## progresso leva ao progresso, que é para onde o dedo ia de qualquer jeito.
 func _montar_barra() -> Button:
-	var b := Button.new()
+	var b: Button = TAP_BUTTON.new()
 	b.name = "BarraSuperior"
 	b.custom_minimum_size = Vector2(0, ALTURA_BARRA)
 	b.focus_mode = Control.FOCUS_NONE
@@ -190,7 +191,7 @@ func _montar_barra() -> Button:
 	b.add_theme_stylebox_override("hover", _estilo_barra(false))
 	b.add_theme_stylebox_override("focus", _estilo_barra(false))
 	b.add_theme_stylebox_override("pressed", _estilo_barra(true))
-	b.pressed.connect(_on_pontos_pressed)
+	UIKit.conectar_toque(b, _on_pontos_pressed)
 	_sem_texto(b)
 
 	var margem := MarginContainer.new()
@@ -205,6 +206,7 @@ func _montar_barra() -> Button:
 	b.add_child(margem)
 
 	_pintar_barra_em(margem)
+	UIKit.ignorar_toque_dos_filhos(b)
 	return b
 
 
@@ -488,7 +490,7 @@ func _secao_novos() -> Control:
 func _cartao_novo(def: GameDefinition) -> Button:
 	var acento := _acento(def)
 
-	var b := Button.new()
+	var b: Button = TAP_BUTTON.new()
 	b.custom_minimum_size = Vector2(0, ALTURA_NOVO)
 	b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	b.focus_mode = Control.FOCUS_NONE
@@ -496,7 +498,7 @@ func _cartao_novo(def: GameDefinition) -> Button:
 	for estado in ["normal", "hover", "pressed", "focus"]:
 		b.add_theme_stylebox_override(estado,
 			_estilo_cartao(acento, estado == "hover" or estado == "focus"))
-	b.pressed.connect(_on_jogo_pressed.bind(def))
+	UIKit.conectar_toque(b, _on_jogo_pressed.bind(def))
 	_sem_texto(b)
 
 	# A arte sangra até a borda, e quem arredonda os cantos de cima dela é o
@@ -568,6 +570,7 @@ func _cartao_novo(def: GameDefinition) -> Button:
 	tag.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	tag.clip_text = true
 	col.add_child(tag)
+	UIKit.ignorar_toque_dos_filhos(b)
 
 	return b
 
@@ -611,7 +614,7 @@ func _secao_categorias() -> HBoxContainer:
 
 
 func _cartao_categoria(emoji: String, nome: String, quantos: int, acento: Color, destino: String) -> Button:
-	var b := Button.new()
+	var b: Button = TAP_BUTTON.new()
 	b.custom_minimum_size = Vector2(0, ALTURA_CATEGORIA)
 	b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	b.focus_mode = Control.FOCUS_NONE
@@ -619,7 +622,7 @@ func _cartao_categoria(emoji: String, nome: String, quantos: int, acento: Color,
 	for estado in ["normal", "hover", "pressed", "focus"]:
 		b.add_theme_stylebox_override(estado,
 			_estilo_cartao(acento, estado == "hover" or estado == "focus"))
-	b.pressed.connect(_on_categoria_pressed.bind(destino))
+	UIKit.conectar_toque(b, _on_categoria_pressed.bind(destino))
 	_sem_texto(b)
 
 	var col := UIKit.vbox(6)
@@ -643,6 +646,7 @@ func _cartao_categoria(emoji: String, nome: String, quantos: int, acento: Color,
 		UIKit.FONTE_MIUDA, Color(0.82, 0.72, 0.52, 0.9))
 	conta.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	col.add_child(conta)
+	UIKit.ignorar_toque_dos_filhos(b)
 	return b
 
 
@@ -662,7 +666,7 @@ func _secao_ajustes() -> VBoxContainer:
 	som.name = "BtnSom"
 	som.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	som.clip_text = true
-	som.pressed.connect(_on_som_pressed)
+	UIKit.conectar_toque(som, _on_som_pressed)
 	_apagar(som, AudioManager != null and not AudioManager.sound_enabled)
 	fila.add_child(som)
 
@@ -670,7 +674,7 @@ func _secao_ajustes() -> VBoxContainer:
 	musica.name = "BtnMusica"
 	musica.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	musica.clip_text = true
-	musica.pressed.connect(_on_musica_pressed)
+	UIKit.conectar_toque(musica, _on_musica_pressed)
 	_apagar(musica, AudioManager != null and not AudioManager.music_enabled)
 	fila.add_child(musica)
 
@@ -678,7 +682,7 @@ func _secao_ajustes() -> VBoxContainer:
 	idioma.name = "BtnIdioma"
 	idioma.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	idioma.clip_text = true
-	idioma.pressed.connect(_on_idioma_pressed)
+	UIKit.conectar_toque(idioma, _on_idioma_pressed)
 	fila.add_child(idioma)
 	coluna.add_child(fila)
 

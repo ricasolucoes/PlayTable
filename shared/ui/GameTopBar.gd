@@ -173,7 +173,7 @@ func _montar_linha() -> void:
 	var btn := UIKit.botao(tr("BTN_BACK"))
 	btn.name = "BtnBack"
 	btn.custom_minimum_size = Vector2(LARGURA_VOLTAR, ALTURA)
-	btn.pressed.connect(func() -> void: back_pressed.emit())
+	UIKit.conectar_toque(btn, func() -> void: back_pressed.emit())
 	linha.add_child(btn)
 
 	_label_titulo = UIKit.rotulo(_titulo, UIKit.FONTE_SECAO, UIKit.TEXTO)
@@ -202,7 +202,7 @@ func _montar_linha() -> void:
 	_btn_modo.name = "BtnMode"
 	_btn_modo.custom_minimum_size = Vector2(LARGURA_AJUDA, ALTURA)
 	_btn_modo.visible = false
-	_btn_modo.pressed.connect(_on_modo_tocado)
+	UIKit.conectar_toque(_btn_modo, _on_modo_tocado)
 	linha.add_child(_btn_modo)
 
 	_btn_ajuda = UIKit.botao(tr("BTN_RULES_ICON"), UIKit.FONTE_TITULO)
@@ -210,7 +210,7 @@ func _montar_linha() -> void:
 	_btn_ajuda.custom_minimum_size = Vector2(LARGURA_AJUDA, ALTURA)
 	_btn_ajuda.tooltip_text = tr("RULES_TITLE")
 	_btn_ajuda.visible = false
-	_btn_ajuda.pressed.connect(func() -> void: help_pressed.emit())
+	UIKit.conectar_toque(_btn_ajuda, func() -> void: help_pressed.emit())
 	linha.add_child(_btn_ajuda)
 
 

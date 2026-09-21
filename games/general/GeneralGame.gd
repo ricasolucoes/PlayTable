@@ -236,7 +236,7 @@ func _montar_folha() -> void:
 	btn_rolar.name = "BtnRolar"
 	btn_rolar.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	btn_rolar.focus_mode = Control.FOCUS_NONE
-	btn_rolar.pressed.connect(_on_rolar)
+	UIKit.conectar_toque(btn_rolar, _on_rolar)
 	linha.add_child(btn_rolar)
 
 

@@ -599,7 +599,7 @@ func _montar_promocao() -> void:
 		var botao := UIKit.botao(tr(par[1]), UIKit.FONTE_SECAO)
 		botao.custom_minimum_size = Vector2(320.0, UIKit.TOQUE_MIN)
 		botao.focus_mode = Control.FOCUS_NONE
-		botao.pressed.connect(_on_promo_escolhida.bind(int(par[0])))
+		UIKit.conectar_toque(botao, _on_promo_escolhida.bind(int(par[0])))
 		caixa.add_child(botao)
 	cartao.add_child(caixa)
 	promo_modal.add_child(cartao)

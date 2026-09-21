@@ -92,7 +92,7 @@ func build(game_id: String, titulo: String) -> void:
 	_preencher(game_id)
 
 	var fechar := UIKit.botao(tr("RULES_CLOSE"))
-	fechar.pressed.connect(close)
+	UIKit.conectar_toque(fechar, close)
 	caixa.add_child(fechar)
 
 

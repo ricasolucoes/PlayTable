@@ -36,6 +36,7 @@ const FONTE_SECAO := 26
 
 ## Alvo de toque mínimo: 48 dp ≈ 88 px neste viewport.
 const TOQUE_MIN := 88.0
+const TAP_BUTTON := preload("res://addons/jogos_core/input/jogos_tap_button.gd")
 
 ## Onde a escolha do filtro sobrevive à partida. Voltar de um jogo instancia o
 ## menu de novo; sem isto o filtro se desfaria toda vez que o jogador jogasse,
@@ -181,7 +182,7 @@ func _ja_jogou(game: GameDefinition) -> bool:
 func _create_game_card(game: GameDefinition) -> Button:
 	var accent := _game_accent(game)
 
-	var btn := Button.new()
+	var btn: Button = TAP_BUTTON.new()
 	btn.custom_minimum_size = Vector2(0, ALTURA_CARTAO)
 	btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	btn.focus_mode = Control.FOCUS_NONE
@@ -314,6 +315,7 @@ func _create_game_card(game: GameDefinition) -> Button:
 	moldura.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	moldura.add_theme_stylebox_override("panel", _moldura_cartao(accent))
 	fundo.add_child(moldura)
+	UIKit.ignorar_toque_dos_filhos(btn)
 
 	# Num telefone não existe passar o mouse por cima: o único aviso de que o
 	# toque pegou é o cartão afundar enquanto o dedo está nele.
@@ -321,7 +323,7 @@ func _create_game_card(game: GameDefinition) -> Button:
 	var cor_apertado := Color(0.3, 0.3, 0.3, 1.0) if is_locked else Color(0.78, 0.78, 0.80)
 	btn.button_down.connect(func() -> void: fundo.modulate = cor_apertado)
 	btn.button_up.connect(func() -> void: fundo.modulate = cor_normal)
-	btn.pressed.connect(_on_game_pressed.bind(game))
+	UIKit.conectar_toque(btn, _on_game_pressed.bind(game))
 	return btn
 
 

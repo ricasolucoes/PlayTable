@@ -78,6 +78,21 @@ func _toque_curto(ponto: Vector2) -> void:
 	await wait_process_frames(1)
 
 
+func _toque_de_tela(ponto: Vector2) -> void:
+	var toque := InputEventScreenTouch.new()
+	toque.index = 0
+	toque.pressed = true
+	toque.position = ponto
+	_tela.push_input(toque)
+	await wait_process_frames(1)
+	toque = InputEventScreenTouch.new()
+	toque.index = 0
+	toque.pressed = false
+	toque.position = ponto
+	_tela.push_input(toque)
+	await wait_process_frames(1)
+
+
 func _rolagens(no: Node, saida: Array) -> Array:
 	if no is ScrollContainer:
 		saida.append(no)
@@ -177,6 +192,20 @@ func test_um_toque_curto_continua_apertando_o_botao() -> void:
 	assert_eq(apertos[0], 1, "e o botao sob o dedo foi apertado")
 
 
+func test_um_toque_de_ios_emite_uma_acao_sem_duplicar_o_mouse_emulado() -> void:
+	var botao := UIKit.botao("acao")
+	botao.position = Vector2(20, 20)
+	botao.size = Vector2(300, 100)
+	_dentro(botao)
+	var toques := [0]
+	botao.connect(&"tapped", func() -> void: toques[0] += 1)
+	await wait_process_frames(3)
+
+	await _toque_curto(botao.get_global_rect().get_center())
+
+	assert_eq(toques[0], 1, "um toque cru mais o mouse emulado produzem uma acao")
+
+
 func test_um_toque_curto_no_cartao_de_categoria_dispara_a_navegacao() -> void:
 	var tela := await _montar(MENU_PRINCIPAL)
 	var cartao: Button = null
@@ -200,6 +229,31 @@ func test_um_toque_curto_no_cartao_de_categoria_dispara_a_navegacao() -> void:
 
 	assert_eq(destinos, ["res://core/telas/MenuTabuleiro.tscn"],
 		"um toque no cartao abre o menu de tabuleiro")
+
+
+func test_um_toque_de_tela_pura_no_cartao_de_categoria_dispara_a_navegacao() -> void:
+	var tela := await _montar(MENU_PRINCIPAL)
+	var cartao: Button = null
+	for no in _controles(tela):
+		if no is Button and is_equal_approx((no as Button).custom_minimum_size.y, 200.0):
+			cartao = no as Button
+			break
+	assert_not_null(cartao, "o menu principal tem um cartao de categoria")
+	if cartao == null:
+		return
+
+	var destinos: Array[String] = []
+	var ao_mudar := func(destino: String) -> void: destinos.append(destino)
+	SceneManager.scene_changing.connect(ao_mudar)
+	SceneManager.scene_swapper = func(cena: Node) -> void: cena.free()
+	await _toque_de_tela(cartao.get_global_rect().get_center())
+	await wait_until(func() -> bool: return not SceneManager.is_navigating(), 2.0)
+	if SceneManager.scene_changing.is_connected(ao_mudar):
+		SceneManager.scene_changing.disconnect(ao_mudar)
+	SceneManager.scene_swapper = Callable()
+
+	assert_eq(destinos, ["res://core/telas/MenuTabuleiro.tscn"],
+		"o toque de tela do iOS abre o menu de tabuleiro sem mouse emulado")
 
 
 func test_o_eixo_travado_nao_engole_o_gesto() -> void:

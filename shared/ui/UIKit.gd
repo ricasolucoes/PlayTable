@@ -1,6 +1,8 @@
 class_name UIKit
 extends RefCounted
 
+const TAP_BUTTON := preload("res://addons/jogos_core/input/jogos_tap_button.gd")
+
 ## Peças de interface repetidas nas telas de progresso.
 ##
 ## Nasceu junto com a tela de perfil, que é feita de cinquenta variações de
@@ -126,12 +128,32 @@ static func barra(valor: int, total: int, cor: Color = OURO, altura: float = 14.
 
 ## Botão que respeita o mínimo de toque do telefone.
 static func botao(texto: String, tamanho: int = FONTE_CORPO) -> Button:
-	var b := Button.new()
+	var b: Button = TAP_BUTTON.new()
 	b.text = texto
 	b.custom_minimum_size = Vector2(0, TOQUE_MIN)
 	b.add_theme_font_size_override("font_size", tamanho)
 	rolavel(b)
 	return b
+
+
+## Conecta a ação correta para um botão criado pela UIKit. Botões de cena
+## continuam usando `pressed`; `JogosTapButton` usa `tapped` para não somar o
+## toque explícito do iOS ao clique nativo que a engine ainda pode emitir.
+static func conectar_toque(b: Button, acao: Callable) -> void:
+	if b.has_signal(&"tapped"):
+		b.connect(&"tapped", acao)
+	else:
+		b.pressed.connect(acao)
+
+
+## Aplica o contrato de entrada às artes dentro de um botão composto. Labels,
+## painéis e texturas são desenho; deixar qualquer um deles em STOP faz o iOS
+## entregar o toque ao filho e nunca ao botão que navega.
+static func ignorar_toque_dos_filhos(no: Node) -> void:
+	for filho in no.get_children():
+		if filho is Control:
+			(filho as Control).mouse_filter = Control.MOUSE_FILTER_IGNORE
+			ignorar_toque_dos_filhos(filho)
 
 
 ## Deixa o toque atravessar o controle a caminho do ScrollContainer que o

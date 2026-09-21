@@ -49,12 +49,19 @@ class IOSReleaseConfigTests(unittest.TestCase):
             if "=" in line
         )
         self.assertEqual(values["VERSION_NAME"], "0.9.2")
-        self.assertEqual(values["BUILD_NUMBER"], "23")
+        self.assertEqual(values["BUILD_NUMBER"], "24")
 
     def test_touch_input_is_explicitly_emulated_for_ios_controls(self):
         project = (ROOT / "project.godot").read_text(encoding="utf-8")
         self.assertIn("[input_devices]", project)
         self.assertIn("pointing/emulate_mouse_from_touch=true", project)
+
+    def test_jogos_core_is_not_excluded_from_export_presets(self):
+        preset = (ROOT / "export_presets.cfg").read_text(encoding="utf-8")
+        for match in re.finditer(r'exclude_filter="([^"]*)"', preset):
+            filters = [f.strip() for f in match.group(1).split(",")]
+            self.assertNotIn("addons/*", filters, "addons/* excludes addons/jogos_core and breaks release")
+            self.assertIn("addons/gut/*", filters, "addons/gut/* should be excluded")
 
     def test_app_store_workflow_is_mac_only_and_uses_runtime_secrets(self):
         workflow = (ROOT / ".github/workflows/release-appstore.yml").read_text(
