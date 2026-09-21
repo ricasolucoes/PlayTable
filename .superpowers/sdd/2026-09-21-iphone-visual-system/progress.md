@@ -24,4 +24,6 @@ Ruling: the layout audit compares drawable surfaces, not transparent composition
 
 Task 3: complete (RED `tests/run_gut.sh -gtest=res://tests/gdscript/integration/test_layout_mobile.gd` → missing audit helper plus M7 violations; GREEN `tests/run_gut.sh -gselect=layout_mobile` → 9/9 tests; visual contract `-gselect=mobile_visuals` → 3/3; standalone audit → `TOTAL VIOLATIONS: 0`). Migrated scene HUDs to shared content/header/bottom bands, stacked multiple bottom rails, moved mode controls into the shared top bar for Tic-Tac-Toe/Connect Four, and made the audit fail nonzero when violations remain. Commit pending.
 
-Tasks: Tasks 1–3 complete; Task 4 in progress; Tasks 5–8 pending.
+Task 4: complete (RED `tests/run_gut.sh -gselect=card_rendering` → missing `is_valid_image` and fallback APIs; GREEN same selector → 4/4 tests, 57 asserts, exit 0. Card smoke tests: Blackjack 22/22, Spider 6/6, Poker 17/17, all exit 0). Added validated single-state atlas warm-up for standard and UNO cards, an immediate visible Card3D fallback, and non-blocking menu warm-up. GUT's dummy renderer reports teardown-only material/orphan diagnostics when a card scene is freed before three render frames; assertions and process exits remain green.
+
+Tasks: Tasks 1–4 complete; Task 5 in progress; Tasks 6–8 pending.

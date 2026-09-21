@@ -117,6 +117,8 @@ func _warm_materials() -> void:
 	MaterialFactory3D.get_obsidian()
 	MaterialFactory3D.get_marble_white()
 	MaterialFactory3D.get_marble_black()
+	CardAtlas3D.request_warmup()
+	UnoCardAtlas3D.request_warmup()
 
 
 func _on_mudou_idioma(_locale: String) -> void: _remontar()
