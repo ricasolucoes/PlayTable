@@ -119,3 +119,13 @@ func test_ludo_has_four_bases_track_finish_and_center() -> void:
 	assert_gt(jogo.visual_layer(&"Goal").get_child_count(), 0)
 	assert_true(jogo.get_mobile_hud_metrics().bottom_rect.has_point(
 		jogo.btn_dice.get_global_rect().get_center()))
+
+
+func test_tokens_de_interface_sao_consistentes_e_nao_herdam_marrom_legado() -> void:
+	assert_ne(UIKit.COLOR_SURFACE, Color(0.27, 0.16, 0.10))
+	assert_gte(UIKit.TOQUE_MIN, 88.0)
+	var botao := UIKit.botao("Teste")
+	add_child_autofree(botao)
+	assert_gte(botao.custom_minimum_size.x, UIKit.TOQUE_MIN)
+	assert_gte(botao.custom_minimum_size.y, UIKit.TOQUE_MIN)
+	assert_true(UIKit.RADIUS_CARD >= 12.0)

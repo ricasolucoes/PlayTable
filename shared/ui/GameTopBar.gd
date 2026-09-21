@@ -35,7 +35,7 @@ signal mode_pressed(vs_ai: bool)
 
 ## Margem lateral -- a mesma de `MenuTabuleiro.tscn`, para a barra do jogo e a
 ## do menu alinharem quando uma vira a outra.
-const MARGEM := 24.0
+const MARGEM := UIKit.SPACE_UNIT * 3.0
 
 
 ## Altura da faixa de conteúdo: o alvo de toque mínimo, e nada menos.
@@ -60,11 +60,11 @@ var BANDA: float = TOPO_BASE + ALTURA
 const VEU := 168.0
 
 ## Separação entre voltar, nome e placar.
-const RESPIRO := 16
+const RESPIRO := int(UIKit.SPACE_UNIT * 2.0)
 
 ## O respiro quando o botao de modo entra na fila: com cinco itens, 16 px entre
 ## eles custam o nome do jogo.
-const RESPIRO_APERTADO := 8
+const RESPIRO_APERTADO := int(UIKit.SPACE_UNIT)
 
 ## Largura do botão voltar. Cabe "‹ Voltar", "‹ Back" e "‹ Volver".
 const LARGURA_VOLTAR := 150.0
@@ -90,7 +90,7 @@ const ROTULO_VOCE := "SCORE_YOU"
 const ROTULO_IA := "SCORE_AI"
 
 ## Cor do véu: o preto mais quente da mesa, não preto puro.
-const VEU_COR := Color(0.031, 0.024, 0.016)
+const VEU_COR := UIKit.COLOR_SURFACE
 
 var _titulo := ""
 var _celulas: Array[Dictionary] = []
@@ -253,14 +253,14 @@ func _montar_linha() -> void:
 	# (o dado do Ludo, as varetas do Senet). A barra e a unica faixa que ja e de
 	# todos os jogos -- e, por ser faixa que ja existe, o botao nao custa um
 	# milimetro de mesa.
-	_btn_modo = UIKit.botao(tr("MODE_ICON_AI"), UIKit.FONTE_TITULO)
+	_btn_modo = UIKit.icone(tr("MODE_ICON_AI"), tr("MODE_LABEL"))
 	_btn_modo.name = "BtnMode"
 	_btn_modo.custom_minimum_size = Vector2(LARGURA_AJUDA, ALTURA)
 	_btn_modo.visible = false
 	UIKit.conectar_toque(_btn_modo, _on_modo_tocado)
 	linha.add_child(_btn_modo)
 
-	_btn_ajuda = UIKit.botao(tr("BTN_RULES_ICON"), UIKit.FONTE_TITULO)
+	_btn_ajuda = UIKit.icone(tr("BTN_RULES_ICON"), tr("RULES_TITLE"))
 	_btn_ajuda.name = "BtnRules"
 	_btn_ajuda.custom_minimum_size = Vector2(LARGURA_AJUDA, ALTURA)
 	_btn_ajuda.tooltip_text = tr("RULES_TITLE")
@@ -340,7 +340,8 @@ func _reaplicar_badges() -> void:
 	_badge_controls.clear()
 	for badge in _badges:
 		var id := str(badge.get("id", ""))
-		var button := UIKit.botao(str(badge.get("icon", "•")), UIKit.FONTE_SECAO)
+		var button := UIKit.icone(str(badge.get("icon", "•")),
+			str(badge.get("tooltip", "")))
 		button.name = "Badge_%s" % id
 		button.custom_minimum_size = Vector2(LARGURA_AJUDA, ALTURA)
 		button.tooltip_text = str(badge.get("tooltip", ""))

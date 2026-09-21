@@ -320,10 +320,10 @@ func _pintar_barra_em(margem: MarginContainer) -> void:
 
 func _estilo_barra(pressionada: bool) -> StyleBoxFlat:
 	var st := StyleBoxFlat.new()
-	st.bg_color = Color(0.14, 0.08, 0.05, 0.96) if pressionada else Color(0.09, 0.055, 0.04, 0.94)
+	st.bg_color = UIKit.COLOR_SURFACE_MUTED if pressionada else UIKit.COLOR_SURFACE
 	st.border_width_bottom = 2
-	st.border_color = Color(0.80, 0.62, 0.28, 0.8) if pressionada else Color(0.55, 0.42, 0.22, 0.5)
-	st.shadow_color = Color(0, 0, 0, 0.55)
+	st.border_color = UIKit.COLOR_ACCENT if pressionada else UIKit.COLOR_BORDER
+	st.shadow_color = Color(0.0, 0.0, 0.0, 0.45)
 	st.shadow_size = 0 if pressionada else 12
 	st.shadow_offset = Vector2(0, 6)
 	return st
@@ -334,16 +334,16 @@ func _pilula(conteudo: Control, destaque: bool) -> PanelContainer:
 	p.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	p.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	var st := StyleBoxFlat.new()
-	st.bg_color = Color(0.20, 0.12, 0.08, 0.92)
+	st.bg_color = UIKit.COLOR_SURFACE_RAISED
 	st.set_border_width_all(2)
-	st.border_color = Color(0.92, 0.76, 0.36, 0.9) if destaque else Color(0.65, 0.50, 0.25, 0.6)
-	st.set_corner_radius_all(14)
-	st.content_margin_left = 16
-	st.content_margin_right = 16
-	st.content_margin_top = 10
-	st.content_margin_bottom = 10
+	st.border_color = UIKit.COLOR_ACCENT_WARM if destaque else UIKit.COLOR_BORDER
+	st.set_corner_radius_all(UIKit.RADIUS_CARD)
+	st.content_margin_left = UIKit.SPACE_UNIT * 2.0
+	st.content_margin_right = UIKit.SPACE_UNIT * 2.0
+	st.content_margin_top = UIKit.SPACE_UNIT * 1.25
+	st.content_margin_bottom = UIKit.SPACE_UNIT * 1.25
 	if destaque:
-		st.shadow_color = Color(0.92, 0.76, 0.36, 0.18)
+		st.shadow_color = Color(UIKit.COLOR_ACCENT_WARM, 0.18)
 		st.shadow_size = 8
 	p.add_theme_stylebox_override("panel", st)
 	p.add_child(conteudo)

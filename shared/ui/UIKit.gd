@@ -22,13 +22,30 @@ const FONTE_MIUDA := 26
 ## Altura mínima de alvo de toque: 48 dp em 720 px de viewport ≈ 88 px.
 const TOQUE_MIN := 88.0
 
-const OURO := Color(0.99, 0.84, 0.40)
-const OURO_FRACO := Color(0.72, 0.62, 0.36)
-const TEXTO := Color(0.93, 0.91, 0.86)
-const TEXTO_FRACO := Color(0.70, 0.68, 0.64)
-const FUNDO_CARTAO := Color(0.09, 0.10, 0.14, 0.92)
-const FUNDO_TRILHO := Color(0.18, 0.19, 0.24, 1.0)
-const VERDE := Color(0.42, 0.82, 0.52)
+## Tokens visuais compartilhados. A tela nao escolhe marrom, raio ou padding
+## sozinha: todos os jogos e menus leem a mesma regua.
+const SPACE_UNIT := 8.0
+const RADIUS_CARD := 18
+const RADIUS_BUTTON := 16
+const COLOR_SURFACE := Color(0.055, 0.09, 0.16, 0.96)
+const COLOR_SURFACE_RAISED := Color(0.10, 0.15, 0.24, 0.98)
+const COLOR_SURFACE_MUTED := Color(0.14, 0.20, 0.30, 0.96)
+const COLOR_ACCENT := Color(0.34, 0.72, 0.98)
+const COLOR_ACCENT_WARM := Color(0.98, 0.74, 0.30)
+const COLOR_TEXT := Color(0.94, 0.97, 1.0)
+const COLOR_MUTED := Color(0.66, 0.74, 0.84)
+const COLOR_SUCCESS := Color(0.34, 0.82, 0.58)
+const COLOR_BORDER := Color(0.32, 0.50, 0.68, 0.72)
+
+## Nomes antigos continuam apontando para os tokens novos para nao quebrar
+## telas legadas que ainda importam estas constantes.
+const OURO := COLOR_ACCENT_WARM
+const OURO_FRACO := Color(0.68, 0.78, 0.90)
+const TEXTO := COLOR_TEXT
+const TEXTO_FRACO := COLOR_MUTED
+const FUNDO_CARTAO := COLOR_SURFACE_RAISED
+const FUNDO_TRILHO := COLOR_SURFACE_MUTED
+const VERDE := COLOR_SUCCESS
 
 
 static func cartao(preenchido: bool = true) -> PanelContainer:
@@ -38,14 +55,14 @@ static func cartao(preenchido: bool = true) -> PanelContainer:
 	# `rolavel()` logo abaixo.
 	p.mouse_filter = Control.MOUSE_FILTER_PASS
 	var st := StyleBoxFlat.new()
-	st.bg_color = FUNDO_CARTAO if preenchido else Color(0.09, 0.10, 0.14, 0.55)
-	st.border_color = Color(0.30, 0.28, 0.22, 0.85)
+	st.bg_color = COLOR_SURFACE_RAISED if preenchido else Color(COLOR_SURFACE, 0.55)
+	st.border_color = COLOR_BORDER
 	st.set_border_width_all(1)
-	st.set_corner_radius_all(16)
-	st.content_margin_left = 18
-	st.content_margin_right = 18
-	st.content_margin_top = 14
-	st.content_margin_bottom = 14
+	st.set_corner_radius_all(RADIUS_CARD)
+	st.content_margin_left = SPACE_UNIT * 2.0
+	st.content_margin_right = SPACE_UNIT * 2.0
+	st.content_margin_top = SPACE_UNIT * 1.5
+	st.content_margin_bottom = SPACE_UNIT * 1.5
 	p.add_theme_stylebox_override("panel", st)
 	return p
 
@@ -130,9 +147,36 @@ static func barra(valor: int, total: int, cor: Color = OURO, altura: float = 14.
 static func botao(texto: String, tamanho: int = FONTE_CORPO) -> Button:
 	var b: Button = TAP_BUTTON.new()
 	b.text = texto
-	b.custom_minimum_size = Vector2(0, TOQUE_MIN)
+	b.custom_minimum_size = Vector2(TOQUE_MIN, TOQUE_MIN)
 	b.add_theme_font_size_override("font_size", tamanho)
 	rolavel(b)
+	return b
+
+
+## Botao curto para filtros/estados; conserva a mesma altura e raio dos botoes
+## principais, mudando apenas a cor de destaque.
+static func chip(texto: String, cor: Color = COLOR_ACCENT) -> Button:
+	var b := botao(texto, FONTE_MIUDA)
+	var normal := StyleBoxFlat.new()
+	normal.bg_color = Color(cor, 0.16)
+	normal.border_color = Color(cor, 0.72)
+	normal.set_border_width_all(1)
+	normal.set_corner_radius_all(RADIUS_BUTTON)
+	b.add_theme_stylebox_override("normal", normal)
+	var pressed := normal.duplicate() as StyleBoxFlat
+	pressed.bg_color = Color(cor, 0.30)
+	pressed.set_border_width_all(2)
+	b.add_theme_stylebox_override("pressed", pressed)
+	b.add_theme_stylebox_override("hover", pressed)
+	b.add_theme_stylebox_override("focus", pressed)
+	return b
+
+
+## Icone de chrome: alvo grande, conteudo curto e sem texto hardcoded.
+static func icone(simbolo: String, dica: String = "") -> Button:
+	var b := botao(simbolo, FONTE_SECAO)
+	b.tooltip_text = dica
+	b.custom_minimum_size = Vector2(TOQUE_MIN, TOQUE_MIN)
 	return b
 
 

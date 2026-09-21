@@ -30,4 +30,6 @@ Task 5: complete (RED `tests/run_gut.sh -gselect=mobile_visuals`/`reversi` → m
 
 Task 6: complete (RED `tests/run_gut.sh -gselect=mobile_visuals`/`ludo` → missing Ludo layer helper and pawn art mappings; GREEN → mobile visuals 7/7, 78 asserts; Ludo 32/32, 175 asserts, exit 0). Rebuilt the Ludo board into named layered visuals, added explicit bases/track/finish/goal geometry, assigned all pawn art fallbacks, and moved the die into the shared bottom band. Commit pending.
 
-Tasks: Tasks 1–6 complete; Task 7 in progress; Task 8 pending.
+Task 7: complete (RED `tests/run_gut.sh -gselect=mobile_visuals` → missing `UIKit.COLOR_SURFACE`/`RADIUS_CARD`; GREEN same selector → 8/8 tests, 83 asserts, exit 0. Standalone mobile layout audit → `TOTAL VIOLATIONS: 0`, exit 0). Added shared blue-grafite surface, text, accent, spacing, radius and touch-target tokens; migrated UIKit factories, top-bar chrome, main menu styling and the global theme away from brown/90s controls; added modern badge/icon factories and raised button targets to 88 px. The audit still emits existing dummy-renderer material and event-bus teardown/rate diagnostics, but reports no layout violations.
+
+Tasks: Tasks 1–7 complete; Task 8 pending.
