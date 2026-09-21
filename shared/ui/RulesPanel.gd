@@ -65,7 +65,11 @@ func build(game_id: String, titulo: String) -> void:
 	painel.name = "Painel"
 	painel.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	painel.offset_left = 20.0
-	painel.offset_top = GameTopBar.BANDA + 12.0
+	# Posiciona abaixo da barra de jogo, que inclui o safe area (notch/Dynamic Island).
+	# Replica o calculo de GameTopBar._atualizar_safe_area(): TOPO_BASE + ALTURA + inset.
+	var sa_inset := JogosSafeArea.top(get_viewport())
+	var banda := GameTopBar.TOPO_BASE + GameTopBar.ALTURA + sa_inset
+	painel.offset_top = banda + 12.0
 	painel.offset_right = -20.0
 	painel.offset_bottom = -20.0
 	painel.mouse_filter = Control.MOUSE_FILTER_STOP

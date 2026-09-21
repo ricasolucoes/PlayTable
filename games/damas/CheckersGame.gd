@@ -81,11 +81,23 @@ func _setup_picker() -> void:
 	picker.drag_ended.connect(_on_peca_solta)
 
 ## Damas de salao: tabuleiro de bordo e nogueira sobre couro, luz de abajur.
+##
+## O renderer movel nao tem SSAO nem reflexo em tela, entao o marfim precisa de
+## mais luz de preenchimento e contraluz para nao fundir com o couro escuro.
+## Os valores abaixo foram calibrados para o iPhone 11 (Tier.MEDIUM).
 func _build_theme() -> GameTheme3D:
 	var theme := GameTheme3D.parlour_walnut()
 	theme.surface = &"leather"
 	theme.surface_color = Color(0.21, 0.13, 0.10)
 	theme.accent = Color(0.95, 0.78, 0.30)
+	# Mais luz de preenchimento: o marfim precisa de 0.52 no fill para se separar
+	# do couro escuro no renderer movel (sem SSAO). O parlour_walnut base usa 0.32.
+	theme.fill_energy = 0.52
+	# Contraluz mais forte: a borda brilhante e o que diferencia a peca escura
+	# do fundo -- sem ela a obsidiana fica chapada no couro.
+	theme.rim_energy = 0.75
+	# Ambient mais alto: com 0.56 do preset as sombras ficam pretas no mobile.
+	theme.ambient_energy = 0.72
 	return theme
 
 func _start_new_game() -> void:

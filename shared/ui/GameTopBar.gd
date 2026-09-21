@@ -33,14 +33,23 @@ signal mode_pressed(vs_ai: bool)
 ## do menu alinharem quando uma vira a outra.
 const MARGEM := 24.0
 
-## Respiro do topo antes da barra começar.
-const TOPO := 36.0
 
 ## Altura da faixa de conteúdo: o alvo de toque mínimo, e nada menos.
 const ALTURA := UIKit.TOQUE_MIN
 
+## Respiro do topo antes da barra começar. É o espaço ABAIXO do safe area inset
+## (notch/Dynamic Island); o próprio inset já vem de JogosSafeArea. TOPO_BASE é
+## o mínimo de respiração mesmo quando o safe area é zero (desktop/Android).
+const TOPO_BASE := 8.0
+
+## Padding efetivo calculado em _ready() e atualizado ao mudar o viewport.
+## Inclui o safe area inset do topo.
+var _topo_real: float = TOPO_BASE
+
 ## O que `BaseGame.measure_hud_bands()` vai ler como banda de HUD de topo.
-const BANDA := TOPO + ALTURA
+## Precisa ser uma propriedade dinâmica (não const) porque muda com o notch.
+const BANDA_BASE := ALTURA  ## Só a altura do conteúdo; o topo é adicionado em _ready().
+var BANDA: float = TOPO_BASE + ALTURA
 
 ## Até onde o véu escurece a mesa. Passa da barra de propósito: o degradê tem de
 ## acabar em nada, senão vira uma régua de chrome colada sobre o feltro.
@@ -121,11 +130,28 @@ func _ready() -> void:
 	offset_left = 0.0
 	offset_top = 0.0
 	offset_right = 0.0
-	offset_bottom = BANDA
+	_atualizar_safe_area()
+	# Atualiza quando o viewport muda (rotação, mudança de resolução).
+	var vp := get_viewport()
+	if vp and not vp.size_changed.is_connected(_atualizar_safe_area):
+		vp.size_changed.connect(_atualizar_safe_area)
 
 	_montar_veu()
 	_montar_linha()
 	_refazer_placar()
+
+
+## Recalcula o padding do topo com base no safe area atual (notch, Dynamic Island).
+## Chamado em _ready() e quando o viewport muda de tamanho.
+func _atualizar_safe_area() -> void:
+	var inset := JogosSafeArea.top(get_viewport())
+	_topo_real = TOPO_BASE + inset
+	BANDA = _topo_real + ALTURA
+	offset_bottom = BANDA
+	# Reposiciona a linha de botões se já foi montada.
+	var linha := get_node_or_null("Linha")
+	if linha is Control:
+		linha.offset_top = _topo_real
 
 
 ## Degradê que escurece a mesa atrás do texto. Um `TextureRect` e não um
@@ -165,7 +191,7 @@ func _montar_linha() -> void:
 	linha.anchor_right = 1.0
 	linha.anchor_bottom = 1.0
 	linha.offset_left = MARGEM
-	linha.offset_top = TOPO
+	linha.offset_top = _topo_real
 	linha.offset_right = -MARGEM
 	linha.offset_bottom = 0.0
 	add_child(linha)

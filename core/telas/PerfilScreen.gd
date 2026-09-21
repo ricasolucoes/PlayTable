@@ -63,7 +63,9 @@ func _montar() -> void:
 	margem.set_anchors_preset(Control.PRESET_FULL_RECT)
 	margem.add_theme_constant_override("margin_left", 24)
 	margem.add_theme_constant_override("margin_right", 24)
-	margem.add_theme_constant_override("margin_top", 40)
+	# Base de 8px + inset do notch (iPhone) ou Dynamic Island.
+	var topo_margem := 8 + int(JogosSafeArea.top(get_viewport()))
+	margem.add_theme_constant_override("margin_top", topo_margem)
 	margem.add_theme_constant_override("margin_bottom", 28)
 	add_child(margem)
 

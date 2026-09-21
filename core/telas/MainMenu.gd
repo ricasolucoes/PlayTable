@@ -32,17 +32,17 @@ const LOBBY := "res://core/telas/LobbyScreen.tscn"
 ## uma tela virar a outra sem o conteúdo escorregar de lado.
 const MARGEM := 24
 
-## Respiro acima da barra. O aplicativo exporta com `screen/immersive_mode=true`,
-## então não há barra de status do Android para desviar — é o mesmo respiro que
-## a barra de cima dos jogos usa.
-const TOPO := 36
+## Respiro acima da barra. Em iOS com notch/Dynamic Island, adiciona o safe area
+## inset por cima deste valor. O aplicativo exporta com `screen/immersive_mode=true`,
+## então em Android não há barra de status para desviar.
+const TOPO_BASE := 8
 const RODAPE_BARRA := 20
 
 const ANEL := 96.0
 const ANEL_GROSSURA := 9.0
 
-## 36 de respiro + 96 do anel + 20 embaixo.
-const ALTURA_BARRA := 152.0
+## Altura base: anel + rodapé. O safe area inset do topo é somado em _montar().
+const ALTURA_BARRA_CONTEUDO := 116.0  ## ANEL (96) + RODAPE_BARRA (20)
 
 ## Três cartões e dois vãos de 12 dividem o espaço útil da linha com
 ## SIZE_EXPAND_FILL (~213 px com a barra de rolagem vertical, 216 px sem ela).
@@ -96,6 +96,27 @@ func _ready() -> void:
 		GameEventBus.quests_rolled.connect(_on_mudou_escopo)
 		GameEventBus.daily_streak_updated.connect(_on_mudou_int)
 		GameEventBus.league_changed.connect(_on_mudou_liga)
+	# Pré-aquece o cache de materiais 3D no background depois que o menu
+	# apareceu: as primeiras texturas procedurais (madeira, feltro, couro)
+	# levam ~200-400ms no mobile. Assim o primeiro jogo abre sem travar.
+	_warm_materials.call_deferred()
+
+
+## Gera os materiais 3D mais usados para preencher o cache antes do primeiro jogo.
+## Chamado de forma adiada para não atrasar a exibição do menu.
+func _warm_materials() -> void:
+	if not is_inside_tree():
+		return
+	# Apenas cria e descarta: o cache da factory fica preenchido.
+	MaterialFactory3D.get_wood_walnut()
+	MaterialFactory3D.get_wood_mahogany()
+	MaterialFactory3D.get_wood_maple()
+	MaterialFactory3D.get_felt_casino()
+	MaterialFactory3D.get_leather()
+	MaterialFactory3D.get_ivory()
+	MaterialFactory3D.get_obsidian()
+	MaterialFactory3D.get_marble_white()
+	MaterialFactory3D.get_marble_black()
 
 
 func _on_mudou_idioma(_locale: String) -> void: _remontar()
@@ -185,7 +206,11 @@ func _preencher_corpo() -> void:
 func _montar_barra() -> Button:
 	var b: Button = TAP_BUTTON.new()
 	b.name = "BarraSuperior"
-	b.custom_minimum_size = Vector2(0, ALTURA_BARRA)
+	# A altura inclui o safe area inset do topo: no iPhone com notch a barra
+	# começa mais abaixo que em dispositivos sem notch.
+	var topo := TOPO_BASE + int(JogosSafeArea.top(get_viewport()))
+	var altura_total := topo + ALTURA_BARRA_CONTEUDO
+	b.custom_minimum_size = Vector2(0, altura_total)
 	b.focus_mode = Control.FOCUS_NONE
 	b.add_theme_stylebox_override("normal", _estilo_barra(false))
 	b.add_theme_stylebox_override("hover", _estilo_barra(false))
@@ -199,7 +224,7 @@ func _montar_barra() -> Button:
 	margem.set_anchors_preset(Control.PRESET_FULL_RECT)
 	margem.add_theme_constant_override("margin_left", MARGEM)
 	margem.add_theme_constant_override("margin_right", MARGEM)
-	margem.add_theme_constant_override("margin_top", TOPO)
+	margem.add_theme_constant_override("margin_top", topo)
 	margem.add_theme_constant_override("margin_bottom", RODAPE_BARRA)
 	# Nenhum filho pode interceptar o toque, senão a faixa deixa de ser botão.
 	margem.mouse_filter = Control.MOUSE_FILTER_IGNORE

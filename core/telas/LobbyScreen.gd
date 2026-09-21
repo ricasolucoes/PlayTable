@@ -13,7 +13,7 @@ extends Control
 
 const MAIN_MENU := "res://core/telas/MainMenu.tscn"
 const MARGEM := 24
-const TOPO := 36
+const TOPO_BASE := 8
 
 var _jogo_escolhido: String = ""
 var _corpo: VBoxContainer = null
@@ -69,9 +69,10 @@ func _montar() -> void:
 	add_child(coluna)
 
 	var barra := MarginContainer.new()
+	var topo := TOPO_BASE + int(JogosSafeArea.top(get_viewport()))
 	barra.add_theme_constant_override("margin_left", MARGEM)
 	barra.add_theme_constant_override("margin_right", MARGEM)
-	barra.add_theme_constant_override("margin_top", TOPO)
+	barra.add_theme_constant_override("margin_top", topo)
 	barra.add_theme_constant_override("margin_bottom", 12)
 	coluna.add_child(barra)
 
