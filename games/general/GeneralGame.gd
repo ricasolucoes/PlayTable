@@ -89,8 +89,11 @@ class ModoGeneral extends Button:
 	## Posicao dinamica abaixo da barra de jogo, que inclui o safe area do iOS.
 	## TOPO_BASE=8, ALTURA=88 (UIKit.TOQUE_MIN), mais o inset do notch e folga.
 	static func _topo_botao() -> float:
-		var vp := Engine.get_main_loop().root if Engine.get_main_loop() is SceneTree else null
-		var inset := JogosSafeArea.top(vp) if vp != null else 0.0
+		var vp: Viewport = null
+		var loop := Engine.get_main_loop()
+		if loop is SceneTree:
+			vp = (loop as SceneTree).root
+		var inset: float = JogosSafeArea.top(vp) if vp != null else 0.0
 		# GameTopBar.TOPO_BASE=8, GameTopBar.ALTURA=UIKit.TOQUE_MIN=88
 		return 8.0 + 88.0 + inset + 8.0
 

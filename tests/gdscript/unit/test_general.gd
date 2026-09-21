@@ -23,6 +23,16 @@ func _jogo() -> Node:
 	return add_child_autofree(GameScene.instantiate())
 
 
+func test_a_cena_do_general_carrega_o_script_de_jogo() -> void:
+	var cena: PackedScene = load("res://games/general/GeneralGame.tscn") as PackedScene
+	assert_not_null(cena, "General carrega sem erro de parser")
+	var jogo: Node = add_child_autofree(cena.instantiate())
+	var script_do_jogo: Script = load("res://games/general/GeneralGame.gd") as Script
+	assert_true(jogo is BaseGame, "General continua sendo um BaseGame")
+	assert_not_null(script_do_jogo, "o script especializado carrega")
+	assert_eq(jogo.get_script(), script_do_jogo, "o script especializado nao foi descartado")
+
+
 ## A cena assentada: picker projetado, HUD medida, refit baixado.
 func _cena() -> Node:
 	var jogo := _jogo()
