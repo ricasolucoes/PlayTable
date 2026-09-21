@@ -40,6 +40,11 @@ var env_3d: TabletopEnvironment3D = null
 ## A barra de cima, montada aqui para os 19 jogos. Nenhuma cena a carrega.
 var top_bar: GameTopBar = null
 
+## Contrato de composição mobile compartilhado pelo chrome, HUD e câmera.
+var mobile_hud_metrics: MobileHudMetrics = null
+var _mobile_bands: Array[Dictionary] = []
+var _mobile_layouting: bool = false
+
 ## Identificador do jogo no barramento de eventos, tirado da pasta da cena
 ## (`res://games/gamao/BackgammonGame.tscn` -> `gamao`).
 var game_id: String = ""
@@ -220,7 +225,89 @@ func _montar_barra() -> void:
 	top_bar.name = "TopBar"
 	top_bar.game_title = GameCatalog.bar_title(game_id)
 	top_bar.back_pressed.connect(go_back_to_menu)
+	top_bar.layout_changed.connect(_on_top_bar_layout_changed)
 	add_child(top_bar)
+	_recompute_mobile_hud_metrics.call_deferred()
+
+
+func get_mobile_hud_metrics() -> MobileHudMetrics:
+	if mobile_hud_metrics == null:
+		_recompute_mobile_hud_metrics()
+	return mobile_hud_metrics
+
+
+## Registra um bloco de HUD na faixa comum. O nó continua dono da sua
+## hierarquia interna; apenas o retângulo externo é governado pelo BaseGame.
+func register_mobile_band(control: Control, band: StringName,
+		margin: float = 16.0) -> void:
+	if control == null or not is_instance_valid(control):
+		return
+	if band != &"content" and band != &"bottom":
+		push_error("Banda mobile desconhecida: %s" % band)
+		return
+	for binding in _mobile_bands:
+		if binding["control"] == control:
+			binding["band"] = band
+			binding["margin"] = margin
+			control.set_meta("mobile_hud_band", band)
+			_recompute_mobile_hud_metrics()
+			return
+	_mobile_bands.append({"control": control, "band": band, "margin": margin})
+	control.set_meta("mobile_hud_band", band)
+	_recompute_mobile_hud_metrics()
+
+
+func _on_top_bar_layout_changed(_metrics: MobileHudMetrics) -> void:
+	_recompute_mobile_hud_metrics()
+	_schedule_refit()
+
+
+func _bottom_band_height() -> float:
+	var height := 0.0
+	for binding in _mobile_bands:
+		if binding["band"] != &"bottom":
+			continue
+		var control := binding["control"] as Control
+		if control == null or not is_instance_valid(control):
+			continue
+		height = maxf(height, control.get_combined_minimum_size().y)
+	return height
+
+
+func _recompute_mobile_hud_metrics() -> void:
+	if _mobile_layouting:
+		return
+	var viewport := get_viewport()
+	if viewport == null:
+		return
+	var size := viewport.get_visible_rect().size
+	if size.y <= 0.0:
+		return
+	var insets := JogosSafeArea.insets(viewport)
+	var chrome_height := GameTopBar.ALTURA
+	if top_bar != null:
+		chrome_height = top_bar.ALTURA
+	mobile_hud_metrics = MobileHudMetrics.calculate(size, insets, chrome_height,
+		_bottom_band_height())
+	_layout_mobile_bands()
+
+
+func _layout_mobile_bands() -> void:
+	if mobile_hud_metrics == null or _mobile_layouting:
+		return
+	_mobile_layouting = true
+	for binding in _mobile_bands:
+		var control := binding["control"] as Control
+		if control == null or not is_instance_valid(control):
+			continue
+		var margin: float = maxf(0.0, float(binding["margin"]))
+		var area := mobile_hud_metrics.content_rect if binding["band"] == &"content" else mobile_hud_metrics.bottom_rect
+		var available := Vector2(maxf(0.0, area.size.x - margin * 2.0),
+			maxf(0.0, area.size.y - margin * 2.0))
+		control.set_anchors_preset(Control.PRESET_TOP_LEFT)
+		control.position = area.position + Vector2(margin, margin)
+		control.size = available
+	_mobile_layouting = false
 
 
 ## Pendura o painel de regras e liga o "?" da barra.
@@ -343,6 +430,8 @@ func fit_table(content_size: Vector2, center: Vector3 = Vector3.ZERO,
 	var vp := get_viewport()
 	if vp and not vp.size_changed.is_connected(_apply_fit):
 		vp.size_changed.connect(_apply_fit)
+	if vp and not vp.size_changed.is_connected(_recompute_mobile_hud_metrics):
+		vp.size_changed.connect(_recompute_mobile_hud_metrics)
 
 
 func _apply_fit() -> void:
@@ -388,7 +477,14 @@ func measure_hud_bands() -> Vector2:
 	var vp := get_viewport_rect().size
 	if vp.y <= 0.0:
 		return Vector2(HUD_GAP, HUD_GAP)
-	return _scan_hud(self, vp.y) + Vector2(HUD_GAP, HUD_GAP)
+	_recompute_mobile_hud_metrics()
+	var legacy := _scan_hud(self, vp.y)
+	if mobile_hud_metrics == null:
+		return legacy + Vector2(HUD_GAP, HUD_GAP)
+	var chrome_top := mobile_hud_metrics.chrome_rect.end.y
+	var bottom_band := mobile_hud_metrics.viewport_size.y - mobile_hud_metrics.bottom_rect.position.y
+	return Vector2(maxf(legacy.x, chrome_top), maxf(legacy.y, bottom_band)) \
+		+ Vector2(HUD_GAP, HUD_GAP)
 
 
 ## Devolve (topo, rodape). Vector2 anda por valor no GDScript, entao a soma sobe
@@ -401,6 +497,12 @@ func _scan_hud(node: Node, altura: float) -> Vector2:
 		if child is Control:
 			var ctrl := child as Control
 			if not ctrl.visible or ctrl.name.begins_with("Touch"):
+				continue
+			var banda := str(ctrl.get_meta("mobile_hud_band", ""))
+			if banda == "bottom":
+				bandas.y = maxf(bandas.y, altura - ctrl.get_global_rect().position.y)
+				continue
+			if banda == "content":
 				continue
 			if not (node is Container):
 				var r := ctrl.get_global_rect()

@@ -459,8 +459,8 @@ func test_os_botoes_da_hud_recebem_o_toque_com_o_picker_na_cena() -> void:
 	# proprio GUT fica por cima da cena durante a suite.
 	var alvos := {
 		"res://games/hanoi/HanoiGame.tscn": "UI/Actions/BtnUndo",
-		DAMAS: "GameShell/VBoxContainer/BtnRestart",
-		"res://games/solitario/PegSolitaireGame.tscn": "GameShell/VBoxContainer/BtnRestart",
+		DAMAS: "GameShell/ActionRail/BtnRestart",
+		"res://games/solitario/PegSolitaireGame.tscn": "GameShell/ActionRail/BtnRestart",
 	}
 	for caminho in alvos:
 		var jogo := await _montar(caminho)

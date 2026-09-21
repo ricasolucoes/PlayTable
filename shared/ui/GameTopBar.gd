@@ -24,6 +24,10 @@ signal back_pressed
 ## Emitido pelo "?". Quem abre as regras e o `BaseGame`.
 signal help_pressed
 
+## Emitido quando safe area, viewport ou prioridade dos badges altera a
+## composição disponível para o jogo.
+signal layout_changed(metrics: MobileHudMetrics)
+
 ## O jogador trocou entre jogar contra a maquina e dois no mesmo aparelho.
 ## `vs_ai` ja vem com o valor novo. So os jogos que oferecem os dois modos
 ## mostram o botao -- os outros nem sabem que ele existe.
@@ -97,9 +101,16 @@ var _venceu := false
 var _lado_ativo := -1
 
 var _label_titulo: Label = null
+var _caixa_badges: HBoxContainer = null
 var _caixa_placar: HBoxContainer = null
 var _btn_ajuda: Button = null
 var _btn_modo: Button = null
+
+var mobile_metrics: MobileHudMetrics = null
+var content_top_px: float = 0.0
+var content_bottom_px: float = 0.0
+var _badges: Array[Dictionary] = []
+var _badge_controls: Dictionary = {}
 
 ## O modo em que a partida esta, quando o jogo oferece os dois.
 var _vs_ai := true
@@ -139,19 +150,30 @@ func _ready() -> void:
 	_montar_veu()
 	_montar_linha()
 	_refazer_placar()
+	_reaplicar_badges()
+	_atualizar_badge_prioridades()
 
 
 ## Recalcula o padding do topo com base no safe area atual (notch, Dynamic Island).
 ## Chamado em _ready() e quando o viewport muda de tamanho.
 func _atualizar_safe_area() -> void:
-	var inset := JogosSafeArea.top(get_viewport())
+	var vp := get_viewport()
+	var insets := JogosSafeArea.insets(vp)
+	var inset := insets.y
 	_topo_real = TOPO_BASE + inset
 	BANDA = _topo_real + ALTURA
 	offset_bottom = BANDA
+	var viewport_size := vp.get_visible_rect().size if vp != null else Vector2.ZERO
+	mobile_metrics = MobileHudMetrics.calculate(viewport_size, insets, ALTURA, 0.0)
+	content_top_px = BANDA
+	content_bottom_px = viewport_size.y - insets.w
 	# Reposiciona a linha de botões se já foi montada.
 	var linha := get_node_or_null("Linha")
 	if linha is Control:
 		linha.offset_top = _topo_real
+	_atualizar_badge_prioridades()
+	if mobile_metrics != null:
+		layout_changed.emit(mobile_metrics)
 
 
 ## Degradê que escurece a mesa atrás do texto. Um `TextureRect` e não um
@@ -213,6 +235,12 @@ func _montar_linha() -> void:
 	_label_titulo.resized.connect(_ajustar_fonte_do_nome)
 	linha.add_child(UIKit.expandir(_label_titulo))
 
+	_caixa_badges = UIKit.hbox(RESPIRO_APERTADO)
+	_caixa_badges.name = "Badges"
+	_caixa_badges.alignment = BoxContainer.ALIGNMENT_END
+	_caixa_badges.size_flags_horizontal = Control.SIZE_SHRINK_END
+	linha.add_child(_caixa_badges)
+
 	_caixa_placar = UIKit.hbox(14)
 	_caixa_placar.name = "Placar"
 	_caixa_placar.alignment = BoxContainer.ALIGNMENT_END
@@ -260,6 +288,79 @@ func oferecer_modo(vs_ai: bool) -> void:
 func esconder_modo() -> void:
 	if _btn_modo != null:
 		_btn_modo.visible = false
+	_atualizar_badge_prioridades()
+
+
+## Badges contextuais compactos para turno, conexão, jogadas ou estado da mesa.
+## A barra mantém no máximo o que cabe; a prioridade maior permanece visível.
+func set_context_badges(badges: Array[Dictionary]) -> void:
+	_badges.clear()
+	for badge in badges:
+		var id := str(badge.get("id", ""))
+		if id == "":
+			continue
+		_badges.append({
+			"id": id,
+			"icon": str(badge.get("icon", "•")),
+			"priority": int(badge.get("priority", 0)),
+			"tooltip": str(badge.get("tooltip", "")),
+		})
+	_badges.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
+		return int(a.get("priority", 0)) > int(b.get("priority", 0)))
+	_reaplicar_badges()
+	_atualizar_badge_prioridades()
+
+
+func has_badge(id: String) -> bool:
+	for badge in _badges:
+		if str(badge.get("id", "")) == id:
+			return true
+	return false
+
+
+func visible_badge_count() -> int:
+	var total := 0
+	for control in _badge_controls.values():
+		if is_instance_valid(control) and (control as Control).visible:
+			total += 1
+	return total
+
+
+func get_badge(id: String) -> Control:
+	return _badge_controls.get(id) as Control
+
+
+func _reaplicar_badges() -> void:
+	if _caixa_badges == null:
+		return
+	for child in _caixa_badges.get_children():
+		_caixa_badges.remove_child(child)
+		child.queue_free()
+	_badge_controls.clear()
+	for badge in _badges:
+		var id := str(badge.get("id", ""))
+		var button := UIKit.botao(str(badge.get("icon", "•")), UIKit.FONTE_SECAO)
+		button.name = "Badge_%s" % id
+		button.custom_minimum_size = Vector2(LARGURA_AJUDA, ALTURA)
+		button.tooltip_text = str(badge.get("tooltip", ""))
+		_caixa_badges.add_child(button)
+		_badge_controls[id] = button
+
+
+func _atualizar_badge_prioridades() -> void:
+	if _caixa_badges == null:
+		return
+	var largura := get_viewport_rect().size.x if get_viewport() != null else size.x
+	var maximo := 1 if largura < 640.0 else 2
+	var mostrados := 0
+	for badge in _badges:
+		var id := str(badge.get("id", ""))
+		var control := _badge_controls.get(id) as Control
+		if control == null:
+			continue
+		control.visible = mostrados < maximo
+		if control.visible:
+			mostrados += 1
 
 
 func _on_modo_tocado() -> void:

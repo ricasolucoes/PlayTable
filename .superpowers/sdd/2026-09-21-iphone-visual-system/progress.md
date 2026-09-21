@@ -1,0 +1,23 @@
+# SDD ledger — plan: docs/superpowers/plans/2026-09-21-iphone-visual-system.md
+
+Setup: Native execution in the existing dedicated feature branch; no isolated worktree created.
+
+Pre-flight: shared-interface rows checked. Task 2 produces `MobileHudMetrics`,
+`BaseGame.register_mobile_band` and chrome badge APIs consumed by Tasks 3, 6 and
+7; names and ownership match. Task 5 produces `Token3D.get_visual_material`
+consumed by Task 6 tests; Task 4 owns both atlas implementations and their
+`ensure_built(owner) -> bool` contract. No unresolved interface conflict found.
+
+Ruling: the packaged execution skill exposes `task-brief` but not the documented
+`task-start`/`task-done` scripts. I will use `task-brief` for each task and
+record the exact final command/output manually in this ledger; cost if wrong:
+the automated ledger append/check is unavailable, so task evidence must be
+recorded carefully here.
+
+Task 1: complete (commit 61936ea; RED `tests/run_gut.sh -gtest=res://tests/gdscript/unit/test_general.gd` → parser error at `GeneralGame.gd:92`, 16 failures; GREEN same command → 817/817 tests, 24,266 asserts, exit 0). GDScript tabs in the committed diff are existing project indentation, not whitespace errors.
+
+Ruling: the shared `GameShell` restart action moved from `VBoxContainer` to `ActionRail`, so the existing touch integration paths for Damas and Peg Solitaire are part of Task 2 compatibility work even though the plan's file list did not call them out. Cost if wrong: only those two scene lookup paths would need reverting.
+
+Task 2: complete (RED `tests/run_gut.sh -gtest=res://tests/gdscript/unit/test_mobile_hud.gd` → missing `MobileHudMetrics`/type errors and baseline 817 passing; GREEN same command → 821/821 tests, 24,054 asserts, exit 0). Added shared safe-area metrics, top-bar context badges, bottom action rail, and responsive mobile-band layout. Commit pending.
+
+Tasks: Tasks 1–2 complete; Task 3 in progress; Tasks 4–8 pending.
