@@ -382,6 +382,39 @@ static func reversi_piece(side: int, art_key: String) -> StandardMaterial3D:
 	_cache[key] = mat
 	return mat
 
+## Material explicito dos dois lados de Damas com contraste garantido no mobile.
+## val > 0: Marfim creme acetinado de alta luminosidade (peca branca / jogador).
+## val < 0: Obsidiana escura polida com reflexo vitreo e contraluz nitido (peca preta / IA).
+static func checkers_piece(val: int) -> StandardMaterial3D:
+	var is_white := val > 0
+	var key := "checkers_white" if is_white else "checkers_black"
+	if _cache.has(key):
+		return _cache[key]
+	var mat := StandardMaterial3D.new()
+	if is_white:
+		mat.albedo_color = Color(0.96, 0.94, 0.88)
+		mat.roughness = 0.22
+		mat.metallic = 0.0
+		mat.clearcoat_enabled = true
+		mat.clearcoat = 0.4
+		mat.clearcoat_roughness = 0.15
+		mat.rim_enabled = true
+		mat.rim = 0.45
+		mat.rim_tint = 0.2
+	else:
+		mat.albedo_color = Color(0.08, 0.085, 0.10)
+		mat.roughness = 0.14
+		mat.metallic = 0.0
+		mat.metallic_specular = 0.70
+		mat.clearcoat_enabled = true
+		mat.clearcoat = 0.95
+		mat.clearcoat_roughness = 0.06
+		mat.rim_enabled = true
+		mat.rim = 0.75
+		mat.rim_tint = 0.25
+	_cache[key] = mat
+	return mat
+
 ## O material de uma peca com a arte gerada pelo Gemini por cima -- ou o
 ## `fallback` procedural, intacto, quando o arquivo nao existe.
 ##
