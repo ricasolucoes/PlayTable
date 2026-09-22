@@ -90,7 +90,9 @@ func _ready() -> void:
 	# 74 graus do padrao.
 	env_3d.apply_theme(GameTheme3D.parlour_walnut())
 
-	fit_table(Vector2(7.3, 5.6))
+	# A cesta de descarte vai ate x = 3.95 (centro 3.2, raio 0.75): o quadro
+	# tem de cobri-la, senao no iPhone ela sai cortada na borda direita.
+	fit_table(Vector2(8.0, 5.6))
 	_start_new_game()
 
 

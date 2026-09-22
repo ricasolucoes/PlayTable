@@ -39,6 +39,8 @@ enum CellState {
 ## Quando falso, o tabuleiro nao desenha moldura (trilhas, grades soltas).
 @export var show_frame: bool = true
 
+const FRAME_LIFT := 0.008
+
 @onready var frame_mesh: MeshInstance3D = $FrameMesh
 @onready var inlay_mesh: MeshInstance3D = $InlayMesh
 @onready var cells_root: Node3D = $CellsRoot
@@ -210,7 +212,11 @@ func _build_frame() -> void:
 		var fw := Tokens3D.BOARD_FRAME_WIDTH
 		slab.size = Vector3(total_w + fw * 2.0, Tokens3D.BOARD_SLAB_THICKNESS, total_h + fw * 2.0)
 		frame_mesh.mesh = slab
-		frame_mesh.position = Vector3(0.0, -Tokens3D.BOARD_SLAB_THICKNESS * 0.5, 0.0)
+		# O topo fica 8 mm acima do feltro, que tambem termina em y = 0: no
+		# mesmo plano os dois brigavam no depth buffer e a moldura aparecia em
+		# retalhos serrilhados (Reversi, Damas). As casas vao de 0 a 0.045 e
+		# continuam por cima.
+		frame_mesh.position = Vector3(0.0, -Tokens3D.BOARD_SLAB_THICKNESS * 0.5 + FRAME_LIFT, 0.0)
 		frame_mesh.material_override = _frame_material()
 
 	# Rebaixo: uma placa fina e escura logo abaixo das casas. E ela que da a

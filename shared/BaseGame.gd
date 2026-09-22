@@ -275,7 +275,7 @@ func _bottom_band_height() -> float:
 		var control := binding["control"] as Control
 		if control == null or not is_instance_valid(control):
 			continue
-		height += _mobile_band_height(control)
+		height += _mobile_band_height(control) + maxf(0.0, float(binding["margin"])) * 2.0
 		quantidade += 1
 	if quantidade > 1:
 		height += float(quantidade - 1) * 8.0
@@ -341,7 +341,11 @@ func _layout_mobile_bands() -> void:
 			else:
 				area = mobile_hud_metrics.content_rect
 		elif binding["band"] == &"bottom":
-			var band_height := _mobile_band_height(control)
+			# A margem sai de dentro da faixa (`available` logo abaixo), entao
+			# a faixa tem de trazer a margem por cima da altura do controle.
+			# Sem isso todo controle do rodape ganhava 24 px a menos do que
+			# pede e vazava para baixo -- o "Jogar de novo" do 21 saia da tela.
+			var band_height := _mobile_band_height(control) + margin * 2.0
 			bottom_cursor -= band_height
 			area = Rect2(mobile_hud_metrics.bottom_rect.position.x, bottom_cursor,
 				mobile_hud_metrics.bottom_rect.size.x, band_height)
@@ -537,10 +541,29 @@ func measure_hud_bands() -> Vector2:
 	var legacy := _scan_hud(self, vp.y)
 	if mobile_hud_metrics == null:
 		return legacy + Vector2(HUD_GAP, HUD_GAP)
-	var chrome_top := mobile_hud_metrics.chrome_rect.end.y
+	var chrome_top := maxf(mobile_hud_metrics.chrome_rect.end.y, _game_header_end())
 	var bottom_band := mobile_hud_metrics.viewport_size.y - mobile_hud_metrics.bottom_rect.position.y
 	return Vector2(maxf(legacy.x, chrome_top), maxf(legacy.y, bottom_band)) \
 		+ Vector2(HUD_GAP, HUD_GAP)
+
+
+## Onde termina, de verdade, o cabecalho do jogo (dificuldade, status e o que o
+## jogo pendurar ali -- a Spider poe a fila de controles). A faixa de conteudo o
+## posiciona mas nao o conta como HUD, e a mesa 3D subia por baixo dele quando
+## o status quebrava em duas linhas.
+func _game_header_end() -> float:
+	var fim := 0.0
+	for binding in _mobile_bands:
+		var control := binding["control"] as Control
+		if control == null or not is_instance_valid(control) or not control.visible:
+			continue
+		var cabecalho: bool = binding["band"] == &"content_header" \
+			or (binding["band"] == &"content" and control.get_parent() is GameShell)
+		if not cabecalho:
+			continue
+		var topo := control.get_global_rect().position.y
+		fim = maxf(fim, topo + control.get_combined_minimum_size().y)
+	return fim
 
 
 ## Devolve (topo, rodape). Vector2 anda por valor no GDScript, entao a soma sobe

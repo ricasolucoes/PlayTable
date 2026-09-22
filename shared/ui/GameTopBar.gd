@@ -58,6 +58,11 @@ var BANDA: float = TOPO_BASE + ALTURA
 ## Até onde o véu escurece a mesa. Passa da barra de propósito: o degradê tem de
 ## acabar em nada, senão vira uma régua de chrome colada sobre o feltro.
 const VEU := 168.0
+## Quanto o veu passa da barra: cobre a linha de dificuldade e a de status do
+## `GameShell`, que moram logo abaixo dela. Fixo em 168 px, no iPhone (barra
+## descida pelo notch) o veu acabava antes da propria barra e o status ficava
+## branco sobre marmore branco.
+const VEU_ALEM := 132.0
 
 ## Separação entre voltar, nome e placar.
 const RESPIRO := int(UIKit.SPACE_UNIT * 2.0)
@@ -171,6 +176,9 @@ func _atualizar_safe_area() -> void:
 	var linha := get_node_or_null("Linha")
 	if linha is Control:
 		linha.offset_top = _topo_real
+	var veu := get_node_or_null("Veu")
+	if veu is Control:
+		veu.offset_bottom = maxf(VEU, BANDA + VEU_ALEM)
 	_atualizar_badge_prioridades()
 	if mobile_metrics != null:
 		layout_changed.emit(mobile_metrics)
@@ -181,9 +189,9 @@ func _atualizar_safe_area() -> void:
 ## segura o nome ou vira uma tarja preta atravessada na mesa.
 func _montar_veu() -> void:
 	var grad := Gradient.new()
-	grad.set_color(0, Color(VEU_COR, 0.80))
+	grad.set_color(0, Color(VEU_COR, 0.86))
 	grad.set_color(1, Color(VEU_COR, 0.0))
-	grad.add_point(0.58, Color(VEU_COR, 0.62))
+	grad.add_point(0.72, Color(VEU_COR, 0.66))
 
 	var tex := GradientTexture2D.new()
 	tex.gradient = grad
@@ -197,12 +205,16 @@ func _montar_veu() -> void:
 	veu.texture = tex
 	veu.stretch_mode = TextureRect.STRETCH_SCALE
 	veu.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	# Atras de todo o 2D, na frente da mesa 3D. A barra entra na arvore depois
+	# do `GameShell`; com z 0 o veu era desenhado POR CIMA da linha de status e
+	# a apagava em vez de destaca-la.
+	veu.z_index = -1
 	veu.set_meta("allow_overlay", true)
 	veu.anchor_left = 0.0
 	veu.anchor_top = 0.0
 	veu.anchor_right = 1.0
 	veu.anchor_bottom = 0.0
-	veu.offset_bottom = VEU
+	veu.offset_bottom = maxf(VEU, BANDA + VEU_ALEM)
 	add_child(veu)
 
 
@@ -226,6 +238,7 @@ func _montar_linha() -> void:
 	linha.add_child(btn)
 
 	_label_titulo = UIKit.rotulo(_titulo, UIKit.FONTE_SECAO, UIKit.TEXTO)
+	_contornar(_label_titulo)
 	_label_titulo.name = "Titulo"
 	_label_titulo.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	# O nome é quem cede espaço: corta com reticências para o placar, que é
@@ -508,12 +521,21 @@ func _celula() -> VBoxContainer:
 
 	var num := UIKit.rotulo("", FONTE_VALOR, UIKit.OURO)
 	num.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_contornar(num)
 	v.add_child(num)
 
 	var lbl := UIKit.rotulo("", UIKit.FONTE_MIUDA, UIKit.TEXTO_FRACO)
 	lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_contornar(lbl)
 	v.add_child(lbl)
 	return v
+
+
+## Contorno escuro no placar: sobre mesa clara (marmore, pedra, feltro creme)
+## o veu nao basta e o "voce / ia" desaparecia.
+static func _contornar(rotulo: Label) -> void:
+	rotulo.add_theme_color_override("font_outline_color", Color(0.02, 0.04, 0.08, 0.92))
+	rotulo.add_theme_constant_override("outline_size", 7)
 
 
 ## O ponto vai numa célula igual às outras, com o rótulo vazio: assim ele alinha

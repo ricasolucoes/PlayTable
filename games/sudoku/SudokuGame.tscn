@@ -86,6 +86,5 @@ grow_vertical = 0
 theme_override_constants/h_separation = 8
 theme_override_constants/v_separation = 8
 columns = 5
-alignment = 1
 
 [connection signal="toggled" from="Actions/BtnNotes" to="." method="_on_btn_notes_toggled"]

@@ -29,6 +29,9 @@ grow_vertical = 2
 mouse_filter = 2
 
 [node name="PayoutTableContainer" type="PanelContainer" parent="UI"]
+custom_minimum_size = Vector2(0, 196)
+metadata/mobile_hud_band = "content_header"
+metadata/mobile_hud_margin = 12.0
 layout_mode = 1
 anchors_preset = 10
 anchor_right = 1.0
@@ -41,10 +44,11 @@ grow_horizontal = 2
 [node name="PayoutLabel" type="Label" parent="UI/PayoutTableContainer"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.95, 0.82, 0.35, 1)
+theme_override_font_sizes/font_size = 26
 text = ""
 horizontal_alignment = 1
-autowrap_mode = 2
-clip_text = true
+vertical_alignment = 1
+autowrap_mode = 3
 
 [node name="Controls" type="HBoxContainer" parent="UI"]
 metadata/mobile_hud_band = "bottom"

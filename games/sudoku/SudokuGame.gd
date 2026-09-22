@@ -21,6 +21,8 @@ func _ready() -> void:
 	
 	_setup_board_ui()
 	_setup_numpad()
+	$BoardContainer.resized.connect(_ajustar_tabuleiro)
+	_ajustar_tabuleiro.call_deferred()
 	
 	
 	_start_new_game()
@@ -38,8 +40,8 @@ func _setup_board_ui() -> void:
 	for i in range(9):
 		var b = GridContainer.new()
 		b.columns = 3
-		b.add_theme_constant_override("h_separation", 2)
-		b.add_theme_constant_override("v_separation", 2)
+		b.add_theme_constant_override("h_separation", SEP_CASA)
+		b.add_theme_constant_override("v_separation", SEP_CASA)
 		main_grid.add_child(b)
 		blocks.append(b)
 		
@@ -52,11 +54,42 @@ func _setup_board_ui() -> void:
 			blocks[block_idx].add_child(cell)
 			cells_2d[r][c] = cell
 
+## Casa quadrada do tamanho que a faixa de conteudo permite. Sem isto cada
+## botao media o proprio texto: casa preenchida saia mais alta que casa vazia,
+## e cada bloco 3x3 crescia a linha pela casa mais alta dele -- a grade
+## entortava.
+const SEP_CASA := 2
+const SEP_BLOCO := 6
+
+func _ajustar_tabuleiro() -> void:
+	var area: Vector2 = $BoardContainer.size
+	if area.x <= 0.0 or area.y <= 0.0:
+		return
+	var lado := minf(area.x, area.y)
+	var casa := floorf((lado - SEP_BLOCO * 2 - SEP_CASA * 6) / 9.0)
+	casa = clampf(casa, 32.0, 96.0)
+	for linha in cells_2d:
+		for cell: SudokuCell in linha:
+			cell.custom_minimum_size = Vector2(casa, casa)
+			cell.size_flags_horizontal = Control.SIZE_FILL
+			cell.size_flags_vertical = Control.SIZE_FILL
+			cell.clip_text = true
+			# O texto nao pode empurrar a casa: altura da linha (~1.9 x corpo)
+			# mais o respiro de 16 px do estilo tem de caber no quadrado.
+			cell.add_theme_font_size_override("font_size", int(clampf((casa - 18.0) / 1.9, 14.0, 40.0)))
+	var total := casa * 9.0 + SEP_BLOCO * 2 + SEP_CASA * 6
+	main_grid.set_anchors_preset(Control.PRESET_CENTER)
+	main_grid.offset_left = -total * 0.5
+	main_grid.offset_right = total * 0.5
+	main_grid.offset_top = -total * 0.5
+	main_grid.offset_bottom = total * 0.5
+
 func _setup_numpad() -> void:
 	for i in range(1, 10):
 		var btn = Button.new()
 		btn.text = str(i)
 		btn.custom_minimum_size = Vector2(88, 88)
+		btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		btn.add_theme_font_size_override("font_size", 32)
 		btn.pressed.connect(_on_numpad_pressed.bind(i))
 		num_pad.add_child(btn)
@@ -64,6 +97,7 @@ func _setup_numpad() -> void:
 	var btn_clear = Button.new()
 	btn_clear.text = "X"
 	btn_clear.custom_minimum_size = Vector2(88, 88)
+	btn_clear.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	btn_clear.add_theme_font_size_override("font_size", 32)
 	btn_clear.add_theme_color_override("font_color", Color(0.9, 0.3, 0.3))
 	btn_clear.pressed.connect(_on_numpad_pressed.bind(0))

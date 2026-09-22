@@ -71,6 +71,12 @@ func _ready() -> void:
 	btn_daily.pressed.connect(_on_daily_pressed)
 	btn_undo.pressed.connect(_on_undo_pressed)
 	btn_hint.pressed.connect(_on_hint_pressed)
+	# So o icone: a fila de controles tem quatro botoes em 672 px, e com o
+	# rotulo inteiro o "Dica" saia da tela. O nome vai no tooltip.
+	btn_undo.tooltip_text = tr("SPIDER_UNDO_BUTTON")
+	btn_hint.tooltip_text = tr("SPIDER_HINT_BUTTON")
+	btn_undo.text = "↶"
+	btn_hint.text = "💡"
 	stock_button.pressed.connect(_on_stock_pressed)
 	# O seletor nascia vazio: as quatro opcoes existem em SUIT_COUNTS e as quatro
 	# traducoes existem no CSV, mas ninguem as punha no popup. `select()` sobre

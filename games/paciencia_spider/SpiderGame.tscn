@@ -48,25 +48,24 @@ theme_override_constants/separation = 8
 [node name="ModeOption" type="OptionButton" parent="UI/VBoxContainer/Controls"]
 custom_minimum_size = Vector2(150, 88)
 layout_mode = 2
-clip_text = true
+theme_override_font_sizes/font_size = 26
 
 [node name="BtnDaily" type="Button" parent="UI/VBoxContainer/Controls"]
-custom_minimum_size = Vector2(165.0, 88.0)
+custom_minimum_size = Vector2(0, 88.0)
 layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 26
 text = "SPIDER_DAILY"
-clip_text = true
 
 [node name="BtnUndo" type="Button" parent="UI/VBoxContainer/Controls"]
-custom_minimum_size = Vector2(105.0, 88.0)
+custom_minimum_size = Vector2(88.0, 88.0)
 layout_mode = 2
 text = "SPIDER_UNDO_BUTTON"
-clip_text = true
 
 [node name="BtnHint" type="Button" parent="UI/VBoxContainer/Controls"]
-custom_minimum_size = Vector2(100.0, 88.0)
+custom_minimum_size = Vector2(88.0, 88.0)
 layout_mode = 2
 text = "SPIDER_HINT_BUTTON"
-clip_text = true
 
 [node name="StockRow" type="HBoxContainer" parent="UI/VBoxContainer"]
 layout_mode = 2
@@ -75,15 +74,17 @@ theme_override_constants/separation = 12
 [node name="BtnStock" type="Button" parent="UI/VBoxContainer/StockRow"]
 custom_minimum_size = Vector2(140.0, 88.0)
 layout_mode = 2
+theme_override_font_sizes/font_size = 26
 text = "SPIDER_STOCK"
-clip_text = true
 
 [node name="Progress" type="Label" parent="UI/VBoxContainer/StockRow"]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.92, 0.79, 0.42, 1)
+theme_override_font_sizes/font_size = 26
 vertical_alignment = 1
 clip_text = true
+text_overrun_behavior = 3
 
 [node name="Tableau" type="GridContainer" parent="UI"]
 layout_mode = 1

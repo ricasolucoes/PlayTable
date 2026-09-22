@@ -35,6 +35,7 @@ func _ready() -> void:
 	status_label = shell.status_label
 	btn_restart = shell.btn_restart
 	btn_mode_toggle.pressed.connect(_on_mode_toggle_pressed)
+	$VBoxContainer/ScrollContainer.resized.connect(_redimensionar_cartas)
 	_update_mode_button()
 	_start_new_game()
 
@@ -51,8 +52,10 @@ func _start_new_game() -> void:
 	_started_at = Time.get_ticks_msec() / 1000.0
 	begin_match("versus" if is_local_multiplayer else "solo")
 
-	_update_ui()
+	# O baralho primeiro: e ele que fixa TOTAL_PAIRS do nivel, e o placar
+	# "0/N pares" lido antes saia com o total do nivel anterior.
 	_generate_deck()
+	_update_ui()
 
 func _generate_deck() -> void:
 	for child in grid_container.get_children():
@@ -79,7 +82,29 @@ func _generate_deck() -> void:
 		cards.append(card)
 
 
+## Refaz o tamanho das cartas quando a faixa de conteudo muda (notch medido,
+## HUD montada depois do baralho).
+func _redimensionar_cartas() -> void:
+	if cards.is_empty():
+		return
+	var board_size := MemoryRules.board_size_for_level(difficulty_level)
+	var card_size := _card_size_for_board(board_size)
+	for card in cards:
+		if is_instance_valid(card):
+			card.call("set_card_size", card_size)
+
+
 func _card_size_for_board(board_size: Vector2i) -> Vector2:
+	# A area de verdade e a da rolagem, que a faixa de conteudo do BaseGame
+	# ja descontou de barra, status, botao de modo e recorte do aparelho. A
+	# conta pela viewport inteira com reserva fixa deixava a ultima fileira
+	# cortada no telefone.
+	var area: Vector2 = $VBoxContainer/ScrollContainer.size
+	if area.x > 0.0 and area.y > 0.0:
+		var w := (area.x - GRID_GAP * float(board_size.x - 1)) / float(board_size.x)
+		var h := (area.y - GRID_GAP * float(board_size.y - 1)) / float(board_size.y)
+		var largura := maxf(minf(w, h / CARD_ASPECT), 48.0)
+		return Vector2(floor(largura), floor(largura * CARD_ASPECT))
 	var viewport_size := get_viewport_rect().size
 	if viewport_size.x <= 0.0 or viewport_size.y <= 0.0:
 		viewport_size = Vector2(
