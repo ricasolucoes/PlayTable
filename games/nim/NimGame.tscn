@@ -32,6 +32,8 @@ mouse_filter = 2
 layout_mode = 1
 
 [node name="Presets" type="ScrollContainer" parent="UI"]
+metadata/mobile_hud_band = "content_header"
+metadata/mobile_hud_margin = 12.0
 layout_mode = 1
 anchors_preset = 10
 anchor_right = 1.0
@@ -50,6 +52,8 @@ alignment = 1
 theme_override_constants/separation = 8
 
 [node name="DiffContainer" type="ScrollContainer" parent="UI"]
+metadata/mobile_hud_band = "content_header"
+metadata/mobile_hud_margin = 12.0
 layout_mode = 1
 anchors_preset = 10
 anchor_right = 1.0
@@ -68,6 +72,8 @@ alignment = 1
 theme_override_constants/separation = 8
 
 [node name="HeapControls" type="ScrollContainer" parent="UI"]
+metadata/mobile_hud_band = "bottom"
+metadata/mobile_hud_margin = 12.0
 layout_mode = 1
 anchors_preset = 12
 anchor_top = 1.0
@@ -89,6 +95,8 @@ alignment = 1
 theme_override_constants/separation = 10
 
 [node name="TakeControls" type="HBoxContainer" parent="UI"]
+metadata/mobile_hud_band = "bottom"
+metadata/mobile_hud_margin = 12.0
 visible = false
 layout_mode = 1
 anchors_preset = 12
@@ -135,6 +143,8 @@ theme_override_colors/font_color = Color(1, 0.95, 0.4, 1)
 text = "BTN_CONFIRM_ICON"
 
 [node name="Actions" type="HBoxContainer" parent="UI"]
+metadata/mobile_hud_band = "bottom"
+metadata/mobile_hud_margin = 12.0
 layout_mode = 1
 anchors_preset = 12
 anchor_top = 1.0

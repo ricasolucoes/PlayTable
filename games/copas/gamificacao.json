@@ -1,0 +1,1 @@
+{"achievements":[{"id":"ACH_COPAS_WIN","cat":"cartas","xp":300,"rule":{"type":"game_win","game":"copas"}},{"id":"ACH_COPAS_LUA","cat":"segredos","xp":600,"rule":{"type":"flag","key":"copas_lua"}},{"id":"ACH_COPAS_ZERO","cat":"cartas","xp":400,"rule":{"type":"flag","key":"copas_zero"}}]}

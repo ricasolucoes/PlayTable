@@ -32,6 +32,8 @@ mouse_filter = 2
 [node name="GameShell" parent="." instance=ExtResource("4_shell")]
 
 [node name="Controls" type="HBoxContainer" parent="UI"]
+metadata/mobile_hud_band = "bottom"
+metadata/mobile_hud_margin = 12.0
 layout_mode = 1
 anchors_preset = 12
 anchor_top = 1.0

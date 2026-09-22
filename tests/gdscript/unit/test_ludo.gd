@@ -343,6 +343,14 @@ func test_a_tira_de_botoes_de_peao_nao_existe_mais() -> void:
 		"a tira de botoes saiu da cena")
 
 
+func test_dado_fica_no_trilho_inferior_sem_invadir_o_conteudo() -> void:
+	var jogo := await _cena()
+	var metrics: MobileHudMetrics = jogo.get_mobile_hud_metrics()
+	var dado: Rect2 = jogo.btn_dice.get_global_rect()
+	assert_true(metrics.bottom_rect.has_point(dado.get_center()), "dado dentro da banda inferior")
+	assert_false(metrics.content_rect.intersects(dado), "dado nao cobre a area do tabuleiro")
+
+
 func test_tocar_o_peao_levantado_o_move() -> void:
 	var jogo := _jogo()
 	await wait_process_frames(1)
@@ -401,7 +409,7 @@ func _cena_em_dupla() -> Node:
 
 func test_a_mesa_compartilhada_oferece_o_botao_de_modo() -> void:
 	var jogo := _jogo()
-	assert_not_null(jogo.get_node_or_null("ModeSwitch"), "o jogo monta o botao de modo")
+	assert_not_null(jogo.top_bar.find_child("BtnMode", true, false), "a barra de cima ganhou o botao de modo")
 	assert_true(jogo.vs_ai, "a partida abre contra a maquina")
 
 

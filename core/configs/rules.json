@@ -5,6 +5,14 @@
       "goal": "RULES_BATALHA_NAVAL_GOAL",
       "sections": [
         {
+          "title": "RULES_BATALHA_NAVAL_S0",
+          "items": [
+            "RULES_BATALHA_NAVAL_S0_1",
+            "RULES_BATALHA_NAVAL_S0_2",
+            "RULES_BATALHA_NAVAL_S0_3"
+          ]
+        },
+        {
           "title": "RULES_BATALHA_NAVAL_S1",
           "items": [
             "RULES_BATALHA_NAVAL_S1_1",

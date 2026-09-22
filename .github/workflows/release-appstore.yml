@@ -1,0 +1,267 @@
+name: Release & App Store (iOS)
+
+on:
+  push:
+    tags: ['ios-v*']
+  workflow_dispatch:
+    inputs:
+      destination:
+        description: Destino do build iOS
+        required: true
+        default: testflight
+        type: choice
+        options: [testflight, appstore]
+      submit_for_review:
+        description: Enviar a versão para revisão da Apple (exige metadados e compliance preenchidos)
+        required: true
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+
+concurrency:
+  group: appstore-release
+  cancel-in-progress: false
+
+env:
+  GODOT_VERSION: "4.7.2-stable"
+  GODOT_TEMPLATE_VERSION: "4.7.2.stable"
+  APPLE_TEAM_ID: "28X7P94SF5"
+  IOS_BUNDLE_ID: "org.playtable.app"
+
+jobs:
+  build:
+    name: Exportar e assinar iOS
+    runs-on: macos-latest
+    timeout-minutes: 60
+    outputs:
+      version: ${{ steps.version.outputs.name }}
+      build: ${{ steps.version.outputs.build }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Configurar Ruby e Fastlane
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.3'
+          bundler-cache: true
+
+      - name: Conferir Xcode e versão do release
+        id: version
+        shell: bash
+        run: |
+          set -euo pipefail
+          xcodebuild -version
+          source scripts/ios_version.sh
+          if [[ "$GITHUB_REF" == refs/tags/ios-* && "$GITHUB_REF_NAME" != "ios-v$VERSION_NAME" ]]; then
+            echo "::error::Tag e export_presets.cfg discordam: esperado ios-v$VERSION_NAME"
+            exit 1
+          fi
+          echo "name=$VERSION_NAME" >> "$GITHUB_OUTPUT"
+          echo "build=$BUILD_NUMBER" >> "$GITHUB_OUTPUT"
+
+      - name: Instalar Godot e templates iOS
+        shell: bash
+        run: |
+          set -euo pipefail
+          version="$GODOT_VERSION"
+          base="https://github.com/godotengine/godot/releases/download/$version"
+          mkdir -p "$RUNNER_TEMP/godot"
+          curl -fL --retry 3 "$base/Godot_v${version}_macos.universal.zip" -o "$RUNNER_TEMP/godot.zip"
+          unzip -q "$RUNNER_TEMP/godot.zip" -d "$RUNNER_TEMP/godot"
+          godot_bin="$(find "$RUNNER_TEMP/godot" -path '*/Contents/MacOS/Godot' -type f -print -quit)"
+          test -x "$godot_bin"
+          echo "GODOT_BIN=$godot_bin" >> "$GITHUB_ENV"
+          echo "Godot: $godot_bin"
+
+          curl -fL --retry 3 "$base/Godot_v${version}_export_templates.tpz" -o "$RUNNER_TEMP/templates.tpz"
+          template_dir="$HOME/Library/Application Support/Godot/export_templates/$GODOT_TEMPLATE_VERSION"
+          mkdir -p "$template_dir"
+          unzip -q "$RUNNER_TEMP/templates.tpz" -d "$RUNNER_TEMP/templates"
+          cp -R "$RUNNER_TEMP/templates/templates/." "$template_dir/"
+          test -f "$template_dir/ios.zip"
+
+      - name: Configurar Python para os testes
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Instalar dependências dos testes Python
+        run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2
+
+      - name: Testes Python e GUT
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m unittest discover -s tests/python -v
+          tests/run_gut.sh
+
+      - name: Importar certificado de distribuição e provisioning profile
+        id: signing
+        shell: bash
+        env:
+          IOS_CERTIFICATE_BASE64: ${{ secrets.IOS_CERTIFICATE_BASE64 }}
+          IOS_CERTIFICATE_PASSWORD: ${{ secrets.IOS_CERTIFICATE_PASSWORD }}
+          IOS_PROVISIONING_PROFILE_BASE64: ${{ secrets.IOS_PROVISIONING_PROFILE_BASE64 }}
+        run: |
+          set -euo pipefail
+          : "${IOS_CERTIFICATE_BASE64:?Configure IOS_CERTIFICATE_BASE64 no ambiente do repositório}"
+          : "${IOS_CERTIFICATE_PASSWORD:?Configure IOS_CERTIFICATE_PASSWORD no ambiente do repositório}"
+          : "${IOS_PROVISIONING_PROFILE_BASE64:?Configure IOS_PROVISIONING_PROFILE_BASE64 no ambiente do repositório}"
+
+          decode_base64() {
+            if ! printf '%s' "$1" | base64 --decode > "$2" 2>/dev/null; then
+              printf '%s' "$1" | base64 -D > "$2"
+            fi
+          }
+
+          keychain_password="$(openssl rand -hex 32)"
+          keychain_path="$RUNNER_TEMP/playtable-signing.keychain-db"
+          security create-keychain -p "$keychain_password" "$keychain_path"
+          security set-keychain-settings -lut 21600 "$keychain_path"
+          security unlock-keychain -p "$keychain_password" "$keychain_path"
+          security list-keychains -d user -s "$keychain_path" login.keychain-db
+          security default-keychain -s "$keychain_path"
+
+          certificate_path="$RUNNER_TEMP/playtable-distribution.p12"
+          decode_base64 "$IOS_CERTIFICATE_BASE64" "$certificate_path"
+          security import "$certificate_path" \
+            -k "$keychain_path" \
+            -P "$IOS_CERTIFICATE_PASSWORD" \
+            -T /usr/bin/codesign \
+            -T /usr/bin/security
+          security set-key-partition-list \
+            -S apple-tool:,apple:,codesign: \
+            -s -k "$keychain_password" "$keychain_path"
+
+          profile_path="$RUNNER_TEMP/playtable.mobileprovision"
+          profile_plist="$RUNNER_TEMP/playtable-profile.plist"
+          decode_base64 "$IOS_PROVISIONING_PROFILE_BASE64" "$profile_path"
+          security cms -D -i "$profile_path" > "$profile_plist"
+          profile_uuid="$(/usr/libexec/PlistBuddy -c 'Print :UUID' "$profile_plist")"
+          profile_name="$(/usr/libexec/PlistBuddy -c 'Print :Name' "$profile_plist")"
+          app_identifier="$(/usr/libexec/PlistBuddy -c 'Print :Entitlements:application-identifier' "$profile_plist")"
+          get_task_allow="$(/usr/libexec/PlistBuddy -c 'Print :Entitlements:get-task-allow' "$profile_plist" 2>/dev/null || true)"
+          test "$app_identifier" = "$APPLE_TEAM_ID.$IOS_BUNDLE_ID"
+          test "$get_task_allow" != "true"
+          mkdir -p "$HOME/Library/MobileDevice/Provisioning Profiles"
+          cp "$profile_path" "$HOME/Library/MobileDevice/Provisioning Profiles/$profile_uuid.mobileprovision"
+
+          echo "IOS_PROVISIONING_PROFILE_NAME=$profile_name" >> "$GITHUB_ENV"
+          echo "SIGNING_KEYCHAIN=$keychain_path" >> "$GITHUB_ENV"
+          echo "profile=$profile_name" >> "$GITHUB_OUTPUT"
+
+      - name: Gerar IPA assinado
+        run: bundle exec fastlane ios build
+
+      - name: Publicar IPA como artefato
+        uses: actions/upload-artifact@v4
+        with:
+          name: playtable-ios-${{ steps.version.outputs.name }}-${{ steps.version.outputs.build }}
+          path: build/ios/PlayTable.ipa
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Limpar material de assinatura
+        if: always()
+        shell: bash
+        run: |
+          set +e
+          if [[ -n "${SIGNING_KEYCHAIN:-}" ]]; then
+            security delete-keychain "$SIGNING_KEYCHAIN"
+          fi
+          rm -f "$RUNNER_TEMP/playtable-distribution.p12" \
+            "$RUNNER_TEMP/playtable.mobileprovision" \
+            "$RUNNER_TEMP/playtable-profile.plist"
+
+  publish-testflight:
+    name: Enviar para TestFlight
+    needs: build
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.destination == 'testflight' }}
+    runs-on: macos-latest
+    timeout-minutes: 20
+    environment: testflight
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configurar Ruby e Fastlane
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.3'
+          bundler-cache: true
+
+      - name: Baixar IPA assinado
+        uses: actions/download-artifact@v4
+        with:
+          name: playtable-ios-${{ needs.build.outputs.version }}-${{ needs.build.outputs.build }}
+          path: build/ios
+
+      - name: Enviar para TestFlight
+        env:
+          APPSTORE_CONNECT_API_KEY_ID: ${{ secrets.APPSTORE_CONNECT_API_KEY_ID }}
+          APPSTORE_CONNECT_ISSUER_ID: ${{ secrets.APPSTORE_CONNECT_ISSUER_ID }}
+          APPSTORE_CONNECT_API_PRIVATE_KEY_BASE64: ${{ secrets.APPSTORE_CONNECT_API_PRIVATE_KEY_BASE64 }}
+        run: bundle exec fastlane ios upload_testflight
+
+  publish-appstore:
+    name: Enviar para App Store
+    needs: build
+    if: ${{ (github.event_name == 'workflow_dispatch' && inputs.destination == 'appstore') || (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/ios-v')) }}
+    runs-on: macos-latest
+    timeout-minutes: 30
+    environment: appstore-production
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configurar Ruby e Fastlane
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.3'
+          bundler-cache: true
+
+      - name: Baixar IPA assinado
+        uses: actions/download-artifact@v4
+        with:
+          name: playtable-ios-${{ needs.build.outputs.version }}-${{ needs.build.outputs.build }}
+          path: build/ios
+
+      - name: Preparar capturas iPhone e iPad para o App Store Connect
+        shell: bash
+        run: |
+          set -euo pipefail
+          brew list imagemagick >/dev/null 2>&1 || brew install imagemagick
+          bash scripts/ios_store_screenshots.sh
+
+      - name: Validar respostas de compliance do App Store Connect
+        shell: bash
+        env:
+          IOS_EXPORT_COMPLIANCE_USES_ENCRYPTION: ${{ vars.IOS_EXPORT_COMPLIANCE_USES_ENCRYPTION }}
+          IOS_EXPORT_COMPLIANCE_IS_EXEMPT: ${{ vars.IOS_EXPORT_COMPLIANCE_IS_EXEMPT }}
+        run: |
+          set -euo pipefail
+          : "${IOS_EXPORT_COMPLIANCE_USES_ENCRYPTION:?Configure a variável IOS_EXPORT_COMPLIANCE_USES_ENCRYPTION no ambiente appstore-production}"
+          : "${IOS_EXPORT_COMPLIANCE_IS_EXEMPT:?Configure a variável IOS_EXPORT_COMPLIANCE_IS_EXEMPT no ambiente appstore-production}"
+          case "$IOS_EXPORT_COMPLIANCE_USES_ENCRYPTION" in
+            true|false) ;;
+            *) echo "IOS_EXPORT_COMPLIANCE_USES_ENCRYPTION deve ser true ou false" >&2; exit 1 ;;
+          esac
+          case "$IOS_EXPORT_COMPLIANCE_IS_EXEMPT" in
+            true|false) ;;
+            *) echo "IOS_EXPORT_COMPLIANCE_IS_EXEMPT deve ser true ou false" >&2; exit 1 ;;
+          esac
+
+      - name: Enviar para App Store Connect
+        env:
+          APPSTORE_CONNECT_API_KEY_ID: ${{ secrets.APPSTORE_CONNECT_API_KEY_ID }}
+          APPSTORE_CONNECT_ISSUER_ID: ${{ secrets.APPSTORE_CONNECT_ISSUER_ID }}
+          APPSTORE_CONNECT_API_PRIVATE_KEY_BASE64: ${{ secrets.APPSTORE_CONNECT_API_PRIVATE_KEY_BASE64 }}
+          IOS_SUBMIT_FOR_REVIEW: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/tags/ios-v') || inputs.submit_for_review }}
+          IOS_AUTOMATIC_RELEASE: "true"
+          IOS_EXPORT_COMPLIANCE_USES_ENCRYPTION: ${{ vars.IOS_EXPORT_COMPLIANCE_USES_ENCRYPTION }}
+          IOS_EXPORT_COMPLIANCE_IS_EXEMPT: ${{ vars.IOS_EXPORT_COMPLIANCE_IS_EXEMPT }}
+          IOS_REVIEW_RECORDING_REFERENCE: ${{ vars.IOS_REVIEW_RECORDING_REFERENCE }}
+        run: bundle exec fastlane ios upload_appstore

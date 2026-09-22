@@ -1,0 +1,1 @@
+{"id":"copas","scene":"res://games/copas/HeartsGame.tscn","title_key":"GAME_COPAS","desc_key":"GAME_DESC_COPAS","icon":"♥","category":"cards","genre_key":"GENRE_TRICK","modes":["AI","ONLINE"],"seats":4,"unlock_level":1}

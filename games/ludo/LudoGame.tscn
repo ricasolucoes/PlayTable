@@ -34,34 +34,20 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 
-[node name="DiceArea" type="Control" parent="UI"]
-layout_mode = 1
-anchors_preset = 12
-anchor_top = 1.0
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = 16.0
-offset_top = -124.0
-offset_right = -16.0
-offset_bottom = -28.0
-grow_horizontal = 2
-grow_vertical = 0
+[node name="DiceArea" type="HBoxContainer" parent="UI"]
+metadata/mobile_hud_band = "bottom"
+metadata/mobile_hud_margin = 12.0
+custom_minimum_size = Vector2(0.0, 88.0)
+layout_mode = 0
+size_flags_horizontal = 3
+alignment = 1
+theme_override_constants/separation = 12
 mouse_filter = 2
 
 [node name="BtnDice" type="Button" parent="UI/DiceArea"]
-layout_mode = 1
 custom_minimum_size = Vector2(320, 88)
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -160.0
-offset_top = -44.0
-offset_right = 160.0
-offset_bottom = 44.0
-grow_horizontal = 2
-grow_vertical = 2
+layout_mode = 2
+size_flags_horizontal = 4
 text = "LUDO_BTN_ROLL"
 
 [connection signal="pressed" from="UI/DiceArea/BtnDice" to="." method="_on_btn_dice_pressed"]

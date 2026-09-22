@@ -1,0 +1,33 @@
+{
+  "game_id": "trilha",
+  "out_dir": "shared/assets/trilha",
+  "hero": "peca_escura",
+  "style_bible": "Coleção PlayTable de jogos de mesa: peças de resina, madeira nobre, marfim e metal escovado, fotografadas como miniatura real sobre estúdio, luz quente vinda do alto-esquerda com uma única especular limpa. Realismo de objeto de tabuleiro caro, não ilustração. NUNCA pixel art, NUNCA desenho animado, NUNCA estilo cartoon infantil, NUNCA propriedade intelectual de terceiros. A silhueta tem de ler a 64 px de altura numa tela de telefone segurada a meio metro do rosto: forma grande e contrastada, sem detalhe fino. Este jogo é uma Trilha (Nine Men's Morris) de salão: discos torneados lisos, vista ORTOGONAL de cima, material bem visível, um friso fino perto da borda. A imagem é a TEXTURA de albedo do topo do disco.",
+  "defaults": {
+    "model": "gemini-3.1-flash-image",
+    "background": "chroma",
+    "size": 512
+  },
+  "assets": [
+    {
+      "name": "peca_escura",
+      "prompt": "Topo de um disco de trilha em obsidiana polida, preto profundo com reflexo vítreo, visto exatamente de cima, círculo perfeito preenchendo 96% do quadro, com um friso circular raso gravado perto da borda e um pequeno triângulo côncavo no centro. Reflexo especular único no alto-esquerda.",
+      "size": 512
+    },
+    {
+      "name": "peca_clara",
+      "prompt": "O mesmo disco da referência, mesma forma, mesmo friso e mesmo triângulo central, em marfim creme envelhecido com veio sutil em vez de obsidiana. Visto exatamente de cima.",
+      "reference": [
+        "peca_escura"
+      ],
+      "size": 512
+    },
+    {
+      "name": "feature_graphic",
+      "prompt": "Tabuleiro de Trilha (três quadrados concêntricos ligados pelos meios dos lados) em nogueira com linhas e 24 pontos em bordo claro, visto em três quartos sobre mesa de mármore, com peças de marfim e obsidiana no meio de uma partida e uma trilha de três marfins fechada em primeiro plano. Sem texto, sem interface, sem marca d'água.",
+      "model": "gemini-3-pro-image",
+      "background": "scene",
+      "size": 1024
+    }
+  ]
+}

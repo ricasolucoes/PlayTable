@@ -330,6 +330,44 @@ def fatiar_grade(dados_png, cols, linhas, destino, nome):
 
 # ------------------------------------------------------------------- geração
 
+def gerar_um_openai(man, asset):
+    import requests
+    import os
+    import base64
+    prompt = montar_prompt(man, asset)
+    if len(prompt) > 4000:
+        prompt = prompt[:4000]
+    api_key = os.environ.get("OPENAI_API_KEY", "").strip()
+    if not api_key:
+        raise ValueError("OPENAI_API_KEY não configurada")
+    print("      (fallback para OpenAI)")
+    response = requests.post(
+        "https://api.openai.com/v1/images/generations",
+        headers={
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {api_key}"
+        },
+        json={
+            "model": "gpt-image-1",
+            "prompt": prompt,
+            "n": 1,
+            "size": "1024x1024"
+        },
+        timeout=120
+    )
+    if response.status_code != 200:
+        raise RuntimeError(f"OpenAI erro {response.status_code}: {response.text}")
+    data = response.json()
+    if "url" in data["data"][0]:
+        img_url = data["data"][0]["url"]
+        img_resp = requests.get(img_url, timeout=60)
+        img_resp.raise_for_status()
+        return img_resp.content, "gpt-image-1"
+    elif "b64_json" in data["data"][0]:
+        return base64.b64decode(data["data"][0]["b64_json"]), "gpt-image-1"
+    else:
+        raise RuntimeError(f"Formato de resposta desconhecido: {data}")
+
 def gerar_um(cliente, man, asset, tentativas):
     from google.genai import types
 
@@ -339,8 +377,6 @@ def gerar_um(cliente, man, asset, tentativas):
     lado = int(asset.get("size", padroes.get("size", 512)))
 
     conteudo = [prompt]
-    # Referências: a peça-mestra volta como imagem nas chamadas seguintes, que é
-    # o que faz o elenco inteiro nascer do mesmo desenho.
     for ref in asset.get("reference", []):
         p = RAIZ / man["out_dir"] / ("%s.png" % ref)
         if p.exists():
@@ -354,9 +390,16 @@ def gerar_um(cliente, man, asset, tentativas):
                 if getattr(parte, "inline_data", None) and parte.inline_data.data:
                     return parte.inline_data.data, modelo
             raise RuntimeError("resposta sem imagem")
-        except Exception as e:  # noqa: BLE001 - a API levanta tipos variados
+        except Exception as e:
+            msg = str(e)
+            if "429" in msg or "RESOURCE_EXHAUSTED" in msg or "insufficient_quota" in msg:
+                try:
+                    return gerar_um_openai(man, asset)
+                except Exception as oe:
+                    raise RuntimeError(f"Falha no Gemini ({msg}) e no OpenAI ({oe})")
+            
             ultimo = e
-            transitorio = any(c in str(e) for c in ("429", "500", "503", "RESOURCE_EXHAUSTED", "UNAVAILABLE"))
+            transitorio = any(c in msg for c in ("500", "503", "UNAVAILABLE"))
             if not transitorio or tentativa == tentativas:
                 raise
             espera = 2 ** tentativa

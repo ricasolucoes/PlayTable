@@ -1,0 +1,1 @@
+{"achievements":[{"id":"ACH_TRILHA_WIN","cat":"tabuleiro","xp":400,"rule":{"type":"game_win","game":"trilha"}},{"id":"ACH_TRILHA_DUPLA","cat":"segredos","xp":600,"rule":{"type":"flag","key":"trilha_moinho_duplo"}},{"id":"ACH_TRILHA_BLOQUEIO","cat":"segredos","xp":700,"rule":{"type":"flag","key":"trilha_bloqueio"}}]}

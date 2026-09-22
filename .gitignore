@@ -57,7 +57,8 @@ __pycache__/
 .planning/
 
 # Godot addons de terceiros (buscados por tests/install_gut.sh)
-/addons/
+/addons/*
+!/addons/jogos_core/
 
 # Relatorio JUnit gerado pela suite GUT
 /.gut_report/

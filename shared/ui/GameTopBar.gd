@@ -24,25 +24,47 @@ signal back_pressed
 ## Emitido pelo "?". Quem abre as regras e o `BaseGame`.
 signal help_pressed
 
+## Emitido quando safe area, viewport ou prioridade dos badges altera a
+## composição disponível para o jogo.
+signal layout_changed(metrics: MobileHudMetrics)
+
+## O jogador trocou entre jogar contra a maquina e dois no mesmo aparelho.
+## `vs_ai` ja vem com o valor novo. So os jogos que oferecem os dois modos
+## mostram o botao -- os outros nem sabem que ele existe.
+signal mode_pressed(vs_ai: bool)
+
 ## Margem lateral -- a mesma de `MenuTabuleiro.tscn`, para a barra do jogo e a
 ## do menu alinharem quando uma vira a outra.
-const MARGEM := 24.0
+const MARGEM := UIKit.SPACE_UNIT * 3.0
 
-## Respiro do topo antes da barra começar.
-const TOPO := 36.0
 
 ## Altura da faixa de conteúdo: o alvo de toque mínimo, e nada menos.
 const ALTURA := UIKit.TOQUE_MIN
 
+## Respiro do topo antes da barra começar. É o espaço ABAIXO do safe area inset
+## (notch/Dynamic Island); o próprio inset já vem de JogosSafeArea. TOPO_BASE é
+## o mínimo de respiração mesmo quando o safe area é zero (desktop/Android).
+const TOPO_BASE := 12.0
+
+## Padding efetivo calculado em _ready() e atualizado ao mudar o viewport.
+## Inclui o safe area inset do topo.
+var _topo_real: float = TOPO_BASE
+
 ## O que `BaseGame.measure_hud_bands()` vai ler como banda de HUD de topo.
-const BANDA := TOPO + ALTURA
+## Precisa ser uma propriedade dinâmica (não const) porque muda com o notch.
+const BANDA_BASE := ALTURA  ## Só a altura do conteúdo; o topo é adicionado em _ready().
+var BANDA: float = TOPO_BASE + ALTURA
 
 ## Até onde o véu escurece a mesa. Passa da barra de propósito: o degradê tem de
 ## acabar em nada, senão vira uma régua de chrome colada sobre o feltro.
 const VEU := 168.0
 
 ## Separação entre voltar, nome e placar.
-const RESPIRO := 16
+const RESPIRO := int(UIKit.SPACE_UNIT * 2.0)
+
+## O respiro quando o botao de modo entra na fila: com cinco itens, 16 px entre
+## eles custam o nome do jogo.
+const RESPIRO_APERTADO := int(UIKit.SPACE_UNIT)
 
 ## Largura do botão voltar. Cabe "‹ Voltar", "‹ Back" e "‹ Volver".
 const LARGURA_VOLTAR := 150.0
@@ -68,7 +90,7 @@ const ROTULO_VOCE := "SCORE_YOU"
 const ROTULO_IA := "SCORE_AI"
 
 ## Cor do véu: o preto mais quente da mesa, não preto puro.
-const VEU_COR := Color(0.031, 0.024, 0.016)
+const VEU_COR := UIKit.COLOR_SURFACE
 
 var _titulo := ""
 var _celulas: Array[Dictionary] = []
@@ -79,8 +101,19 @@ var _venceu := false
 var _lado_ativo := -1
 
 var _label_titulo: Label = null
+var _caixa_badges: HBoxContainer = null
 var _caixa_placar: HBoxContainer = null
 var _btn_ajuda: Button = null
+var _btn_modo: Button = null
+
+var mobile_metrics: MobileHudMetrics = null
+var content_top_px: float = 0.0
+var content_bottom_px: float = 0.0
+var _badges: Array[Dictionary] = []
+var _badge_controls: Dictionary = {}
+
+## O modo em que a partida esta, quando o jogo oferece os dois.
+var _vs_ai := true
 
 ## Formato desenhado agora ("duelo:2"), para saber quando dá para só reescrever.
 var _assinatura := ""
@@ -108,11 +141,39 @@ func _ready() -> void:
 	offset_left = 0.0
 	offset_top = 0.0
 	offset_right = 0.0
-	offset_bottom = BANDA
+	_atualizar_safe_area()
+	# Atualiza quando o viewport muda (rotação, mudança de resolução).
+	var vp := get_viewport()
+	if vp and not vp.size_changed.is_connected(_atualizar_safe_area):
+		vp.size_changed.connect(_atualizar_safe_area)
 
 	_montar_veu()
 	_montar_linha()
 	_refazer_placar()
+	_reaplicar_badges()
+	_atualizar_badge_prioridades()
+
+
+## Recalcula o padding do topo com base no safe area atual (notch, Dynamic Island).
+## Chamado em _ready() e quando o viewport muda de tamanho.
+func _atualizar_safe_area() -> void:
+	var vp := get_viewport()
+	var insets := JogosSafeArea.insets(vp)
+	var inset := insets.y
+	_topo_real = TOPO_BASE + inset
+	BANDA = _topo_real + ALTURA
+	offset_bottom = BANDA
+	var viewport_size := vp.get_visible_rect().size if vp != null else Vector2.ZERO
+	mobile_metrics = MobileHudMetrics.calculate(viewport_size, insets, ALTURA, 0.0)
+	content_top_px = BANDA
+	content_bottom_px = viewport_size.y - insets.w
+	# Reposiciona a linha de botões se já foi montada.
+	var linha := get_node_or_null("Linha")
+	if linha is Control:
+		linha.offset_top = _topo_real
+	_atualizar_badge_prioridades()
+	if mobile_metrics != null:
+		layout_changed.emit(mobile_metrics)
 
 
 ## Degradê que escurece a mesa atrás do texto. Um `TextureRect` e não um
@@ -136,6 +197,7 @@ func _montar_veu() -> void:
 	veu.texture = tex
 	veu.stretch_mode = TextureRect.STRETCH_SCALE
 	veu.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	veu.set_meta("allow_overlay", true)
 	veu.anchor_left = 0.0
 	veu.anchor_top = 0.0
 	veu.anchor_right = 1.0
@@ -152,7 +214,7 @@ func _montar_linha() -> void:
 	linha.anchor_right = 1.0
 	linha.anchor_bottom = 1.0
 	linha.offset_left = MARGEM
-	linha.offset_top = TOPO
+	linha.offset_top = _topo_real
 	linha.offset_right = -MARGEM
 	linha.offset_bottom = 0.0
 	add_child(linha)
@@ -160,7 +222,7 @@ func _montar_linha() -> void:
 	var btn := UIKit.botao(tr("BTN_BACK"))
 	btn.name = "BtnBack"
 	btn.custom_minimum_size = Vector2(LARGURA_VOLTAR, ALTURA)
-	btn.pressed.connect(func() -> void: back_pressed.emit())
+	UIKit.conectar_toque(btn, func() -> void: back_pressed.emit())
 	linha.add_child(btn)
 
 	_label_titulo = UIKit.rotulo(_titulo, UIKit.FONTE_SECAO, UIKit.TEXTO)
@@ -174,19 +236,148 @@ func _montar_linha() -> void:
 	_label_titulo.resized.connect(_ajustar_fonte_do_nome)
 	linha.add_child(UIKit.expandir(_label_titulo))
 
+	_caixa_badges = UIKit.hbox(RESPIRO_APERTADO)
+	_caixa_badges.name = "Badges"
+	_caixa_badges.alignment = BoxContainer.ALIGNMENT_END
+	_caixa_badges.size_flags_horizontal = Control.SIZE_SHRINK_END
+	linha.add_child(_caixa_badges)
+
 	_caixa_placar = UIKit.hbox(14)
 	_caixa_placar.name = "Placar"
 	_caixa_placar.alignment = BoxContainer.ALIGNMENT_END
 	_caixa_placar.size_flags_horizontal = Control.SIZE_SHRINK_END
 	linha.add_child(_caixa_placar)
 
-	_btn_ajuda = UIKit.botao(tr("BTN_RULES_ICON"), UIKit.FONTE_TITULO)
+	# O modo mora aqui, e nao num botao solto na cena, por falta de lugar: em
+	# cima o texto de status atravessa a tela, embaixo cada jogo tem a sua fila
+	# (o dado do Ludo, as varetas do Senet). A barra e a unica faixa que ja e de
+	# todos os jogos -- e, por ser faixa que ja existe, o botao nao custa um
+	# milimetro de mesa.
+	_btn_modo = UIKit.icone(tr("MODE_ICON_AI"), tr("MODE_LABEL"))
+	_btn_modo.name = "BtnMode"
+	_btn_modo.custom_minimum_size = Vector2(LARGURA_AJUDA, ALTURA)
+	_btn_modo.visible = false
+	UIKit.conectar_toque(_btn_modo, _on_modo_tocado)
+	linha.add_child(_btn_modo)
+
+	_btn_ajuda = UIKit.icone(tr("BTN_RULES_ICON"), tr("RULES_TITLE"))
 	_btn_ajuda.name = "BtnRules"
 	_btn_ajuda.custom_minimum_size = Vector2(LARGURA_AJUDA, ALTURA)
 	_btn_ajuda.tooltip_text = tr("RULES_TITLE")
 	_btn_ajuda.visible = false
-	_btn_ajuda.pressed.connect(func() -> void: help_pressed.emit())
+	UIKit.conectar_toque(_btn_ajuda, func() -> void: help_pressed.emit())
 	linha.add_child(_btn_ajuda)
+
+
+## Poe o botao de modo na barra. Chamado pelos jogos que sabem jogar de dois;
+## quem nao chama nao ganha botao nenhum.
+func oferecer_modo(vs_ai: bool) -> void:
+	_vs_ai = vs_ai
+	if _btn_modo == null:
+		return
+	_btn_modo.visible = true
+	# Um botao a mais na fila tira 88 px de quem cede espaco, que e o nome do
+	# jogo: "Mancala" saia "Mancal". O respiro entre os itens encolhe SO nestes
+	# jogos -- os outros continuam com a barra folgada de sempre.
+	var linha := get_node_or_null("Linha") as HBoxContainer
+	if linha != null:
+		linha.add_theme_constant_override("separation", RESPIRO_APERTADO)
+	_pintar_modo()
+
+
+## Tira o botao da barra -- em partida de rede nao ha modo para escolher.
+func esconder_modo() -> void:
+	if _btn_modo != null:
+		_btn_modo.visible = false
+	_atualizar_badge_prioridades()
+
+
+## Badges contextuais compactos para turno, conexão, jogadas ou estado da mesa.
+## A barra mantém no máximo o que cabe; a prioridade maior permanece visível.
+func set_context_badges(badges: Array[Dictionary]) -> void:
+	_badges.clear()
+	for badge in badges:
+		var id := str(badge.get("id", ""))
+		if id == "":
+			continue
+		_badges.append({
+			"id": id,
+			"icon": str(badge.get("icon", "•")),
+			"priority": int(badge.get("priority", 0)),
+			"tooltip": str(badge.get("tooltip", "")),
+		})
+	_badges.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
+		return int(a.get("priority", 0)) > int(b.get("priority", 0)))
+	_reaplicar_badges()
+	_atualizar_badge_prioridades()
+
+
+func has_badge(id: String) -> bool:
+	for badge in _badges:
+		if str(badge.get("id", "")) == id:
+			return true
+	return false
+
+
+func visible_badge_count() -> int:
+	var total := 0
+	for control in _badge_controls.values():
+		if is_instance_valid(control) and (control as Control).visible:
+			total += 1
+	return total
+
+
+func get_badge(id: String) -> Control:
+	return _badge_controls.get(id) as Control
+
+
+func _reaplicar_badges() -> void:
+	if _caixa_badges == null:
+		return
+	for child in _caixa_badges.get_children():
+		_caixa_badges.remove_child(child)
+		child.queue_free()
+	_badge_controls.clear()
+	for badge in _badges:
+		var id := str(badge.get("id", ""))
+		var button := UIKit.icone(str(badge.get("icon", "•")),
+			str(badge.get("tooltip", "")))
+		button.name = "Badge_%s" % id
+		button.custom_minimum_size = Vector2(LARGURA_AJUDA, ALTURA)
+		button.tooltip_text = str(badge.get("tooltip", ""))
+		_caixa_badges.add_child(button)
+		_badge_controls[id] = button
+
+
+func _atualizar_badge_prioridades() -> void:
+	if _caixa_badges == null:
+		return
+	var largura := get_viewport_rect().size.x if get_viewport() != null else size.x
+	var maximo := 1 if largura < 640.0 else 2
+	var mostrados := 0
+	for badge in _badges:
+		var id := str(badge.get("id", ""))
+		var control := _badge_controls.get(id) as Control
+		if control == null:
+			continue
+		control.visible = mostrados < maximo
+		if control.visible:
+			mostrados += 1
+
+
+func _on_modo_tocado() -> void:
+	_vs_ai = not _vs_ai
+	_pintar_modo()
+	mode_pressed.emit(_vs_ai)
+
+
+func _pintar_modo() -> void:
+	if _btn_modo == null:
+		return
+	_btn_modo.text = tr("MODE_ICON_AI") if _vs_ai else tr("MODE_ICON_VERSUS")
+	# Sem tooltip no telefone, quem diz o modo por extenso e a linha do degrau
+	# de cada jogo; o icone aqui e o interruptor.
+	_btn_modo.tooltip_text = tr("MODE_LABEL") % tr("MODE_VS_AI" if _vs_ai else "MODE_TWO_PLAYERS")
 
 
 ## Um degrau de fonte antes das reticencias.
@@ -205,9 +396,22 @@ func _ajustar_fonte_do_nome() -> void:
 	var fonte := _label_titulo.get_theme_font("font")
 	if fonte == null:
 		return
+	# Dois degraus, e nao um: com o botao de modo na barra o "Mancala" saia
+	# "Mancal" -- sem reticencias sequer, que e pior que um nome pequeno.
 	var tamanho := UIKit.FONTE_SECAO
-	if fonte.get_string_size(_titulo, HORIZONTAL_ALIGNMENT_LEFT, -1, tamanho).x > largura:
-		tamanho = UIKit.FONTE_CORPO
+	var preciso := 0.0
+	for candidato in [UIKit.FONTE_SECAO, UIKit.FONTE_CORPO, UIKit.FONTE_MIUDA]:
+		tamanho = candidato
+		preciso = fonte.get_string_size(_titulo, HORIZONTAL_ALIGNMENT_LEFT, -1, tamanho).x
+		if preciso <= largura:
+			break
+
+	# Quando nem no menor corpo cabe metade do nome, o rotulo some. "Ludo" virado
+	# em "Lu" nao e o nome do jogo -- e um toco, e um toco ocupa o lugar que o
+	# placar e os botoes usariam melhor. Quem chegou aqui acabou de tocar no
+	# cartao do jogo: o nome ja foi dito.
+	_label_titulo.visible = preciso <= largura or largura >= preciso * 0.6
+
 	if _label_titulo.get_theme_font_size("font_size") != tamanho:
 		_label_titulo.add_theme_font_size_override("font_size", tamanho)
 

@@ -1,0 +1,1 @@
+{"id":"trilha","scene":"res://games/trilha/MorrisGame.tscn","title_key":"GAME_TRILHA","desc_key":"GAME_DESC_TRILHA","icon":"🔺","category":"board","genre_key":"GENRE_STRATEGY","modes":["AI","VERSUS","ONLINE"],"seats":2,"unlock_level":1}

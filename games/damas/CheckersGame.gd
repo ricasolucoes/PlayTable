@@ -16,7 +16,6 @@ var ai_level: int = DifficultyManager.DEFAULT_LEVEL
 ## ser da pessoa ao lado. O tabuleiro nao muda -- o que muda e de quem sao as
 ## pecas que respondem ao toque agora.
 var vs_ai: bool = true
-var mode_switch: ModeSwitch = null
 
 ## O lado da vez na mesa compartilhada: 1 marfim, -1 obsidiana. Contra a
 ## maquina nao significa nada, porque quem toca e sempre o marfim.
@@ -27,9 +26,7 @@ var _lado_local: int = 1
 @onready var game_shell: GameShell = $GameShell
 @onready var level_label: Label = game_shell.level_label
 
-## A arte gerada das pecas (`tools/art/damas.json`), por material. Sem o
-## arquivo em `shared/assets/damas/`, fica o marfim e a obsidiana procedurais.
-const ART_PECAS := {"ivory": "damas/peca_clara", "obsidian": "damas/peca_escura"}
+## Materiais das pecas de damas calibrados para contraste mobile (ver MaterialFactory3D.checkers_piece).
 
 ## Toque e arrasto sobre as 64 casas, projetadas da propria mesa. Dois toques
 ## continuam valendo; pegar a peca com o dedo e o gesto que a pessoa tenta
@@ -52,8 +49,9 @@ func _ready() -> void:
 	# `measure_hud_bands()` o mede, e o tabuleiro desce o suficiente para nao
 	# ficar por baixo dele. Montado depois, a mesa era enquadrada sem saber que
 	# ele existia e o botao comia o toque das casas de cima.
-	mode_switch = ModeSwitch.montar(self, vs_ai)
-	mode_switch.trocou.connect(_on_modo_trocado)
+	if top_bar != null:
+		top_bar.oferecer_modo(vs_ai)
+		top_bar.mode_pressed.connect(_on_modo_trocado)
 	# O tabuleiro se anuncia para a camera: nao existe distancia escrita a mao.
 	fit_table(board_3d.content_size())
 	board_3d.cell_clicked.connect(_on_cell_clicked)
@@ -81,11 +79,23 @@ func _setup_picker() -> void:
 	picker.drag_ended.connect(_on_peca_solta)
 
 ## Damas de salao: tabuleiro de bordo e nogueira sobre couro, luz de abajur.
+##
+## O renderer movel nao tem SSAO nem reflexo em tela, entao o marfim precisa de
+## mais luz de preenchimento e contraluz para nao fundir com o couro escuro.
+## Os valores abaixo foram calibrados para o iPhone 11 (Tier.MEDIUM).
 func _build_theme() -> GameTheme3D:
 	var theme := GameTheme3D.parlour_walnut()
 	theme.surface = &"leather"
 	theme.surface_color = Color(0.21, 0.13, 0.10)
 	theme.accent = Color(0.95, 0.78, 0.30)
+	# Mais luz de preenchimento: o marfim precisa de 0.52 no fill para se separar
+	# do couro escuro no renderer movel (sem SSAO). O parlour_walnut base usa 0.32.
+	theme.fill_energy = 0.52
+	# Contraluz mais forte: a borda brilhante e o que diferencia a peca escura
+	# do fundo -- sem ela a obsidiana fica chapada no couro.
+	theme.rim_energy = 0.75
+	# Ambient mais alto: com 0.56 do preset as sombras ficam pretas no mobile.
+	theme.ambient_energy = 0.72
 	return theme
 
 func _start_new_game() -> void:
@@ -144,7 +154,7 @@ func _sync_pieces_3d() -> void:
 				piece.token_type = "cylinder"
 				piece.token_radius = 0.30
 				piece.material_name = "ivory" if val > 0 else "obsidian"
-				piece.art_by_material = ART_PECAS
+				piece.visual_material = MaterialFactory3D.checkers_piece(val)
 				piece.position = _cell_pos(r, c)
 				pieces_root.add_child(piece)
 				pieces_3d[Vector2i(r, c)] = piece

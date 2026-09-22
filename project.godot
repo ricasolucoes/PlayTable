@@ -31,12 +31,20 @@ theme/custom="res://shared/theme/MainTheme.tres"
 ; GamificationManager precisa normalizar o resultado da partida (contadores,
 ; recordes, flags, streak) ANTES que conquista, missao, maestria, liga e Play
 ; Games leiam o perfil -- senao todos avaliam o estado da partida anterior.
+Log="*res://addons/jogos_core/core/log_autoload.gd"
+FeatureFlags="*res://addons/jogos_core/core/feature_flags_autoload.gd"
 SaveManager="*res://core/save/SaveManager.gd"
-LocaleManager="*res://core/i18n/LocaleManager.gd"
-SceneManager="*res://core/navegacao/SceneManager.gd"
-NetworkManager="*res://core/net/NetworkManager.gd"
-AudioManager="*res://core/audio/AudioManager.gd"
+AppSettings="*res://addons/jogos_core/settings/app_settings_autoload.gd"
 GameEventBus="*res://core/services/GameEventBus.gd"
+LocaleManager="*res://core/i18n/LocaleManager.gd"
+AudioManager="*res://core/audio/AudioManager.gd"
+AssetLoader="*res://addons/jogos_core/assets/asset_loader_autoload.gd"
+InputRouter="*res://addons/jogos_core/input/input_router_autoload.gd"
+SceneManager="*res://core/navegacao/SceneManager.gd"
+ApiClient="*res://addons/jogos_core/net/api_client_autoload.gd"
+Identity="*res://addons/jogos_core/identity/identity_autoload.gd"
+Telemetry="*res://addons/jogos_core/telemetry/telemetry_autoload.gd"
+NetworkManager="*res://core/net/NetworkManager.gd"
 PlayerProfile="*res://core/services/PlayerProfile.gd"
 SecurityManager="*res://core/services/SecurityManager.gd"
 LiveOpsManager="*res://core/services/LiveOpsManager.gd"
@@ -53,9 +61,18 @@ PlayGamesManager="*res://core/services/PlayGamesManager.gd"
 CloudSaveSync="*res://core/save/CloudSaveSync.gd"
 EngagementManager="*res://core/services/EngagementManager.gd"
 
+[editor_plugins]
+
+enabled=PackedStringArray("res://addons/jogos_core/plugin.cfg")
+
 [internationalization]
 
 locale/translations=PackedStringArray("res://core/i18n/translations.en.translation", "res://core/i18n/translations.es.translation", "res://core/i18n/translations.pt_BR.translation")
+
+
+[input_devices]
+
+pointing/emulate_mouse_from_touch=true
 
 
 [display]

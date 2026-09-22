@@ -32,6 +32,7 @@ func _initialize() -> void:
 	var w: int = int(argv[4]) if argv.size() > 4 else 720
 	var h: int = int(argv[5]) if argv.size() > 5 else 1280
 
+	DisplayServer.window_set_size(Vector2i(w, h))
 	root.content_scale_mode = Window.CONTENT_SCALE_MODE_CANVAS_ITEMS
 	root.content_scale_aspect = Window.CONTENT_SCALE_ASPECT_EXPAND
 	root.content_scale_size = Vector2i(w, h)
@@ -56,6 +57,12 @@ func _initialize() -> void:
 	for i in range(frames):
 		await process_frame
 
-	root.get_texture().get_image().save_png(saida)
+	await RenderingServer.frame_post_draw
+	var texture := root.get_texture()
+	if texture == null:
+		push_error("a janela de captura nao possui textura")
+		quit(3)
+		return
+	texture.get_image().save_png(saida)
 	print("shot: %s (%s)" % [saida, TranslationServer.get_locale()])
 	quit(0)

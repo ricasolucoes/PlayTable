@@ -7,7 +7,7 @@ Bem-vindo ao repositório do **PlayTable** — um aplicativo unificado, gratuito
 ## 🛡️ Nossos Princípios Fundamentais
 
 1. **100% Gratuito & Open Source:** Todo o código sob licença MIT. Livre para estudo, modificação e distribuição independente (F-Droid, GitHub Releases).
-2. **Offline First:** Nenhuma dependência de servidores de internet para jogar. Toda a jogabilidade acontece localmente no dispositivo.
+2. **Offline First:** Nenhuma dependência de servidores de internet para jogar o núcleo dos 22 jogos. Três jogos também oferecem multiplayer opcional pela internet por código de sala; o modo local continua funcionando sem servidor.
 3. **Internacionalização Nativa (i18n):** Suporte nativo a múltiplos idiomas (Português, Inglês, Espanhol) com troca dinâmica em tempo de execução.
 4. **Sem Anúncios (Zero Ads):** Zero propagandas, sem banners, sem intersticiais e sem SDKs de rastreamento.
 5. **Sem Sistema de Contas/Login:** Sem telemetria predatória e sem cadastro. Configurações e estatísticas salvas 100% localmente.

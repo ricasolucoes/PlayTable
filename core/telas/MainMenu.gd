@@ -32,17 +32,17 @@ const LOBBY := "res://core/telas/LobbyScreen.tscn"
 ## uma tela virar a outra sem o conteúdo escorregar de lado.
 const MARGEM := 24
 
-## Respiro acima da barra. O aplicativo exporta com `screen/immersive_mode=true`,
-## então não há barra de status do Android para desviar — é o mesmo respiro que
-## a barra de cima dos jogos usa.
-const TOPO := 36
+## Respiro acima da barra. Em iOS com notch/Dynamic Island, adiciona o safe area
+## inset por cima deste valor. O aplicativo exporta com `screen/immersive_mode=true`,
+## então em Android não há barra de status para desviar.
+const TOPO_BASE := 12.0
 const RODAPE_BARRA := 20
 
 const ANEL := 96.0
 const ANEL_GROSSURA := 9.0
 
-## 36 de respiro + 96 do anel + 20 embaixo.
-const ALTURA_BARRA := 152.0
+## Altura base: anel + rodapé. O safe area inset do topo é somado em _montar().
+const ALTURA_BARRA_CONTEUDO := 116.0  ## ANEL (96) + RODAPE_BARRA (20)
 
 ## Três cartões e dois vãos de 12 dividem o espaço útil da linha com
 ## SIZE_EXPAND_FILL (~213 px com a barra de rolagem vertical, 216 px sem ela).
@@ -77,6 +77,7 @@ const ACENTO_PADRAO := "#263b56"
 const ACENTO_TABULEIRO := "#1f3a5f"
 const ACENTO_CARTAS := "#5a2f38"
 const ACENTO_REDE := "#24524a"
+const TAP_BUTTON := preload("res://addons/jogos_core/input/jogos_tap_button.gd")
 
 var _corpo: VBoxContainer
 var _barra: Button
@@ -95,6 +96,45 @@ func _ready() -> void:
 		GameEventBus.quests_rolled.connect(_on_mudou_escopo)
 		GameEventBus.daily_streak_updated.connect(_on_mudou_int)
 		GameEventBus.league_changed.connect(_on_mudou_liga)
+	# Conecta para atualizar a barra superior quando o viewport/safe area mudar (ex: após inicialização no iOS).
+	var vp := get_viewport()
+	if vp and not vp.size_changed.is_connected(_atualizar_barra_safe_area):
+		vp.size_changed.connect(_atualizar_barra_safe_area)
+	# Pré-aquece o cache de materiais 3D no background depois que o menu
+	# apareceu: as primeiras texturas procedurais (madeira, feltro, couro)
+	# levam ~200-400ms no mobile. Assim o primeiro jogo abre sem travar.
+	_warm_materials.call_deferred()
+
+
+## Atualiza o recuo superior da barra com base no recorte seguro (notch).
+func _atualizar_barra_safe_area() -> void:
+	if _barra == null or not is_inside_tree():
+		return
+	var topo := int(TOPO_BASE + JogosSafeArea.top(get_viewport()))
+	var altura_total := topo + ALTURA_BARRA_CONTEUDO
+	_barra.custom_minimum_size = Vector2(0, altura_total)
+	var conteudo := _barra.get_node_or_null("Conteudo") as MarginContainer
+	if conteudo != null:
+		conteudo.add_theme_constant_override("margin_top", topo)
+
+
+## Gera os materiais 3D mais usados para preencher o cache antes do primeiro jogo.
+## Chamado de forma adiada para não atrasar a exibição do menu.
+func _warm_materials() -> void:
+	if not is_inside_tree():
+		return
+	# Apenas cria e descarta: o cache da factory fica preenchido.
+	MaterialFactory3D.get_wood_walnut()
+	MaterialFactory3D.get_wood_mahogany()
+	MaterialFactory3D.get_wood_maple()
+	MaterialFactory3D.get_felt_casino()
+	MaterialFactory3D.get_leather()
+	MaterialFactory3D.get_ivory()
+	MaterialFactory3D.get_obsidian()
+	MaterialFactory3D.get_marble_white()
+	MaterialFactory3D.get_marble_black()
+	CardAtlas3D.request_warmup()
+	UnoCardAtlas3D.request_warmup()
 
 
 func _on_mudou_idioma(_locale: String) -> void: _remontar()
@@ -182,15 +222,19 @@ func _preencher_corpo() -> void:
 ## A faixa inteira é um só botão, como já era o cartão de perfil: tocar no
 ## progresso leva ao progresso, que é para onde o dedo ia de qualquer jeito.
 func _montar_barra() -> Button:
-	var b := Button.new()
+	var b: Button = TAP_BUTTON.new()
 	b.name = "BarraSuperior"
-	b.custom_minimum_size = Vector2(0, ALTURA_BARRA)
+	# A altura inclui o safe area inset do topo: no iPhone com notch a barra
+	# começa mais abaixo que em dispositivos sem notch.
+	var topo := int(TOPO_BASE + JogosSafeArea.top(get_viewport()))
+	var altura_total := topo + ALTURA_BARRA_CONTEUDO
+	b.custom_minimum_size = Vector2(0, altura_total)
 	b.focus_mode = Control.FOCUS_NONE
 	b.add_theme_stylebox_override("normal", _estilo_barra(false))
 	b.add_theme_stylebox_override("hover", _estilo_barra(false))
 	b.add_theme_stylebox_override("focus", _estilo_barra(false))
 	b.add_theme_stylebox_override("pressed", _estilo_barra(true))
-	b.pressed.connect(_on_pontos_pressed)
+	UIKit.conectar_toque(b, _on_pontos_pressed)
 	_sem_texto(b)
 
 	var margem := MarginContainer.new()
@@ -198,13 +242,14 @@ func _montar_barra() -> Button:
 	margem.set_anchors_preset(Control.PRESET_FULL_RECT)
 	margem.add_theme_constant_override("margin_left", MARGEM)
 	margem.add_theme_constant_override("margin_right", MARGEM)
-	margem.add_theme_constant_override("margin_top", TOPO)
+	margem.add_theme_constant_override("margin_top", topo)
 	margem.add_theme_constant_override("margin_bottom", RODAPE_BARRA)
 	# Nenhum filho pode interceptar o toque, senão a faixa deixa de ser botão.
 	margem.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	b.add_child(margem)
 
 	_pintar_barra_em(margem)
+	UIKit.ignorar_toque_dos_filhos(b)
 	return b
 
 
@@ -291,10 +336,10 @@ func _pintar_barra_em(margem: MarginContainer) -> void:
 
 func _estilo_barra(pressionada: bool) -> StyleBoxFlat:
 	var st := StyleBoxFlat.new()
-	st.bg_color = Color(0.14, 0.08, 0.05, 0.96) if pressionada else Color(0.09, 0.055, 0.04, 0.94)
+	st.bg_color = UIKit.COLOR_SURFACE_MUTED if pressionada else UIKit.COLOR_SURFACE
 	st.border_width_bottom = 2
-	st.border_color = Color(0.80, 0.62, 0.28, 0.8) if pressionada else Color(0.55, 0.42, 0.22, 0.5)
-	st.shadow_color = Color(0, 0, 0, 0.55)
+	st.border_color = UIKit.COLOR_ACCENT if pressionada else UIKit.COLOR_BORDER
+	st.shadow_color = Color(0.0, 0.0, 0.0, 0.45)
 	st.shadow_size = 0 if pressionada else 12
 	st.shadow_offset = Vector2(0, 6)
 	return st
@@ -305,16 +350,16 @@ func _pilula(conteudo: Control, destaque: bool) -> PanelContainer:
 	p.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	p.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	var st := StyleBoxFlat.new()
-	st.bg_color = Color(0.20, 0.12, 0.08, 0.92)
+	st.bg_color = UIKit.COLOR_SURFACE_RAISED
 	st.set_border_width_all(2)
-	st.border_color = Color(0.92, 0.76, 0.36, 0.9) if destaque else Color(0.65, 0.50, 0.25, 0.6)
-	st.set_corner_radius_all(14)
-	st.content_margin_left = 16
-	st.content_margin_right = 16
-	st.content_margin_top = 10
-	st.content_margin_bottom = 10
+	st.border_color = UIKit.COLOR_ACCENT_WARM if destaque else UIKit.COLOR_BORDER
+	st.set_corner_radius_all(UIKit.RADIUS_CARD)
+	st.content_margin_left = UIKit.SPACE_UNIT * 2.0
+	st.content_margin_right = UIKit.SPACE_UNIT * 2.0
+	st.content_margin_top = UIKit.SPACE_UNIT * 1.25
+	st.content_margin_bottom = UIKit.SPACE_UNIT * 1.25
 	if destaque:
-		st.shadow_color = Color(0.92, 0.76, 0.36, 0.18)
+		st.shadow_color = Color(UIKit.COLOR_ACCENT_WARM, 0.18)
 		st.shadow_size = 8
 	p.add_theme_stylebox_override("panel", st)
 	p.add_child(conteudo)
@@ -488,7 +533,7 @@ func _secao_novos() -> Control:
 func _cartao_novo(def: GameDefinition) -> Button:
 	var acento := _acento(def)
 
-	var b := Button.new()
+	var b: Button = TAP_BUTTON.new()
 	b.custom_minimum_size = Vector2(0, ALTURA_NOVO)
 	b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	b.focus_mode = Control.FOCUS_NONE
@@ -496,7 +541,7 @@ func _cartao_novo(def: GameDefinition) -> Button:
 	for estado in ["normal", "hover", "pressed", "focus"]:
 		b.add_theme_stylebox_override(estado,
 			_estilo_cartao(acento, estado == "hover" or estado == "focus"))
-	b.pressed.connect(_on_jogo_pressed.bind(def))
+	UIKit.conectar_toque(b, _on_jogo_pressed.bind(def))
 	_sem_texto(b)
 
 	# A arte sangra até a borda, e quem arredonda os cantos de cima dela é o
@@ -568,6 +613,7 @@ func _cartao_novo(def: GameDefinition) -> Button:
 	tag.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	tag.clip_text = true
 	col.add_child(tag)
+	UIKit.ignorar_toque_dos_filhos(b)
 
 	return b
 
@@ -611,7 +657,7 @@ func _secao_categorias() -> HBoxContainer:
 
 
 func _cartao_categoria(emoji: String, nome: String, quantos: int, acento: Color, destino: String) -> Button:
-	var b := Button.new()
+	var b: Button = TAP_BUTTON.new()
 	b.custom_minimum_size = Vector2(0, ALTURA_CATEGORIA)
 	b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	b.focus_mode = Control.FOCUS_NONE
@@ -619,7 +665,7 @@ func _cartao_categoria(emoji: String, nome: String, quantos: int, acento: Color,
 	for estado in ["normal", "hover", "pressed", "focus"]:
 		b.add_theme_stylebox_override(estado,
 			_estilo_cartao(acento, estado == "hover" or estado == "focus"))
-	b.pressed.connect(_on_categoria_pressed.bind(destino))
+	UIKit.conectar_toque(b, _on_categoria_pressed.bind(destino))
 	_sem_texto(b)
 
 	var col := UIKit.vbox(6)
@@ -643,6 +689,7 @@ func _cartao_categoria(emoji: String, nome: String, quantos: int, acento: Color,
 		UIKit.FONTE_MIUDA, Color(0.82, 0.72, 0.52, 0.9))
 	conta.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	col.add_child(conta)
+	UIKit.ignorar_toque_dos_filhos(b)
 	return b
 
 
@@ -662,7 +709,7 @@ func _secao_ajustes() -> VBoxContainer:
 	som.name = "BtnSom"
 	som.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	som.clip_text = true
-	som.pressed.connect(_on_som_pressed)
+	UIKit.conectar_toque(som, _on_som_pressed)
 	_apagar(som, AudioManager != null and not AudioManager.sound_enabled)
 	fila.add_child(som)
 
@@ -670,7 +717,7 @@ func _secao_ajustes() -> VBoxContainer:
 	musica.name = "BtnMusica"
 	musica.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	musica.clip_text = true
-	musica.pressed.connect(_on_musica_pressed)
+	UIKit.conectar_toque(musica, _on_musica_pressed)
 	_apagar(musica, AudioManager != null and not AudioManager.music_enabled)
 	fila.add_child(musica)
 
@@ -678,7 +725,7 @@ func _secao_ajustes() -> VBoxContainer:
 	idioma.name = "BtnIdioma"
 	idioma.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	idioma.clip_text = true
-	idioma.pressed.connect(_on_idioma_pressed)
+	UIKit.conectar_toque(idioma, _on_idioma_pressed)
 	fila.add_child(idioma)
 	coluna.add_child(fila)
 

@@ -188,15 +188,31 @@ func test_fim_de_partida_anuncia_quem_venceu() -> void:
 	var vitoria := _cena_com_placar(10, 3)
 	vitoria._end_game()
 	assert_true(vitoria.game_over, "partida encerrada")
-	assert_string_contains(vitoria.status_label.text, "Você Venceu", "vitoria do jogador anunciada")
+	assert_eq(vitoria.status_label.text, tr("RESULT_YOU_WIN"), "vitoria do jogador anunciada")
 
 	var derrota := _cena_com_placar(3, 10)
 	derrota._end_game()
-	assert_string_contains(derrota.status_label.text, "IA Venceu", "vitoria da IA anunciada")
+	assert_eq(derrota.status_label.text, tr("RESULT_AI_WINS"), "vitoria da IA anunciada")
 
 	var empate := _cena_com_placar(4, 4)
 	empate._end_game()
-	assert_string_contains(empate.status_label.text, "Empate", "empate anunciado")
+	assert_eq(empate.status_label.text, tr("DRAW_TITLE"), "empate anunciado")
+
+
+func test_flip_de_reversi_troca_material_preto_por_branco() -> void:
+	var jogo = add_child_autofree(GameScene.instantiate())
+	await wait_process_frames(3)
+	jogo._sync_pieces_3d()
+	var preta: Token3D = jogo.pieces_3d[Vector2i(3, 4)] as Token3D
+	var branca: Token3D = jogo.pieces_3d[Vector2i(3, 3)] as Token3D
+	var material_preto: StandardMaterial3D = preta.get_visual_material() as StandardMaterial3D
+	var material_branco: StandardMaterial3D = branca.get_visual_material() as StandardMaterial3D
+	assert_lt(material_preto.albedo_color.get_luminance(), 0.25)
+	assert_gt(material_branco.albedo_color.get_luminance(), 0.65)
+	preta.flip_180_visual(MaterialFactory3D.reversi_piece(2, "reversi/disco_branco"), 0.0)
+	var material_depois: StandardMaterial3D = preta.get_visual_material() as StandardMaterial3D
+	assert_gt(material_depois.albedo_color.get_luminance(), 0.65,
+		"o disco virado assume o material branco")
 
 
 # ---------------------------------------------------------------- ReversiAI
@@ -326,8 +342,8 @@ func _cena_em_dupla() -> Node:
 
 func test_a_mesa_compartilhada_oferece_o_botao_de_modo() -> void:
 	var jogo = add_child_autofree(GameScene.instantiate())
-	var botao = jogo.get_node_or_null("ModeSwitch")
-	assert_not_null(botao, "o jogo monta o botao de modo")
+	var botao: Button = jogo.top_bar.find_child("BtnMode", true, false)
+	assert_not_null(botao, "a barra de cima ganhou o botao de modo")
 	assert_true(botao.visible, "e ele aparece fora da rede")
 	assert_true(jogo.vs_ai, "a partida abre contra a maquina")
 

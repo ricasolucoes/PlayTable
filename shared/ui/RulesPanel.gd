@@ -32,6 +32,7 @@ var _montado_para: String = ""
 
 func _init() -> void:
 	layer = CAMADA
+	set_meta("allow_overlay", true)
 
 
 ## Desenha as regras de `game_id`. Não faz nada se o jogo não tem entrada em
@@ -65,7 +66,11 @@ func build(game_id: String, titulo: String) -> void:
 	painel.name = "Painel"
 	painel.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	painel.offset_left = 20.0
-	painel.offset_top = GameTopBar.BANDA + 12.0
+	# Posiciona abaixo da barra de jogo, que inclui o safe area (notch/Dynamic Island).
+	# Replica o calculo de GameTopBar._atualizar_safe_area(): TOPO_BASE + ALTURA + inset.
+	var sa_inset := JogosSafeArea.top(get_viewport())
+	var banda := GameTopBar.TOPO_BASE + GameTopBar.ALTURA + sa_inset
+	painel.offset_top = banda + 12.0
 	painel.offset_right = -20.0
 	painel.offset_bottom = -20.0
 	painel.mouse_filter = Control.MOUSE_FILTER_STOP
@@ -92,7 +97,7 @@ func build(game_id: String, titulo: String) -> void:
 	_preencher(game_id)
 
 	var fechar := UIKit.botao(tr("RULES_CLOSE"))
-	fechar.pressed.connect(close)
+	UIKit.conectar_toque(fechar, close)
 	caixa.add_child(fechar)
 
 

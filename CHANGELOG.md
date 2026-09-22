@@ -7,11 +7,32 @@
 - [ ] **Overlay de vitória de 3 s com o Veo** — só se o orçamento do APK sobreviver ao lote acima; senão vai para `fastlane/` com `.gdignore`
 - [ ] **Os 70 ids vazios em `core/configs/play_games_ids.json`** — só o Play Console resolve
 
-## [Unreleased](https://github.com/ricasolucoes/PlayTable/compare/v0.9.1...develop)
+## [Unreleased](https://github.com/ricasolucoes/PlayTable/compare/ios-v0.9.2...develop)
+
+---
+
+## [v0.9.2 (2026-09-22)](https://github.com/ricasolucoes/PlayTable/compare/v0.9.1...ios-v0.9.2)
 
 ### ✨ Novidades
 
+- [x] **PlayTable no iPhone e no iPad** (`export_presets.cfg`, `scripts/ios_export.sh`) — primeira versão iOS, 0.9.2 (build 25), com o mesmo número de versão do Android. O preset exporta o projeto Xcode com o time da conta, alvo mínimo iOS 15 e o addon `jogos_core` dentro do pacote
+- [x] **Cromo de jogo compartilhado para o celular** (`shared/ui/GameTopBar.gd`, `addons/jogos_core/screen/`) — barra de topo, faixas de HUD e tokens de interface (raio, toque mínimo, cores) iguais em todos os jogos; os HUDs passaram para as faixas seguras e o `fit_table` mede a área útil já sem o notch
+- [x] **Tabuleiro do Ludo refeito para o celular** (`games/ludo/`) — casas, bases e peões redesenhados para ler a meio metro do rosto
 - [x] **Cinco jogos ganharam a mesa compartilhada** (`shared/ui/ModeSwitch.gd`) — Damas, Reversi, Mancala, Senet e Ludo passam a aceitar duas pessoas no mesmo aparelho, e não só uma pessoa contra a máquina. Eram cinco jogos anunciando "vs IA" e nada mais; agora o menu diz "2 Jogadores" neles porque o jogo faz jus ao rótulo. O botão de modo é um só, no mesmo canto de todos: no Ludo a mesa de dois usa os quadrantes opostos — vermelho e verde, como se joga um Ludo de dois de verdade —, e os peões dos assentos que não jogam saem da mesa em vez de ficarem parados na base parecendo esquecidos. No Mancala as seis covas de cima passaram a ter anel e a responder ao toque, que era o que faltava para o segundo jogador existir
+
+### 🐛 Correções
+
+- [x] **A interface não fica mais sob o notch nem sob a barra de gestos** (`addons/jogos_core/screen/jogos_safe_area.gd`) — o recorte seguro vinha do iOS em pixels e a janela em pontos, a conta rejeitava o recorte e o inset caía para zero: a barra de perfil e o botão de voltar ficavam atrás da Dynamic Island. Agora a conta reconhece a densidade da tela, e no retrato do iOS há um piso de topo e de rodapé mesmo antes de o sistema informar o recorte; o menu reenquadra a barra quando a viewport muda
+- [x] **A navegação responde ao toque no iPhone** (`addons/jogos_core/input/jogos_tap_button.gd`) — botões que trocavam de foco ou de tela no meio do toque paravam de responder; o toque agora é tratado pelo botão do próprio addon
+- [x] **As peças pretas de Damas e de Reversi se distinguem do tabuleiro** (`shared/3d/MaterialFactory3D.gd`) — no renderer móvel, sem SSAO, as duas cores viravam o mesmo borrão escuro. Cada lado ganhou material próprio: marfim acetinado claro e obsidiana polida com contraluz
+- [x] **As cartas aparecem antes de o atlas aquecer** — a primeira mão abria com cartas invisíveis até a textura terminar de carregar
+- [x] **O Sudoku cabe na faixa segura** e **o General volta a abrir**
+
+### 🔧 Técnico
+
+- [x] **Modularização em `jogos_core`** — tela, entrada e autoloads canônicos saíram para `addons/jogos_core/`, reaproveitáveis pelos outros jogos da pasta
+- [x] **Publicação automática na App Store** (`.github/workflows/release-appstore.yml`) — tag `ios-v*` exporta, assina e envia ao TestFlight; `workflow_dispatch` escolhe TestFlight ou App Store, com capturas de iPhone e iPad e nomes localizados aceitos pela loja
+- [x] **Pré-aquecimento dos materiais 3D** no menu, em `call_deferred`, para o primeiro jogo não travar
 
 ---
 

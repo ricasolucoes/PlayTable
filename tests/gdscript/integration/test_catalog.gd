@@ -237,3 +237,67 @@ func test_nenhum_jogo_reescreve_o_ciclo_de_vida() -> void:
 		for assinatura in CICLO_COMPARTILHADO:
 			assert_false(codigo.contains(assinatura),
 				"%s redeclara '%s' — o ciclo mora em shared/BaseGame.gd" % [caminho, assinatura])
+
+
+# ------------------------------------------- o Voltar do aparelho (Android)
+
+## O gesto Voltar do Android fechava o aplicativo INTEIRO, de qualquer tela.
+##
+## `application/config/quit_on_go_back` nasce ligado e nenhuma tela tratava
+## NOTIFICATION_WM_GO_BACK_REQUEST: quem apertava Voltar no meio de uma partida
+## -- o gesto mais natural do aparelho para sair de uma tela -- perdia o
+## aplicativo, e nao a tela. Sem estas duas condicoes juntas o defeito volta,
+## e volta em silencio: no computador nao ha gesto de Voltar para revelar.
+## Anota o pedido de voltar sem trocar de cena.
+class VoltaSemNavegar extends BaseGame:
+	var voltas: int = 0
+
+	func go_back_to_menu() -> void:
+		voltas += 1
+
+
+func test_o_voltar_do_aparelho_nao_fecha_o_aplicativo() -> void:
+	assert_false(get_tree().quit_on_go_back,
+		"o SceneManager desliga o fechar-no-voltar da engine")
+
+	var telas := {
+		"res://core/telas/MenuTabuleiro.tscn": "menu de tabuleiro",
+		"res://core/telas/MenuCartas.tscn": "menu de cartas",
+		"res://core/telas/PerfilScreen.tscn": "perfil",
+		"res://core/telas/LobbyScreen.tscn": "sala de rede",
+	}
+	for caminho in telas:
+		var tela: Node = add_child_autofree((load(caminho) as PackedScene).instantiate())
+		assert_true(tela.has_method("voltar_do_aparelho"),
+			"%s trata o Voltar do aparelho" % telas[caminho])
+
+	# Todo jogo trata, porque herda de BaseGame.
+	var jogo: Node = add_child_autofree(
+		(load("res://games/batalha_naval/BattleshipGame.tscn") as PackedScene).instantiate())
+	assert_true(jogo.has_method("voltar_do_aparelho"), "e todo jogo tambem, por BaseGame")
+	# O retorno e conferido num duble que NAO navega: chamar o Voltar numa cena
+	# de verdade dispara `SceneManager.goto_scene`, que troca a cena corrente
+	# do processo da suite por um MenuTabuleiro de tela inteira -- e ele fica
+	# la, engolindo todo clique dos testes de toque que rodam depois.
+	var duble := VoltaSemNavegar.new()
+	add_child_autofree(duble)
+	assert_true(duble.voltar_do_aparelho(), "de dentro da partida o Voltar sempre e tratado")
+	assert_eq(duble.voltas, 1, "e leva ao menu da categoria")
+
+	# O menu principal e o topo da pilha: la o Voltar sai do aplicativo, que e o
+	# que o Android espera. E por isso que ele NAO trata.
+	var menu: Node = add_child_autofree(
+		(load("res://core/telas/MainMenu.tscn") as PackedScene).instantiate())
+	assert_false(menu.has_method("voltar_do_aparelho"),
+		"no menu principal o Voltar sai do aplicativo, de proposito")
+
+
+func test_todos_os_jogos_desbloqueados_no_nivel_1() -> void:
+	for def in GameCatalog.get_all_games():
+		assert_lte(def.unlock_level, 1,
+			"%s deve ser liberado no nivel 1 para novos jogadores" % def.title)
+
+
+func test_barramento_tem_sinal_toast_requested() -> void:
+	assert_true(GameEventBus.has_signal("toast_requested"),
+		"GameEventBus possui sinal toast_requested")

@@ -27,18 +27,34 @@ O PlayTable **NÃO** coleta, armazena, transmite ou compartilha nenhum dado de i
 As seguintes informações são salvas unicamente de forma local no seu aparelho (`user://config.save`):
 * Preferências de volume e efeitos sonoros;
 * Seleção de idioma da interface;
-* Estatísticas locais de vitórias, derrotas e recordes nos 16 minijogos.
+* Estatísticas locais de vitórias, derrotas e recordes nos 22 jogos.
 
 Esses dados nunca saem do seu aparelho, a menos que você utilize ferramentas externas de backup do próprio sistema operacional Android.
 
 ---
 
-## 3. Serviços Opcionais de Terceiros (Google Play Games)
+## 3. Serviços Opcionais de Terceiros
 
-O PlayTable inclui integração com o **Google Play Games Services (PGS v2)** e **Play Games Sidekick**, fornecido pela Google LLC:
-* **Finalidade:** Permitir login opcional com sua conta Google Play Games para desbloqueio de conquistas, participação em tabelas de líderes públicas e acesso a ferramentas em tempo real (como gravação de tela e dicas).
-* **Tratamento de Dados:** Quaisquer dados vinculados à sua conta Play Games (como Gamer ID, XP e pontuações enviadas a placares) são gerenciados diretamente pela infraestrutura da Google sob a [Política de Privacidade da Google](https://policies.google.com/privacy).
-* **Uso Offline:** O PlayTable funciona perfeitamente sem conexão à internet e sem login no Play Games.
+### 3.1 Google Play Games (somente Android)
+
+Os builds Android podem integrar opcionalmente o **Google Play Games Services
+(PGS v2)**, fornecido pela Google LLC:
+* **Finalidade:** permitir conquistas, placares e sincronização opcional do progresso.
+* **Tratamento de dados:** dados vinculados à conta Play Games são tratados pela
+  infraestrutura da Google conforme a [Política de Privacidade da Google](https://policies.google.com/privacy).
+* **Uso offline:** o PlayTable funciona sem conexão e sem login. O build iOS
+  submetido à Apple não usa PGS e não exige Game Center ou outra conta.
+
+### 3.2 Multiplayer opcional do PlayTable
+
+O modo local usa a rede Wi-Fi entre dois aparelhos e não envia dados a um
+serviço externo. Os três jogos de rede também podem usar opcionalmente o
+RicaGames (`https://games.ricasolucoes.com.br/api/v1`) para criar/entrar em uma
+sala temporária e o WebSocket retornado para retransmitir jogadas. O serviço
+recebe apenas o código da sala e os dados técnicos necessários à partida; não há
+conta PlayTable, publicidade, perfil social ou conteúdo publicado pelo jogador.
+O modo solo e o multiplayer local continuam funcionando quando esse serviço
+está indisponível.
 
 ---
 
@@ -91,7 +107,7 @@ PlayTable is a free, open-source (MIT licensed), offline-first board and card ga
 * **Local Storage Only:** Game settings, audio volumes, and gameplay records are stored strictly on your local device.
 
 ### 2. Third-Party Services
-PlayTable optionally integrates with **Google Play Games Services (PGS v2)** for achievements and leaderboards, governed by [Google's Privacy Policy](https://policies.google.com/privacy). The game is fully functional offline without signing in.
+Android builds may optionally integrate with **Google Play Games Services (PGS v2)** for achievements, leaderboards, and cloud progress, governed by [Google's Privacy Policy](https://policies.google.com/privacy). The iOS build does not require Game Center or any account. The optional PlayTable multiplayer relay uses the RicaGames service at `https://games.ricasolucoes.com.br/api/v1` only for temporary room setup and live match relay. The game remains fully functional offline without signing in.
 
 ### 3. Children's Privacy (COPPA)
 PlayTable does not knowingly collect any personal data from children under 13 (or applicable age in your jurisdiction). It is family-safe, ad-free, and contains no in-app purchases.

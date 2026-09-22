@@ -1,18 +1,12 @@
 ---
-model: gpt-image-2
-date: 2026-09-06T18:53:38-03:00
-prompt_sha256: 41684f8db8a6429eae8f7c3d10e3ceb714225400d09a20102b478e148970bc35
-background: chroma
-references: gem_ruby
-post: chroma-key, despill, erode 1px, bbox, 256x256 LANCZOS
+model: OpenAI image_gen (ID do modelo nao exposto)
+date: 2026-09-06
+reviewed: 2026-09-09
+background: native alpha
+approved_manifest_sha256: a2dfdfe33351f2a88cb7e1336e06af28f2c31b3632301b89b61c4341c55b5ebd
+post: sips resize 256x256; alpha preservado
 ---
 
-# memoria / gem_emerald
+# Restauracao da imagem original
 
-## Bíblia de estilo
-
-Coleção PlayTable de jogos de mesa: peças de resina, madeira nobre, marfim e metal escovado, fotografadas como miniatura real sobre estúdio, luz quente vinda do alto-esquerda com uma única especular limpa. Realismo de objeto de tabuleiro caro, não ilustração. NUNCA pixel art, NUNCA desenho animado, NUNCA estilo cartoon infantil, NUNCA propriedade intelectual de terceiros. A silhueta tem de ler a 64 px de altura numa tela de telefone segurada a meio metro do rosto: forma grande e contrastada, sem detalhe fino. Este jogo é um jogo da memória 2D de salão: cartas de papelão acetinado azul-real com filigrana dourada, e gemas lapidadas como prêmio. Tudo em vista frontal exata e chapada, sem perspectiva.
-
-## Prompt
-
-A mesma pedra da referência, mesmo corte, mesma escala e mesmo brilho, em verde esmeralda profundo em vez de rubi. Corte esmeralda retangular de cantos chanfrados, para ter FORMA diferente do rubi além da cor.
+Fonte local: `/Users/sierra/.codex/generated_images/01a07542-3769-7ee1-9028-692245ee705c/exec-4939c7f3-fd63-4799-8aa5-a7391ac7e80f.png`. Restaurada apos identificar remocao indevida do verde por chroma-key. O sidecar anterior descrevia outro processamento e foi preservado no backup da revisao. O prompt literal da chamada original nao foi recuperado nesta revisao; a especificacao atual esta no manifesto, nao e comprovacao do prompt enviado.

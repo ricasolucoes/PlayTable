@@ -53,8 +53,7 @@ static func get_board_games() -> Array[GameDefinition]:
 		GameDefinition.create("GAME_GAMAO", "🎲", "res://games/gamao/BackgammonGame.tscn", &"board", "GAME_DESC_BACKGAMMON")
 			.tagged("GENRE_STRATEGY", IA | DUPLA),
 		GameDefinition.create("GAME_NUMBER_PATH", "🛣️", "res://games/caminho_numerico/NumberPathGame.tscn", &"board", "GAME_DESC_NUMBER_PATH")
-			.tagged("GENRE_PUZZLE", SOLO)
-			.locked_until(2),
+			.tagged("GENRE_PUZZLE", SOLO),
 	]
 
 

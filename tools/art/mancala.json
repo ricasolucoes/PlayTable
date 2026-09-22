@@ -20,7 +20,9 @@
       "reference": [
         "semente_ambar"
       ],
-      "size": 256
+      "size": 256,
+      "background": "none",
+      "_nota": "Arte aprovada com alpha nativo; nao aplicar chroma-key a pixels verdes."
     },
     {
       "name": "semente_safira",

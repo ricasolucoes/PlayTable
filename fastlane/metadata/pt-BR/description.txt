@@ -1,0 +1,23 @@
+PlayTable reúne 22 jogos clássicos de tabuleiro, cartas e lógica em um só app: gratuito, sem anúncios e feito para jogar offline.
+
+Jogue no seu ritmo, sem cadastro, sem compras dentro do app e sem coleta de dados pessoais. As configurações, estatísticas e recordes ficam no dispositivo. O multiplayer local funciona entre aparelhos na mesma rede Wi-Fi, sem servidor nem conta; os mesmos três jogos também oferecem partidas opcionais pela internet por código de sala, usando o relay do PlayTable.
+
+JOGOS DE TABULEIRO E LÓGICA
+• Damas, Batalha Naval, Campo Minado e Sudoku.
+• Dominó, Gamão, Reversi, Ludo e Quatro em Linha.
+• Jogo da Velha, Mancala, Senet, Resta Um e Torre de Hanói.
+• Nim e Caminho Numérico.
+
+JOGOS DE CARTAS
+• Paciência Klondike e Paciência Spider.
+• Blackjack, Jogo da Memória, UnoLike e Vídeo Pôquer.
+
+DESTAQUES
+• Solo contra a inteligência artificial ou pass-and-play com amigos.
+• Multiplayer local em Jogo da Velha, Quatro em Linha e Reversi.
+• Partidas opcionais pela internet nesses três jogos, usando código de sala.
+• Interface adaptada para celulares e tablets.
+• Português, inglês e espanhol, com troca de idioma no app.
+• Código aberto, desenvolvido com Godot.
+
+Jogue clássicos de mesa em qualquer lugar, até sem internet.

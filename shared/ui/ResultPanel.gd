@@ -36,6 +36,10 @@ var _mostrando: bool = false
 var _primario_e_proximo: bool = false
 
 
+func _init() -> void:
+	set_meta("allow_overlay", true)
+
+
 func _ready() -> void:
 	layer = 90
 	_montar()
@@ -103,13 +107,13 @@ func _montar() -> void:
 	_btn_menu = UIKit.botao(tr("BTN_MENU"), UIKit.FONTE_CORPO)
 	_btn_menu.name = "BtnMenu"
 	_btn_menu.custom_minimum_size = Vector2(150, UIKit.TOQUE_MIN)
-	_btn_menu.pressed.connect(func() -> void: menu_pressed.emit())
+	UIKit.conectar_toque(_btn_menu, func() -> void: menu_pressed.emit())
 	fila.add_child(_btn_menu)
 
 	_btn_primario = UIKit.botao("", UIKit.FONTE_SECAO)
 	_btn_primario.name = "BtnPrimario"
 	_btn_primario.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_btn_primario.pressed.connect(func() -> void: primary_pressed.emit())
+	UIKit.conectar_toque(_btn_primario, func() -> void: primary_pressed.emit())
 	fila.add_child(_btn_primario)
 
 

@@ -1,0 +1,23 @@
+PlayTable reúne 22 juegos clásicos de mesa, cartas y lógica en una sola app: gratis, sin anuncios y diseñada para jugar sin conexión.
+
+Juega a tu ritmo, sin cuenta, sin compras integradas y sin recopilar datos personales. La configuración, las estadísticas y los récords permanecen en tu dispositivo. El multijugador local funciona entre dispositivos conectados a la misma red Wi-Fi, sin servidor ni registro; esos tres juegos también ofrecen partidas opcionales por internet mediante un código de sala y el relay de PlayTable.
+
+JUEGOS DE MESA Y LÓGICA
+• Damas, Batalla Naval, Buscaminas y Sudoku.
+• Dominó, Backgammon, Reversi, Ludo y Cuatro en Línea.
+• Tres en Línea, Mancala, Senet, Solitario de Clavijas y Torre de Hanói.
+• Nim y Camino Numérico.
+
+JUEGOS DE CARTAS
+• Solitario Klondike y Solitario Spider.
+• Blackjack, Juego de Memoria, UnoLike y Video Poker.
+
+CARACTERÍSTICAS
+• Juega en solitario contra la IA o por turnos con amigos.
+• Multijugador local para Tres en Línea, Cuatro en Línea y Reversi.
+• Partidas opcionales por internet para esos tres juegos mediante un código de sala.
+• Interfaz adaptada a teléfonos y tabletas.
+• Portugués, inglés y español con cambio de idioma dentro de la app.
+• Código abierto, desarrollado con Godot.
+
+Lleva contigo una mesa llena de clásicos, incluso sin conexión a internet.

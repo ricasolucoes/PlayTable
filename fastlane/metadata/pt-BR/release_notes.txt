@@ -1,0 +1,1 @@
+Primeiro lançamento do PlayTable para iPhone e iPad: 22 jogos clássicos, modo offline, multiplayer local, partidas opcionais por código de sala e suporte a português, inglês e espanhol.

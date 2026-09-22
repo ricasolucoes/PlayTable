@@ -63,7 +63,9 @@ func _montar() -> void:
 	margem.set_anchors_preset(Control.PRESET_FULL_RECT)
 	margem.add_theme_constant_override("margin_left", 24)
 	margem.add_theme_constant_override("margin_right", 24)
-	margem.add_theme_constant_override("margin_top", 40)
+	# Base de 8px + inset do notch (iPhone) ou Dynamic Island.
+	var topo_margem := 8 + int(JogosSafeArea.top(get_viewport()))
+	margem.add_theme_constant_override("margin_top", topo_margem)
 	margem.add_theme_constant_override("margin_bottom", 28)
 	add_child(margem)
 
@@ -93,7 +95,7 @@ func _barra_superior() -> HBoxContainer:
 	var barra := UIKit.hbox(12)
 	var voltar := UIKit.botao(tr("BTN_BACK"), UIKit.FONTE_MIUDA)
 	voltar.custom_minimum_size = Vector2(150, UIKit.TOQUE_MIN)
-	voltar.pressed.connect(_voltar)
+	UIKit.conectar_toque(voltar, _voltar)
 	barra.add_child(voltar)
 
 	var titulo := UIKit.rotulo(tr("PROFILE_TITLE"), UIKit.FONTE_TITULO, UIKit.OURO)
@@ -119,7 +121,7 @@ func _barra_de_abas() -> ScrollContainer:
 		var b := UIKit.botao(tr(ABA_KEYS[aba]), UIKit.FONTE_MIUDA)
 		b.toggle_mode = true
 		b.custom_minimum_size = Vector2(120, UIKit.TOQUE_MIN)
-		b.pressed.connect(_trocar_aba.bind(aba))
+		UIKit.conectar_toque(b, _trocar_aba.bind(aba))
 		linha.add_child(b)
 		_botoes_aba[aba] = b
 	return rolagem
@@ -129,6 +131,12 @@ func _voltar() -> void:
 	if AudioManager:
 		AudioManager.play_click()
 	SceneManager.goto_scene("res://core/telas/MainMenu.tscn")
+
+
+## O Voltar do aparelho: sobe para o menu principal.
+func voltar_do_aparelho() -> bool:
+	_voltar()
+	return true
 
 
 func _trocar_aba(aba: String) -> void:
@@ -267,16 +275,16 @@ func _cartao_play_games() -> PanelContainer:
 		v.add_child(UIKit.rotulo("🎮 " + tr("PGS_SIGNED_IN") % PlayGamesManager.player_name(),
 			UIKit.FONTE_CORPO, UIKit.VERDE))
 		var b := UIKit.botao("🏆 " + tr("PGS_ACHIEVEMENTS"))
-		b.pressed.connect(PlayGamesManager.show_achievements)
+		UIKit.conectar_toque(b, PlayGamesManager.show_achievements)
 		v.add_child(b)
 		var l := UIKit.botao("📊 " + tr("PGS_LEADERBOARDS"))
-		l.pressed.connect(PlayGamesManager.show_all_leaderboards)
+		UIKit.conectar_toque(l, PlayGamesManager.show_all_leaderboards)
 		v.add_child(l)
 	else:
 		v.add_child(UIKit.rotulo("💾 " + tr("PGS_OFFLINE"), UIKit.FONTE_CORPO, UIKit.TEXTO_FRACO))
 		if PlayGamesManager.is_available():
 			var b := UIKit.botao(tr("PGS_SIGNED_IN") % "Play Games")
-			b.pressed.connect(PlayGamesManager.sign_in_interactive)
+			UIKit.conectar_toque(b, PlayGamesManager.sign_in_interactive)
 			v.add_child(b)
 
 	var fila := PlayGamesManager.queued_count()
@@ -443,7 +451,7 @@ func _cartao_item(item: Dictionary) -> PanelContainer:
 		else:
 			var b := UIKit.botao(tr("PROFILE_EQUIP"), UIKit.FONTE_MIUDA)
 			b.custom_minimum_size = Vector2(150, UIKit.TOQUE_MIN)
-			b.pressed.connect(_equipar.bind(str(item["id"])))
+			UIKit.conectar_toque(b, _equipar.bind(str(item["id"])))
 			linha.add_child(b)
 	else:
 		linha.add_child(UIKit.rotulo(tr("PROFILE_LOCKED"), UIKit.FONTE_MIUDA, UIKit.TEXTO_FRACO))

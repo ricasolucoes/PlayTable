@@ -17,6 +17,7 @@ func _ready() -> void:
 	status_label = shell.status_label
 	btn_restart = shell.btn_restart
 	shell.restart_requested.connect(_on_restart_pressed)
+	register_mobile_band($BoardContainer, &"content", 12.0)
 	
 	_setup_board_ui()
 	_setup_numpad()

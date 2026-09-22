@@ -1,18 +1,12 @@
 ---
-model: gpt-image-2
-date: 2026-09-06T18:54:40-03:00
-prompt_sha256: 34065ee133dabc7114daf4cdfad4da6041b96d020572911415c9f05a11372394
-background: chroma
-references: semente_ambar
-post: chroma-key, despill, erode 1px, bbox, 256x256 LANCZOS
+model: OpenAI image_gen (ID do modelo nao exposto)
+date: 2026-09-06
+reviewed: 2026-09-09
+background: native alpha
+approved_manifest_sha256: 40dc21a7b353bb14c5c0c13adf35639c8ede13418046ba3ca8cf2c189c1edb2c
+post: sips resize 256x256; alpha preservado
 ---
 
-# mancala / semente_esmeralda
+# Restauracao da imagem original
 
-## Bíblia de estilo
-
-Coleção PlayTable de jogos de mesa: peças de resina, madeira nobre, marfim e metal escovado, fotografadas como miniatura real sobre estúdio, luz quente vinda do alto-esquerda com uma única especular limpa. Realismo de objeto de tabuleiro caro, não ilustração. NUNCA pixel art, NUNCA desenho animado, NUNCA estilo cartoon infantil, NUNCA propriedade intelectual de terceiros. A silhueta tem de ler a 64 px de altura numa tela de telefone segurada a meio metro do rosto: forma grande e contrastada, sem detalhe fino. Este jogo é um mancala de madeira com sementes de vidro polido. As sementes são esferas; a imagem é a TEXTURA de albedo da esfera, vista de cima com o brilho especular no alto-esquerda.
-
-## Prompt
-
-A mesma esfera de vidro da referência, mesmo brilho e mesma escala, em verde esmeralda translúcido.
+Fonte local: `/Users/sierra/.codex/generated_images/01a07542-3769-7ee1-9028-692245ee705c/exec-c9f7f09e-ab45-4f9a-af0e-bedafb968ff3.png`. Restaurada apos identificar remocao indevida do verde por chroma-key. O sidecar anterior descrevia outro processamento e foi preservado no backup da revisao. O prompt literal da chamada original nao foi recuperado nesta revisao; a especificacao atual esta no manifesto, nao e comprovacao do prompt enviado.

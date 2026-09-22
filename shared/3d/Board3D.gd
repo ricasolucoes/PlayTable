@@ -14,6 +14,12 @@ extends Node3D
 signal cell_clicked(row: int, col: int)
 signal cell_hovered(row: int, col: int)
 
+## O dedo SUBIU sobre esta casa. Existe porque por uma peca no tabuleiro e um
+## gesto de soltar, e nao de apertar: quem poe precisa arrastar ate ver onde a
+## peca cai, e so entao largar. Com `cell_clicked` sozinho a peca nascia no
+## ponto do aperto, e o arrasto nao servia para nada.
+signal cell_released(row: int, col: int)
+
 enum CellState {
 	NORMAL,     ## Casa em repouso.
 	VALID,      ## Destino possivel da jogada atual.
@@ -67,6 +73,18 @@ var _hover_cell: Vector2i = Vector2i(-1, -1)
 func _ready() -> void:
 	if cells_root.get_child_count() == 0:
 		setup_board(rows, cols, cell_size, board_style)
+	# Esconder um Node3D nao desliga a forma de colisao dele: o Picker de um
+	# tabuleiro fora de cena continuava interceptando o raio do toque, e um dedo
+	# mirado no tabuleiro visivel podia morrer num tabuleiro invisivel na frente
+	# dele. Acontece na Batalha Naval, que tira o mapa de ataque enquanto o
+	# jogador posiciona a frota, e aconteceria em qualquer cena com dois.
+	visibility_changed.connect(_seguir_a_visibilidade)
+	_seguir_a_visibilidade()
+
+
+func _seguir_a_visibilidade() -> void:
+	if picker != null:
+		picker.input_ray_pickable = is_visible_in_tree()
 
 # ---------------------------------------------------------------------------
 # Montagem
@@ -487,12 +505,18 @@ var _touch_emulates_mouse: bool = ProjectSettings.get_setting(
 func _on_picker_input_event(_camera: Node, event: InputEvent, event_position: Vector3, _normal: Vector3, _shape_idx: int) -> void:
 	if event is InputEventMouseButton:
 		var mb := event as InputEventMouseButton
-		if mb.pressed and mb.button_index == MOUSE_BUTTON_LEFT:
-			_emit_cell_clicked(event_position)
+		if mb.button_index == MOUSE_BUTTON_LEFT:
+			if mb.pressed:
+				_emit_cell_clicked(event_position)
+			else:
+				_emit_cell_released(event_position)
 	elif event is InputEventScreenTouch:
 		var st := event as InputEventScreenTouch
-		if st.pressed and not _touch_emulates_mouse:
-			_emit_cell_clicked(event_position)
+		if not _touch_emulates_mouse:
+			if st.pressed:
+				_emit_cell_clicked(event_position)
+			else:
+				_emit_cell_released(event_position)
 	elif event is InputEventMouseMotion:
 		var cell := world_to_cell(event_position)
 		if cell != _hover_cell:
@@ -505,6 +529,12 @@ func _emit_cell_clicked(world_point: Vector3) -> void:
 	var cell := world_to_cell(world_point)
 	if cell.x >= 0:
 		cell_clicked.emit(cell.x, cell.y)
+
+
+func _emit_cell_released(world_point: Vector3) -> void:
+	var cell := world_to_cell(world_point)
+	if cell.x >= 0:
+		cell_released.emit(cell.x, cell.y)
 
 func _on_picker_mouse_exited() -> void:
 	_hover_cell = Vector2i(-1, -1)

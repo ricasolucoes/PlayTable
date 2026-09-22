@@ -117,9 +117,16 @@ func _apply_environment() -> void:
 
 ## Enquadra a camera em um conteudo de `size_xz` unidades centrado em `center`.
 ## Chame sempre que o tabuleiro for montado ou mudar de tamanho.
-func frame_content(size_xz: Vector2, center: Vector3 = Vector3.ZERO) -> void:
+##
+## `max_tilt` acima de zero levanta o teto de inclinacao so para este
+## enquadramento. O teto do tema serve a uma mesa com pecas de pe -- carta,
+## peao, torre --, que achatam vistas de cima; uma cena que sabe que o conteudo
+## dela e uma grade rasa pode pedir mais, e e o que faz um tabuleiro quadrado
+## deixar de sobrar altura em tela de retrato. Sem o parametro, vale o tema.
+func frame_content(size_xz: Vector2, center: Vector3 = Vector3.ZERO,
+		max_tilt: float = -1.0) -> void:
 	if camera:
-		camera.max_auto_tilt = _active_theme.camera_max_tilt
+		camera.max_auto_tilt = max_tilt if max_tilt > 0.0 else _active_theme.camera_max_tilt
 		camera.frame_content(size_xz, center, _active_theme.camera_tilt)
 	framing_changed.emit(size_xz)
 

@@ -8,7 +8,7 @@ extends GutTest
 
 const JOGO := "jogo_de_teste_da_escada"
 
-var _backup: ConfigFile = null
+var _backup: Dictionary = {}
 var _backup_perfil: Dictionary = {}
 var _backup_fila: String = ""
 

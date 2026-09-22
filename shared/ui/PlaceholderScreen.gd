@@ -40,3 +40,9 @@ func go_back_to_menu() -> void:
 	if AudioManager:
 		AudioManager.play_click()
 	SceneManager.goto_scene(menu_scene_path)
+
+
+## O Voltar do aparelho: volta ao menu de onde o jogador veio.
+func voltar_do_aparelho() -> bool:
+	go_back_to_menu()
+	return true

@@ -13,7 +13,6 @@ var ai_level: int = DifficultyManager.DEFAULT_LEVEL
 ## passam a ser da pessoa do outro lado da mesa. O tabuleiro ja e simetrico --
 ## o que faltava era o toque e o anel chegarem la.
 var vs_ai: bool = true
-var mode_switch: ModeSwitch = null
 
 ## O lado da vez na mesa compartilhada: 0 e quem tem as covas 0..5, 1 e quem
 ## tem as 7..12. Contra a maquina e sempre 0.
@@ -97,8 +96,9 @@ func _ready() -> void:
 	_setup_3d_mancala_board()
 	_setup_count_labels()
 	_setup_picker()
-	mode_switch = ModeSwitch.montar(self, vs_ai)
-	mode_switch.trocou.connect(_on_modo_trocado)
+	if top_bar != null:
+		top_bar.oferecer_modo(vs_ai)
+		top_bar.mode_pressed.connect(_on_modo_trocado)
 
 	halos = CellHalo3D.new()
 	$BoardRoot.add_child(halos)

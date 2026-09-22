@@ -1,0 +1,19 @@
+{
+  "game_id": "nim",
+  "out_dir": "shared/assets/nim",
+  "hero": "palito",
+  "style_bible": "Coleção PlayTable de jogos de mesa. Fotorrealismo macro.",
+  "defaults": {
+    "model": "gemini-3.1-flash-image",
+    "background": "chroma",
+    "size": 512,
+    "import": "decal"
+  },
+  "assets": [
+    {
+      "name": "palito",
+      "prompt": "Um palito cilíndrico requintado feito de bambu envernizado com uma ponta metálica dourada. Orientação vertical.",
+      "size": 512
+    }
+  ]
+}

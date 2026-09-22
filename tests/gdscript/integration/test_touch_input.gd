@@ -102,6 +102,23 @@ func test_toque_e_mouse_emulado_contam_como_um_toque_so() -> void:
 		"o par toque + mouse emulado dispara cell_clicked uma vez")
 
 
+## Soltar o botao sobre o tabuleiro avisa a casa. E o sinal que faz um arrasto
+## poder terminar numa jogada, em vez de a jogada acontecer no aperto.
+func test_soltar_o_botao_avisa_a_casa() -> void:
+	var board: Board3D = add_child_autofree(BOARD_3D.instantiate())
+	board.setup_board(8, 8, 0.75, "wood_checkered")
+	watch_signals(board)
+	var mundo := board.get_cell_position_3d(2, 5, 0.0)
+	var solta := InputEventMouseButton.new()
+	solta.button_index = MOUSE_BUTTON_LEFT
+	solta.pressed = false
+	board._on_picker_input_event(null, solta, mundo, Vector3.UP, 0)
+	assert_signal_emit_count(board, "cell_released", 1, "cell_released dispara ao soltar")
+	assert_signal_emit_count(board, "cell_clicked", 0, "e nao dispara cell_clicked")
+	# O terceiro argumento e o indice da emissao, nao uma mensagem.
+	assert_signal_emitted_with_parameters(board, "cell_released", [2, 5], 0)
+
+
 # ---------------------------------------------------------------- Damas
 
 func test_tocar_uma_peca_das_damas_a_seleciona() -> void:
@@ -154,10 +171,18 @@ func test_tocar_o_radar_antes_de_posicionar_nao_atira() -> void:
 	assert_eq(jogo._radar_marks.get_child_count(), 0, "nenhum pino no radar")
 
 
+## Um toque completo no mapa da frota: aperta e solta na mesma casa. O navio
+## cai ao SOLTAR -- e o que deixa o arrasto escolher o lugar --, entao um teste
+## que so aperta nao poe navio nenhum.
+func _tocar_a_frota(jogo: Node, r: int, c: int) -> void:
+	jogo._on_fleet_cell_clicked(r, c)
+	jogo._on_fleet_cell_released(r, c)
+
+
 func test_posicionar_navio_a_navio_libera_o_comecar() -> void:
 	var jogo := await _montar(BATALHA_NAVAL)
 	for linha in range(BattleshipRules.SHIP_DEFS.size()):
-		jogo._on_fleet_cell_clicked(linha * 2, 4)
+		_tocar_a_frota(jogo, linha * 2, 4)
 	assert_eq(jogo.player_ships.size(), BattleshipRules.SHIP_DEFS.size(), "os cinco na agua")
 	assert_false(jogo.btn_start.disabled, "com a frota completa da para comecar")
 	var casas := 0
@@ -174,11 +199,11 @@ func test_posicionar_navio_a_navio_libera_o_comecar() -> void:
 
 func test_navio_por_cima_de_outro_e_recusado() -> void:
 	var jogo := await _montar(BATALHA_NAVAL)
-	jogo._on_fleet_cell_clicked(0, 4)            # porta-avioes na linha 0
+	_tocar_a_frota(jogo, 0, 4)                   # porta-avioes na linha 0
 	var antes: int = jogo.player_ships.size()
-	jogo._on_fleet_cell_clicked(0, 4)            # o encouracado na mesma linha
+	_tocar_a_frota(jogo, 0, 4)                   # o encouracado na mesma linha
 	assert_eq(jogo.player_ships.size(), antes, "o segundo navio nao entrou")
-	assert_string_contains(jogo.status_label.text, "cima de outro", "e o aviso diz por que")
+	assert_eq(jogo.status_label.text, tr("BATTLESHIP_PLACE_BLOCKED"), "e o aviso diz por que")
 
 
 func test_tocar_um_navio_ja_posto_o_devolve_para_a_mao() -> void:
@@ -186,7 +211,7 @@ func test_tocar_um_navio_ja_posto_o_devolve_para_a_mao() -> void:
 	jogo._on_btn_random_pressed()
 	assert_eq(jogo.player_ships.size(), BattleshipRules.SHIP_DEFS.size(), "frota sorteada")
 	var alvo: Vector2i = jogo.player_ships[0]["cells"][0]
-	jogo._on_fleet_cell_clicked(alvo.x, alvo.y)
+	_tocar_a_frota(jogo, alvo.x, alvo.y)
 	assert_eq(jogo.player_ships.size(), BattleshipRules.SHIP_DEFS.size() - 1, "o navio saiu do mapa")
 	assert_eq(jogo.player_grid.get_cell(alvo.x, alvo.y), 0, "e a casa ficou livre")
 	assert_true(jogo.btn_start.disabled, "com a frota incompleta nao se comeca")
@@ -194,11 +219,11 @@ func test_tocar_um_navio_ja_posto_o_devolve_para_a_mao() -> void:
 
 func test_o_navio_deitado_e_o_de_pe_ocupam_eixos_diferentes() -> void:
 	var jogo := await _montar(BATALHA_NAVAL)
-	jogo._on_fleet_cell_clicked(0, 4)
+	_tocar_a_frota(jogo, 0, 4)
 	var deitado: Array = jogo.player_ships[0]["cells"]
 	assert_eq(deitado[0].x, deitado[deitado.size() - 1].x, "deitado anda na coluna")
 	jogo._on_btn_rotate_pressed()
-	jogo._on_fleet_cell_clicked(5, 8)
+	_tocar_a_frota(jogo, 5, 8)
 	var de_pe: Array = jogo.player_ships[1]["cells"]
 	assert_eq(de_pe[0].y, de_pe[de_pe.size() - 1].y, "de pe anda na linha")
 
@@ -219,7 +244,7 @@ func test_tocar_a_propria_frota_avisa_em_vez_de_calar() -> void:
 	# atirar, mas tambem nao pode ficar calado.
 	var jogo := await _batalha_naval_em_combate()
 	jogo._on_fleet_cell_clicked(0, 0)
-	assert_string_contains(jogo.status_label.text, "de cima", "manda atirar no mapa de cima")
+	assert_eq(jogo.status_label.text, tr("BATTLESHIP_WRONG_BOARD"), "manda atirar no mapa de cima")
 	assert_true(jogo.ai_grid.get_cell(0, 0) in [0, 1], "e nao atira")
 
 
@@ -252,6 +277,105 @@ func test_afundar_um_navio_inimigo_revela_o_casco_inteiro() -> void:
 	await wait_process_frames(1)
 	assert_true(navio["sunk"], "o navio afundou")
 	assert_gt(jogo._radar_wrecks.get_child_count(), 0, "o casco aparece no mapa de ataque")
+
+
+# ------------------------------------- Batalha Naval: por a frota com o dedo
+
+## O navio cai onde o dedo SOBE, e nao onde ele desceu.
+##
+## Com `cell_clicked` sozinho, o navio nascia no ponto do aperto: arrastar nao
+## servia para nada, e num telefone arrastar e o gesto que existe.
+func test_arrastar_um_navio_o_larga_onde_o_dedo_sobe() -> void:
+	var jogo := await _montar(BATALHA_NAVAL)
+	jogo._on_fleet_cell_clicked(2, 2)
+	jogo._on_fleet_cell_hovered(6, 6)
+	assert_eq(jogo.player_ships.size(), 0, "no aperto ainda nao caiu navio nenhum")
+	jogo._on_fleet_cell_released(6, 6)
+	assert_eq(jogo.player_ships.size(), 1, "soltar poe o navio")
+	var casas: Array = jogo.player_ships[0]["cells"]
+	assert_eq(casas[0].x, 6, "na linha onde o dedo subiu, e nao onde desceu")
+
+
+## Um toque simples sobre um navio ja posto o deixa NA MAO -- ele nao volta
+## para o mesmo lugar. Sem isso, mover um navio seria privilegio de quem
+## arrasta: quem so toca recolhia e repunha na mesma casa.
+func test_um_toque_num_navio_posto_o_deixa_na_mao() -> void:
+	var jogo := await _montar(BATALHA_NAVAL)
+	jogo._on_btn_random_pressed()
+	var alvo: Vector2i = jogo.player_ships[2]["cells"][0]
+	var nome: String = str(jogo.player_ships[2]["name"])
+	jogo._on_fleet_cell_clicked(alvo.x, alvo.y)
+	jogo._on_fleet_cell_released(alvo.x, alvo.y)
+	assert_eq(jogo.player_ships.size(), 4, "o navio saiu do mapa")
+	assert_eq(str(BattleshipRules.SHIP_DEFS[jogo._navio_atual]["name"]), nome,
+		"e e ELE que esta na mao, nao o primeiro da lista")
+	# O segundo toque diz onde ele vai.
+	var destino := _casa_que_aceita(jogo)
+	assert_ne(destino, Vector2i(-1, -1), "ha lugar para o navio recolhido")
+	_tocar_a_frota(jogo, destino.x, destino.y)
+	assert_eq(jogo.player_ships.size(), 5, "o segundo toque o repoe")
+
+
+## Uma casa onde o navio que esta na mao CABE, do jeito que ele esta virado.
+## Escolher "a primeira casa vazia" nao serve: o navio nasce centrado nela e
+## pode esbarrar num vizinho.
+func _casa_que_aceita(jogo: Node) -> Vector2i:
+	for r in range(10):
+		for c in range(10):
+			if BattleshipRules.can_place(jogo.player_grid, jogo._casas_da_previa(r, c)):
+				return Vector2i(r, c)
+	return Vector2i(-1, -1)
+
+
+## A barra da frota escolhe qual navio vai para a mao.
+func test_a_ficha_da_frota_escolhe_o_navio() -> void:
+	var jogo := await _montar(BATALHA_NAVAL)
+	assert_eq(jogo.frota_bar.get_child_count(), BattleshipRules.SHIP_DEFS.size(),
+		"uma ficha por navio")
+	jogo._on_ficha_pressed(4)
+	assert_eq(jogo._navio_atual, 4, "a ficha tocada poe aquele navio na mao")
+	jogo._on_btn_random_pressed()
+	jogo._on_ficha_pressed(1)
+	assert_eq(jogo.player_ships.size(), BattleshipRules.SHIP_DEFS.size() - 1,
+		"com a frota na agua, a ficha recolhe aquele navio")
+	assert_eq(jogo._navio_atual, 1, "e ele fica na mao")
+
+
+## Girar redesenha a previa na mesma casa, ja na nova orientacao. Antes o botao
+## apagava a previa e o jogador tinha de mover o dedo so para ver o resultado.
+func test_girar_redesenha_a_previa_na_mesma_casa() -> void:
+	var jogo := await _montar(BATALHA_NAVAL)
+	jogo._on_fleet_cell_hovered(5, 5)
+	var deitado: Array = jogo._preview.duplicate()
+	assert_false(deitado.is_empty(), "a previa aparece sob o dedo")
+	jogo._on_btn_rotate_pressed()
+	var de_pe: Array = jogo._preview
+	assert_false(de_pe.is_empty(), "e continua a vista depois de girar")
+	assert_eq(deitado[0].x, deitado[deitado.size() - 1].x, "antes andava na coluna")
+	assert_eq(de_pe[0].y, de_pe[de_pe.size() - 1].y, "depois anda na linha")
+
+
+## No posicionamento o mapa de ataque sai de cena: ele esta vazio, nao aceita
+## toque, e ficava com metade da tela justo na fase em que a pontaria do dedo
+## no mapa de baixo mais importa.
+func test_o_posicionamento_da_a_mesa_inteira_a_frota() -> void:
+	var jogo := await _montar(BATALHA_NAVAL)
+	assert_false(jogo.radar_board.visible, "o mapa de ataque nao aparece ao posicionar")
+	jogo._on_btn_random_pressed()
+	jogo._on_btn_start_pressed()
+	await wait_process_frames(1)
+	assert_true(jogo.radar_board.visible, "e volta quando a batalha comeca")
+
+
+## A previa mostra o CASCO, e nao so o tom da casa: com cinco navios de
+## tamanhos parecidos, e a silhueta que diz qual deles esta indo.
+func test_a_previa_mostra_o_casco_do_navio() -> void:
+	var jogo := await _montar(BATALHA_NAVAL)
+	assert_eq(jogo._fleet_ghost.get_child_count(), 0, "sem dedo no mapa, sem fantasma")
+	jogo._on_fleet_cell_hovered(4, 4)
+	assert_eq(jogo._fleet_ghost.get_child_count(), 1, "o casco fantasma aparece")
+	jogo._on_fleet_cell_released(4, 4)
+	assert_eq(jogo._fleet_ghost.get_child_count(), 0, "e sai quando o navio e posto")
 
 
 # ------------------------------------------------------------ DragPicker3D
@@ -335,8 +459,8 @@ func test_os_botoes_da_hud_recebem_o_toque_com_o_picker_na_cena() -> void:
 	# proprio GUT fica por cima da cena durante a suite.
 	var alvos := {
 		"res://games/hanoi/HanoiGame.tscn": "UI/Actions/BtnUndo",
-		DAMAS: "GameShell/VBoxContainer/BtnRestart",
-		"res://games/solitario/PegSolitaireGame.tscn": "GameShell/VBoxContainer/BtnRestart",
+		DAMAS: "GameShell/ActionRail/BtnRestart",
+		"res://games/solitario/PegSolitaireGame.tscn": "GameShell/ActionRail/BtnRestart",
 	}
 	for caminho in alvos:
 		var jogo := await _montar(caminho)

@@ -1,0 +1,63 @@
+[gd_scene load_steps=5 format=3 uid="uid://xadrezgameuid"]
+
+[ext_resource type="Script" path="res://games/xadrez/ChessGame.gd" id="1_script"]
+[ext_resource type="PackedScene" uid="uid://tabletopenv3duid" path="res://shared/3d/TabletopEnvironment3D.tscn" id="2_env"]
+[ext_resource type="PackedScene" uid="uid://board3duid" path="res://shared/3d/Board3D.tscn" id="3_board"]
+[ext_resource type="PackedScene" uid="uid://gameshelluid" path="res://shared/ui/GameShell.tscn" id="4_shell"]
+
+[node name="ChessGame" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_script")
+
+[node name="TabletopEnvironment3D" parent="." instance=ExtResource("2_env")]
+
+[node name="Board3D" parent="." instance=ExtResource("3_board")]
+
+[node name="PiecesRoot" type="Node3D" parent="."]
+
+[node name="GameShell" parent="." instance=ExtResource("4_shell")]
+
+[node name="UI" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Rodape" type="Control" parent="UI"]
+metadata/mobile_hud_band = "bottom"
+metadata/mobile_hud_margin = 12.0
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -112.0
+offset_bottom = -24.0
+grow_horizontal = 2
+grow_vertical = 0
+mouse_filter = 2
+
+[node name="BtnUndo" type="Button" parent="UI/Rodape"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -120.0
+offset_top = -44.0
+offset_right = 120.0
+offset_bottom = 44.0
+grow_horizontal = 2
+grow_vertical = 2
+focus_mode = 0
+theme_override_font_sizes/font_size = 27
+text = "BTN_UNDO"

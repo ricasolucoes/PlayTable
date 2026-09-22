@@ -25,6 +25,11 @@ const BOARD_GAP := 0.5
 ## Altura do casco sobre a casa.
 const HULL_HEIGHT := 0.22
 
+## Ate onde a camera pode inclinar no posicionamento. O tabuleiro sozinho e
+## quadrado e a tela e de retrato: sem levantar o teto do tema, sobra um terco
+## da altura util em branco.
+const TETO_POSICIONANDO := 84.0
+
 ## Nome do asset gerado de cada classe (`tools/art/batalha_naval.json`): a
 ## silhueta vista de cima que se deita sobre o conves do casco procedural.
 const ART_NAVIOS := {
@@ -57,14 +62,53 @@ var _vertical: bool = false
 ## Preview da casa sob o dedo/ponteiro durante o posicionamento.
 var _preview: Array = []
 
+## O casco fantasma da previa: o navio que vai cair, translucido, no lugar em
+## que vai cair. Antes a previa era so o tom das casas -- verde ou vermelho --,
+## e o jogador so via a FORMA do navio depois de solta-lo.
+var _fantasma: MeshInstance3D
+var _fleet_ghost: Node3D
+
+## O gesto de posicionar, do aperto ao soltar.
+##
+## Por um navio e um gesto de SOLTAR, e nao de apertar: e arrastando que se ve
+## onde ele cai antes de largar. `_celula_aperto` guarda onde o dedo desceu e
+## `_pegou_no_aperto` diz se aquele aperto recolheu um navio ja posto -- o par
+## e o que separa o toque simples (recolhe e espera o segundo toque) do arrasto
+## (recolhe, acompanha o dedo e larga onde ele subir).
+var _celula_aperto := Vector2i(-1, -1)
+var _pegou_no_aperto := false
+
+## A ultima casa que o dedo/ponteiro visitou no mapa da frota.
+##
+## O Board3D so avisa quando a casa MUDA: depois de escolher outro navio -- pela
+## ficha ou recolhendo um ja posto -- a previa some e so voltaria quando o dedo
+## andasse para uma casa diferente. Guardando a casa, a previa do navio novo
+## nasce onde o dedo ja esta.
+var _ultima_casa := Vector2i(-1, -1)
+
+## Os rotulos dos dois mapas. Guardados porque saem de cena no posicionamento:
+## la a camera desce sobre a frota, e um rotulo de tamanho fixo em unidades de
+## mundo viraria uma faixa atravessada na tela.
+var _caption_radar: Label3D
+var _caption_fleet: Label3D
+
+
 ## O retangulo que a camera enquadra. Guardado porque a barra de posicionar
 ## some quando a batalha comeca, e a faixa util cresce com ela.
 var _conteudo_da_mesa: Vector2 = Vector2.ZERO
 
-@onready var setup_bar: HBoxContainer = $SetupBar
-@onready var btn_rotate: Button = $SetupBar/BtnRotate
-@onready var btn_random: Button = $SetupBar/BtnRandom
-@onready var btn_start: Button = $SetupBar/BtnStart
+@onready var setup_bar: VBoxContainer = $SetupBar
+@onready var frota_bar: HBoxContainer = $SetupBar/Frota
+@onready var btn_rotate: Button = $SetupBar/Botoes/BtnRotate
+@onready var btn_random: Button = $SetupBar/Botoes/BtnRandom
+@onready var btn_start: Button = $SetupBar/Botoes/BtnStart
+
+## Uma ficha por navio de `SHIP_DEFS`, na ordem da lista. E o unico lugar onde
+## o jogador ve a frota inteira de uma vez: o que ja esta na agua, o que esta
+## na mao e o que falta -- e o tamanho de cada um, em quadradinhos, que e a
+## informacao que ele realmente usa para escolher onde esconder.
+var _fichas: Array[Button] = []
+var _pips: Array = []                     # indice do navio -> Array[ColorRect]
 
 ## Degrau de 1 a 10 do DifficultyManager. Vira a chance de a IA largar o mapa
 ## de densidade e sortear casa.
@@ -103,6 +147,9 @@ func _ready() -> void:
 	_radar_wrecks = _child_root(radar_board, "Wrecks")
 	_fleet_marks = _child_root(fleet_board, "Marks")
 	_fleet_hulls = _child_root(fleet_board, "Hulls")
+	_fleet_ghost = _child_root(fleet_board, "Ghost")
+
+	_montar_fichas_da_frota()
 
 	# O toque entra pelo proprio tabuleiro: a casa tocada e a casa desenhada.
 	radar_board.cell_clicked.connect(_on_radar_cell_clicked)
@@ -111,6 +158,9 @@ func _ready() -> void:
 	# telefone o `emulate_mouse_from_touch` faz o dedo arrastando gerar o mesmo
 	# movimento, entao arrastar tambem mostra onde o navio vai cair.
 	fleet_board.cell_hovered.connect(_on_fleet_cell_hovered)
+	# O navio cai onde o dedo SOBE, e nao onde ele desceu: e isso que faz o
+	# arrasto valer alguma coisa aqui.
+	fleet_board.cell_released.connect(_on_fleet_cell_released)
 
 	_start_new_game()
 
@@ -130,15 +180,52 @@ func _place_boards() -> void:
 	radar_board.position = Vector3(0.0, 0.0, z0 + radar_size.y * 0.5)
 	fleet_board.position = Vector3(0.0, 0.0, z0 + radar_size.y + BOARD_GAP + fleet_size.y * 0.5)
 
-	_board_caption(radar_board, tr("BATTLESHIP_ENEMY_FLEET"), Color(1.0, 0.47, 0.38), radar_size)
-	_board_caption(fleet_board, tr("BATTLESHIP_YOUR_FLEET"), Color(0.52, 0.86, 1.0), fleet_size)
+	_caption_radar = _board_caption(radar_board, tr("BATTLESHIP_ENEMY_FLEET"),
+		Color(1.0, 0.47, 0.38), radar_size)
+	_caption_fleet = _board_caption(fleet_board, tr("BATTLESHIP_YOUR_FLEET"),
+		Color(0.52, 0.86, 1.0), fleet_size)
 
 	# A HUD ocupa os 230 px de cima; a camera enquadra a faixa que sobra.
 	_conteudo_da_mesa = Vector2(maxf(radar_size.x, fleet_size.x) + 0.45, total_depth + 0.45)
-	fit_table(_conteudo_da_mesa)
+	_enquadrar_a_fase()
 
 
-func _board_caption(board: Board3D, text: String, color: Color, board_size: Vector2) -> void:
+## Enquadra o que a fase pede.
+##
+## No posicionamento o mapa de ataque nao serve para nada: ele esta vazio, nao
+## aceita toque e ainda assim ficava com metade da tela enquanto o jogador
+## tentava acertar casas de ~34 px no mapa de baixo -- justo a fase em que a
+## precisao do dedo mais importa. Fora de cena, a frota fica com a tela toda e
+## a casa quase dobra de tamanho. Na batalha os dois voltam, porque ai o jogo e
+## comparar um mapa com o outro.
+func _enquadrar_a_fase() -> void:
+	var posicionando := fase == Fase.POSICIONANDO
+	radar_board.visible = not posicionando
+	if _caption_radar != null:
+		_caption_radar.visible = not posicionando
+	# O rotulo tem tamanho fixo em unidades de mundo: com a camera em cima da
+	# frota ele viraria uma faixa atravessada na tela.
+	if _caption_fleet != null:
+		_caption_fleet.visible = not posicionando
+
+	if posicionando:
+		# Sem os rotulos na mesa nao ha o que caber em volta do tabuleiro: a
+		# folga cai para o minimo que separa a borda da tela.
+		#
+		# E o tabuleiro sozinho e QUADRADO: num telefone em retrato o quadrado
+		# cabe pela largura e deixa a altura sobrando. A saida e a que a camera
+		# ja preve -- inclinar mais --, so que o teto de 74 graus do tema serve
+		# a uma mesa com pecas de pe. Uma grade de batalha naval aceita quase de
+		# cima, e e olhando de cima que se compara linha com coluna.
+		fit_table(fleet_board.content_size() + Vector2(0.12, 0.12),
+			fleet_board.position, TETO_POSICIONANDO)
+	elif _conteudo_da_mesa != Vector2.ZERO:
+		# Na batalha os dois mapas empilhados ja sao mais fundos que largos: a
+		# profundidade manda, e o teto do tema basta.
+		fit_table(_conteudo_da_mesa)
+
+
+func _board_caption(board: Board3D, text: String, color: Color, board_size: Vector2) -> Label3D:
 	var lbl := Label3D.new()
 	lbl.text = text
 	lbl.font_size = 64
@@ -154,6 +241,7 @@ func _board_caption(board: Board3D, text: String, color: Color, board_size: Vect
 	lbl.rotation_degrees = Vector3(-90.0, 0.0, 0.0)
 	lbl.position = Vector3(0.0, 0.02, -board_size.y * 0.5 - 0.26)
 	board.add_child(lbl)
+	return lbl
 
 
 func _child_root(parent: Node3D, name_: String) -> Node3D:
@@ -191,7 +279,12 @@ func _start_new_game() -> void:
 	fase = Fase.POSICIONANDO
 	_navio_atual = 0
 	_preview = []
+	_celula_aperto = Vector2i(-1, -1)
+	_ultima_casa = Vector2i(-1, -1)
+	_pegou_no_aperto = false
+	_limpar_fantasma()
 	setup_bar.visible = true
+	_enquadrar_a_fase()
 	_pintar_botao_de_giro()
 	_update_fleet_status_labels()
 	_anunciar_posicionamento()
@@ -241,7 +334,10 @@ func _hull_geometry(board: Board3D, ship: Dictionary) -> Dictionary:
 	var is_vert: bool = primeira.x != ultima.x
 	var cell := board.cell_size
 	var ao_longo: float = float(cells.size()) * cell * 0.92
-	var atraves: float = cell * 0.62
+	# A boca do casco: 74% da casa. Abaixo disso o navio vira um risco visto de
+	# cima -- e no posicionamento a camera olha quase de cima --, e acima ele
+	# encosta no navio da fileira vizinha e some a folga que separa um do outro.
+	var atraves: float = cell * 0.74
 	var a := board.get_cell_position_3d(primeira.x, primeira.y, 0.0)
 	var b := board.get_cell_position_3d(ultima.x, ultima.y, 0.0)
 	var center := (a + b) * 0.5
@@ -287,18 +383,71 @@ func _deitar_arte_no_conves(casco: MeshInstance3D, geo: Dictionary, ship_name: S
 	var tex: Texture2D = AssetCatalog.get_game_art("batalha_naval", chave)
 	if tex == null:
 		return
+
+	# So o pedaco desenhado do PNG entra: o gerador entrega o navio centrado num
+	# quadrado com ~74% de transparencia em volta, e escalar pelo QUADRADO fazia
+	# o desenho sair na medida do lado maior.
+	var recorte := _recorte_desenhado(chave, tex)
+	if recorte.size.x <= 0.0 or recorte.size.y <= 0.0:
+		return
+
 	var sprite := Sprite3D.new()
 	sprite.texture = tex
+	sprite.region_enabled = true
+	sprite.region_rect = recorte
 	sprite.billboard = BaseMaterial3D.BILLBOARD_DISABLED
 	sprite.alpha_cut = SpriteBase3D.ALPHA_CUT_DISCARD
 	sprite.shaded = true
-	sprite.pixel_size = float(geo["length"]) / float(maxi(tex.get_width(), 1))
+
 	# Tres sprites foram gerados com a proa para cima. Girar no plano local
 	# alinha o comprimento da imagem ao +X do casco, sem alterar a malha.
-	var giro := 90.0 if chave in ["couracado", "cruzador", "destroier"] else 0.0
+	var de_pe := chave in ["couracado", "cruzador", "destroier"]
+	var giro := 90.0 if de_pe else 0.0
+	# Pixels do desenho ao longo do casco e atravessados nele, ja considerando
+	# o giro: o lado longo do desenho e o comprimento do navio.
+	var px_ao_longo: float = recorte.size.y if de_pe else recorte.size.x
+	var px_atraves: float = recorte.size.x if de_pe else recorte.size.y
+
+	sprite.pixel_size = float(geo["length"]) / maxf(px_ao_longo, 1.0)
 	sprite.rotation_degrees = Vector3(-90.0, giro, 0.0)
 	sprite.position = Vector3(0.0, float(geo["height"]) * 0.5 + 0.012, 0.0)
+
+	# O desenho vem numa proporcao de ~3,8:1, sempre a mesma; o casco vai de 3:1
+	# (Destroier, duas casas) a 7,4:1 (Porta-Avioes, cinco). Sem estreitar, o
+	# porta-avioes saia com o DOBRO da boca do casco: ele encobria a fileira
+	# vizinha e mentia sobre a propria pegada -- e a pegada e o jogo inteiro
+	# numa batalha naval. Estreitar so o eixo transversal mantem o comprimento.
+	var boca_desenhada: float = px_atraves * sprite.pixel_size
+	var aperto: float = float(geo["beam"]) * 0.96 / maxf(boca_desenhada, 0.0001)
+	if de_pe:
+		sprite.scale = Vector3(minf(aperto, 1.0), 1.0, 1.0)
+	else:
+		sprite.scale = Vector3(1.0, minf(aperto, 1.0), 1.0)
+
 	casco.add_child(sprite)
+
+
+## Onde o navio esta desenhado dentro do PNG, em pixels.
+##
+## Medido uma vez por arquivo: `get_image()` desce a textura para a CPU, e cada
+## partida monta ate dez cascos com os mesmos cinco PNGs. Ler do arquivo em vez
+## de anotar as medidas a mao e o que faz a arte poder ser regerada sem que
+## ninguem lembre de acertar numeros no codigo.
+static var _recorte_por_arte: Dictionary = {}
+
+static func _recorte_desenhado(chave: String, tex: Texture2D) -> Rect2:
+	if _recorte_por_arte.has(chave):
+		return _recorte_por_arte[chave]
+	var caixa := Rect2(Vector2.ZERO, Vector2(tex.get_width(), tex.get_height()))
+	var img := tex.get_image()
+	if img != null:
+		if img.is_compressed():
+			img.decompress()
+		var usado := img.get_used_rect()
+		if usado.size.x > 0 and usado.size.y > 0:
+			caixa = Rect2(usado.position, usado.size)
+	_recorte_por_arte[chave] = caixa
+	return caixa
 
 
 func _render_player_hull(ship: Dictionary, index: int) -> void:
@@ -403,27 +552,60 @@ func _mostrar_previa(r: int, c: int) -> void:
 		return
 	_preview = casas
 	fleet_board.clear_states()
+	_limpar_fantasma()
 	if casas.is_empty():
 		return
 	var cabe := BattleshipRules.can_place(player_grid, casas)
 	fleet_board.set_cells_state(casas,
 		Board3D.CellState.VALID if cabe else Board3D.CellState.INVALID)
+	_desenhar_fantasma(casas, cabe)
 
 
-## Poe o navio da mao no mapa, ou recolhe o que ja estava na casa tocada.
+## O casco translucido no lugar em que o navio vai cair.
+##
+## O tom da casa diz SE cabe; o fantasma diz O QUE cabe. Sao coisas diferentes:
+## com cinco navios de tamanhos parecidos, ver o contorno da proa no lugar
+## evita o "eu queria o de tres, nao o de quatro" que so aparecia depois de
+## soltar. E o mesmo casco da frota, sem a arte por cima -- silhueta, e nao
+## navio pintado, para ninguem confundir fantasma com navio posto.
+func _desenhar_fantasma(casas: Array, cabe: bool) -> void:
+	var def := _def_do_navio_atual()
+	if def.is_empty() or casas.is_empty():
+		return
+	var geo := _hull_geometry(fleet_board, {"cells": casas})
+	var cor := Color(0.45, 0.95, 0.60, 0.42) if cabe else Color(1.0, 0.35, 0.30, 0.42)
+	var mat := StandardMaterial3D.new()
+	mat.albedo_color = cor
+	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	mat.cull_mode = BaseMaterial3D.CULL_DISABLED
+	# Sem isto o fantasma some dentro do tabuleiro em vez de flutuar sobre ele.
+	mat.no_depth_test = true
+	_fantasma = _montar_casco(geo, mat)
+	_fantasma.position = geo["center"]
+	_fleet_ghost.add_child(_fantasma)
+
+
+func _limpar_fantasma() -> void:
+	if _fantasma != null and is_instance_valid(_fantasma):
+		# Sai da cena AGORA, e nao no fim do quadro: num arrasto a previa se
+		# refaz varias vezes por quadro, e com `queue_free()` dois ou tres
+		# fantasmas ficariam pendurados juntos na mesma imagem. Liberar na hora
+		# e seguro porque o fantasma nao tem retorno de chamada nenhum -- e uma
+		# malha muda, sem tween, sem sinal.
+		_fleet_ghost.remove_child(_fantasma)
+		_fantasma.free()
+	_fantasma = null
+
+
+## Poe o navio da mao no mapa.
+##
+## Chamado ao SOLTAR, e nao ao apertar: quem recolhe um navio ja posto e o
+## aperto (`_on_fleet_cell_clicked`), e entre um e outro o dedo pode arrastar.
 func _posicionar_em(r: int, c: int) -> void:
 	var def := _def_do_navio_atual()
-
-	# Com a mao vazia -- os cinco ja na agua --, tocar num navio o devolve para a
-	# mao: e como se corrige uma posicao sem recomecar a frota inteira. Com um
-	# navio na mao o toque e sempre uma tentativa de POR, nunca de tirar: pegar
-	# um segundo navio deixaria dois na mao e ninguem saberia qual esta indo.
 	if def.is_empty():
-		var posto := _navio_em(r, c)
-		if posto >= 0:
-			_recolher_navio(posto)
-		else:
-			set_status(tr("BATTLESHIP_PLACE_DONE"))
+		set_status(tr("BATTLESHIP_PLACE_DONE"))
 		return
 
 	var casas := _casas_da_previa(r, c)
@@ -454,6 +636,7 @@ func _posicionar_em(r: int, c: int) -> void:
 	_navio_atual = _primeiro_faltando()
 	_preview = []
 	fleet_board.clear_states()
+	_limpar_fantasma()
 	_anunciar_posicionamento()
 
 
@@ -474,27 +657,29 @@ func _recolher_navio(indice: int) -> void:
 		player_grid.set_cell(v.x, v.y, 0)
 	player_ships.remove_at(indice)
 	_redesenhar_frota()
-	# A ordem dos navios e a de `SHIP_DEFS`, e a mao anda por essa ordem: o
-	# proximo a posicionar e sempre o primeiro que faltar.
-	_navio_atual = _primeiro_faltando()
-	_preview = []
-	fleet_board.clear_states()
+	# O navio recolhido volta para a mao: o proximo a posicionar e ELE, e nao o
+	# primeiro da lista que estiver faltando. Sem isto, recolher o Destroier
+	# punha o Porta-Avioes na mao e o jogador via a previa do navio errado.
+	_navio_atual = _indice_da_definicao(str(navio["name"]))
+	_repor_previa()
 	if AudioManager:
 		AudioManager.play_click()
 	set_status(tr("BATTLESHIP_PLACE_PICKUP") % tr(str(navio["name"])))
 	_atualizar_botoes_de_posicionar()
 
 
+## O indice em `SHIP_DEFS` do navio com este nome, ou o primeiro que faltar.
+func _indice_da_definicao(nome: String) -> int:
+	for i in range(BattleshipRules.SHIP_DEFS.size()):
+		if str(BattleshipRules.SHIP_DEFS[i]["name"]) == nome:
+			return i
+	return _primeiro_faltando()
+
+
 ## O primeiro navio de `SHIP_DEFS` que ainda nao esta na agua.
 func _primeiro_faltando() -> int:
 	for i in range(BattleshipRules.SHIP_DEFS.size()):
-		var nome: String = BattleshipRules.SHIP_DEFS[i]["name"]
-		var achou := false
-		for navio in player_ships:
-			if str(navio["name"]) == nome:
-				achou = true
-				break
-		if not achou:
+		if not _navio_posto(str(BattleshipRules.SHIP_DEFS[i]["name"])):
 			return i
 	return BattleshipRules.SHIP_DEFS.size()
 
@@ -505,6 +690,103 @@ func _redesenhar_frota() -> void:
 	_player_hull_nodes.clear()
 	for i in range(player_ships.size()):
 		_render_player_hull(player_ships[i], i)
+
+
+## A barra da frota: uma ficha por navio, com o tamanho dele em quadradinhos.
+##
+## Ate aqui o jogador so sabia da propria frota o que a linha de status dizia,
+## uma frase por vez: "Posicione o Cruzador (3 casas)". Nao dava para saber
+## quantos faltavam, quais ja estavam na agua, nem escolher qual por primeiro
+## -- e corrigir UM navio exigia achar o casco no mapa e adivinhar que tocar
+## nele o devolvia para a mao. A ficha responde as tres perguntas de uma vez e
+## e o atalho para pegar o navio que se quer, sem mexer nos outros.
+##
+## O tamanho vai em quadradinhos e nao em numero porque e assim que o jogador
+## pensa a decisao: ele nao procura "um de quatro", procura onde cabe uma peca
+## deste comprimento.
+func _montar_fichas_da_frota() -> void:
+	for i in range(BattleshipRules.SHIP_DEFS.size()):
+		var def: Dictionary = BattleshipRules.SHIP_DEFS[i]
+		var tamanho := int(def["size"])
+
+		var ficha := Button.new()
+		ficha.custom_minimum_size = Vector2(0.0, UIKit.TOQUE_MIN)
+		ficha.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		ficha.tooltip_text = "%s (%d)" % [tr(str(def["name"])), tamanho]
+		ficha.pressed.connect(_on_ficha_pressed.bind(i))
+		frota_bar.add_child(ficha)
+
+		# Os quadradinhos moram DENTRO do botao e nao recebem toque: o alvo do
+		# dedo continua sendo a ficha inteira, do tamanho minimo de toque.
+		var linha := HBoxContainer.new()
+		linha.set_anchors_preset(Control.PRESET_FULL_RECT)
+		linha.alignment = BoxContainer.ALIGNMENT_CENTER
+		linha.add_theme_constant_override("separation", 3)
+		linha.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		ficha.add_child(linha)
+
+		var quadrados: Array[ColorRect] = []
+		for _q in range(tamanho):
+			var pip := ColorRect.new()
+			pip.custom_minimum_size = Vector2(13.0, 26.0)
+			pip.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+			pip.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			linha.add_child(pip)
+			quadrados.append(pip)
+
+		_fichas.append(ficha)
+		_pips.append(quadrados)
+
+
+## Pinta as fichas com o estado de cada navio.
+func _atualizar_fichas() -> void:
+	for i in range(_fichas.size()):
+		var nome: String = str(BattleshipRules.SHIP_DEFS[i]["name"])
+		var na_agua := _navio_posto(nome)
+		var na_mao := i == _navio_atual and not na_agua
+		var cor := UIKit.TEXTO_FRACO
+		if na_agua:
+			cor = UIKit.VERDE
+		elif na_mao:
+			cor = UIKit.OURO
+		for pip in _pips[i]:
+			(pip as ColorRect).color = cor
+		# A ficha na mao e a unica em brilho cheio: o jogador acha num relance
+		# qual navio o dedo esta carregando.
+		_fichas[i].modulate = Color(1.0, 1.0, 1.0, 1.0 if na_mao else 0.55)
+
+
+func _navio_posto(nome: String) -> bool:
+	for navio in player_ships:
+		if str(navio["name"]) == nome:
+			return true
+	return false
+
+
+## Tocar a ficha escolhe o navio: o que ainda falta vai para a mao, e o que ja
+## esta na agua e recolhido de volta para ela.
+func _on_ficha_pressed(indice: int) -> void:
+	if fase != Fase.POSICIONANDO or game_over:
+		return
+	play_click()
+	var nome: String = str(BattleshipRules.SHIP_DEFS[indice]["name"])
+	for i in range(player_ships.size()):
+		if str(player_ships[i]["name"]) == nome:
+			_recolher_navio(i)
+			return
+	_navio_atual = indice
+	_repor_previa()
+	_anunciar_posicionamento()
+
+
+## Redesenha a previa do navio que esta na mao, na casa em que o dedo esta.
+func _repor_previa() -> void:
+	var onde := _celula_da_previa()
+	_preview = []
+	fleet_board.clear_states()
+	_limpar_fantasma()
+	if onde.x >= 0:
+		_mostrar_previa(onde.x, onde.y)
 
 
 func _anunciar_posicionamento() -> void:
@@ -520,6 +802,7 @@ func _atualizar_botoes_de_posicionar() -> void:
 	var completa := player_ships.size() >= BattleshipRules.SHIP_DEFS.size()
 	btn_start.disabled = not completa
 	_pintar_botao_de_giro()
+	_atualizar_fichas()
 
 
 func _pintar_botao_de_giro() -> void:
@@ -529,9 +812,20 @@ func _pintar_botao_de_giro() -> void:
 func _on_btn_rotate_pressed() -> void:
 	_vertical = not _vertical
 	_pintar_botao_de_giro()
-	_preview = []
-	fleet_board.clear_states()
 	play_click()
+	# Girar apagava a previa e deixava o jogador sem saber como o navio ficou:
+	# ele tinha de mover o dedo de novo so para ver o resultado do proprio
+	# botao. Redesenha na mesma casa, ja na nova orientacao.
+	_repor_previa()
+
+
+## A casa em que a previa esta agora -- a do meio do navio --, ou a ultima que
+## o dedo visitou quando nao ha previa. E de onde a previa renasce depois de
+## girar ou de trocar o navio da mao.
+func _celula_da_previa() -> Vector2i:
+	if _preview.is_empty():
+		return _ultima_casa
+	return _preview[_preview.size() / 2]
 
 
 func _on_btn_random_pressed() -> void:
@@ -542,6 +836,7 @@ func _on_btn_random_pressed() -> void:
 	_navio_atual = _primeiro_faltando()
 	_preview = []
 	fleet_board.clear_states()
+	_limpar_fantasma()
 	_anunciar_posicionamento()
 
 
@@ -557,10 +852,11 @@ func _comecar_batalha() -> void:
 	fase = Fase.BATALHA
 	_preview = []
 	fleet_board.clear_states()
+	_limpar_fantasma()
 	setup_bar.visible = false
-	# A barra some, a faixa util cresce: os dois mapas reenquadram sozinhos.
-	if _conteudo_da_mesa != Vector2.ZERO:
-		fit_table(_conteudo_da_mesa)
+	# O mapa de ataque volta a cena e a barra some: a faixa util cresce dos dois
+	# lados, e os dois mapas reenquadram sozinhos.
+	_enquadrar_a_fase()
 	is_player_turn = true
 	_update_fleet_status_labels()
 	set_status(tr("BATTLESHIP_YOUR_TURN"))
@@ -571,18 +867,60 @@ func _comecar_batalha() -> void:
 # Turnos
 # ---------------------------------------------------------------------------
 
+## O dedo desceu no mapa da frota.
+##
+## Aqui o navio nao e posto -- ele e POSTO AO SOLTAR. O aperto so recolhe um
+## navio ja posto (com a mao vazia), para que o mesmo gesto continue arrastando
+## o navio recolhido ate o lugar novo.
 func _on_fleet_cell_clicked(r: int, c: int) -> void:
 	if game_over:
 		return
-	if fase == Fase.POSICIONANDO:
-		_posicionar_em(r, c)
+	if fase != Fase.POSICIONANDO:
+		set_status(tr("BATTLESHIP_WRONG_BOARD"))
 		return
-	set_status(tr("BATTLESHIP_WRONG_BOARD"))
+
+	_celula_aperto = Vector2i(r, c)
+	_ultima_casa = _celula_aperto
+	_pegou_no_aperto = false
+
+	# Com um navio na mao o aperto e sempre uma tentativa de POR, nunca de
+	# tirar: pegar um segundo navio deixaria dois na mao e ninguem saberia qual
+	# esta indo.
+	if _def_do_navio_atual().is_empty():
+		var posto := _navio_em(r, c)
+		if posto >= 0:
+			_recolher_navio(posto)
+			_pegou_no_aperto = true
+		else:
+			set_status(tr("BATTLESHIP_PLACE_DONE"))
+			return
+	_mostrar_previa(r, c)
+
+
+## O dedo subiu no mapa da frota: e aqui que o navio cai.
+##
+## Dois gestos, um caminho so. Arrastar: o aperto recolhe (ou ja havia navio na
+## mao), a previa acompanha o dedo e o navio cai onde ele sobe. Dois toques: o
+## primeiro toque recolhe o navio e ele FICA na mao -- por isso o toque simples
+## sobre o navio que se acabou de pegar nao o repoe --, e o segundo toque diz
+## onde ele vai. Sem essa distincao, so quem arrastasse conseguiria mover um
+## navio ja posto.
+func _on_fleet_cell_released(r: int, c: int) -> void:
+	if game_over or fase != Fase.POSICIONANDO:
+		return
+	var mesmo_lugar := Vector2i(r, c) == _celula_aperto
+	var so_pegou := _pegou_no_aperto and mesmo_lugar
+	_pegou_no_aperto = false
+	_celula_aperto = Vector2i(-1, -1)
+	if so_pegou:
+		return
+	_posicionar_em(r, c)
 
 
 func _on_fleet_cell_hovered(r: int, c: int) -> void:
 	if fase != Fase.POSICIONANDO or game_over:
 		return
+	_ultima_casa = Vector2i(r, c)
 	_mostrar_previa(r, c)
 
 

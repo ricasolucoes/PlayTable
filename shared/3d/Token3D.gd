@@ -34,6 +34,7 @@ var grid_coord: Vector2i = Vector2i(-1, -1)
 var _base_scale: Vector3 = Vector3.ONE
 var _move_tween: Tween
 var _lift_tween: Tween
+var visual_material: Material = null
 
 
 func _init() -> void:
@@ -71,7 +72,10 @@ func _apply_shape_and_material() -> void:
 		crown_mesh.position = Vector3(0.0, height, 0.0)
 
 	_setup_contact_shadow()
-	apply_material(material_name)
+	if visual_material != null:
+		mesh_instance.material_override = visual_material
+	else:
+		apply_material(material_name)
 
 func _setup_contact_shadow() -> void:
 	var lado := token_radius * 2.0 * Tokens3D.CONTACT_SHADOW_GROW
@@ -79,10 +83,23 @@ func _setup_contact_shadow() -> void:
 
 func apply_material(mat_name: String) -> void:
 	material_name = mat_name
+	visual_material = null
 	if mesh_instance:
 		var base := MaterialFactory3D.by_name(mat_name)
 		var arte: String = str(art_by_material.get(mat_name, ""))
 		mesh_instance.material_override = MaterialFactory3D.get_textured(arte, base, token_radius)
+
+func apply_visual_material(material: Material) -> void:
+	visual_material = material
+	if mesh_instance:
+		mesh_instance.material_override = material
+
+func get_visual_material() -> Material:
+	if mesh_instance == null:
+		return null
+	if mesh_instance.material_override != null:
+		return mesh_instance.material_override
+	return mesh_instance.get_active_material(0)
 
 
 # ---------------------------------------------------------------------------
@@ -178,9 +195,15 @@ func highlight(enable: bool) -> void:
 
 ## Vira a peca (Reversi). Meia volta em X, trocando o material no meio.
 func flip_180(new_mat_name: String, duration: float = Tokens3D.DUR_NORMAL) -> void:
+	_flip_180_material(MaterialFactory3D.by_name(new_mat_name), duration)
+
+func flip_180_visual(material: Material, duration: float = Tokens3D.DUR_NORMAL) -> void:
+	_flip_180_material(material, duration)
+
+func _flip_180_material(material: Material, duration: float) -> void:
 	var d := Quality3D.duration(duration)
 	if d <= 0.0:
-		apply_material(new_mat_name)
+		apply_visual_material(material)
 		return
 
 	var target_rot := rotation.x + PI
@@ -199,7 +222,7 @@ func flip_180(new_mat_name: String, duration: float = Tokens3D.DUR_NORMAL) -> vo
 	# Troca no meio da volta, quando a peca esta de perfil e a troca nao aparece.
 	var swap := create_tween()
 	swap.tween_interval(d * 0.5)
-	swap.tween_callback(apply_material.bind(new_mat_name))
+	swap.tween_callback(apply_visual_material.bind(material))
 
 func promote_queen() -> void:
 	is_queen = true

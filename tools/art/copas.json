@@ -1,0 +1,33 @@
+{
+  "game_id": "copas",
+  "out_dir": "shared/assets/copas",
+  "hero": "verso",
+  "style_bible": "Coleção PlayTable de jogos de mesa: peças de resina, madeira nobre, marfim e metal escovado, fotografadas como miniatura real sobre estúdio, luz quente vinda do alto-esquerda com uma única especular limpa. Realismo de objeto de tabuleiro caro, não ilustração. NUNCA pixel art, NUNCA desenho animado, NUNCA estilo cartoon infantil, NUNCA propriedade intelectual de terceiros. A silhueta tem de ler a 64 px de altura numa tela de telefone segurada a meio metro do rosto: forma grande e contrastada, sem detalhe fino. Este jogo é uma mesa de Copas (Hearts) de salão: baralho francês de papelão acetinado sobre feltro verde-garrafa, vista frontal exata e chapada para as cartas, sem perspectiva e sem sombra.",
+  "defaults": {
+    "model": "gemini-3.1-flash-image",
+    "background": "chroma",
+    "size": 512,
+    "import": "decal"
+  },
+  "assets": [
+    {
+      "name": "verso",
+      "prompt": "O VERSO de uma carta de baralho francês para uma mesa de Copas: retângulo vertical de cantos arredondados, fundo vermelho-vinho profundo com um padrão de arabescos finos em dourado envelhecido e, no centro, um pequeno coração estilizado em relevo dourado. Moldura branca fina em toda a volta. Padrão simétrico, sem nenhuma letra ou número. Preenche o quadro inteiro.",
+      "size": 512
+    },
+    {
+      "name": "dama_de_espadas",
+      "prompt": "A FACE da dama de espadas de um baralho francês clássico de salão: retângulo vertical de cantos arredondados, fundo branco-marfim, figura da rainha em estilo de baralho tradicional europeu (duas metades espelhadas), paleta preta, azul-marinho e dourado, com o índice Q e o naipe ♠ preto nos cantos superior-esquerdo e inferior-direito. Sem outras letras. Preenche o quadro inteiro.",
+      "reference": [
+        "verso"
+      ],
+      "size": 512
+    },
+    {
+      "name": "feltro",
+      "prompt": "TEXTURA sem costura (seamless) de feltro verde-garrafa de mesa de carteado, vista exatamente de cima, fibras finas e uniformes, sem vinco, sem manchas, sem objetos, sem texto. Tile quadrado que se repete nas quatro bordas. Iluminação plana e uniforme.",
+      "background": "none",
+      "size": 512
+    }
+  ]
+}

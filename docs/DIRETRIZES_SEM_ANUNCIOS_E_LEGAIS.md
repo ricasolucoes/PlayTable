@@ -14,7 +14,7 @@ Para manter o projeto verdadeiramente limpo, ético e sustentável sem custos pa
    - Nenhum SDK de anúncios (Google AdMob, Unity Ads, AppLovin, etc.) é incluído ou permitido no código.
 3. **Zero Telemetria e Zero Contas:**
    - Não utilizamos Firebase Analytics, Facebook SDK, Crashlytics ou rastreadores de terceiros.
-   - Não existe tela de login, cadastro ou sincronização em nuvem obrigatória.
+   - Não existe tela de login, cadastro ou sincronização em nuvem obrigatória. O multiplayer por relay é opcional, temporário e não cria conta PlayTable.
 4. **Sem Microtransações (Zero IAP):**
    - Não há moedas virtuais, compras dentro do app (*In-App Purchases*), passes de batalha ou bloqueios por paywall.
 5. **Armazenamento 100% Local:**

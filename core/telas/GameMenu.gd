@@ -36,6 +36,7 @@ const FONTE_SECAO := 26
 
 ## Alvo de toque mínimo: 48 dp ≈ 88 px neste viewport.
 const TOQUE_MIN := 88.0
+const TAP_BUTTON := preload("res://addons/jogos_core/input/jogos_tap_button.gd")
 
 ## Onde a escolha do filtro sobrevive à partida. Voltar de um jogo instancia o
 ## menu de novo; sem isto o filtro se desfaria toda vez que o jogador jogasse,
@@ -63,9 +64,23 @@ static var _degrade_scrim: GradientTexture2D = null
 
 
 func _ready() -> void:
+	if get_node_or_null("RewardToast") == null:
+		var toast := RewardToast.new()
+		toast.name = "RewardToast"
+		add_child(toast)
 	# A lista de jogos rola no dedo: o ScrollContainer da cena sozinho so rola
 	# na roda do mouse. Ver `DragScroll`.
 	DragScroll.attach_all(self)
+	# Ajusta o topo da barra pelo safe area do iPhone (notch/Dynamic Island).
+	# O .tscn tem offset_top=36 que vale para desktop/Android sem notch;
+	# aqui se necessario aumenta pelo inset real do dispositivo.
+	var vbox := get_node_or_null("VBoxContainer") as Control
+	if vbox != null:
+		var inset := JogosSafeArea.top(get_viewport())
+		var topo_base := 36.0  # valor do .tscn
+		var topo_novo := maxf(topo_base, 8.0 + inset)
+		if topo_novo > topo_base:
+			vbox.offset_top = topo_novo
 	_ler_filtro_salvo()
 	var botao := _btn_filtro()
 	if botao != null:
@@ -177,7 +192,10 @@ func _ja_jogou(game: GameDefinition) -> bool:
 func _create_game_card(game: GameDefinition) -> Button:
 	var accent := _game_accent(game)
 
-	var btn := Button.new()
+	var btn: Button = TAP_BUTTON.new()
+	# O cartão é uma composição intencional: arte, véu, moldura e texto ocupam
+	# o mesmo retângulo, mas só o botão é a superfície interativa.
+	btn.set_meta("allow_overlay", true)
 	btn.custom_minimum_size = Vector2(0, ALTURA_CARTAO)
 	btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	btn.focus_mode = Control.FOCUS_NONE
@@ -260,16 +278,35 @@ func _create_game_card(game: GameDefinition) -> Button:
 	tag.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	textos.add_child(tag)
 
-	var is_locked = false
+	var is_locked := false
 	if PlayerProfile != null and PlayerProfile.level < game.unlock_level:
 		is_locked = true
-		fundo.modulate = Color(0.4, 0.4, 0.4, 1.0)
+		fundo.modulate = Color(0.45, 0.45, 0.45, 1.0)
+		
+		var cadeado_badge := PanelContainer.new()
+		cadeado_badge.set_anchors_preset(Control.PRESET_TOP_RIGHT)
+		cadeado_badge.offset_left = -180.0
+		cadeado_badge.offset_top = 18.0
+		cadeado_badge.offset_right = -18.0
+		cadeado_badge.offset_bottom = 66.0
+		cadeado_badge.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		
+		var bstyle := StyleBoxFlat.new()
+		bstyle.bg_color = Color(0.1, 0.1, 0.14, 0.88)
+		bstyle.border_color = Color(0.9, 0.35, 0.35, 0.9)
+		bstyle.set_border_width_all(2)
+		bstyle.set_corner_radius_all(14)
+		bstyle.content_margin_left = 12
+		bstyle.content_margin_right = 12
+		bstyle.content_margin_top = 4
+		bstyle.content_margin_bottom = 4
+		cadeado_badge.add_theme_stylebox_override("panel", bstyle)
 		
 		var cadeado_box := HBoxContainer.new()
-		cadeado_box.alignment = BoxContainer.ALIGNMENT_END
-		cadeado_box.add_theme_constant_override("separation", 8)
+		cadeado_box.alignment = BoxContainer.ALIGNMENT_CENTER
+		cadeado_box.add_theme_constant_override("separation", 6)
 		cadeado_box.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		textos.add_child(cadeado_box)
+		cadeado_badge.add_child(cadeado_box)
 		
 		var cadeado_icon := Label.new()
 		cadeado_icon.text = "🔒"
@@ -279,8 +316,10 @@ func _create_game_card(game: GameDefinition) -> Button:
 		var cadeado_texto := Label.new()
 		cadeado_texto.text = tr("LEVEL") + " " + str(game.unlock_level)
 		cadeado_texto.add_theme_font_size_override("font_size", FONTE_TAG)
-		cadeado_texto.add_theme_color_override("font_color", Color(1.0, 0.4, 0.4))
+		cadeado_texto.add_theme_color_override("font_color", Color(1.0, 0.5, 0.5))
 		cadeado_box.add_child(cadeado_texto)
+		
+		fundo.add_child(cadeado_badge)
 
 	# A moldura entra por último e por dentro do recorte: desenhada pelo botão
 	# ela ficaria atrás da arte, que cobre o cartão inteiro.
@@ -289,12 +328,15 @@ func _create_game_card(game: GameDefinition) -> Button:
 	moldura.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	moldura.add_theme_stylebox_override("panel", _moldura_cartao(accent))
 	fundo.add_child(moldura)
+	UIKit.ignorar_toque_dos_filhos(btn)
 
 	# Num telefone não existe passar o mouse por cima: o único aviso de que o
 	# toque pegou é o cartão afundar enquanto o dedo está nele.
-	btn.button_down.connect(func() -> void: fundo.modulate = Color(0.78, 0.78, 0.80))
-	btn.button_up.connect(func() -> void: fundo.modulate = Color.WHITE)
-	btn.pressed.connect(_on_game_pressed.bind(game))
+	var cor_normal := Color(0.45, 0.45, 0.45, 1.0) if is_locked else Color.WHITE
+	var cor_apertado := Color(0.3, 0.3, 0.3, 1.0) if is_locked else Color(0.78, 0.78, 0.80)
+	btn.button_down.connect(func() -> void: fundo.modulate = cor_apertado)
+	btn.button_up.connect(func() -> void: fundo.modulate = cor_normal)
+	UIKit.conectar_toque(btn, _on_game_pressed.bind(game))
 	return btn
 
 
@@ -632,6 +674,12 @@ func _on_game_pressed(game: GameDefinition) -> void:
 func _on_btn_voltar_pressed() -> void:
 	play_click()
 	SceneManager.goto_scene(MAIN_MENU)
+
+
+## O Voltar do aparelho: sobe um degrau, para o menu principal.
+func voltar_do_aparelho() -> bool:
+	_on_btn_voltar_pressed()
+	return true
 
 
 func play_click() -> void:

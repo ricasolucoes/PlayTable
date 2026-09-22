@@ -282,5 +282,4 @@ func test_vitoria_anuncia_o_tempo_no_rotulo() -> void:
 	jogo.game_timer.elapsed_time = 42.0
 	jogo._check_win_condition()
 	assert_true(jogo.game_won, "partida vencida")
-	assert_string_contains(jogo.status_label.text, "100%", "o texto sobreviveu a formatacao")
-	assert_string_contains(jogo.status_label.text, "42 segundos", "o tempo entrou no texto")
+	assert_eq(jogo.status_label.text, tr("MINESWEEPER_WIN") % 42, "o tempo entrou no texto")

@@ -1,0 +1,34 @@
+{
+  "game_id": "general",
+  "out_dir": "shared/assets/general",
+  "hero": "dado_marfim",
+  "style_bible": "Coleção PlayTable de jogos de mesa: peças de resina, madeira nobre, marfim e metal escovado, fotografadas como miniatura real sobre estúdio, luz quente vinda do alto-esquerda com uma única especular limpa. Realismo de objeto de tabuleiro caro, não ilustração. NUNCA pixel art, NUNCA desenho animado, NUNCA estilo cartoon infantil, NUNCA propriedade intelectual de terceiros. A silhueta tem de ler a 64 px de altura numa tela de telefone segurada a meio metro do rosto: forma grande e contrastada, sem detalhe fino. Este jogo é o General, de dados: dados de marfim com pontos pretos gravados, copo de couro e feltro verde de cassino, vista ORTOGONAL de cima. A imagem é a TEXTURA de albedo do topo.",
+  "defaults": {
+    "model": "gemini-3.1-flash-image",
+    "background": "chroma",
+    "size": 512
+  },
+  "assets": [
+    {
+      "name": "dado_marfim",
+      "prompt": "Face de um dado de marfim envelhecido vista exatamente de cima, quadrado de cantos arredondados preenchendo 96% do quadro, com os seis pontos pretos gravados e levemente côncavos, veio sutil do marfim e um único reflexo especular no alto-esquerda.",
+      "size": 512
+    },
+    {
+      "name": "copo_couro",
+      "prompt": "Topo de um copo de dados de couro marrom escuro visto exatamente de cima, boca circular preenchendo 96% do quadro, costura clara em volta da borda e interior forrado de feltro verde escuro, mesma luz e mesmo acabamento da referência.",
+      "reference": [
+        "dado_marfim"
+      ],
+      "size": 512
+    },
+    {
+      "name": "ficha_general",
+      "prompt": "Ficha redonda de baquelite dourado fosco vista exatamente de cima, círculo preenchendo 96% do quadro, com um anel gravado raso perto da borda e cinco pontos gravados no centro em cruz (como a face 5 de um dado), mesma luz e mesmo acabamento da referência.",
+      "reference": [
+        "dado_marfim"
+      ],
+      "size": 512
+    }
+  ]
+}

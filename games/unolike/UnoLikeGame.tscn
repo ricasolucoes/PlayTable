@@ -36,6 +36,8 @@ clip_text = true
 mouse_filter = 2
 
 [node name="Actions" type="HBoxContainer" parent="UI"]
+metadata/mobile_hud_band = "bottom"
+metadata/mobile_hud_margin = 12.0
 layout_mode = 1
 anchors_preset = 12
 anchor_top = 1.0
@@ -56,6 +58,8 @@ layout_mode = 2
 text = "DOMINO_BTN_DRAW"
 
 [node name="PlayerArea" type="Control" parent="UI"]
+metadata/mobile_hud_band = "bottom"
+metadata/mobile_hud_margin = 12.0
 layout_mode = 1
 anchors_preset = 12
 anchor_top = 1.0
@@ -83,6 +87,7 @@ theme_override_constants/separation = 8
 alignment = 1
 
 [node name="ColorPickerVeil" type="ColorRect" parent="UI"]
+metadata/allow_overlay = true
 visible = false
 layout_mode = 1
 anchors_preset = 15
@@ -93,6 +98,7 @@ grow_vertical = 2
 color = Color(0.02, 0.02, 0.04, 0.62)
 
 [node name="ColorPickerModal" type="PanelContainer" parent="UI"]
+metadata/allow_overlay = true
 visible = false
 layout_mode = 1
 anchors_preset = 8

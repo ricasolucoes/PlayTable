@@ -35,24 +35,57 @@ var custom_data: Dictionary = {}
 
 var _move_tween: Tween
 var _ready_done: bool = false
+static var _warned_atlas_failures: Dictionary = {}
 
 func _ready() -> void:
 	_setup_collision()
 	_setup_contact_shadow()
-	await atlas.ensure_built(self)
+	apply_fallback_visuals()
+	var atlas_ready: bool = await atlas.ensure_built(self)
 	if not is_instance_valid(self):
 		return
 	_ready_done = true
-	_update_visuals()
+	if atlas_ready:
+		_update_visuals()
+	else:
+		_warn_atlas_failure()
 
 func setup(p_rank: String, p_suit: String, p_face_up: bool = false) -> void:
 	rank = p_rank
 	suit = p_suit
 	is_face_up = p_face_up
 	if _ready_done:
-		_update_visuals()
+		if atlas.is_ready():
+			_update_visuals()
+		else:
+			apply_fallback_visuals()
 	else:
 		rotation_degrees.z = 0.0 if is_face_up else 180.0
+
+func apply_fallback_visuals() -> void:
+	if mesh_instance == null:
+		return
+	mesh_instance.mesh = MeshBuilder3D.card_mesh(
+		Tokens3D.CARD_WIDTH, Tokens3D.CARD_LENGTH, Tokens3D.CARD_THICKNESS,
+		Rect2(0.0, 0.0, 1.0, 1.0), Rect2(0.25, 0.25, 0.5, 0.5))
+	var fallback := StandardMaterial3D.new()
+	fallback.albedo_color = Color(0.08, 0.18, 0.32) if not is_face_up else Color(0.96, 0.97, 0.99)
+	fallback.roughness = 0.52
+	mesh_instance.set_surface_override_material(0, fallback)
+	mesh_instance.set_surface_override_material(1, MaterialFactory3D.get_ivory())
+	rotation_degrees.z = 0.0 if is_face_up else 180.0
+
+func has_visible_visual() -> bool:
+	return mesh_instance != null and mesh_instance.mesh != null \
+		and mesh_instance.get_surface_override_material(0) != null
+
+func _warn_atlas_failure() -> void:
+	var key := "uno" if atlas == UnoCardAtlas3D else "standard"
+	if _warned_atlas_failures.has(key):
+		return
+	_warned_atlas_failures[key] = true
+	var detail: String = str(atlas.last_error()) if atlas.has_method("last_error") else "erro desconhecido"
+	push_warning("Card3D manteve o fallback porque o atlas %s falhou: %s" % [key, detail])
 
 func _update_visuals() -> void:
 	if mesh_instance == null or not atlas.is_ready():
