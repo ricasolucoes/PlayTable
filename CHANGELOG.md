@@ -9,6 +9,21 @@
 
 ## [Unreleased](https://github.com/ricasolucoes/PlayTable/compare/ios-v0.9.2...develop)
 
+### 🐛 Correções
+
+- [x] **Cartas e peças de Damas pretas no iPhone** (`shared/3d/Quality3D.gd`) — no iPhone 11 (Metal, renderer mobile) todo material com textura e filtro anisotrópico dava "Failed to compile Metal library" e a malha saía preta: o baralho inteiro de Copas, Paciência, Spider, 21, Pôquer e UNO, e a arte gerada das peças de Damas. O filtro agora sai de `Quality3D.texture_filter()`, sem anisotrópico no iOS; os números do Campo Minado (`DecalGrid3D`) perderam o mesmo sampler. As peças de Damas voltam a usar a arte gerada no lugar dos discos lisos
+- [x] **Emoji e símbolos em branco no iPhone** (`core/i18n/FontFallbacks.gd`) — o robô do modo, o troféu, o 👥, as setas de desfazer e os naipes dependiam do fallback de fonte do sistema, que o iOS não tem. Noto Emoji e Noto Sans Symbols vão no pacote como fallback da fonte padrão, com as métricas verticais ajustadas para não engordar nenhuma linha
+- [x] **Xadrez e Trilha não abriam** — as duas cenas ainda usavam o `ModeSwitch`, apagado junto com o WIP; passaram para o botão de modo da barra, como Damas. No pacote exportado o Xadrez também caía em "isn't a constant expression" nos `const := PackedInt32Array(...)`, que viraram `static var`
+- [x] **Sudoku torto** — cada casa media o próprio texto e a casa preenchida saía mais alta que a vazia; agora é um quadrado do tamanho que a faixa permite, com o teclado ocupando a largura
+- [x] **Texto de status ilegível sobre mesa clara** — o véu da barra era desenhado por cima do status e o apagava, e com o notch ele acabava antes da própria barra. Véu atrás do 2D, até o fim do cabeçalho, e contorno escuro no placar e no status
+- [x] **A mão do UNO saía cortada**, **a tabela do Pôquer cobria o status**, **o Memória cortava a última fileira e mostrava 0/8 com 10 pares**, **o botão de modo do General caía em cima do status** e **a barra da Spider cortava os rótulos**
+- [x] **Moldura do Reversi e de Damas em retalhos** — o topo da moldura e o feltro ficavam no mesmo plano e brigavam no depth buffer; o feltro desceu 4 mm e a moldura subiu 8 mm
+- [x] **Botões do rodapé vazando da tela** (`shared/BaseGame.gd`) — a faixa de baixo descontava a margem de dentro da própria altura; o "Jogar de novo" do 21 saía da tela de vez em quando (o teste M6 falhava intermitente também na `master`)
+
+### 🔧 Técnico
+
+- [x] **Capturas no próprio aparelho** (`core/debug/DeviceShots.gd`) — com `--device-shots` (ou `Documents/device_shots.flag`) o app percorre as 31 telas, grava um PNG de cada em `Documents/device_shots/` e sai; com o gatilho `probe`, `MaterialProbe.gd` desenha um material por vez para achar o que o Metal não compila
+
 ---
 
 ## [v0.9.2 (2026-09-22)](https://github.com/ricasolucoes/PlayTable/compare/v0.9.1...ios-v0.9.2)
