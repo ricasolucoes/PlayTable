@@ -11,6 +11,7 @@ const SUPPORTED_LOCALES: Array[Dictionary] = [
 
 
 func _ready() -> void:
+	FontFallbacks.aplicar()
 	setup(PackedStringArray(["pt_BR", "en", "es"]), "pt_BR", "res://core/i18n", {
 		"pt_BR": "Português (BR)",
 		"en": "English",
