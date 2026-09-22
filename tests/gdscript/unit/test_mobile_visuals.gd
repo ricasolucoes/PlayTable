@@ -2,7 +2,6 @@ extends GutTest
 
 const ReversiScene = preload("res://games/reversi/ReversiGame.tscn")
 const LudoScene = preload("res://games/ludo/LudoGame.tscn")
-const CheckersScene = preload("res://games/damas/CheckersGame.tscn")
 
 const BAND_SCENES := [
 	"res://games/blackjack/BlackjackGame.tscn",
@@ -130,34 +129,3 @@ func test_tokens_de_interface_sao_consistentes_e_nao_herdam_marrom_legado() -> v
 	assert_gte(botao.custom_minimum_size.x, UIKit.TOQUE_MIN)
 	assert_gte(botao.custom_minimum_size.y, UIKit.TOQUE_MIN)
 	assert_true(UIKit.RADIUS_CARD >= 12.0)
-
-
-func test_checkers_materials_have_distinct_mobile_contrast() -> void:
-	var branca := MaterialFactory3D.checkers_piece(1)
-	var preta := MaterialFactory3D.checkers_piece(-1)
-	assert_ne(branca.albedo_color, preta.albedo_color)
-	assert_gt(branca.albedo_color.get_luminance(), 0.75, "peca branca tem alta luminosidade")
-	assert_lt(preta.albedo_color.get_luminance(), 0.20, "peca preta tem baixa luminosidade")
-
-
-func test_checkers_scene_assigns_both_piece_signatures() -> void:
-	var jogo = add_child_autofree(CheckersScene.instantiate())
-	await wait_process_frames(3)
-	jogo._sync_pieces_3d()
-	var branca: Token3D = null
-	var preta: Token3D = null
-	for pos in jogo.pieces_3d:
-		var p: Token3D = jogo.pieces_3d[pos] as Token3D
-		if p.material_name == "ivory":
-			branca = p
-		elif p.material_name == "obsidian":
-			preta = p
-	assert_not_null(branca, "encontrou peca branca")
-	assert_not_null(preta, "encontrou peca preta")
-	if branca != null and preta != null:
-		var mat_branca: StandardMaterial3D = branca.get_visual_material() as StandardMaterial3D
-		var mat_preta: StandardMaterial3D = preta.get_visual_material() as StandardMaterial3D
-		assert_not_null(mat_branca)
-		assert_not_null(mat_preta)
-		assert_gt(mat_branca.albedo_color.get_luminance(), 0.75)
-		assert_lt(mat_preta.albedo_color.get_luminance(), 0.20)

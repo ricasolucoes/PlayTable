@@ -241,7 +241,7 @@ static func _make_card_material() -> StandardMaterial3D:
 	mat.clearcoat_enabled = true
 	mat.clearcoat = 0.35
 	mat.clearcoat_roughness = 0.30
-	mat.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC
+	mat.texture_filter = Quality3D.texture_filter()
 	return mat
 
 

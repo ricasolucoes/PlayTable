@@ -27,7 +27,9 @@ shader_type spatial;
 // por alpha da PNG e o contorno do algarismo.
 render_mode unshaded, cull_back, shadows_disabled, depth_draw_opaque;
 
-uniform sampler2D atlas : source_color, filter_linear_mipmap_anisotropic;
+// Sem anisotropico: no iPhone (Metal) o shader nao compila com ele -- ver
+// `Quality3D.texture_filter()`.
+uniform sampler2D atlas : source_color, filter_linear_mipmap;
 uniform vec2 cell_uv = vec2(0.125, 1.0);
 
 varying vec2 offset;

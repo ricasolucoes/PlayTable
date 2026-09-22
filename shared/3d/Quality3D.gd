@@ -97,6 +97,19 @@ static func allows_secondary_shadow() -> bool:
 	return tier() >= Tier.MEDIUM
 
 ## Segmentos radiais para cilindros/esferas de peca.
+## Filtro das texturas da mesa (cartas, arte das pecas).
+##
+## Anisotropico no iOS nao compila: no iPhone 11 (Metal, renderer mobile) todo
+## material com textura e `TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC` cai
+## em "Failed to compile Metal library" e a malha sai preta -- era o baralho
+## inteiro e as pecas de Damas. Conferido no aparelho com
+## `core/debug/MaterialProbe.gd`: o mesmo material so com mipmaps compila.
+static func texture_filter() -> BaseMaterial3D.TextureFilter:
+	if OS.get_name() == "iOS":
+		return BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
+	return BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC
+
+
 static func radial_segments(base: int) -> int:
 	match tier():
 		Tier.LOW:

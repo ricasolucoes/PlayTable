@@ -26,7 +26,9 @@ var _lado_local: int = 1
 @onready var game_shell: GameShell = $GameShell
 @onready var level_label: Label = game_shell.level_label
 
-## Materiais das pecas de damas calibrados para contraste mobile (ver MaterialFactory3D.checkers_piece).
+## A arte gerada das pecas (`tools/art/damas.json`), por material. Sem o
+## arquivo em `shared/assets/damas/`, fica o marfim e a obsidiana procedurais.
+const ART_PECAS := {"ivory": "damas/peca_clara", "obsidian": "damas/peca_escura"}
 
 ## Toque e arrasto sobre as 64 casas, projetadas da propria mesa. Dois toques
 ## continuam valendo; pegar a peca com o dedo e o gesto que a pessoa tenta
@@ -154,7 +156,7 @@ func _sync_pieces_3d() -> void:
 				piece.token_type = "cylinder"
 				piece.token_radius = 0.30
 				piece.material_name = "ivory" if val > 0 else "obsidian"
-				piece.visual_material = MaterialFactory3D.checkers_piece(val)
+				piece.art_by_material = ART_PECAS
 				piece.position = _cell_pos(r, c)
 				pieces_root.add_child(piece)
 				pieces_3d[Vector2i(r, c)] = piece
