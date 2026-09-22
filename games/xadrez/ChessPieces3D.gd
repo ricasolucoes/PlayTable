@@ -15,8 +15,8 @@ extends RefCounted
 const TOKEN_SCENE := preload("res://shared/3d/Token3D.tscn")
 
 ## Raio da base e altura do corpo torneado, por tipo (indice = codigo da peca).
-const RAIO := PackedFloat32Array([0.0, 0.17, 0.19, 0.19, 0.21, 0.22, 0.22])
-const ALTURA := PackedFloat32Array([0.0, 0.44, 0.60, 0.72, 0.56, 0.82, 0.92])
+static var RAIO := PackedFloat32Array([0.0, 0.17, 0.19, 0.19, 0.21, 0.22, 0.22])
+static var ALTURA := PackedFloat32Array([0.0, 0.44, 0.60, 0.72, 0.56, 0.82, 0.92])
 
 static var _malhas: Dictionary = {}
 

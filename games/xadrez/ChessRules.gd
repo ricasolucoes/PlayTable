@@ -53,17 +53,17 @@ const M_DOUBLE := 1 << 17
 const M_MASK := 0xFFFFF
 const M_SCORE_SHIFT := 20
 
-const KNIGHT_DR := PackedInt32Array([-2, -2, -1, -1, 1, 1, 2, 2])
-const KNIGHT_DC := PackedInt32Array([-1, 1, -2, 2, -2, 2, -1, 1])
-const KING_DR := PackedInt32Array([-1, -1, -1, 0, 0, 1, 1, 1])
-const KING_DC := PackedInt32Array([-1, 0, 1, -1, 1, -1, 0, 1])
+static var KNIGHT_DR := PackedInt32Array([-2, -2, -1, -1, 1, 1, 2, 2])
+static var KNIGHT_DC := PackedInt32Array([-1, 1, -2, 2, -2, 2, -1, 1])
+static var KING_DR := PackedInt32Array([-1, -1, -1, 0, 0, 1, 1, 1])
+static var KING_DC := PackedInt32Array([-1, 0, 1, -1, 1, -1, 0, 1])
 ## As oito direcoes de deslize: quatro ortogonais e depois quatro diagonais.
-const RAY_DR := PackedInt32Array([-1, 1, 0, 0, -1, -1, 1, 1])
-const RAY_DC := PackedInt32Array([0, 0, -1, 1, -1, 1, -1, 1])
-const PROMOS := PackedInt32Array([QUEEN, ROOK, BISHOP, KNIGHT])
+static var RAY_DR := PackedInt32Array([-1, 1, 0, 0, -1, -1, 1, 1])
+static var RAY_DC := PackedInt32Array([0, 0, -1, 1, -1, 1, -1, 1])
+static var PROMOS := PackedInt32Array([QUEEN, ROOK, BISHOP, KNIGHT])
 
 ## Valor em peoes, para o placar de material da barra.
-const VALOR := PackedInt32Array([0, 1, 3, 3, 5, 9, 0])
+static var VALOR := PackedInt32Array([0, 1, 3, 3, 5, 9, 0])
 ## Material de um lado inteiro sem o rei: 8 peoes + 2 cavalos + 2 bispos + 2 torres + dama.
 const MATERIAL_INICIAL := 39
 

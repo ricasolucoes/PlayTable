@@ -20,7 +20,7 @@ extends RefCounted
 ## mate que a busca ja enxergou: uma IA que ve o mate e nao da parece quebrada,
 ## nao fraca.
 
-const VALOR := PackedInt32Array([0, 100, 320, 330, 500, 900, 0])
+static var VALOR := PackedInt32Array([0, 100, 320, 330, 500, 900, 0])
 const MATE := 100000
 const INFINITO := 1000000
 
@@ -38,7 +38,7 @@ const LIMIAR_FINAL := 1300
 ## Tabelas de posicao (Michniewski), vistas pelas brancas: a primeira linha e
 ## a oitava fileira, que e a linha 0 do tabuleiro. As pretas leem a tabela
 ## espelhada (indice ^ 56).
-const PST_PAWN := PackedInt32Array([
+static var PST_PAWN := PackedInt32Array([
 	0, 0, 0, 0, 0, 0, 0, 0,
 	50, 50, 50, 50, 50, 50, 50, 50,
 	10, 10, 20, 30, 30, 20, 10, 10,
@@ -48,7 +48,7 @@ const PST_PAWN := PackedInt32Array([
 	5, 10, 10, -20, -20, 10, 10, 5,
 	0, 0, 0, 0, 0, 0, 0, 0,
 ])
-const PST_KNIGHT := PackedInt32Array([
+static var PST_KNIGHT := PackedInt32Array([
 	-50, -40, -30, -30, -30, -30, -40, -50,
 	-40, -20, 0, 0, 0, 0, -20, -40,
 	-30, 0, 10, 15, 15, 10, 0, -30,
@@ -58,7 +58,7 @@ const PST_KNIGHT := PackedInt32Array([
 	-40, -20, 0, 5, 5, 0, -20, -40,
 	-50, -40, -30, -30, -30, -30, -40, -50,
 ])
-const PST_BISHOP := PackedInt32Array([
+static var PST_BISHOP := PackedInt32Array([
 	-20, -10, -10, -10, -10, -10, -10, -20,
 	-10, 0, 0, 0, 0, 0, 0, -10,
 	-10, 0, 5, 10, 10, 5, 0, -10,
@@ -68,7 +68,7 @@ const PST_BISHOP := PackedInt32Array([
 	-10, 5, 0, 0, 0, 0, 5, -10,
 	-20, -10, -10, -10, -10, -10, -10, -20,
 ])
-const PST_ROOK := PackedInt32Array([
+static var PST_ROOK := PackedInt32Array([
 	0, 0, 0, 0, 0, 0, 0, 0,
 	5, 10, 10, 10, 10, 10, 10, 5,
 	-5, 0, 0, 0, 0, 0, 0, -5,
@@ -78,7 +78,7 @@ const PST_ROOK := PackedInt32Array([
 	-5, 0, 0, 0, 0, 0, 0, -5,
 	0, 0, 0, 5, 5, 0, 0, 0,
 ])
-const PST_QUEEN := PackedInt32Array([
+static var PST_QUEEN := PackedInt32Array([
 	-20, -10, -10, -5, -5, -10, -10, -20,
 	-10, 0, 0, 0, 0, 0, 0, -10,
 	-10, 0, 5, 5, 5, 5, 0, -10,
@@ -88,7 +88,7 @@ const PST_QUEEN := PackedInt32Array([
 	-10, 0, 5, 0, 0, 0, 0, -10,
 	-20, -10, -10, -5, -5, -10, -10, -20,
 ])
-const PST_KING_MID := PackedInt32Array([
+static var PST_KING_MID := PackedInt32Array([
 	-30, -40, -40, -50, -50, -40, -40, -30,
 	-30, -40, -40, -50, -50, -40, -40, -30,
 	-30, -40, -40, -50, -50, -40, -40, -30,
@@ -98,7 +98,7 @@ const PST_KING_MID := PackedInt32Array([
 	20, 20, 0, 0, 0, 0, 20, 20,
 	20, 30, 10, 0, 0, 10, 30, 20,
 ])
-const PST_KING_END := PackedInt32Array([
+static var PST_KING_END := PackedInt32Array([
 	-50, -40, -30, -20, -20, -30, -40, -50,
 	-30, -20, -10, 0, 0, -10, -20, -30,
 	-30, -10, 20, 30, 30, 20, -10, -30,
@@ -108,7 +108,7 @@ const PST_KING_END := PackedInt32Array([
 	-30, -30, 0, 0, 0, 0, -30, -30,
 	-50, -30, -30, -30, -30, -30, -30, -50,
 ])
-const PST := [PST_PAWN, PST_PAWN, PST_KNIGHT, PST_BISHOP, PST_ROOK, PST_QUEEN, PST_KING_MID]
+static var PST := [PST_PAWN, PST_PAWN, PST_KNIGHT, PST_BISHOP, PST_ROOK, PST_QUEEN, PST_KING_MID]
 
 
 # --------------------------------------------------------------- degrau

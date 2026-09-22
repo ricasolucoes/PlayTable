@@ -24,7 +24,6 @@ var valid_moves: Array[Dictionary] = []
 var is_player_turn: bool = true
 var vs_ai: bool = true
 var em_rede: bool = false
-var mode_switch: ModeSwitch = null
 var ai_level: int = DifficultyManager.DEFAULT_LEVEL
 var picker: DragPicker3D = null
 var promo_modal: Control = null
@@ -61,8 +60,9 @@ func _ready() -> void:
 	board_3d.setup_board(8, 8, CELL, "marble_checkered")
 	board_3d.cell_clicked.connect(_on_cell_clicked)
 	# HUD ancorada antes do enquadramento, para `measure_hud_bands()` medi-la.
-	mode_switch = ModeSwitch.montar(self, vs_ai)
-	mode_switch.trocou.connect(_on_modo_trocado)
+	if top_bar != null:
+		top_bar.oferecer_modo(vs_ai)
+		top_bar.mode_pressed.connect(_on_modo_trocado)
 	_montar_promocao()
 	_setup_picker()
 	fit_table(board_3d.content_size())
@@ -90,9 +90,12 @@ func _start_new_game() -> void:
 	btn_restart.hide()
 	btn_undo.disabled = false
 	ai_level = DifficultyManager.get_level(game_id)
-	if mode_switch != null:
+	if top_bar != null:
 		# Com dois aparelhos na mesa nao ha modo para escolher.
-		mode_switch.visible = not em_rede
+		if not em_rede:
+			top_bar.oferecer_modo(vs_ai)
+		else:
+			top_bar.esconder_modo()
 	rodape.visible = vs_ai and not em_rede
 	estado = ChessRules.new_game()
 	_orientar()

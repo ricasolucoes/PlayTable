@@ -43,7 +43,6 @@ const PAUSA_CAPTURA_IA := 0.6
 var estado: Dictionary = {}
 var mesa: SeatTable = null
 var vs_ai: bool = true
-var mode_switch: ModeSwitch = null
 var ai_level: int = DifficultyManager.DEFAULT_LEVEL
 
 var halos: CellHalo3D = null
@@ -102,8 +101,9 @@ func _ready() -> void:
 	_montar_toque()
 
 	# Antes do fit_table: e HUD ancorada e precisa ser medida.
-	mode_switch = ModeSwitch.montar(self, vs_ai)
-	mode_switch.trocou.connect(_on_modo_trocado)
+	if top_bar != null:
+		top_bar.oferecer_modo(vs_ai)
+		top_bar.mode_pressed.connect(_on_modo_trocado)
 
 	# Tabuleiro quadrado e raso: a camera pode ir quase de cima, e em retrato e
 	# isso que faz o tabuleiro ocupar a largura inteira.
@@ -253,9 +253,12 @@ func _start_new_game() -> void:
 
 	ai_level = DifficultyManager.get_level(game_id)
 	mesa = SeatTable.for_game(self, 2, vs_ai)
-	if mode_switch != null:
+	if top_bar != null:
 		# Com dois aparelhos na mesa nao ha modo para escolher.
-		mode_switch.visible = not mesa.online()
+		if not mesa.online():
+			top_bar.oferecer_modo(vs_ai)
+		else:
+			top_bar.esconder_modo()
 	_sinal = -1.0 if (mesa.online() and not mesa.is_host()) else 1.0
 
 	estado = MorrisRules.novo_estado()

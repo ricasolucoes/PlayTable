@@ -86,26 +86,8 @@ class ModoGeneral extends Button:
 	var modo: int = Modo.IA
 	var vs_ai: bool = true
 
-	## Posicao dinamica abaixo da barra de jogo, que inclui o safe area do iOS.
-	## TOPO_BASE=8, ALTURA=88 (UIKit.TOQUE_MIN), mais o inset do notch e folga.
-	static func _topo_botao() -> float:
-		var vp: Viewport = null
-		var loop := Engine.get_main_loop()
-		if loop is SceneTree:
-			vp = (loop as SceneTree).root
-		var inset: float = JogosSafeArea.top(vp) if vp != null else 0.0
-		# GameTopBar.TOPO_BASE=8, GameTopBar.ALTURA=UIKit.TOQUE_MIN=88
-		return 8.0 + 88.0 + inset + 8.0
-
 	func _init() -> void:
-		anchors_preset = Control.PRESET_TOP_RIGHT
-		anchor_left = 1.0
-		anchor_right = 1.0
-		var topo := _topo_botao()
-		offset_left = -LARGURA - 24.0
-		offset_top = topo
-		offset_right = -24.0
-		offset_bottom = topo + 56.0
+		focus_mode = Control.FOCUS_NONE
 		pressed.connect(_on_pressed)
 		_pintar()
 
@@ -142,7 +124,10 @@ func _ready() -> void:
 	# Antes do fit_table: e HUD ancorada e entra na medicao da faixa de baixo.
 	mode_switch = ModoGeneral.new()
 	mode_switch.name = "ModeSwitch"
-	add_child(mode_switch)
+	# Mora no canto esquerdo do rodape, no lugar que `_espaco_modo` reserva:
+	# posto por coordenada fixa no topo ele caia em cima da linha de status.
+	_espaco_modo.add_child(mode_switch)
+	mode_switch.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	mode_switch.trocou_modo.connect(_on_modo_trocado)
 	# O conteudo e o copo mais a faixa do rotulo na borda de longe; o centro
 	# desloca meia faixa para o rotulo nao ficar fora do quadro.
