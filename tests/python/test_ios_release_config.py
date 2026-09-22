@@ -49,7 +49,7 @@ class IOSReleaseConfigTests(unittest.TestCase):
             if "=" in line
         )
         self.assertEqual(values["VERSION_NAME"], "0.9.2")
-        self.assertEqual(values["BUILD_NUMBER"], "24")
+        self.assertEqual(values["BUILD_NUMBER"], "25")
 
     def test_touch_input_is_explicitly_emulated_for_ios_controls(self):
         project = (ROOT / "project.godot").read_text(encoding="utf-8")
