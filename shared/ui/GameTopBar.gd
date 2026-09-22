@@ -44,7 +44,7 @@ const ALTURA := UIKit.TOQUE_MIN
 ## Respiro do topo antes da barra começar. É o espaço ABAIXO do safe area inset
 ## (notch/Dynamic Island); o próprio inset já vem de JogosSafeArea. TOPO_BASE é
 ## o mínimo de respiração mesmo quando o safe area é zero (desktop/Android).
-const TOPO_BASE := 8.0
+const TOPO_BASE := 12.0
 
 ## Padding efetivo calculado em _ready() e atualizado ao mudar o viewport.
 ## Inclui o safe area inset do topo.

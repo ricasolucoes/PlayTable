@@ -35,7 +35,7 @@ const MARGEM := 24
 ## Respiro acima da barra. Em iOS com notch/Dynamic Island, adiciona o safe area
 ## inset por cima deste valor. O aplicativo exporta com `screen/immersive_mode=true`,
 ## então em Android não há barra de status para desviar.
-const TOPO_BASE := 8
+const TOPO_BASE := 12.0
 const RODAPE_BARRA := 20
 
 const ANEL := 96.0
@@ -96,10 +96,26 @@ func _ready() -> void:
 		GameEventBus.quests_rolled.connect(_on_mudou_escopo)
 		GameEventBus.daily_streak_updated.connect(_on_mudou_int)
 		GameEventBus.league_changed.connect(_on_mudou_liga)
+	# Conecta para atualizar a barra superior quando o viewport/safe area mudar (ex: após inicialização no iOS).
+	var vp := get_viewport()
+	if vp and not vp.size_changed.is_connected(_atualizar_barra_safe_area):
+		vp.size_changed.connect(_atualizar_barra_safe_area)
 	# Pré-aquece o cache de materiais 3D no background depois que o menu
 	# apareceu: as primeiras texturas procedurais (madeira, feltro, couro)
 	# levam ~200-400ms no mobile. Assim o primeiro jogo abre sem travar.
 	_warm_materials.call_deferred()
+
+
+## Atualiza o recuo superior da barra com base no recorte seguro (notch).
+func _atualizar_barra_safe_area() -> void:
+	if _barra == null or not is_inside_tree():
+		return
+	var topo := int(TOPO_BASE + JogosSafeArea.top(get_viewport()))
+	var altura_total := topo + ALTURA_BARRA_CONTEUDO
+	_barra.custom_minimum_size = Vector2(0, altura_total)
+	var conteudo := _barra.get_node_or_null("Conteudo") as MarginContainer
+	if conteudo != null:
+		conteudo.add_theme_constant_override("margin_top", topo)
 
 
 ## Gera os materiais 3D mais usados para preencher o cache antes do primeiro jogo.
@@ -210,7 +226,7 @@ func _montar_barra() -> Button:
 	b.name = "BarraSuperior"
 	# A altura inclui o safe area inset do topo: no iPhone com notch a barra
 	# começa mais abaixo que em dispositivos sem notch.
-	var topo := TOPO_BASE + int(JogosSafeArea.top(get_viewport()))
+	var topo := int(TOPO_BASE + JogosSafeArea.top(get_viewport()))
 	var altura_total := topo + ALTURA_BARRA_CONTEUDO
 	b.custom_minimum_size = Vector2(0, altura_total)
 	b.focus_mode = Control.FOCUS_NONE
