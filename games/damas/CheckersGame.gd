@@ -156,7 +156,7 @@ func _sync_pieces_3d() -> void:
 				piece.token_type = "cylinder"
 				piece.token_radius = 0.30
 				piece.material_name = "ivory" if val > 0 else "obsidian"
-				piece.art_by_material = ART_PECAS
+				piece.visual_material = MaterialFactory3D.checkers_piece(val)
 				piece.position = _cell_pos(r, c)
 				pieces_root.add_child(piece)
 				pieces_3d[Vector2i(r, c)] = piece

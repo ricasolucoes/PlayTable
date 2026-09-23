@@ -21,7 +21,7 @@ signal back_requested
 signal app_paused
 signal app_resumed
 
-const DEFAULT_FADE: float = 0.2
+const DEFAULT_FADE: float = 0.10
 
 ## Sem ninguém escutando `back_requested` e sem a cena tratar o Voltar, o
 ## aplicativo sai — é o que o Android espera no topo da pilha.
@@ -88,7 +88,7 @@ func goto_scene(path: String, opts: Dictionary = {}) -> void:
 	scene_changing.emit(path)
 	var fade: float = _fade_duration(opts)
 	overlay.block_input(true)
-	overlay.show_progress(bool(opts.get("progress", true)))
+	overlay.show_progress(bool(opts.get("progress", false)))
 	await overlay.fade_in(fade)
 	var scene: PackedScene = await loader.load_async(path)
 	if scene == null:

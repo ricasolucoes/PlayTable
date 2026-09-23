@@ -72,20 +72,22 @@ func _ready() -> void:
 	# na roda do mouse. Ver `DragScroll`.
 	DragScroll.attach_all(self)
 	# Ajusta o topo da barra pelo safe area do iPhone (notch/Dynamic Island).
-	# O .tscn tem offset_top=36 que vale para desktop/Android sem notch;
-	# aqui se necessario aumenta pelo inset real do dispositivo.
-	var vbox := get_node_or_null("VBoxContainer") as Control
-	if vbox != null:
-		var inset := JogosSafeArea.top(get_viewport())
-		var topo_base := 36.0  # valor do .tscn
-		var topo_novo := maxf(topo_base, 8.0 + inset)
-		if topo_novo > topo_base:
-			vbox.offset_top = topo_novo
+	_atualizar_safe_area()
+	var vp := get_viewport()
+	if vp and not vp.size_changed.is_connected(_atualizar_safe_area):
+		vp.size_changed.connect(_atualizar_safe_area)
 	_ler_filtro_salvo()
 	var botao := _btn_filtro()
 	if botao != null:
 		botao.pressed.connect(_on_btn_filtro_pressed)
 	_montar_lista()
+
+
+func _atualizar_safe_area() -> void:
+	var vbox := get_node_or_null("VBoxContainer") as Control
+	if vbox != null:
+		var inset := JogosSafeArea.top(get_viewport())
+		vbox.offset_top = maxf(36.0, 16.0 + inset)
 
 
 ## Os jogos que esta tela lista. Cada menu responde com a sua categoria.

@@ -13,9 +13,10 @@ extends Control
 
 const MAIN_MENU := "res://core/telas/MainMenu.tscn"
 const MARGEM := 24
-const TOPO_BASE := 8
+const TOPO_BASE := 16.0
 
 var _jogo_escolhido: String = ""
+var _barra_topo: MarginContainer = null
 var _corpo: VBoxContainer = null
 var _status: Label = null
 var _lan_status: Label = null
@@ -33,6 +34,9 @@ func _ready() -> void:
 	if not jogos.is_empty():
 		_jogo_escolhido = GameCatalog.game_id_of(jogos[0])
 	_montar()
+	var vp := get_viewport()
+	if vp and not vp.size_changed.is_connected(_atualizar_safe_area):
+		vp.size_changed.connect(_atualizar_safe_area)
 	if NetworkManager != null:
 		NetworkManager.state_changed.connect(_on_state_changed)
 		NetworkManager.rooms_changed.connect(_on_rooms_changed)
@@ -69,7 +73,8 @@ func _montar() -> void:
 	add_child(coluna)
 
 	var barra := MarginContainer.new()
-	var topo := TOPO_BASE + int(JogosSafeArea.top(get_viewport()))
+	_barra_topo = barra
+	var topo := int(TOPO_BASE + JogosSafeArea.top(get_viewport()))
 	barra.add_theme_constant_override("margin_left", MARGEM)
 	barra.add_theme_constant_override("margin_right", MARGEM)
 	barra.add_theme_constant_override("margin_top", topo)
@@ -363,3 +368,9 @@ func _on_voltar() -> void:
 func voltar_do_aparelho() -> bool:
 	_on_voltar()
 	return true
+
+
+func _atualizar_safe_area() -> void:
+	if _barra_topo != null:
+		var topo := int(TOPO_BASE + JogosSafeArea.top(get_viewport()))
+		_barra_topo.add_theme_constant_override("margin_top", topo)

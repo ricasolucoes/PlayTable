@@ -157,6 +157,11 @@ func is_open() -> bool:
 func open() -> void:
 	if _raiz == null:
 		return
+	var painel := _raiz.get_node_or_null("Painel") as Control
+	if painel != null:
+		var sa_inset := JogosSafeArea.top(get_viewport())
+		var banda := GameTopBar.TOPO_BASE + GameTopBar.ALTURA + sa_inset
+		painel.offset_top = banda + 12.0
 	_raiz.visible = true
 	_raiz.modulate.a = 0.0
 	create_tween().tween_property(_raiz, "modulate:a", 1.0, 0.18)

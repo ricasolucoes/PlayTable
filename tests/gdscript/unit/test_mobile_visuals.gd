@@ -129,3 +129,31 @@ func test_tokens_de_interface_sao_consistentes_e_nao_herdam_marrom_legado() -> v
 	assert_gte(botao.custom_minimum_size.x, UIKit.TOQUE_MIN)
 	assert_gte(botao.custom_minimum_size.y, UIKit.TOQUE_MIN)
 	assert_true(UIKit.RADIUS_CARD >= 12.0)
+
+
+func test_checkers_piece_materials_have_high_contrast() -> void:
+	var white := MaterialFactory3D.checkers_piece(1)
+	var black := MaterialFactory3D.checkers_piece(-1)
+	assert_ne(white.albedo_color, black.albedo_color)
+	assert_gt(white.albedo_color.get_luminance(), 0.8)
+	assert_lt(black.albedo_color.get_luminance(), 0.15)
+
+
+func test_checkers_scene_pieces_have_contrast() -> void:
+	var scene := load("res://games/damas/CheckersGame.tscn") as PackedScene
+	var jogo = add_child_autofree(scene.instantiate())
+	await wait_process_frames(3)
+	assert_gt(jogo.pieces_3d.size(), 0)
+	var has_white := false
+	var has_black := false
+	for piece in jogo.pieces_3d.values():
+		var mat: StandardMaterial3D = piece.get_visual_material() as StandardMaterial3D
+		assert_not_null(mat)
+		if mat:
+			if mat.albedo_color.get_luminance() > 0.7:
+				has_white = true
+			elif mat.albedo_color.get_luminance() < 0.2:
+				has_black = true
+	assert_true(has_white, "deve ter pecas brancas claras")
+	assert_true(has_black, "deve ter pecas pretas escuras")
+

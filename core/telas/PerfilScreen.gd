@@ -34,10 +34,14 @@ var _conteudo: VBoxContainer
 var _cabecalho: VBoxContainer
 var _botoes_aba: Dictionary = {}
 var _tira_abas: ScrollContainer
+var _margem_principal: MarginContainer = null
 
 
 func _ready() -> void:
 	_montar()
+	var vp := get_viewport()
+	if vp and not vp.size_changed.is_connected(_atualizar_safe_area):
+		vp.size_changed.connect(_atualizar_safe_area)
 	_atualizar_cabecalho()
 	_trocar_aba("overview")
 	if GameEventBus:
@@ -60,11 +64,12 @@ func _montar() -> void:
 	add_child(fundo)
 
 	var margem := MarginContainer.new()
+	_margem_principal = margem
 	margem.set_anchors_preset(Control.PRESET_FULL_RECT)
 	margem.add_theme_constant_override("margin_left", 24)
 	margem.add_theme_constant_override("margin_right", 24)
-	# Base de 8px + inset do notch (iPhone) ou Dynamic Island.
-	var topo_margem := 8 + int(JogosSafeArea.top(get_viewport()))
+	# Base de 16px + inset do notch (iPhone) ou Dynamic Island.
+	var topo_margem := 16 + int(JogosSafeArea.top(get_viewport()))
 	margem.add_theme_constant_override("margin_top", topo_margem)
 	margem.add_theme_constant_override("margin_bottom", 28)
 	add_child(margem)
@@ -477,3 +482,9 @@ func _equipar(item_id: String) -> void:
 		if AudioManager:
 			AudioManager.play_click()
 		_trocar_aba("collection")
+
+
+func _atualizar_safe_area() -> void:
+	if _margem_principal != null:
+		var topo_margem := 16 + int(JogosSafeArea.top(get_viewport()))
+		_margem_principal.add_theme_constant_override("margin_top", topo_margem)
