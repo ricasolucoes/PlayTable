@@ -18,10 +18,38 @@ echo "=> PlayTable :: exportando projeto Xcode iOS"
 }
 
 APP_ICON_PATH="$(dirname "$OUTPUT_PATH")/PlayTable/Images.xcassets/AppIcon.appiconset/Icon-1024.png"
+if [[ -f "$PROJECT_DIR/fastlane/metadata/app_icon_1024.png" ]]; then
+  mkdir -p "$(dirname "$APP_ICON_PATH")"
+  cp "$PROJECT_DIR/fastlane/metadata/app_icon_1024.png" "$APP_ICON_PATH"
+fi
 [[ -f "$APP_ICON_PATH" ]] || {
   echo "ERRO: o exportador não incluiu o ícone iOS em $APP_ICON_PATH" >&2
   exit 1
 }
+
+# Sincroniza todas as variantes de ícone do AppIcon.appiconset a partir do Icon-1024.png
+python3 -c "
+import json, os
+from PIL import Image
+
+icon_dir = os.path.dirname('$APP_ICON_PATH')
+contents_file = os.path.join(icon_dir, 'Contents.json')
+if os.path.isfile(contents_file):
+    with open(contents_file) as f:
+        data = json.load(f)
+    master = Image.open('$APP_ICON_PATH')
+    for item in data.get('images', []):
+        fn = item.get('filename')
+        if not fn or fn == 'Icon-1024.png':
+            continue
+        sz = item['size']
+        scale = float(item.get('scale', '1x').replace('x', ''))
+        w, h = map(float, sz.split('x'))
+        tw, th = int(round(w * scale)), int(round(h * scale))
+        target_path = os.path.join(icon_dir, fn)
+        resized = master.resize((tw, th), Image.Resampling.LANCZOS)
+        resized.save(target_path)
+" 2>/dev/null || true
 
 if command -v sips >/dev/null 2>&1; then
   icon_dimensions="$(sips -g pixelWidth -g pixelHeight "$APP_ICON_PATH" | awk '/pixelWidth|pixelHeight/ { print $2 }' | paste -sd'x' -)"
