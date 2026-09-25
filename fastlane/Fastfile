@@ -96,6 +96,8 @@ platform :ios do
       UI.user_error!("App Review notes exceed Apple's 4000-byte limit")
     end
 
+    attachment_path = File.join(PROJECT_ROOT, "fastlane/metadata/review_information/playtable_review_demo.mp4")
+
     deliver(
       api_key: playtable_app_store_connect_api_key,
       ipa: File.join(PROJECT_ROOT, "build/ios/PlayTable.ipa"),
@@ -108,6 +110,7 @@ platform :ios do
       automatic_release: ENV.fetch("IOS_AUTOMATIC_RELEASE", "true") == "true",
       force: true,
       run_precheck_before_submit: false,
+      app_review_attachment_file: File.exist?(attachment_path) ? attachment_path : nil,
       app_review_information: {
         first_name: ENV.fetch("IOS_REVIEW_FIRST_NAME", "Ricardo"),
         last_name: ENV.fetch("IOS_REVIEW_LAST_NAME", "Sierra"),
