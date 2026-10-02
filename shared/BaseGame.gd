@@ -315,7 +315,19 @@ func _layout_mobile_bands() -> void:
 	var content_cursor := mobile_hud_metrics.content_rect.position.y
 	var content_end := mobile_hud_metrics.content_rect.end.y
 	var has_game_header := false
-	for binding in _mobile_bands:
+	var bandas_ordenadas := _mobile_bands.duplicate()
+	bandas_ordenadas.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
+		var a_ctrl: Control = a.get("control")
+		var b_ctrl: Control = b.get("control")
+		var a_is_header: bool = a.get("band") == &"content_header" or (a.get("band") == &"content" and a_ctrl != null and a_ctrl.get_parent() is GameShell)
+		var b_is_header: bool = b.get("band") == &"content_header" or (b.get("band") == &"content" and b_ctrl != null and b_ctrl.get_parent() is GameShell)
+		if a_is_header and not b_is_header:
+			return true
+		if not a_is_header and b_is_header:
+			return false
+		return false
+	)
+	for binding in bandas_ordenadas:
 		var control := binding["control"] as Control
 		if control == null or not is_instance_valid(control):
 			continue
