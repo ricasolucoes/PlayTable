@@ -10,7 +10,7 @@ JUEGOS DE MESA Y LÓGICA
 
 JUEGOS DE CARTAS
 • Solitario Klondike y Solitario Spider.
-• Blackjack, Juego de Memoria, UnoLike y Video Poker.
+• Blackjack, Juego de Memoria, Colores y Cartas y Video Poker.
 
 CARACTERÍSTICAS
 • Juega en solitario contra la IA o por turnos con amigos.

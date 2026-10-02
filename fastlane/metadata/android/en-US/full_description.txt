@@ -1,6 +1,8 @@
-PlayTable is the ultimate all-in-one collection of 22 timeless classic board games, card games, and logic puzzles — 100% free, completely ad-free, and fully offline!
+PlayTable brings together 22 classic board games, card games and logic puzzles to play offline on your phone or tablet. Checkers, Dominoes, Sudoku, Minesweeper, Solitaire and more in one app, with no ads or in-app purchases.
 
-Designed for pure gameplay, instant responsiveness, and complete user privacy, PlayTable runs locally on your smartphone or tablet. No Wi-Fi or mobile data required, no sign-ups, no tracking, and no in-app purchases. Turn on airplane mode and enjoy classic games anytime, anywhere!
+Explore the games, complete daily and weekly challenges, and track achievements, levels and personal records in your local profile. All 22 games are available from the start, without unlocking them with XP.
+
+Play solo or use local modes in supported games. Tic-Tac-Toe, Connect Four and Reversi also offer optional online matches using room codes; only this mode needs internet.
 
 🎲 16 CLASSIC BOARD & LOGIC GAMES:
 • Checkers (Draughts): Classic 8x8 board with king promotion and mandatory captures.

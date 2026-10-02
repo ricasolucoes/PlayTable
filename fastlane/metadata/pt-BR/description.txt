@@ -10,7 +10,7 @@ JOGOS DE TABULEIRO E LÓGICA
 
 JOGOS DE CARTAS
 • Paciência Klondike e Paciência Spider.
-• Blackjack, Jogo da Memória, UnoLike e Vídeo Pôquer.
+• Blackjack, Jogo da Memória, Jogo de Cores & Cartas e Vídeo Pôquer.
 
 DESTAQUES
 • Solo contra a inteligência artificial ou pass-and-play com amigos.

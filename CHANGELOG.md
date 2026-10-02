@@ -9,6 +9,10 @@
 
 ## [Unreleased](https://github.com/ricasolucoes/PlayTable/compare/ios-v0.9.2...develop)
 
+### 🎨 Melhorias
+
+- [x] **Fichas Android em português, inglês e espanhol** — textos locais destacam desafios e conquistas locais, mantêm os 22 jogos acessíveis desde o início e explicam o multiplayer online opcional; publicação ainda pendente
+
 ### 🐛 Correções
 
 - [x] **Cartas e peças de Damas pretas no iPhone** (`shared/3d/Quality3D.gd`) — no iPhone 11 (Metal, renderer mobile) todo material com textura e filtro anisotrópico dava "Failed to compile Metal library" e a malha saía preta: o baralho inteiro de Copas, Paciência, Spider, 21, Pôquer e UNO, e a arte gerada das peças de Damas. O filtro agora sai de `Quality3D.texture_filter()`, sem anisotrópico no iOS; os números do Campo Minado (`DecalGrid3D`) perderam o mesmo sampler. As peças de Damas voltam a usar a arte gerada no lugar dos discos lisos

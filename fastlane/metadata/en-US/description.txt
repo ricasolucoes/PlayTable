@@ -10,7 +10,7 @@ BOARD AND LOGIC GAMES
 
 CARD GAMES
 • Klondike Solitaire and Spider Solitaire.
-• Blackjack, Memory Match, UnoLike and Video Poker.
+• Blackjack, Memory Match, Colors & Cards and Video Poker.
 
 HIGHLIGHTS
 • Play solo against AI or pass-and-play with friends.

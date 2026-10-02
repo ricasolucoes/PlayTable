@@ -1,6 +1,8 @@
-PlayTable es la colección definitiva con 22 juegos clásicos de mesa, cartas y acertijos lógicos en una sola aplicación: ¡100% gratis, sin anuncios y totalmente offline!
+PlayTable reúne 22 juegos clásicos de mesa, cartas y lógica para jugar sin conexión en tu teléfono o tablet. Damas, Dominó, Sudoku, Buscaminas, Solitario y otros clásicos en una sola app, sin anuncios ni compras integradas.
 
-Diseñado para los amantes de los juegos tradicionales que buscan una experiencia fluida, sin interrupciones y con total respeto a la privacidad. Todo funciona localmente en tu dispositivo: sin conexión a internet, sin registros y sin compras integradas. ¡Activa el modo avión y juega donde y cuando quieras!
+Explora los juegos, completa retos diarios y semanales y sigue tus logros, niveles y récords en el perfil local. Los 22 juegos están disponibles desde el principio, sin tener que desbloquearlos con XP.
+
+Juega en solitario o utiliza los modos locales de los juegos compatibles. Tres en Raya, Cuatro en Línea y Reversi también ofrecen partidas online opcionales mediante códigos de sala; solo este modo necesita internet.
 
 🎲 16 JUEGOS DE MESA Y LÓGICA:
 • Damas: Tablero clásico 8x8 con damas voladoras y capturas múltiples obligatorias.
