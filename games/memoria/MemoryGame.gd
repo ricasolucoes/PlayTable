@@ -34,6 +34,8 @@ func _ready() -> void:
 	var shell = $GameShell
 	status_label = shell.status_label
 	btn_restart = shell.btn_restart
+	if top_bar != null:
+		top_bar.mode_pressed.connect(_on_top_bar_mode_pressed)
 	btn_mode_toggle.pressed.connect(_on_mode_toggle_pressed)
 	$VBoxContainer/ScrollContainer.resized.connect(_redimensionar_cartas)
 	_update_mode_button()
@@ -221,6 +223,13 @@ func _update_ui() -> void:
 		set_status(start_status + difficulty_suffix())
 
 
+func _on_top_bar_mode_pressed(novo_vs_ai: bool) -> void:
+	play_click()
+	is_local_multiplayer = not novo_vs_ai
+	_update_mode_button()
+	restart_game()
+
+
 func _on_mode_toggle_pressed() -> void:
 	play_click()
 	is_local_multiplayer = not is_local_multiplayer
@@ -230,4 +239,6 @@ func _on_mode_toggle_pressed() -> void:
 
 func _update_mode_button() -> void:
 	if btn_mode_toggle:
-		btn_mode_toggle.text = tr("MEMORY_BTN_SOLO") if is_local_multiplayer else tr("MEMORY_BTN_TWO_PLAYERS")
+		btn_mode_toggle.visible = false
+	if top_bar != null:
+		top_bar.oferecer_modo(not is_local_multiplayer)
