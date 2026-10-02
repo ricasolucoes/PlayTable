@@ -335,7 +335,7 @@ func _layout_mobile_bands() -> void:
 		var area := mobile_hud_metrics.content_rect
 		if binding["band"] == &"content_header":
 			has_game_header = true
-			var header_row_height := maxf(88.0, _mobile_band_height(control) + margin * 2.0)
+			var header_row_height := maxf(100.0, _mobile_band_height(control) + margin * 2.0)
 			area = Rect2(mobile_hud_metrics.content_rect.position.x, content_cursor,
 				mobile_hud_metrics.content_rect.size.x,
 				minf(header_row_height, content_end - content_cursor))
@@ -344,7 +344,7 @@ func _layout_mobile_bands() -> void:
 			var is_game_header := control.get_parent() is GameShell
 			if is_game_header:
 				has_game_header = true
-				var header_height := maxf(88.0, _mobile_band_height(control) + margin * 2.0)
+				var header_height := maxf(120.0, _mobile_band_height(control) + margin * 2.0)
 				area = Rect2(mobile_hud_metrics.content_rect.position.x, content_cursor,
 					mobile_hud_metrics.content_rect.size.x, minf(header_height, content_end - content_cursor))
 				content_cursor = minf(content_end, content_cursor + header_height + 8.0)
